@@ -1,17 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Dalamud.NET.Sdk/14.0.2">
 
   <PropertyGroup>
-    <TargetFramework>net7.0-windows</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <OutputType>Library</OutputType>
-    <AssemblyName>MOGTOME</AssemblyName>
-    <RootNamespace>MOGTOME</RootNamespace>
-    <Description>Management Of Grand Tome Operations & Management Engine - Automated duty farming and tome acquisition</Description>
     <Version>1.0.0.0</Version>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
-    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <Description>Management Of Grand Tome Operations &amp; Management Engine - Automated duty farming and tome acquisition</Description>
+    <PackageProjectUrl>https://github.com/McVaxius/MOGTOME</PackageProjectUrl>
+    <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -27,23 +21,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DalamudPackager" Version="2.1.12" />
+    <PackageReference Include="ECommons" Version="2.3.0" />
     <PackageReference Include="ImGui.NET" Version="1.90.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="FFXIVClientStructs">
-      <HintPath>$(AppData)\XIVLauncher\addon\Hooks\FFXIVClientStructs.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Lumina">
-      <HintPath>$(AppData)\XIVLauncher\addon\Hooks\Lumina.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>$(AppData)\XIVLauncher\addon\Hooks\Newtonsoft.Json.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
