@@ -32,6 +32,7 @@
     <ItemGroup>
       <PluginFiles Include="$(TargetPath)" />
       <PluginFiles Include="$(ProjectDir)$(AssemblyName).json" />
+      <PluginFiles Include="images\icon.png" />
     </ItemGroup>
 
     
