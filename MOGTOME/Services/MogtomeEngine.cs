@@ -1,0 +1,382 @@
+using System;
+using Dalamud.Plugin.Services;
+using MOGTOME.IPC;
+using MOGTOME.Models;
+
+namespace MOGTOME.Services;
+
+public enum EngineState
+{
+    Idle,
+    Initializing,
+    WaitingOutsideDuty,
+    Queueing,
+    InDuty,
+    RepairingOutside,
+    Stopping,
+    Stopped,
+}
+
+public class MogtomeEngine
+{
+    private readonly IPluginLog log;
+    private readonly Configuration config;
+    private readonly DutyState state;
+    private readonly DutyTrackerService dutyTracker;
+    private readonly DutyQueueService dutyQueue;
+    private readonly RepairService repairService;
+    private readonly FoodService foodService;
+    private readonly RotationService rotationService;
+    private readonly BossHandlerService bossHandler;
+    private readonly StuckDetectionService stuckDetection;
+    private readonly DialogHandlerService dialogHandler;
+    private readonly AutoDutyPathService autoDutyPath;
+    private readonly AutoDutyIPC autoDutyIPC;
+    private readonly AutomatonIPC automatonIPC;
+    private readonly YesAlreadyIPC yesAlreadyIPC;
+    private readonly ICondition condition;
+    private readonly IClientState clientState;
+    private readonly ICommandManager commandManager;
+
+    public EngineState CurrentState { get; private set; } = EngineState.Idle;
+    public bool IsRunning => CurrentState != EngineState.Idle && CurrentState != EngineState.Stopped;
+    public string StatusMessage { get; private set; } = "Idle";
+
+    private DateTime lastTick = DateTime.MinValue;
+    private int outsideDutyTicks = 0;
+
+    public MogtomeEngine(
+        IPluginLog log, Configuration config, DutyState state,
+        DutyTrackerService dutyTracker, DutyQueueService dutyQueue,
+        RepairService repairService, FoodService foodService,
+        RotationService rotationService, BossHandlerService bossHandler,
+        StuckDetectionService stuckDetection, DialogHandlerService dialogHandler,
+        AutoDutyPathService autoDutyPath, AutoDutyIPC autoDutyIPC,
+        AutomatonIPC automatonIPC, YesAlreadyIPC yesAlreadyIPC,
+        ICondition condition, IClientState clientState, ICommandManager commandManager)
+    {
+        this.log = log;
+        this.config = config;
+        this.state = state;
+        this.dutyTracker = dutyTracker;
+        this.dutyQueue = dutyQueue;
+        this.repairService = repairService;
+        this.foodService = foodService;
+        this.rotationService = rotationService;
+        this.bossHandler = bossHandler;
+        this.stuckDetection = stuckDetection;
+        this.dialogHandler = dialogHandler;
+        this.autoDutyPath = autoDutyPath;
+        this.autoDutyIPC = autoDutyIPC;
+        this.automatonIPC = automatonIPC;
+        this.yesAlreadyIPC = yesAlreadyIPC;
+        this.condition = condition;
+        this.clientState = clientState;
+        this.commandManager = commandManager;
+    }
+
+    public void Start()
+    {
+        if (IsRunning)
+        {
+            log.Warning("[Engine] Already running");
+            return;
+        }
+
+        log.Information("[Engine] Starting MOGTOME engine");
+        CurrentState = EngineState.Initializing;
+        StatusMessage = "Initializing...";
+
+        try
+        {
+            // Ensure AutoDuty path exists
+            autoDutyPath.EnsurePathExists();
+
+            // Initialize rotation
+            rotationService.Initialize();
+
+            // Configure AutoDuty
+            autoDutyIPC.ConfigureForMogtome(config.IsPartyLeader);
+
+            // Pause YesAlready - we handle dialogs directly
+            dialogHandler.Start();
+
+            // Disable AutoQueue initially
+            automatonIPC.DisableAutoQueue();
+
+            // Detect party leader
+            DetectPartyLeader();
+
+            // Check potion availability
+            state.PotionsAvailable = config.PotionItemId > 0;
+
+            // Calculate timeouts
+            state.CalculateTimeouts(config.LoopInterval);
+
+            CurrentState = EngineState.WaitingOutsideDuty;
+            StatusMessage = $"Running - Duty #{state.DutyCounter + 1}";
+            log.Information($"[Engine] Initialized. Leader={state.IsPartyLeader}, Counter={state.DutyCounter}, Preset={config.BossModPreset}");
+        }
+        catch (Exception ex)
+        {
+            log.Error($"[Engine] Initialization failed: {ex.Message}");
+            Stop();
+        }
+    }
+
+    public void Stop()
+    {
+        log.Information("[Engine] Stopping MOGTOME engine");
+        CurrentState = EngineState.Stopping;
+        StatusMessage = "Stopping...";
+
+        try
+        {
+            dialogHandler.Stop();
+            rotationService.DisableRotation();
+            dutyQueue.EnableAutoQueueAfterRepair();
+        }
+        catch (Exception ex)
+        {
+            log.Error($"[Engine] Error during stop: {ex.Message}");
+        }
+
+        CurrentState = EngineState.Idle;
+        StatusMessage = "Idle";
+        log.Information("[Engine] Stopped");
+    }
+
+    public void Update()
+    {
+        if (!IsRunning) return;
+        if (!clientState.IsLoggedIn) return;
+
+        // Throttle based on loop interval
+        var now = DateTime.UtcNow;
+        if ((now - lastTick).TotalSeconds < config.LoopInterval) return;
+        lastTick = now;
+
+        try
+        {
+            // Check daily reset
+            dutyTracker.CheckDailyReset();
+
+            // Check quit condition
+            if (dutyTracker.ShouldQuit())
+            {
+                HandleQuit();
+                return;
+            }
+
+            // Update territory
+            state.CurrentTerritory = (ushort)(clientState.TerritoryType);
+
+            // Condition[34] = BoundByDuty
+            var inDuty = condition[34];
+
+            if (inDuty && !state.IsInDuty)
+            {
+                OnEnteredDuty();
+            }
+            else if (!inDuty && state.IsInDuty)
+            {
+                OnLeftDuty();
+            }
+
+            // Condition[26] = InCombat
+            state.IsInCombat = condition[26];
+
+            // Handle dialogs always
+            dialogHandler.Update();
+
+            switch (CurrentState)
+            {
+                case EngineState.WaitingOutsideDuty:
+                    UpdateOutsideDuty();
+                    break;
+                case EngineState.Queueing:
+                    UpdateQueueing();
+                    break;
+                case EngineState.InDuty:
+                    UpdateInDuty();
+                    break;
+                case EngineState.RepairingOutside:
+                    UpdateRepairing();
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            log.Error($"[Engine] Update error: {ex.Message}");
+        }
+    }
+
+    private void OnEnteredDuty()
+    {
+        state.IsInDuty = true;
+        dutyTracker.OnDutyStarted();
+        rotationService.ForceRotation();
+        CurrentState = EngineState.InDuty;
+        StatusMessage = $"In Duty - #{state.DutyCounter} ({dutyTracker.GetCurrentDutyName()})";
+        log.Information($"[Engine] Entered duty #{state.DutyCounter}");
+    }
+
+    private void OnLeftDuty()
+    {
+        dutyTracker.OnDutyCompleted();
+        state.IsInDuty = false;
+        outsideDutyTicks = 0;
+        CurrentState = EngineState.WaitingOutsideDuty;
+        StatusMessage = $"Outside Duty - Next: #{state.DutyCounter + 1}";
+        log.Information($"[Engine] Left duty. Next: #{state.DutyCounter + 1}");
+    }
+
+    private void UpdateOutsideDuty()
+    {
+        outsideDutyTicks++;
+
+        // Food check
+        foodService.Update();
+
+        // Repair check
+        if (repairService.NeedsRepair())
+        {
+            CurrentState = EngineState.RepairingOutside;
+            StatusMessage = "Repairing...";
+            dutyQueue.DisableAutoQueueForRepair();
+            repairService.TrySelfRepair();
+            return;
+        }
+
+        // Auto-equip
+        repairService.AutoEquipIfEnabled();
+
+        // Queue for duty if leader
+        if (state.IsPartyLeader)
+        {
+            var isPrae = dutyTracker.ShouldRunPraetorium();
+            CurrentState = EngineState.Queueing;
+            StatusMessage = $"Queueing: {dutyTracker.GetCurrentDutyName()}";
+            dutyQueue.TryQueue(isPrae);
+        }
+        else
+        {
+            StatusMessage = $"Waiting for leader - #{state.DutyCounter + 1}";
+        }
+
+        // Non-leader repair check after 20 seconds outside duty
+        if (!state.IsPartyLeader && outsideDutyTicks > (int)(20 / config.LoopInterval))
+        {
+            if (repairService.NeedsRepair())
+            {
+                repairService.TryNpcRepair();
+            }
+        }
+    }
+
+    private void UpdateQueueing()
+    {
+        // If we're now in duty, the state will change via OnEnteredDuty
+        // Otherwise keep waiting
+        if (!condition[34])
+        {
+            StatusMessage = $"Queueing: {dutyTracker.GetCurrentDutyName()} (waiting...)";
+        }
+    }
+
+    private void UpdateInDuty()
+    {
+        // Boss combat handler
+        bossHandler.Update();
+
+        // Stuck detection
+        stuckDetection.Update();
+
+        // Force rotation refresh periodically
+        rotationService.ForceRotation();
+
+        // Repair check inside duty (disable autoqueue)
+        if (repairService.NeedsRepair() && config.RepairThreshold > -1)
+        {
+            dutyQueue.DisableAutoQueueForRepair();
+        }
+
+        StatusMessage = $"In Duty #{state.DutyCounter} - {state.TimeInDuty:F0}s";
+    }
+
+    private void UpdateRepairing()
+    {
+        // Wait for repair to complete, then re-enable queue
+        outsideDutyTicks++;
+        if (outsideDutyTicks > 5)
+        {
+            dutyQueue.EnableAutoQueueAfterRepair();
+            CurrentState = EngineState.WaitingOutsideDuty;
+            outsideDutyTicks = 0;
+            StatusMessage = "Repair done, resuming";
+        }
+    }
+
+    private void HandleQuit()
+    {
+        log.Information($"[Engine] Quit condition reached: {state.DutyCounter} runs completed");
+        Stop();
+
+        if (!string.IsNullOrEmpty(config.QuitCommand))
+        {
+            try
+            {
+                commandManager.ProcessCommand(config.QuitCommand);
+            }
+            catch (Exception ex)
+            {
+                log.Error($"[Engine] Quit command failed: {ex.Message}");
+            }
+        }
+    }
+
+    private void DetectPartyLeader()
+    {
+        try
+        {
+            if (config.IsCrossWorldParty)
+            {
+                state.IsPartyLeader = config.IsPartyLeader;
+                log.Information($"[Engine] Cross-world party: IsLeader={state.IsPartyLeader} (from config)");
+                return;
+            }
+
+            // Try to detect from party
+            var party = Plugin.PartyList;
+            if (party.Length <= 1)
+            {
+                state.IsPartyLeader = true;
+                log.Information("[Engine] Solo or no party, treating as leader");
+                return;
+            }
+
+            var leaderIndex = (int)party.PartyLeaderIndex;
+            if (leaderIndex >= 0 && leaderIndex < party.Length)
+            {
+                var leader = party[leaderIndex];
+                if (leader != null)
+                {
+                    var localContentId = (long)Plugin.PlayerState.ContentId;
+                    var leaderContentId = (long)leader.ContentId;
+                    state.IsPartyLeader = leaderContentId == localContentId;
+                    log.Information($"[Engine] Party leader detection: IsLeader={state.IsPartyLeader}");
+                    return;
+                }
+            }
+
+            // Fallback to config
+            state.IsPartyLeader = config.IsPartyLeader;
+            log.Information($"[Engine] Fallback leader detection: IsLeader={state.IsPartyLeader}");
+        }
+        catch (Exception ex)
+        {
+            state.IsPartyLeader = config.IsPartyLeader;
+            log.Warning($"[Engine] Leader detection failed, using config: {ex.Message}");
+        }
+    }
+}

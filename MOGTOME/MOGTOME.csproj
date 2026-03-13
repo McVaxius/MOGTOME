@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Project Sdk="Dalamud.NET.Sdk/14.0.2">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Version>0.0.0.1</Version>
+    <PackageProjectUrl>https://github.com/McVaxius/MOGTOME</PackageProjectUrl>
+    <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DalamudLibPath Condition="$(DALAMUD_HOME) != ''">$(DALAMUD_HOME)/</DalamudLibPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ECommons" Version="2.3.0" />
+    <None Include="images\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <Target Name="CopyPluginArtifacts" AfterTargets="Build">
+
+    <PropertyGroup>
+
+      <PluginOutput>$(OutputPath)$(AssemblyName)</PluginOutput>
+
+    </PropertyGroup>
+
+    <MakeDir Directories="$(PluginOutput)" />
+
+    <ItemGroup>
+      <PluginFiles Include="$(TargetPath)" />
+      <PluginFiles Include="$(ProjectDir)$(AssemblyName).json" />
+    </ItemGroup>
+
+    
+    <Copy SourceFiles="@(PluginFiles)"
+
+          DestinationFolder="$(PluginOutput)" />
+
+  </Target>
+
+</Project>
