@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/goatcorp/Dalamud/master/Dalamud/Configuration/PluginManifest/pluginmanifest.schema.json",
   "Name": "MOGTOME",
   "Author": "DhogGPT",
-  "Punchline": "Automated duty farming and tome acquisition.",
+  "Punchline": "Automated duty farming and mogtome acquisition.",
   "Description": "M.O.G.T.O.M.E. automates duty farming (Praetorium/Porta Decumana) with party coordination, repair, food, potions, rotation management, and stuck detection. Use /mogtome or /mog to open.",
   "Tags": [ "automation", "duty", "farming", "praetorium", "tomes" ],
   "CategoryTags": [ "other" ],

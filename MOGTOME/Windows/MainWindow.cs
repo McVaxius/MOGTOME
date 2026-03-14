@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Numerics;
 using Dalamud.Interface.Windowing;
 using Dalamud.Bindings.ImGui;
@@ -35,6 +36,22 @@ public class MainWindow : Window, IDisposable
         ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "M.O.G.T.O.M.E.");
         ImGui.SameLine();
         ImGui.TextDisabled("v0.0.0.1");
+        
+        // Ko-fi donation button in upper right
+        ImGui.SameLine(ImGui.GetWindowWidth() - 120);
+        if (ImGui.SmallButton("\u2661 Ko-fi \u2661"))
+        {
+            System.Diagnostics.Process.Start(new ProcessStartInfo
+            {
+                FileName = "https://ko-fi.com/mcvaxius",
+                UseShellExecute = true
+            });
+        }
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.SetTooltip("Support development on Ko-fi");
+        }
+        
         ImGui.Separator();
 
         // Engine Status

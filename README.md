@@ -1,5 +1,13 @@
 # M.O.G.T.O.M.E.
 
+---
+
+**Help fund my AI overlords' coffee addiction so they can keep generating more plugins instead of taking over the world**
+
+[☕ Support development on Ko-fi](https://ko-fi.com/mcvaxius)
+
+---
+
 **Management Of Grand Tome Operations & Management Engine**
 
 A Dalamud plugin for automated duty farming and tome acquisition in FFXIV.
