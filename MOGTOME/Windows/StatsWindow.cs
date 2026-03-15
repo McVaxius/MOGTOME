@@ -102,9 +102,7 @@ public class StatsWindow : Window, IDisposable
             ImGui.Text($"Total Runs: {config.TotalPraes + config.TotalDecus}");
             ImGui.Text($"Total Mogtomes: {config.TotalMogtomesEarned}");
             ImGui.Text($"Current Daily Counter: {state.DutyCounter}");
-            ImGui.Text($"Daily Decumana Runs: {state.DecumanaCounter}");
-            ImGui.Text($"Max Daily Decu Runs: {config.MaxDailyDecuRuns}");
-            ImGui.Text($"All-Time Max Daily Decu: {config.AllTimeMaxDailyDecu}");
+            ImGui.Text($"Daily Decumana: {state.DecumanaCounter} (Best: {config.AllTimeMaxDailyDecu})");
             
             // Reset time display
             var (countdown, localTime) = plugin.DutyTrackerService.GetResetTimeDisplay();
