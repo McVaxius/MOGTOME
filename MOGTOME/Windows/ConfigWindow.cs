@@ -33,6 +33,7 @@ public class ConfigWindow : Window, IDisposable
         { "VBM", "https://puni.sh/api/repository/veyn" },
         { "vnavmesh", "https://raw.githubusercontent.com/awgil/ffxiv_plugin_distribution/master/pluginmaster.json" },
         { "TextAdvance", "https://raw.githubusercontent.com/NightmareXIV/MyDalamudPlugins/main/pluginmaster.json" },
+        { "SkipCutscene", "https://raw.githubusercontent.com/a08381/Dalamud.SkipCutscene/dist/repo.json" },
         { "AutoDuty", "https://raw.githubusercontent.com/ffxivcode/DalamudPlugins/main/pluginmaster.json" },
         { "SimpleTweaks", "" },
     };
@@ -186,7 +187,7 @@ public class ConfigWindow : Window, IDisposable
                     case "veyn.BossMod": depVbm = true; break;
                     case "vnavmesh": depVnav = true; break;
                     case "TextAdvance": depTextAdv = true; break;
-                    case "CutsceneSkip": depCutsceneSkip = true; break;
+                    case "SkipCutscene": depCutsceneSkip = true; break;
                     case "AutoDuty": depAutoDuty = true; break;
                     case "SimpleTweaksPlugin": depSimpleTweaks = true; break;
                     case "CustomResolution": depCustomRes = true; break;
@@ -236,8 +237,8 @@ public class ConfigWindow : Window, IDisposable
         // TextAdvance
         DrawDepLine("TextAdvance", depTextAdv, depTextAdv ? "Installed" : "NOT FOUND", "TextAdvance");
 
-        // CutsceneSkip
-        DrawDepLine("CutsceneSkip", depCutsceneSkip, depCutsceneSkip ? "Installed" : "NOT FOUND", null);
+        // SkipCutscene
+        DrawDepLine("SkipCutscene", depCutsceneSkip, depCutsceneSkip ? "Installed" : "NOT FOUND", "SkipCutscene");
 
         // AutoDuty
         DrawDepLine("AutoDuty", depAutoDuty, depAutoDuty ? "Installed" : "NOT FOUND", "AutoDuty");
