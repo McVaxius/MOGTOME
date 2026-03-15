@@ -454,14 +454,14 @@ public class MogtomeEngine
         var leaveReason = $"Exit after duty ends - {elapsed:F0}s elapsed (configured: {DutyExitDelaySeconds}s)";
         
         log.Information($"[Engine] Leave duty attempt #{leaveAttemptCount} - REASON: {leaveReason}");
-        log.Information($"[Engine] Opening duty panel to leave");
+        log.Information($"[Engine] Opening ContentsFinderMenu with U key");
 
-        // Open duty panel to access Leave Duty button
-        commandManager.ProcessCommand("/dutyfinder");
+        // Use U key to open ContentsFinderMenu (xa docs pattern)
+        commandManager.ProcessCommand("/keypress U");
 
-        // Wait a moment for panel to open, then try to click Leave Duty
+        // Wait for menu to appear, then try to click Leave button
         System.Threading.Tasks.Task.Delay(500).ContinueWith(_ => {
-            TryClickLeaveDutyButton();
+            TryClickLeaveButton();
         });
 
         // Also try clicking Yes on any confirmation dialog that appears
@@ -473,33 +473,6 @@ public class MogtomeEngine
         });
 
         StatusMessage = $"Leaving duty (attempt #{leaveAttemptCount}) - {leaveReason}";
-    }
-
-    private void TryClickLeaveDutyButton()
-    {
-        try
-        {
-            log.Information("[Engine] Opening ContentsFinderMenu with callback");
-            
-            // Try direct callback to open ContentsFinderMenu
-            try
-            {
-                GameHelpers.FireAddonCallback("ContentsFinderMenu", true, 0);
-            }
-            catch (Exception ex)
-            {
-                log.Error($"[Engine] ContentsFinderMenu callback failed: {ex.Message}");
-            }
-            
-            // Wait a moment for the menu to open, then click Leave button
-            System.Threading.Tasks.Task.Delay(500).ContinueWith(_ => {
-                TryClickLeaveButton();
-            });
-        }
-        catch (Exception ex)
-        {
-            log.Error($"[Engine] Error trying to leave duty: {ex.Message}");
-        }
     }
 
     private void TryClickLeaveButton()
