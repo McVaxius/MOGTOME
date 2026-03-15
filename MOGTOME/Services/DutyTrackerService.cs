@@ -20,6 +20,16 @@ public class DutyTrackerService
         state.CalculateTimeouts(2.0f);
     }
 
+    /// <summary>
+    /// Sync state counter with config counter.
+    /// Call this when config.DutyCounter is updated externally.
+    /// </summary>
+    public void SyncCounters()
+    {
+        state.DutyCounter = config.DutyCounter;
+        log.Information($"[DutyTracker] Synced counters: {state.DutyCounter}");
+    }
+
     public void OnDutyStarted()
     {
         state.DutyCounter++;

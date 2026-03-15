@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Threading.Tasks;
 using Dalamud.Interface.Windowing;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Plugin.Services;
 using Lumina.Excel.Sheets;
 
 namespace MOGTOME.Windows;
@@ -12,6 +13,7 @@ namespace MOGTOME.Windows;
 public class ConfigWindow : Window, IDisposable
 {
     private readonly Plugin plugin;
+    private readonly IPluginLog Log;
 
     // Food/Pot search state
     private string foodSearch = "";
@@ -40,10 +42,11 @@ public class ConfigWindow : Window, IDisposable
         { "CustomResolution", "https://raw.githubusercontent.com/0x0ade/CustomResolution/main/pluginmaster.json" },
     };
 
-    public ConfigWindow(Plugin plugin)
+    public ConfigWindow(Plugin plugin, IPluginLog log)
         : base("MOGTOME - Configuration##MogtomeConfig", ImGuiWindowFlags.None)
     {
         this.plugin = plugin;
+        this.Log = log;
         SizeConstraints = new WindowSizeConstraints
         {
             MinimumSize = new Vector2(500, 600),
@@ -363,6 +366,7 @@ public class ConfigWindow : Window, IDisposable
     private bool DrawDutyTab(Configuration config)
     {
         var changed = false;
+        var dutyCounterChanged = false;
 
         ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Duty Settings");
         ImGui.Separator();
@@ -372,6 +376,7 @@ public class ConfigWindow : Window, IDisposable
         {
             config.DutyCounter = Math.Clamp(dutyCounter, 0, 666);
             changed = true;
+            dutyCounterChanged = true;
         }
         ImGui.TextDisabled("Current Praetorium run count. Set to 0 for first run of the day.");
 
@@ -389,17 +394,28 @@ public class ConfigWindow : Window, IDisposable
             config.MaxRuns = Math.Clamp(maxRuns, 0, 9999);
             changed = true;
         }
-        ImGui.TextDisabled("Stop after this many total runs. 9999 = unlimited.");
+        ImGui.TextDisabled("Maximum total runs before stopping.");
 
         var quitCommand = config.QuitCommand;
-        if (ImGui.InputText("Quit Command", ref quitCommand, 256))
+        if (ImGui.InputText("Quit Command", ref quitCommand, 50))
         {
             config.QuitCommand = quitCommand;
             changed = true;
         }
-        ImGui.TextDisabled("Command to execute when max runs reached.");
+        ImGui.TextDisabled("Command to run when MaxRuns reached.");
 
-        ImGui.Separator();
+        // Sync counters if duty counter changed
+        if (dutyCounterChanged)
+        {
+            try
+            {
+                plugin.DutyTrackerService.SyncCounters();
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"[ConfigWindow] Failed to sync counters: {ex.Message}");
+            }
+        }
 
         var testMode = config.TestingModeUnsynced;
         if (ImGui.Checkbox("Testing Mode: Unsynced solo+ runs", ref testMode))

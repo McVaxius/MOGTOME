@@ -94,7 +94,7 @@ public sealed class Plugin : IDalamudPlugin
             Condition, ClientState, CommandManager);
 
         // Windows
-        ConfigWindow = new ConfigWindow(this);
+        ConfigWindow = new ConfigWindow(this, Log);
         MainWindow = new MainWindow(this);
         StatsWindow = new StatsWindow(this);
         WindowSystem.AddWindow(ConfigWindow);
