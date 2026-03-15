@@ -56,6 +56,7 @@ public class MogtomeEngine
     private DateTime lastLeaveAttemptTime = DateTime.MinValue;
     private int leaveAttemptCount = 0;
     private const int DutyExitDelaySeconds = 10;
+    private bool delayedRequeueInProgress = false;
 
     public MogtomeEngine(
         IPluginLog log, Configuration config, DutyState state,
@@ -316,6 +317,8 @@ public class MogtomeEngine
             // Auto-queue if we're the leader (like VERMAXION pattern)
             if (state.IsPartyLeader)
             {
+                delayedRequeueInProgress = true;
+                
                 // Small delay to ensure we're fully outside duty
                 System.Threading.Tasks.Task.Delay(2000).ContinueWith(_ => {
                     try
@@ -333,16 +336,19 @@ public class MogtomeEngine
                                 StatusMessage = $"Auto-queueing: {dutyTracker.GetCurrentDutyName()}";
                                 log.Information($"[Engine] Auto-queueing for next run: {dutyTracker.GetCurrentDutyName()}");
                                 dutyQueue.TryQueue(isPrae);
+                                delayedRequeueInProgress = false;
                             }
                             catch (Exception ex)
                             {
                                 log.Error($"[Engine] Auto-queue failed: {ex.Message}");
+                                delayedRequeueInProgress = false;
                             }
                         });
                     }
                     catch (Exception ex)
                     {
                         log.Error($"[Engine] AutoDuty stop failed: {ex.Message}");
+                        delayedRequeueInProgress = false;
                     }
                 });
             }
@@ -378,17 +384,21 @@ public class MogtomeEngine
         // Auto-equip
         repairService.AutoEquipIfEnabled();
 
-        // Queue for duty if leader
-        if (state.IsPartyLeader)
+        // Queue for duty if leader (but not if delayed requeue is in progress)
+        if (state.IsPartyLeader && !delayedRequeueInProgress)
         {
             var isPrae = dutyTracker.ShouldRunPraetorium();
             CurrentState = EngineState.Queueing;
             StatusMessage = $"Queueing: {dutyTracker.GetCurrentDutyName()}";
             dutyQueue.TryQueue(isPrae);
         }
-        else
+        else if (!state.IsPartyLeader)
         {
             StatusMessage = $"Waiting for leader - #{state.DutyCounter + 1}";
+        }
+        else if (delayedRequeueInProgress)
+        {
+            StatusMessage = $"Delayed requeue in progress...";
         }
 
         // Non-leader repair check after 20 seconds outside duty
