@@ -70,16 +70,16 @@ public class ConfigWindow : Window, IDisposable
 
                 var catId = item.ItemUICategory.RowId;
 
-                // Category 46 = Medicine (food/consumables that give Well Fed)
-                // Category 44 = Meal
+                // Category 44 = Medicine (potions like Gemdraught)
+                // Category 46 = Meal (food that gives Well Fed buff)
                 if (catId == 44 || catId == 46)
                 {
-                    // Meals (food) = category 44
+                    // Medicine (potions) = category 44
                     if (catId == 44)
-                        foodItems.Add((item.RowId, name));
-                    // Medicine = category 46 (potions like Gemdraught)
-                    if (catId == 46)
                         potionItems.Add((item.RowId, name));
+                    // Meals (food) = category 46
+                    if (catId == 46)
+                        foodItems.Add((item.RowId, name));
                 }
             }
 
@@ -191,9 +191,11 @@ public class ConfigWindow : Window, IDisposable
                     case "SkipCutscene": depCutsceneSkip = true; break;
                     case "AutoDuty": depAutoDuty = true; break;
                     case "SimpleTweaksPlugin": depSimpleTweaks = true; break;
-                    case "CustomResolution": depCustomRes = true; break;
                     case "ChillFrames": depChillframes = true; break;
                 }
+                
+                // Check for CustomResolution with random suffix
+                if (p.InternalName.StartsWith("CustomResolution")) depCustomRes = true;
             }
 
             var pathOk = plugin.AutoDutyPathService.PathExists();
