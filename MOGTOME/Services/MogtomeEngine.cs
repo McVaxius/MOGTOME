@@ -1,6 +1,8 @@
 using System;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Plugin.Services;
+using FFXIVClientStructs.FFXIV.Client.UI;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using MOGTOME.IPC;
 using MOGTOME.Models;
 
@@ -481,17 +483,22 @@ public class MogtomeEngine
     {
         try
         {
-            log.Information("[Engine] Opening ContentsFinderMenu with callback");
+            log.Information("[Engine] Opening ContentsFinderMenu with U key and callback backup");
             
-            // Try direct callback to open ContentsFinderMenu (pattern from FrenRider)
-            try
-            {
-                GameHelpers.FireAddonCallback("ContentsFinderMenu", true, 0);
-            }
-            catch (Exception ex)
-            {
-                log.Error($"[Engine] ContentsFinderMenu callback failed: {ex.Message}");
-            }
+            // Try U key first (most reliable)
+            commandManager.ProcessCommand("/keypress U");
+            
+            // Also try callback 0 as backup after a short delay
+            System.Threading.Tasks.Task.Delay(200).ContinueWith(_ => {
+                try
+                {
+                    GameHelpers.FireAddonCallback("ContentsFinderMenu", true, 0);
+                }
+                catch (Exception ex)
+                {
+                    log.Error($"[Engine] ContentsFinderMenu callback backup failed: {ex.Message}");
+                }
+            });
             
             // Wait a moment for the menu to open, then click Leave button
             System.Threading.Tasks.Task.Delay(500).ContinueWith(_ => {
@@ -504,13 +511,31 @@ public class MogtomeEngine
         }
     }
 
-    private void TryClickLeaveButton()
+    private unsafe void TryClickLeaveButton()
     {
         try
         {
             // Click Leave button using callback pattern: ContentsFinderMenu true 43
             log.Information("[Engine] Clicking Leave button on ContentsFinderMenu");
             GameHelpers.FireAddonCallback("ContentsFinderMenu", true, 43);
+            
+            // Fallback: if ContentsFinderMenu isn't visible, try /leaveDuty command
+            System.Threading.Tasks.Task.Delay(300).ContinueWith(_ => {
+                try
+                {
+                    // Check if ContentsFinderMenu is still not visible
+                    var addon = RaptureAtkUnitManager.Instance()->GetAddonByName("ContentsFinderMenu");
+                    if (addon == null || !addon->IsVisible)
+                    {
+                        log.Information("[Engine] ContentsFinderMenu still not visible, trying /leaveDuty command");
+                        commandManager.ProcessCommand("/leaveDuty");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    log.Error($"[Engine] Fallback leave command failed: {ex.Message}");
+                }
+            });
             
             // Handle the confirmation dialog
             System.Threading.Tasks.Task.Delay(500).ContinueWith(_ => {
