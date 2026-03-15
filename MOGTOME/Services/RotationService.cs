@@ -29,37 +29,21 @@ public class RotationService
         bossModIPC.DetectBossMod();
         state.WhichBossMod = bossModIPC.WhichBossMod;
 
-        // Configure AutoDuty based on rotation choice
-        if (config.BossModPreset != "none")
-        {
-            autoDutyIPC.SetUsingAlternativeRotation(true);
-        }
-        else
-        {
-            autoDutyIPC.SetUsingAlternativeRotation(false);
-        }
+        // We use RSR for rotations
+        autoDutyIPC.SetUsingAlternativeRotation(false);
 
-        log.Information($"[Rotation] Initialized: BossMod={state.WhichBossMod}, Preset={config.BossModPreset}");
+        log.Information($"[Rotation] Initialized: BossMod={state.WhichBossMod}, using RSR for rotation");
     }
 
     public void ForceRotation()
     {
-        bossModIPC.ForceRotation(config.BossModPreset);
-        if (config.EchoLevel < 2)
-            log.Debug($"[Rotation] Force rotation: preset={config.BossModPreset}");
+        // Always use RSR
+        bossModIPC.EnableRSR();
     }
 
     public void EnableRotation()
     {
-        if (config.BossModPreset != "none")
-        {
-            bossModIPC.SetPreset(config.BossModPreset);
-            bossModIPC.EnableAI();
-        }
-        else
-        {
-            bossModIPC.EnableRSR();
-        }
+        bossModIPC.EnableRSR();
     }
 
     public void DisableRotation()

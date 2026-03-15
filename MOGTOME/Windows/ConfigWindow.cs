@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using Dalamud.Interface.Windowing;
 using Dalamud.Bindings.ImGui;
+using Lumina.Excel.Sheets;
 
 namespace MOGTOME.Windows;
 
@@ -9,27 +12,116 @@ public class ConfigWindow : Window, IDisposable
 {
     private readonly Plugin plugin;
 
+    // Food/Pot search state
+    private string foodSearch = "";
+    private string potionSearch = "";
+    private List<(uint Id, string Name)> foodItems = new();
+    private List<(uint Id, string Name)> potionItems = new();
+    private bool itemsLoaded = false;
+
+    // Dependency check cache
+    private DateTime lastDepCheck = DateTime.MinValue;
+    private bool depRsr, depBmr, depVbm, depVnav, depTextAdv, depCutsceneSkip, depAutoDuty, depSimpleTweaks;
+    private bool depCustomRes, depChillframes;
+    private bool allDepsGreen = false;
+
+    // Plugin repo URLs for clipboard
+    private static readonly Dictionary<string, string> PluginRepos = new()
+    {
+        { "RSR", "https://raw.githubusercontent.com/FFXIV-CombatReborn/CombatRebornRepo/main/pluginmaster.json" },
+        { "BMR", "https://raw.githubusercontent.com/FFXIV-CombatReborn/CombatRebornRepo/main/pluginmaster.json" },
+        { "VBM", "https://puni.sh/api/repository/veyn" },
+        { "vnavmesh", "https://raw.githubusercontent.com/awgil/ffxiv_plugin_distribution/master/pluginmaster.json" },
+        { "TextAdvance", "https://raw.githubusercontent.com/NightmareXIV/MyDalamudPlugins/main/pluginmaster.json" },
+        { "AutoDuty", "https://raw.githubusercontent.com/ffxivcode/DalamudPlugins/main/pluginmaster.json" },
+        { "SimpleTweaks", "" },
+    };
+
     public ConfigWindow(Plugin plugin)
-        : base("MOGTOME - Configuration##MogtomeConfig",
-            ImGuiWindowFlags.NoScrollbar)
+        : base("MOGTOME - Configuration##MogtomeConfig", ImGuiWindowFlags.None)
     {
         this.plugin = plugin;
         SizeConstraints = new WindowSizeConstraints
         {
-            MinimumSize = new Vector2(420, 600),
-            MaximumSize = new Vector2(600, 900),
+            MinimumSize = new Vector2(500, 600),
+            MaximumSize = new Vector2(750, 1000),
         };
     }
 
     public void Dispose() { }
 
+    private void EnsureItemsLoaded()
+    {
+        if (itemsLoaded) return;
+        itemsLoaded = true;
+
+        try
+        {
+            var itemSheet = Plugin.DataManager.GetExcelSheet<Item>();
+            if (itemSheet == null) return;
+
+            foreach (var item in itemSheet)
+            {
+                if (item.RowId == 0) continue;
+                var name = item.Name.ToString();
+                if (string.IsNullOrEmpty(name)) continue;
+
+                var catId = item.ItemUICategory.RowId;
+
+                // Category 46 = Medicine (food/consumables that give Well Fed)
+                // Category 44 = Meal
+                if (catId == 44 || catId == 46)
+                {
+                    // Meals (food) = category 44
+                    if (catId == 44)
+                        foodItems.Add((item.RowId, name));
+                    // Medicine = category 46 (potions like Gemdraught)
+                    if (catId == 46)
+                        potionItems.Add((item.RowId, name));
+                }
+            }
+
+            Plugin.Log.Information($"[ConfigWindow] Loaded {foodItems.Count} food items, {potionItems.Count} potion items from Lumina");
+        }
+        catch (Exception ex)
+        {
+            Plugin.Log.Error($"[ConfigWindow] Failed to load items: {ex.Message}");
+        }
+    }
+
     public override void Draw()
     {
+        EnsureItemsLoaded();
         var config = plugin.Configuration;
         var changed = false;
 
+        // Check dependencies periodically
+        var now = DateTime.UtcNow;
+        if ((now - lastDepCheck).TotalSeconds > 5)
+        {
+            CheckDependencies();
+            lastDepCheck = now;
+        }
+
         if (ImGui.BeginTabBar("ConfigTabs"))
         {
+            // Dependency Check tab - force user here if not all green
+            var depColor = allDepsGreen ? new Vector4(0, 1, 0, 1) : new Vector4(1, 0, 0, 1);
+            ImGui.PushStyleColor(ImGuiCol.Text, depColor);
+            var depOpen = ImGui.BeginTabItem("Dependency Check");
+            ImGui.PopStyleColor();
+            if (depOpen)
+            {
+                DrawDependencyCheckTab(config);
+                ImGui.EndTabItem();
+            }
+
+            // Only show other tabs if deps are green
+            if (!allDepsGreen)
+            {
+                ImGui.BeginDisabled();
+            }
+
             if (ImGui.BeginTabItem("Party"))
             {
                 changed |= DrawPartyTab(config);
@@ -42,21 +134,9 @@ public class ConfigWindow : Window, IDisposable
                 ImGui.EndTabItem();
             }
 
-            if (ImGui.BeginTabItem("Repair"))
-            {
-                changed |= DrawRepairTab(config);
-                ImGui.EndTabItem();
-            }
-
             if (ImGui.BeginTabItem("Food & Pots"))
             {
                 changed |= DrawFoodPotTab(config);
-                ImGui.EndTabItem();
-            }
-
-            if (ImGui.BeginTabItem("Rotation"))
-            {
-                changed |= DrawRotationTab(config);
                 ImGui.EndTabItem();
             }
 
@@ -66,6 +146,11 @@ public class ConfigWindow : Window, IDisposable
                 ImGui.EndTabItem();
             }
 
+            if (!allDepsGreen)
+            {
+                ImGui.EndDisabled();
+            }
+
             ImGui.EndTabBar();
         }
 
@@ -73,6 +158,168 @@ public class ConfigWindow : Window, IDisposable
         {
             config.Save();
         }
+    }
+
+    private void CheckDependencies()
+    {
+        try
+        {
+            var installed = Plugin.PluginInterface.InstalledPlugins;
+            depRsr = false;
+            depBmr = false;
+            depVbm = false;
+            depVnav = false;
+            depTextAdv = false;
+            depCutsceneSkip = false;
+            depAutoDuty = false;
+            depSimpleTweaks = false;
+            depCustomRes = false;
+            depChillframes = false;
+
+            foreach (var p in installed)
+            {
+                if (!p.IsLoaded) continue;
+                switch (p.InternalName)
+                {
+                    case "RotationSolver": depRsr = true; break;
+                    case "BossModReborn": depBmr = true; break;
+                    case "veyn.BossMod": depVbm = true; break;
+                    case "vnavmesh": depVnav = true; break;
+                    case "TextAdvance": depTextAdv = true; break;
+                    case "CutsceneSkip": depCutsceneSkip = true; break;
+                    case "AutoDuty": depAutoDuty = true; break;
+                    case "SimpleTweaksPlugin": depSimpleTweaks = true; break;
+                    case "CustomResolution": depCustomRes = true; break;
+                    case "ChillFrames": depChillframes = true; break;
+                }
+            }
+
+            var pathOk = plugin.AutoDutyPathService.PathExists();
+            allDepsGreen = depRsr && (depBmr || depVbm) && !(depBmr && depVbm) && depVnav && depTextAdv && depCutsceneSkip && depAutoDuty && depSimpleTweaks && pathOk;
+        }
+        catch (Exception ex)
+        {
+            Plugin.Log.Error($"[ConfigWindow] Dependency check failed: {ex.Message}");
+        }
+    }
+
+    private void DrawDependencyCheckTab(Configuration config)
+    {
+        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Required Plugins");
+        if (!allDepsGreen)
+        {
+            ImGui.TextColored(new Vector4(1, 0, 0, 1), "All required dependencies must be green before other tabs are accessible.");
+        }
+        ImGui.Separator();
+
+        // RSR
+        DrawDepLine("RSR (RotationSolver)", depRsr, depRsr ? "Installed" : "NOT FOUND", "RSR");
+
+        // BMR / VBM
+        if (depBmr && depVbm)
+        {
+            DrawDepLineColor("BMR + VBM", new Vector4(1, 1, 0, 1), "WARNING: Both enabled! Disable one.");
+        }
+        else if (depBmr || depVbm)
+        {
+            var which = depBmr ? "BMR" : "VBM";
+            DrawDepLine($"BossMod ({which})", true, "Installed", depBmr ? "BMR" : "VBM");
+        }
+        else
+        {
+            DrawDepLine("BossMod (BMR or VBM)", false, "NOT FOUND - Need one", "BMR");
+        }
+
+        // VNAV
+        DrawDepLine("vnavmesh", depVnav, depVnav ? "Installed" : "NOT FOUND", "vnavmesh");
+
+        // TextAdvance
+        DrawDepLine("TextAdvance", depTextAdv, depTextAdv ? "Installed" : "NOT FOUND", "TextAdvance");
+
+        // CutsceneSkip
+        DrawDepLine("CutsceneSkip", depCutsceneSkip, depCutsceneSkip ? "Installed" : "NOT FOUND", null);
+
+        // AutoDuty
+        DrawDepLine("AutoDuty", depAutoDuty, depAutoDuty ? "Installed" : "NOT FOUND", "AutoDuty");
+
+        // SimpleTweaks
+        DrawDepLine("SimpleTweaks", depSimpleTweaks, depSimpleTweaks ? "Installed" : "NOT FOUND", "SimpleTweaks");
+
+        ImGui.Spacing();
+        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Optional Plugins");
+        ImGui.Separator();
+
+        DrawDepLineOptional("CustomResolution", depCustomRes);
+        DrawDepLineOptional("ChillFrames", depChillframes);
+
+        ImGui.Spacing();
+        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "AutoDuty Path");
+        ImGui.Separator();
+
+        var pathExists = plugin.AutoDutyPathService.PathExists();
+        ImGui.TextColored(
+            pathExists ? new Vector4(0, 1, 0, 1) : new Vector4(1, 0, 0, 1),
+            pathExists ? "Praetorium path: INSTALLED" : "Praetorium path: NOT FOUND");
+
+        if (!pathExists)
+        {
+            if (ImGui.Button("Install Praetorium Path"))
+            {
+                plugin.AutoDutyPathService.EnsurePathExists();
+            }
+            ImGui.TextDisabled("This copies the W2W path file to AutoDuty's paths folder.");
+        }
+
+        // Copy AutoDuty paths folder path
+        if (ImGui.Button("Copy AutoDuty Paths Folder"))
+        {
+            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            var adPath = System.IO.Path.Combine(appData, "XIVLauncher", "pluginConfigs", "AutoDuty", "paths");
+            ImGui.SetClipboardText(adPath);
+        }
+        ImGui.SameLine();
+        ImGui.TextDisabled("Copy path folder location to clipboard");
+
+        ImGui.Spacing();
+        ImGui.TextWrapped("To change AutoDuty's active path: Open AutoDuty > Paths tab > Select the Praetorium W2W path.");
+    }
+
+    private static void DrawDepLine(string name, bool ok, string detail, string? repoKey)
+    {
+        var color = ok ? new Vector4(0, 1, 0, 1) : new Vector4(1, 0, 0, 1);
+        var icon = ok ? "[OK]" : "[!!]";
+        ImGui.TextColored(color, $"{icon} {name}");
+        ImGui.SameLine();
+        ImGui.TextDisabled($"- {detail}");
+
+        if (!ok && repoKey != null && PluginRepos.TryGetValue(repoKey, out var repo) && !string.IsNullOrEmpty(repo))
+        {
+            ImGui.SameLine();
+            if (ImGui.SmallButton($"Copy Repo##{name}"))
+            {
+                ImGui.SetClipboardText(repo);
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip($"Copy repo URL to clipboard, then add to\nDalamud Settings > Experimental > Custom Plugin Repositories");
+            }
+        }
+    }
+
+    private static void DrawDepLineColor(string name, Vector4 color, string detail)
+    {
+        ImGui.TextColored(color, $"[!!] {name}");
+        ImGui.SameLine();
+        ImGui.TextColored(color, $"- {detail}");
+    }
+
+    private static void DrawDepLineOptional(string name, bool exists)
+    {
+        var color = exists ? new Vector4(0, 1, 0, 1) : new Vector4(0.5f, 0.5f, 0.5f, 1);
+        var icon = exists ? "[OK]" : "[--]";
+        ImGui.TextColored(color, $"{icon} {name}");
+        ImGui.SameLine();
+        ImGui.TextDisabled(exists ? "Installed" : "Not installed (optional)");
     }
 
     private bool DrawPartyTab(Configuration config)
@@ -97,6 +344,12 @@ public class ConfigWindow : Window, IDisposable
             changed = true;
         }
         ImGui.TextDisabled("Enable if you're in a cross-world party.");
+
+        ImGui.Spacing();
+        ImGui.TextColored(new Vector4(0.7f, 0.7f, 0.7f, 1.0f), "Party Behaviour:");
+        ImGui.TextWrapped("- Leader: Queues duties, initiates repair, controls flow");
+        ImGui.TextWrapped("- Non-leader: Waits for queue, repairs independently after 20s outside duty");
+        ImGui.TextWrapped("- Solo: Treated as leader automatically");
 
         return changed;
     }
@@ -149,7 +402,7 @@ public class ConfigWindow : Window, IDisposable
             config.QueueMethod = 0;
             changed = true;
         }
-        ImGui.TextDisabled("Pre-select the correct path in AutoDuty first!");
+        ImGui.TextDisabled("Uses AutoDuty to queue and run the duty.");
 
         if (ImGui.RadioButton("Callback Method", ref queueMethod, 1))
         {
@@ -158,39 +411,22 @@ public class ConfigWindow : Window, IDisposable
         }
         ImGui.TextDisabled("Use if AutoDuty queueing is broken.");
 
-        return changed;
-    }
-
-    private bool DrawRepairTab(Configuration config)
-    {
-        var changed = false;
-
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Repair Settings");
         ImGui.Separator();
 
-        var repairThreshold = config.RepairThreshold;
-        if (ImGui.SliderInt("Repair Threshold %", ref repairThreshold, -1, 99))
+        var testMode = config.TestingModeUnsynced;
+        if (ImGui.Checkbox("Testing Mode: Unsynced solo+ runs", ref testMode))
         {
-            config.RepairThreshold = repairThreshold;
+            config.TestingModeUnsynced = testMode;
             changed = true;
         }
-        ImGui.TextDisabled("-1 = Never repair. Leader repairs at this %. Party members repair at 99%.");
-
-        var repairMat = config.RepairMaterialId;
-        if (ImGui.InputInt("Repair Material ID", ref repairMat))
+        if (testMode)
         {
-            config.RepairMaterialId = repairMat;
-            changed = true;
+            ImGui.TextColored(new Vector4(1, 1, 0, 1), "WARNING: Duty will be queued Unsynced for testing purposes.");
         }
-        ImGui.TextDisabled("33916 = Grade 8 Dark Matter, 17837 = Grade 7, 10386 = Grade 6");
-
-        var autoEquip = config.AutoEquipRecommended;
-        if (ImGui.Checkbox("Auto-Equip Recommended Gear", ref autoEquip))
+        else
         {
-            config.AutoEquipRecommended = autoEquip;
-            changed = true;
+            ImGui.TextDisabled("Enable to run duties unsynced for testing.");
         }
-        ImGui.TextDisabled("Uses /equiprecommended + /updategearset. Disable if you manage BiS manually.");
 
         return changed;
     }
@@ -199,82 +435,134 @@ public class ConfigWindow : Window, IDisposable
     {
         var changed = false;
 
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Food Settings");
+        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Food");
         ImGui.Separator();
 
+        // Food dropdown with search
         var foodId = config.FoodItemId;
-        if (ImGui.InputInt("Food Item ID", ref foodId))
+        var foodName = config.FoodItemName;
+        if (DrawItemSearchDropdown("Food", ref foodSearch, foodItems, ref foodId, ref foodName))
         {
             config.FoodItemId = foodId;
-            changed = true;
-        }
-        ImGui.TextDisabled("0 = Disabled. Use SimpleTweaks ShowID to find item IDs.");
-
-        var foodName = config.FoodItemName;
-        if (ImGui.InputText("Food Name (display)", ref foodName, 128))
-        {
             config.FoodItemName = foodName;
             changed = true;
         }
-        ImGui.TextDisabled("For display only, doesn't affect functionality.");
+
+        if (config.FoodItemId > 0)
+        {
+            ImGui.Text($"  Selected: {config.FoodItemName} (ID: {config.FoodItemId})");
+            if (ImGui.SmallButton("Clear Food"))
+            {
+                config.FoodItemId = 0;
+                config.FoodItemName = "";
+                changed = true;
+            }
+        }
+        else
+        {
+            ImGui.TextDisabled("  No food selected. Food is optional.");
+        }
 
         ImGui.Spacing();
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Potion Settings");
+        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Potions");
         ImGui.Separator();
 
+        // Potion dropdown with search
         var potId = config.PotionItemId;
-        if (ImGui.InputInt("Potion Item ID", ref potId))
+        var potName = config.PotionItemName;
+        if (DrawItemSearchDropdown("Potion", ref potionSearch, potionItems, ref potId, ref potName))
         {
             config.PotionItemId = potId;
-            changed = true;
-        }
-        ImGui.TextDisabled("0 = Disabled. e.g. Gemdraught of Strength III");
-
-        var potName = config.PotionItemName;
-        if (ImGui.InputText("Potion Name (display)", ref potName, 128))
-        {
             config.PotionItemName = potName;
             changed = true;
         }
 
-        var potTarget = config.PotionTarget;
-        if (ImGui.RadioButton("Pot on Gaius", ref potTarget, 0))
+        if (config.PotionItemId > 0)
         {
-            config.PotionTarget = 0;
-            changed = true;
+            ImGui.Text($"  Selected: {config.PotionItemName} (ID: {config.PotionItemId})");
+            if (ImGui.SmallButton("Clear Potion"))
+            {
+                config.PotionItemId = 0;
+                config.PotionItemName = "";
+                changed = true;
+            }
+
+            ImGui.Spacing();
+            var potTarget = config.PotionTarget;
+            if (ImGui.RadioButton("Pot on Gaius", ref potTarget, 0))
+            {
+                config.PotionTarget = 0;
+                changed = true;
+            }
+            ImGui.SameLine();
+            if (ImGui.RadioButton("Pot on Phantom Gaius", ref potTarget, 1))
+            {
+                config.PotionTarget = 1;
+                changed = true;
+            }
         }
-        ImGui.SameLine();
-        if (ImGui.RadioButton("Pot on Phantom Gaius", ref potTarget, 1))
+        else
         {
-            config.PotionTarget = 1;
-            changed = true;
+            ImGui.TextDisabled("  No potion selected. Potions are optional.");
         }
 
         return changed;
     }
 
-    private bool DrawRotationTab(Configuration config)
+    private static bool DrawItemSearchDropdown(string label, ref string search, List<(uint Id, string Name)> items, ref int selectedId, ref string selectedName)
     {
         var changed = false;
+        var displayText = selectedId > 0 ? $"{selectedName} ({selectedId})" : $"Select {label}...";
 
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Rotation Plugin");
-        ImGui.Separator();
-
-        var preset = config.BossModPreset;
-        if (ImGui.InputText("BossMod AI Preset", ref preset, 128))
+        ImGui.SetNextItemWidth(400);
+        if (ImGui.BeginCombo($"##{label}Select", displayText))
         {
-            config.BossModPreset = preset;
-            changed = true;
-        }
-        ImGui.TextDisabled("Set to 'none' to use RSR instead of BossMod.");
-        ImGui.TextDisabled("Otherwise, enter the BossMod/VBM AI preset name.");
+            ImGui.SetNextItemWidth(380);
+            ImGui.InputText($"Search##{label}", ref search, 128);
 
-        ImGui.Spacing();
-        ImGui.TextColored(new Vector4(0.7f, 0.7f, 0.7f, 1.0f), "Rotation Plugin Notes:");
-        ImGui.TextWrapped("- BossMod: Raiding theme, decent DPS, no slowdowns");
-        ImGui.TextWrapped("- RSR: Easy to use, best DPS at level 50");
-        ImGui.TextWrapped("- WRATH: LARPing theme, may cause FPS drops");
-        ImGui.TextWrapped("- UCOMBO: Higher DPS than RSR, not ready for Prae");
+            ImGui.Separator();
+
+            var maxResults = 20;
+            var shown = 0;
+
+            if (!string.IsNullOrWhiteSpace(search) && search.Length >= 2)
+            {
+                var searchLower = search.ToLowerInvariant();
+                var isNumeric = uint.TryParse(search, out var searchId);
+
+                for (var i = 0; i < items.Count && shown < maxResults; i++)
+                {
+                    var item = items[i];
+                    bool match;
+                    if (isNumeric)
+                        match = item.Id.ToString().Contains(search);
+                    else
+                        match = item.Name.ToLowerInvariant().Contains(searchLower);
+
+                    if (!match) continue;
+                    shown++;
+
+                    var isSelected = (int)item.Id == selectedId;
+                    if (ImGui.Selectable($"{item.Name} ({item.Id})##{label}{i}", isSelected))
+                    {
+                        selectedId = (int)item.Id;
+                        selectedName = item.Name;
+                        changed = true;
+                    }
+                }
+
+                if (shown == 0)
+                {
+                    ImGui.TextDisabled("No results. Try a different search term.");
+                }
+            }
+            else
+            {
+                ImGui.TextDisabled("Type at least 2 characters to search...");
+            }
+
+            ImGui.EndCombo();
+        }
 
         return changed;
     }
@@ -283,26 +571,6 @@ public class ConfigWindow : Window, IDisposable
     {
         var changed = false;
 
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Timing");
-        ImGui.Separator();
-
-        var loopInterval = config.LoopInterval;
-        if (ImGui.SliderFloat("Loop Interval (sec)", ref loopInterval, 0.5f, 10.0f))
-        {
-            config.LoopInterval = loopInterval;
-            changed = true;
-        }
-        ImGui.TextDisabled("2.0 for leader, 5.0+ for party members. Lower = faster but more CPU.");
-
-        var echoLevel = config.EchoLevel;
-        if (ImGui.SliderInt("Echo Level", ref echoLevel, 0, 5))
-        {
-            config.EchoLevel = echoLevel;
-            changed = true;
-        }
-        ImGui.TextDisabled("5=Critical only, 4=Counters, 3=Important, 2=Progress, 1=More, 0=All");
-
-        ImGui.Spacing();
         ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Debug");
         ImGui.Separator();
 
@@ -312,7 +580,9 @@ public class ConfigWindow : Window, IDisposable
             config.DebugCounter = debugCounter;
             changed = true;
         }
-        ImGui.TextDisabled("Crash recovery offset. Set to last crash counter+1 to resume.");
+        ImGui.TextDisabled("Crash recovery offset. If you restarted mid-session, set this to your last\nknown run count to continue tracking correctly for today.");
+
+        ImGui.Spacing();
 
         var bailout = config.BailoutTimeout;
         if (ImGui.InputInt("Bailout Timeout (sec)", ref bailout))
@@ -320,24 +590,7 @@ public class ConfigWindow : Window, IDisposable
             config.BailoutTimeout = Math.Clamp(bailout, 60, 3600);
             changed = true;
         }
-        ImGui.TextDisabled("Leave duty after this many seconds. Default: 1200 (20 min).");
-
-        ImGui.Spacing();
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "AutoDuty Path");
-        ImGui.Separator();
-
-        var pathExists = plugin.AutoDutyPathService.PathExists();
-        ImGui.TextColored(
-            pathExists ? new Vector4(0, 1, 0, 1) : new Vector4(1, 0, 0, 1),
-            pathExists ? "Praetorium path: INSTALLED" : "Praetorium path: NOT FOUND");
-
-        if (!pathExists)
-        {
-            if (ImGui.Button("Install Praetorium Path"))
-            {
-                plugin.AutoDutyPathService.EnsurePathExists();
-            }
-        }
+        ImGui.TextDisabled("Leave duty if stuck for this many seconds. Default: 1200 (20 min).");
 
         return changed;
     }

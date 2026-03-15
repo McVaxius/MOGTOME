@@ -26,6 +26,7 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static IPlayerState PlayerState { get; private set; } = null!;
     [PluginService] internal static IPartyList PartyList { get; private set; } = null!;
     [PluginService] internal static IDutyState DutyStateService { get; private set; } = null!;
+    [PluginService] internal static IDataManager DataManager { get; private set; } = null!;
 
     private const string CommandName = "/mogtome";
     private const string AliasCommandName = "/mog";
@@ -56,6 +57,7 @@ public sealed class Plugin : IDalamudPlugin
     public readonly WindowSystem WindowSystem = new("MOGTOME");
     public ConfigWindow ConfigWindow { get; init; }
     public MainWindow MainWindow { get; init; }
+    public StatsWindow StatsWindow { get; init; }
 
     public Plugin()
     {
@@ -94,8 +96,10 @@ public sealed class Plugin : IDalamudPlugin
         // Windows
         ConfigWindow = new ConfigWindow(this);
         MainWindow = new MainWindow(this);
+        StatsWindow = new StatsWindow(this);
         WindowSystem.AddWindow(ConfigWindow);
         WindowSystem.AddWindow(MainWindow);
+        WindowSystem.AddWindow(StatsWindow);
 
         // Commands
         CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
@@ -135,6 +139,7 @@ public sealed class Plugin : IDalamudPlugin
         WindowSystem.RemoveAllWindows();
         ConfigWindow.Dispose();
         MainWindow.Dispose();
+        StatsWindow.Dispose();
 
         YesAlreadyIPC.Dispose();
         VNavIPC.Dispose();

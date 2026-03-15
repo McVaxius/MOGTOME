@@ -1,10 +1,10 @@
 [
   {
     "Author": "DhogGPT",
-    "Name": "MOGTOME",
-    "InternalName": "MOGTOME",
+    "Name": "M.O.G.T.O.M.E.",
     "Punchline": "Automated duty farming and mogtome acquisition.",
-    "Description": "M.O.G.T.O.M.E. automates duty farming (Praetorium/Porta Decumana) with party coordination, repair, food, potions, rotation management, and stuck detection. Use /mogtome or /mog to open.",
+    "Description": "M.O.G.T.O.M.E. automates duty farming (Praetorium/Porta Decumana) with party coordination, repair, food, potions, rotation management, and stuck detection. Use /mogtome or /mog to open. M.O.G.T.O.M.E. = Management Of Grand Tome Operations & Management Engine",
+    "InternalName": "MOGTOME",
     "ApplicableVersion": "any",
     "Tags": [
       "automation",
@@ -14,7 +14,7 @@
       "tomes"
     ],
     "RepoUrl": "https://github.com/McVaxius/MOGTOME",
-    "AssemblyVersion": "0.0.0.2",
+    "AssemblyVersion": "0.0.0.3",
     "DalamudApiLevel": 14,
     "IconUrl": "https://raw.githubusercontent.com/McVaxius/MOGTOME/refs/heads/master/MOGTOME/images/icon.png",
     "DownloadLinkInstall": "https://github.com/McVaxius/MOGTOME/releases/latest/download/latest.zip",

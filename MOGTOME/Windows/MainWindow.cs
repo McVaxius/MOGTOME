@@ -13,14 +13,13 @@ public class MainWindow : Window, IDisposable
     private readonly Plugin plugin;
 
     public MainWindow(Plugin plugin)
-        : base("MOGTOME - Status##MogtomeMain",
-            ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
+        : base("MOGTOME - Status##MogtomeMain", ImGuiWindowFlags.None)
     {
         this.plugin = plugin;
         SizeConstraints = new WindowSizeConstraints
         {
-            MinimumSize = new Vector2(350, 400),
-            MaximumSize = new Vector2(500, 600),
+            MinimumSize = new Vector2(380, 300),
+            MaximumSize = new Vector2(700, 1200),
         };
     }
 
@@ -35,7 +34,7 @@ public class MainWindow : Window, IDisposable
         // Header
         ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "M.O.G.T.O.M.E.");
         ImGui.SameLine();
-        ImGui.TextDisabled("v0.0.0.1");
+        ImGui.TextDisabled("v0.0.0.3");
         
         // Ko-fi donation button in upper right
         ImGui.SameLine(ImGui.GetWindowWidth() - 120);
@@ -69,35 +68,41 @@ public class MainWindow : Window, IDisposable
         ImGui.Text($"Status: {engine.StatusMessage}");
         ImGui.Separator();
 
-        // Controls
+        // Controls Row 1
         if (!engine.IsRunning)
         {
-            if (ImGui.Button("Start", new Vector2(100, 30)))
+            if (ImGui.Button("Start", new Vector2(80, 30)))
             {
                 engine.Start();
             }
         }
         else
         {
-            if (ImGui.Button("Stop", new Vector2(100, 30)))
+            if (ImGui.Button("Stop", new Vector2(80, 30)))
             {
                 engine.Stop();
             }
         }
 
         ImGui.SameLine();
-        if (ImGui.Button("Config", new Vector2(80, 30)))
+        if (ImGui.Button("Config", new Vector2(70, 30)))
         {
             plugin.ConfigWindow.Toggle();
         }
 
         ImGui.SameLine();
-        if (ImGui.Button("Reset Counter", new Vector2(120, 30)))
+        if (ImGui.Button("Reset", new Vector2(60, 30)))
         {
             state.DutyCounter = 0;
             state.DecumanaCounter = 0;
             config.DutyCounter = 0;
             config.Save();
+        }
+
+        ImGui.SameLine();
+        if (ImGui.Button("Stats", new Vector2(60, 30)))
+        {
+            plugin.StatsWindow.Toggle();
         }
 
         ImGui.Separator();
@@ -111,6 +116,9 @@ public class MainWindow : Window, IDisposable
             ? "The Praetorium"
             : "The Porta Decumana";
         ImGui.Text($"Current: {currentDuty}");
+
+        if (config.TestingModeUnsynced)
+            ImGui.TextColored(new Vector4(1.0f, 1.0f, 0.0f, 1.0f), "[TESTING MODE - Unsynced]");
 
         if (state.LastCompletionDuration > 0)
             ImGui.Text($"Last Clear: {state.LastCompletionDuration:F0}s");
@@ -129,34 +137,17 @@ public class MainWindow : Window, IDisposable
         ImGui.Unindent();
         ImGui.Separator();
 
-        // Rotation Info
-        ImGui.Text("Rotation");
-        ImGui.Indent();
-        ImGui.Text($"BossMod: {state.WhichBossMod}");
-        ImGui.Text($"Preset: {config.BossModPreset}");
-        ImGui.Unindent();
-        ImGui.Separator();
-
         // Subsystem Status
         ImGui.Text("Subsystems");
         ImGui.Indent();
 
-        DrawStatusLine("Repair", config.RepairThreshold >= 0, $"Threshold: {config.RepairThreshold}%");
         DrawStatusLine("Food", config.FoodItemId > 0, config.FoodItemName);
         DrawStatusLine("Potions", config.PotionItemId > 0 && state.PotionsAvailable, config.PotionItemName);
         DrawStatusLine("YesAlready", plugin.YesAlreadyIPC.IsPaused, "Paused by MOGTOME");
         DrawStatusLine("AutoDuty Path", plugin.AutoDutyPathService.PathExists(), "Praetorium W2W");
+        DrawStatusLine("Queue", true, config.QueueMethod == 0 ? "AutoDuty" : "Callback");
+        DrawStatusLine("Bailout", true, $"{config.BailoutTimeout}s");
 
-        ImGui.Unindent();
-        ImGui.Separator();
-
-        // Settings Summary
-        ImGui.Text("Settings");
-        ImGui.Indent();
-        ImGui.Text($"Loop Interval: {config.LoopInterval:F1}s");
-        ImGui.Text($"Echo Level: {config.EchoLevel}");
-        ImGui.Text($"Queue Method: {(config.QueueMethod == 0 ? "AutoDuty" : "Callback")}");
-        ImGui.Text($"Bailout: {config.BailoutTimeout}s");
         ImGui.Unindent();
     }
 

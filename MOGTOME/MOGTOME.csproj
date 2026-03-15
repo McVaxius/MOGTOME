@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0-windows</TargetFramework>
-    <Version>0.0.0.2</Version>
+    <Version>0.0.0.3</Version>
     <PackageProjectUrl>https://github.com/McVaxius/MOGTOME</PackageProjectUrl>
     <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
     <IsPackable>false</IsPackable>

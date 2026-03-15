@@ -17,7 +17,7 @@ public class DutyTrackerService
         this.state = state;
 
         state.DutyCounter = config.DutyCounter;
-        state.CalculateTimeouts(config.LoopInterval);
+        state.CalculateTimeouts(2.0f);
     }
 
     public void OnDutyStarted()
@@ -32,8 +32,7 @@ public class DutyTrackerService
         config.DutyCounter = state.DutyCounter;
         config.Save();
 
-        if (config.EchoLevel < 4)
-            log.Information($"[DutyTracker] Duty started -> counter: {state.DutyCounter}");
+        log.Information($"[DutyTracker] Duty started -> counter: {state.DutyCounter}");
     }
 
     public void OnDutyCompleted()

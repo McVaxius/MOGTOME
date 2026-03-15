@@ -72,8 +72,7 @@ public class FoodService
     {
         try
         {
-            if (config.EchoLevel < 4)
-                log.Information($"[Food] Consuming: {config.FoodItemName} (ID: {config.FoodItemId})");
+            log.Information($"[Food] Consuming: {config.FoodItemName} (ID: {config.FoodItemId})");
 
             // Use the food item via command
             Plugin.CommandManager.ProcessCommand($"/useitem {config.FoodItemId}");

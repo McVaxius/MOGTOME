@@ -118,14 +118,11 @@ public class BossHandlerService
         // Only for DPS (role 2 = melee, role 3 = ranged/caster)
         if (role != 2 && role != 3) return;
 
-        // Second Wind when < 50% HP (only with BossMod, not RSR)
-        if (config.BossModPreset != "none")
+        // Second Wind when < 50% HP
+        var hpPct = (float)player.CurrentHp / player.MaxHp * 100f;
+        if (hpPct < 50)
         {
-            var hpPct = (float)player.CurrentHp / player.MaxHp * 100f;
-            if (hpPct < 50)
-            {
-                commandManager.ProcessCommand("/ac \"Second Wind\"");
-            }
+            commandManager.ProcessCommand("/ac \"Second Wind\"");
         }
 
         var target = Plugin.TargetManager.Target as IBattleChara;
@@ -171,8 +168,7 @@ public class BossHandlerService
 
         try
         {
-            if (config.EchoLevel < 4)
-                log.Information($"[BossHandler] Using potion: {config.PotionItemName} on {targetName}");
+            log.Information($"[BossHandler] Using potion: {config.PotionItemName} on {targetName}");
 
             Plugin.CommandManager.ProcessCommand($"/useitem {config.PotionItemId}");
             lastPotionUse = now;

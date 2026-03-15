@@ -44,6 +44,8 @@ public class MogtomeEngine
 
     private DateTime lastTick = DateTime.MinValue;
     private int outsideDutyTicks = 0;
+    private const float LoopInterval = 2.0f;
+    private bool autoDutyStartedInDuty = false;
 
     public MogtomeEngine(
         IPluginLog log, Configuration config, DutyState state,
@@ -111,11 +113,22 @@ public class MogtomeEngine
             state.PotionsAvailable = config.PotionItemId > 0;
 
             // Calculate timeouts
-            state.CalculateTimeouts(config.LoopInterval);
+            state.CalculateTimeouts(LoopInterval);
+
+            // Configure unsynced mode if testing
+            if (config.TestingModeUnsynced)
+            {
+                autoDutyIPC.SetConfig("Unsynced", "true");
+                log.Information("[Engine] Testing mode: Unsynced enabled");
+            }
+            else
+            {
+                autoDutyIPC.SetConfig("Unsynced", "false");
+            }
 
             CurrentState = EngineState.WaitingOutsideDuty;
             StatusMessage = $"Running - Duty #{state.DutyCounter + 1}";
-            log.Information($"[Engine] Initialized. Leader={state.IsPartyLeader}, Counter={state.DutyCounter}, Preset={config.BossModPreset}");
+            log.Information($"[Engine] Initialized. Leader={state.IsPartyLeader}, Counter={state.DutyCounter}");
         }
         catch (Exception ex)
         {
@@ -151,9 +164,9 @@ public class MogtomeEngine
         if (!IsRunning) return;
         if (!clientState.IsLoggedIn) return;
 
-        // Throttle based on loop interval
+        // Throttle based on loop interval (hardcoded 2s)
         var now = DateTime.UtcNow;
-        if ((now - lastTick).TotalSeconds < config.LoopInterval) return;
+        if ((now - lastTick).TotalSeconds < LoopInterval) return;
         lastTick = now;
 
         try
@@ -216,16 +229,49 @@ public class MogtomeEngine
         state.IsInDuty = true;
         dutyTracker.OnDutyStarted();
         rotationService.ForceRotation();
+        autoDutyStartedInDuty = false;
         CurrentState = EngineState.InDuty;
         StatusMessage = $"In Duty - #{state.DutyCounter} ({dutyTracker.GetCurrentDutyName()})";
         log.Information($"[Engine] Entered duty #{state.DutyCounter}");
+
+        // Update stats
+        var isPrae = state.CurrentTerritory == DutyState.PraetoriumTerritoryId;
+        if (isPrae)
+            config.TotalPraes++;
+        else
+            config.TotalDecus++;
+        config.Save();
     }
 
     private void OnLeftDuty()
     {
+        // Update best/longest time stats
+        if (state.LastCompletionDuration > 0 && state.LastCompletionDuration < config.BailoutTimeout)
+        {
+            var partyComp = GetPartyComposition();
+            var dateStr = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm UTC");
+
+            if (state.LastCompletionDuration < config.BestTimeEver)
+            {
+                config.BestTimeEver = state.LastCompletionDuration;
+                config.BestTimeDate = dateStr;
+                config.BestTimeParty = partyComp;
+            }
+
+            if (state.LastCompletionDuration > config.LongestRunEver)
+            {
+                config.LongestRunEver = state.LastCompletionDuration;
+                config.LongestRunDate = dateStr;
+                config.LongestRunParty = partyComp;
+            }
+
+            config.Save();
+        }
+
         dutyTracker.OnDutyCompleted();
         state.IsInDuty = false;
         outsideDutyTicks = 0;
+        autoDutyStartedInDuty = false;
         CurrentState = EngineState.WaitingOutsideDuty;
         StatusMessage = $"Outside Duty - Next: #{state.DutyCounter + 1}";
         log.Information($"[Engine] Left duty. Next: #{state.DutyCounter + 1}");
@@ -265,7 +311,7 @@ public class MogtomeEngine
         }
 
         // Non-leader repair check after 20 seconds outside duty
-        if (!state.IsPartyLeader && outsideDutyTicks > (int)(20 / config.LoopInterval))
+        if (!state.IsPartyLeader && outsideDutyTicks > (int)(20 / LoopInterval))
         {
             if (repairService.NeedsRepair())
             {
@@ -286,6 +332,14 @@ public class MogtomeEngine
 
     private void UpdateInDuty()
     {
+        // Start AutoDuty if not already started (handles the case where we're already in duty)
+        if (!autoDutyStartedInDuty)
+        {
+            autoDutyStartedInDuty = true;
+            log.Information("[Engine] Starting AutoDuty inside duty");
+            autoDutyIPC.StartDuty();
+        }
+
         // Boss combat handler
         bossHandler.Update();
 
@@ -294,12 +348,6 @@ public class MogtomeEngine
 
         // Force rotation refresh periodically
         rotationService.ForceRotation();
-
-        // Repair check inside duty (disable autoqueue)
-        if (repairService.NeedsRepair() && config.RepairThreshold > -1)
-        {
-            dutyQueue.DisableAutoQueueForRepair();
-        }
 
         StatusMessage = $"In Duty #{state.DutyCounter} - {state.TimeInDuty:F0}s";
     }
@@ -332,6 +380,28 @@ public class MogtomeEngine
             {
                 log.Error($"[Engine] Quit command failed: {ex.Message}");
             }
+        }
+    }
+
+    private string GetPartyComposition()
+    {
+        try
+        {
+            var party = Plugin.PartyList;
+            if (party.Length == 0) return "Solo";
+
+            var jobs = new System.Collections.Generic.List<string>();
+            for (var i = 0; i < party.Length; i++)
+            {
+                var member = party[i];
+                if (member != null)
+                    jobs.Add(member.ClassJob.Value.Abbreviation.ToString());
+            }
+            return string.Join(" ", jobs);
+        }
+        catch
+        {
+            return "Unknown";
         }
     }
 

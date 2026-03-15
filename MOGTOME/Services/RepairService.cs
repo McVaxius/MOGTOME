@@ -50,12 +50,10 @@ public class RepairService
 
     public void TrySelfRepair()
     {
-        if (config.RepairMaterialId <= 0) return;
-
         try
         {
-            log.Information("[Repair] Attempting self-repair");
-            commandManager.ProcessCommand("/generalaction \"Repair\"");
+            log.Information("[Repair] Requesting repair via AutoDuty");
+            commandManager.ProcessCommand("/ad repair");
         }
         catch (Exception ex)
         {
@@ -68,7 +66,6 @@ public class RepairService
         try
         {
             log.Information("[Repair] Attempting NPC repair via AutoDuty");
-            // AutoDuty handles NPC repair when configured
             commandManager.ProcessCommand("/ad repair");
         }
         catch (Exception ex)
@@ -79,17 +76,6 @@ public class RepairService
 
     public void AutoEquipIfEnabled()
     {
-        if (!config.AutoEquipRecommended) return;
-
-        try
-        {
-            commandManager.ProcessCommand("/equiprecommended");
-            commandManager.ProcessCommand("/updategearset");
-            log.Debug("[Repair] Auto-equipped recommended gear");
-        }
-        catch (Exception ex)
-        {
-            log.Error($"[Repair] Auto-equip failed: {ex.Message}");
-        }
+        // No-op: AutoDuty handles equipment management
     }
 }
