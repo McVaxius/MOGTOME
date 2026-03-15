@@ -304,6 +304,7 @@ public class MogtomeEngine
             var partyComp = GetPartyComposition();
             var dateStr = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm UTC");
 
+            // Update global stats (kept for compatibility)
             if (state.LastCompletionDuration < config.BestTimeEver)
             {
                 config.BestTimeEver = state.LastCompletionDuration;
@@ -318,6 +319,9 @@ public class MogtomeEngine
                 config.LongestRunParty = partyComp;
             }
 
+            // Update duty-specific stats
+            UpdateDutyStats(partyComp, dateStr);
+
             config.Save();
         }
         else if (config.TestingModeUnsynced)
@@ -330,6 +334,11 @@ public class MogtomeEngine
         outsideDutyTicks = 0;
         autoDutyStartedInDuty = false;
         dutyCompleted = false;
+        
+        // Reset requeue state when successfully entering duty
+        requeueInProgress = false;
+        requeueState = RequeueState.Idle;
+        
         CurrentState = EngineState.WaitingOutsideDuty;
         StatusMessage = $"Outside Duty - Next: #{state.DutyCounter + 1}";
         log.Information($"[Engine] Left duty. Next: #{state.DutyCounter + 1}");
@@ -354,6 +363,48 @@ public class MogtomeEngine
             log.Information($"[Engine] All runs completed - stopping");
             HandleQuit();
         }
+    }
+
+    private void UpdateDutyStats(string partyComp, string dateStr)
+    {
+        var isPrae = state.CurrentTerritory == DutyState.PraetoriumTerritoryId;
+        
+        if (isPrae)
+        {
+            // Praetorium stats
+            if (state.LastCompletionDuration < config.PraeBestTime)
+            {
+                config.PraeBestTime = state.LastCompletionDuration;
+                config.PraeBestTimeDate = dateStr;
+                config.PraeBestTimeParty = partyComp;
+            }
+
+            if (state.LastCompletionDuration > config.PraeLongestRun)
+            {
+                config.PraeLongestRun = state.LastCompletionDuration;
+                config.PraeLongestRunDate = dateStr;
+                config.PraeLongestRunParty = partyComp;
+            }
+        }
+        else
+        {
+            // Decumana stats
+            if (state.LastCompletionDuration < config.DecuBestTime)
+            {
+                config.DecuBestTime = state.LastCompletionDuration;
+                config.DecuBestTimeDate = dateStr;
+                config.DecuBestTimeParty = partyComp;
+            }
+
+            if (state.LastCompletionDuration > config.DecuLongestRun)
+            {
+                config.DecuLongestRun = state.LastCompletionDuration;
+                config.DecuLongestRunDate = dateStr;
+                config.DecuLongestRunParty = partyComp;
+            }
+        }
+
+        log.Information($"[Engine] Updated {(isPrae ? "Praetorium" : "Decumana")} stats: {state.LastCompletionDuration:F0}s");
     }
 
     private void UpdateOutsideDuty()

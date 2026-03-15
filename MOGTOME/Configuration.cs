@@ -40,6 +40,7 @@ public class Configuration : IPluginConfiguration
     public bool AutoDutyPathInstalled { get; set; } = false;
 
     // --- Stats ---
+    // Global stats (kept for compatibility)
     public float BestTimeEver { get; set; } = float.MaxValue;
     public string BestTimeDate { get; set; } = "";
     public string BestTimeParty { get; set; } = "";
@@ -52,8 +53,38 @@ public class Configuration : IPluginConfiguration
     public int TotalDeathsSelf { get; set; } = 0;
     public int TotalDeathsOthers { get; set; } = 0;
     public int TotalDeathsAll { get; set; } = 0;
+    
+    // Duty-specific stats
+    public float PraeBestTime { get; set; } = float.MaxValue;
+    public string PraeBestTimeDate { get; set; } = "";
+    public string PraeBestTimeParty { get; set; } = "";
+    public float PraeLongestRun { get; set; } = 0;
+    public string PraeLongestRunDate { get; set; } = "";
+    public string PraeLongestRunParty { get; set; } = "";
+    public int PraeMostDeathsSelf { get; set; } = 0;
+    public int PraeMostDeathsOthers { get; set; } = 0;
+    public int PraeMostDeathsAll { get; set; } = 0;
+    public int PraeTotalDeathsSelf { get; set; } = 0;
+    public int PraeTotalDeathsOthers { get; set; } = 0;
+    public int PraeTotalDeathsAll { get; set; } = 0;
     public int TotalPraes { get; set; } = 0;
+    public int PraeMogtomesEarned { get; set; } = 0;
+    
+    public float DecuBestTime { get; set; } = float.MaxValue;
+    public string DecuBestTimeDate { get; set; } = "";
+    public string DecuBestTimeParty { get; set; } = "";
+    public float DecuLongestRun { get; set; } = 0;
+    public string DecuLongestRunDate { get; set; } = "";
+    public string DecuLongestRunParty { get; set; } = "";
+    public int DecuMostDeathsSelf { get; set; } = 0;
+    public int DecuMostDeathsOthers { get; set; } = 0;
+    public int DecuMostDeathsAll { get; set; } = 0;
+    public int DecuTotalDeathsSelf { get; set; } = 0;
+    public int DecuTotalDeathsOthers { get; set; } = 0;
+    public int DecuTotalDeathsAll { get; set; } = 0;
     public int TotalDecus { get; set; } = 0;
+    public int DecuMogtomesEarned { get; set; } = 0;
+    
     public int TotalMogtomesEarned { get; set; } = 0;
 
     // --- UI Settings ---

@@ -28,62 +28,45 @@ public class StatsWindow : Window, IDisposable
         var config = plugin.Configuration;
         var state = plugin.State;
 
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Run Statistics");
+        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Duty Statistics");
         ImGui.Separator();
 
-        // Best Time Ever
-        if (ImGui.CollapsingHeader("Best Time Ever", ImGuiTreeNodeFlags.DefaultOpen))
+        // Side-by-side stats layout
+        if (ImGui.BeginTable("StatsTable", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg))
         {
-            if (config.BestTimeEver < float.MaxValue)
-            {
-                ImGui.Text($"  Time: {FormatTime(config.BestTimeEver)}");
-                ImGui.Text($"  Date: {config.BestTimeDate}");
-                ImGui.Text($"  Party: {config.BestTimeParty}");
-            }
-            else
-            {
-                ImGui.TextDisabled("  No completed runs yet.");
-            }
+            ImGui.TableSetupColumn("Praetorium", ImGuiTableColumnFlags.WidthStretch, 0.5f);
+            ImGui.TableSetupColumn("Porta Decumana", ImGuiTableColumnFlags.WidthStretch, 0.5f);
+            ImGui.TableHeadersRow();
+
+            // Best Time
+            ImGui.TableNextRow();
+            ImGui.TableSetColumnIndex(0);
+            DrawDutyStats("Praetorium", 
+                config.PraeBestTime, config.PraeBestTimeDate, config.PraeBestTimeParty,
+                config.PraeLongestRun, config.PraeLongestRunDate, config.PraeLongestRunParty,
+                config.PraeMostDeathsSelf, config.PraeMostDeathsOthers, config.PraeMostDeathsAll,
+                config.PraeTotalDeathsSelf, config.PraeTotalDeathsOthers, config.PraeTotalDeathsAll,
+                config.TotalPraes, config.PraeMogtomesEarned);
+            
+            ImGui.TableSetColumnIndex(1);
+            DrawDutyStats("Porta Decumana",
+                config.DecuBestTime, config.DecuBestTimeDate, config.DecuBestTimeParty,
+                config.DecuLongestRun, config.DecuLongestRunDate, config.DecuLongestRunParty,
+                config.DecuMostDeathsSelf, config.DecuMostDeathsOthers, config.DecuMostDeathsAll,
+                config.DecuTotalDeathsSelf, config.DecuTotalDeathsOthers, config.DecuTotalDeathsAll,
+                config.TotalDecus, config.DecuMogtomesEarned);
+
+            ImGui.EndTable();
         }
 
-        // Longest Run (non-bailout)
-        if (ImGui.CollapsingHeader("Longest Run (non-bailout)", ImGuiTreeNodeFlags.DefaultOpen))
-        {
-            if (config.LongestRunEver > 0)
-            {
-                ImGui.Text($"  Time: {FormatTime(config.LongestRunEver)}");
-                ImGui.Text($"  Date: {config.LongestRunDate}");
-                ImGui.Text($"  Party: {config.LongestRunParty}");
-            }
-            else
-            {
-                ImGui.TextDisabled("  No completed runs yet.");
-            }
-        }
+        ImGui.Spacing();
 
-        // Death Stats
-        if (ImGui.CollapsingHeader("Deaths", ImGuiTreeNodeFlags.DefaultOpen))
+        // Combined Stats
+        if (ImGui.CollapsingHeader("Combined Stats", ImGuiTreeNodeFlags.DefaultOpen))
         {
-            ImGui.Text("Most Deaths in a Single Run:");
-            ImGui.Text($"  Self: {config.MostDeathsSelf}  |  Others: {config.MostDeathsOthers}  |  All: {config.MostDeathsAll}");
-            ImGui.Spacing();
-            ImGui.Text("Total Deaths (All Time):");
-            ImGui.Text($"  Self: {config.TotalDeathsSelf}  |  Others: {config.TotalDeathsOthers}  |  All: {config.TotalDeathsAll}");
-        }
-
-        // Run Counts
-        if (ImGui.CollapsingHeader("Run Counts", ImGuiTreeNodeFlags.DefaultOpen))
-        {
-            ImGui.Text($"  Praetoriums: {config.TotalPraes}");
-            ImGui.Text($"  Decumanas: {config.TotalDecus}");
-            ImGui.Text($"  Total: {config.TotalPraes + config.TotalDecus}");
-        }
-
-        // Mogtomes
-        if (ImGui.CollapsingHeader("Mogtomes", ImGuiTreeNodeFlags.DefaultOpen))
-        {
-            ImGui.Text($"  Total Earned: {config.TotalMogtomesEarned}");
-            ImGui.TextDisabled("  (Expanded later with more mogtome types)");
+            ImGui.Text($"Total Runs: {config.TotalPraes + config.TotalDecus}");
+            ImGui.Text($"Total Mogtomes: {config.TotalMogtomesEarned}");
+            ImGui.Text($"Current Daily Counter: {state.DutyCounter}");
         }
 
         ImGui.Separator();
@@ -117,22 +100,7 @@ public class StatsWindow : Window, IDisposable
             ImGui.Text("Are you sure you want to reset ALL stats?");
             if (ImGui.Button("Yes, Reset"))
             {
-                config.BestTimeEver = float.MaxValue;
-                config.BestTimeDate = "";
-                config.BestTimeParty = "";
-                config.LongestRunEver = 0;
-                config.LongestRunDate = "";
-                config.LongestRunParty = "";
-                config.MostDeathsSelf = 0;
-                config.MostDeathsOthers = 0;
-                config.MostDeathsAll = 0;
-                config.TotalDeathsSelf = 0;
-                config.TotalDeathsOthers = 0;
-                config.TotalDeathsAll = 0;
-                config.TotalPraes = 0;
-                config.TotalDecus = 0;
-                config.TotalMogtomesEarned = 0;
-                config.Save();
+                ResetAllStats(config);
                 ImGui.CloseCurrentPopup();
             }
             ImGui.SameLine();
@@ -142,6 +110,110 @@ public class StatsWindow : Window, IDisposable
             }
             ImGui.EndPopup();
         }
+    }
+
+    private void DrawDutyStats(string dutyName, 
+        float bestTime, string bestTimeDate, string bestTimeParty,
+        float longestRun, string longestRunDate, string longestRunParty,
+        int mostDeathsSelf, int mostDeathsOthers, int mostDeathsAll,
+        int totalDeathsSelf, int totalDeathsOthers, int totalDeathsAll,
+        int totalRuns, int mogtomesEarned)
+    {
+        ImGui.TextColored(new Vector4(0.0f, 0.84f, 1.0f, 1.0f), dutyName);
+        ImGui.Separator();
+        
+        // Best Time
+        if (bestTime < float.MaxValue)
+        {
+            ImGui.Text($"Best: {FormatTime(bestTime)}");
+            ImGui.TextDisabled($"Date: {bestTimeDate}");
+            ImGui.TextDisabled($"Party: {bestTimeParty}");
+        }
+        else
+        {
+            ImGui.TextDisabled("Best: No runs yet");
+        }
+
+        ImGui.Spacing();
+
+        // Longest Run
+        if (longestRun > 0)
+        {
+            ImGui.Text($"Longest: {FormatTime(longestRun)}");
+            ImGui.TextDisabled($"Date: {longestRunDate}");
+            ImGui.TextDisabled($"Party: {longestRunParty}");
+        }
+        else
+        {
+            ImGui.TextDisabled("Longest: No runs yet");
+        }
+
+        ImGui.Spacing();
+
+        // Deaths
+        ImGui.Text("Deaths (single run):");
+        ImGui.TextDisabled($"Self: {mostDeathsSelf} | Others: {mostDeathsOthers} | All: {mostDeathsAll}");
+        
+        ImGui.Text("Deaths (total):");
+        ImGui.TextDisabled($"Self: {totalDeathsSelf} | Others: {totalDeathsOthers} | All: {totalDeathsAll}");
+
+        ImGui.Spacing();
+
+        // Counts
+        ImGui.Text($"Runs: {totalRuns}");
+        ImGui.Text($"Mogtomes: {mogtomesEarned}");
+    }
+
+    private void ResetAllStats(Configuration config)
+    {
+        // Global stats
+        config.BestTimeEver = float.MaxValue;
+        config.BestTimeDate = "";
+        config.BestTimeParty = "";
+        config.LongestRunEver = 0;
+        config.LongestRunDate = "";
+        config.LongestRunParty = "";
+        config.MostDeathsSelf = 0;
+        config.MostDeathsOthers = 0;
+        config.MostDeathsAll = 0;
+        config.TotalDeathsSelf = 0;
+        config.TotalDeathsOthers = 0;
+        config.TotalDeathsAll = 0;
+        
+        // Praetorium stats
+        config.PraeBestTime = float.MaxValue;
+        config.PraeBestTimeDate = "";
+        config.PraeBestTimeParty = "";
+        config.PraeLongestRun = 0;
+        config.PraeLongestRunDate = "";
+        config.PraeLongestRunParty = "";
+        config.PraeMostDeathsSelf = 0;
+        config.PraeMostDeathsOthers = 0;
+        config.PraeMostDeathsAll = 0;
+        config.PraeTotalDeathsSelf = 0;
+        config.PraeTotalDeathsOthers = 0;
+        config.PraeTotalDeathsAll = 0;
+        config.TotalPraes = 0;
+        config.PraeMogtomesEarned = 0;
+        
+        // Decumana stats
+        config.DecuBestTime = float.MaxValue;
+        config.DecuBestTimeDate = "";
+        config.DecuBestTimeParty = "";
+        config.DecuLongestRun = 0;
+        config.DecuLongestRunDate = "";
+        config.DecuLongestRunParty = "";
+        config.DecuMostDeathsSelf = 0;
+        config.DecuMostDeathsOthers = 0;
+        config.DecuMostDeathsAll = 0;
+        config.DecuTotalDeathsSelf = 0;
+        config.DecuTotalDeathsOthers = 0;
+        config.DecuTotalDeathsAll = 0;
+        config.TotalDecus = 0;
+        config.DecuMogtomesEarned = 0;
+        
+        config.TotalMogtomesEarned = 0;
+        config.Save();
     }
 
     private void DrawPartyTable(bool krangle)
