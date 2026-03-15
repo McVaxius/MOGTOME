@@ -320,15 +320,29 @@ public class MogtomeEngine
                 System.Threading.Tasks.Task.Delay(2000).ContinueWith(_ => {
                     try
                     {
-                        var isPrae = dutyTracker.ShouldRunPraetorium();
-                        CurrentState = EngineState.Queueing;
-                        StatusMessage = $"Auto-queueing: {dutyTracker.GetCurrentDutyName()}";
-                        log.Information($"[Engine] Auto-queueing for next run: {dutyTracker.GetCurrentDutyName()}");
-                        dutyQueue.TryQueue(isPrae);
+                        // Stop AutoDuty from previous duty
+                        log.Information("[Engine] Stopping AutoDuty from previous duty");
+                        autoDutyIPC.StopDuty();
+                        
+                        // Wait for AutoDuty to fully stop
+                        System.Threading.Tasks.Task.Delay(1000).ContinueWith(_ => {
+                            try
+                            {
+                                var isPrae = dutyTracker.ShouldRunPraetorium();
+                                CurrentState = EngineState.Queueing;
+                                StatusMessage = $"Auto-queueing: {dutyTracker.GetCurrentDutyName()}";
+                                log.Information($"[Engine] Auto-queueing for next run: {dutyTracker.GetCurrentDutyName()}");
+                                dutyQueue.TryQueue(isPrae);
+                            }
+                            catch (Exception ex)
+                            {
+                                log.Error($"[Engine] Auto-queue failed: {ex.Message}");
+                            }
+                        });
                     }
                     catch (Exception ex)
                     {
-                        log.Error($"[Engine] Auto-queue failed: {ex.Message}");
+                        log.Error($"[Engine] AutoDuty stop failed: {ex.Message}");
                     }
                 });
             }
