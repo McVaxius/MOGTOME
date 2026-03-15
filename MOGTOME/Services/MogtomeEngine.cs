@@ -488,7 +488,7 @@ public class MogtomeEngine
         log.Information($"[Engine] Opening duty panel to leave");
 
         // Open duty panel to access Leave Duty button
-        commandManager.ProcessCommand("/dutyfinder");
+        GameHelpers.SendCommand("/dutyfinder");
 
         // Wait a moment for panel to open, then try to click Leave Duty
         System.Threading.Tasks.Task.Delay(500).ContinueWith(_ => {

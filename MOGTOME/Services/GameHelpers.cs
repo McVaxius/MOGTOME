@@ -1,8 +1,10 @@
 using System;
+using System.Text;
 using Dalamud.Game.ClientState.Objects.Types;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using GameObject = FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject;
@@ -124,6 +126,40 @@ public static class GameHelpers
         {
             Plugin.Log.Error($"[INTERACT] Failed to interact with {obj.Name.TextValue}: {ex.Message}");
             return false;
+        }
+    }
+
+    /// <summary>
+    /// Send chat command (like /dutyfinder) via UIModule.
+    /// First tries CommandManager, falls back to ProcessChatBoxEntry.
+    /// </summary>
+    public static unsafe void SendCommand(string command)
+    {
+        try
+        {
+            Plugin.Log.Debug($"[CommandHelper] Sending command: {command}");
+            
+            if (Plugin.CommandManager.ProcessCommand(command))
+            {
+                Plugin.Log.Debug($"[CommandHelper] CommandManager processed: {command}");
+                return;
+            }
+
+            var uiModule = FFXIVClientStructs.FFXIV.Client.UI.UIModule.Instance();
+            if (uiModule == null)
+            {
+                Plugin.Log.Error("UIModule is null, cannot send command");
+                return;
+            }
+
+            var bytes = Encoding.UTF8.GetBytes(command);
+            var utf8String = Utf8String.FromSequence(bytes);
+            uiModule->ProcessChatBoxEntry(utf8String, nint.Zero);
+            Plugin.Log.Debug($"[CommandHelper] Sent via UIModule: {command}");
+        }
+        catch (Exception ex)
+        {
+            Plugin.Log.Error($"Command failed [{command}]: {ex.Message}");
         }
     }
 }
