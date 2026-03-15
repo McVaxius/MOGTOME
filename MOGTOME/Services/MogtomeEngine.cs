@@ -53,7 +53,6 @@ public class MogtomeEngine
     // Duty exit tracking
     private bool dutyCompleted = false;
     private DateTime dutyCompletedTime;
-    private bool dutyLeaveIssued = false;
     private DateTime lastLeaveAttemptTime = DateTime.MinValue;
     private int leaveAttemptCount = 0;
     private const int DutyExitDelaySeconds = 10;
@@ -101,7 +100,6 @@ public class MogtomeEngine
         if (!IsRunning) return;
         dutyCompleted = true;
         dutyCompletedTime = DateTime.UtcNow;
-        dutyLeaveIssued = false;
         log.Information($"[Engine] Duty completed event in territory {territoryId} - will leave in {DutyExitDelaySeconds}s");
     }
 
@@ -259,7 +257,6 @@ public class MogtomeEngine
         rotationService.ForceRotation();
         autoDutyStartedInDuty = false;
         dutyCompleted = false;
-        dutyLeaveIssued = false;
         CurrentState = EngineState.InDuty;
         StatusMessage = $"In Duty - #{state.DutyCounter} ({dutyTracker.GetCurrentDutyName()})";
         log.Information($"[Engine] Entered duty #{state.DutyCounter}");
@@ -307,7 +304,6 @@ public class MogtomeEngine
         outsideDutyTicks = 0;
         autoDutyStartedInDuty = false;
         dutyCompleted = false;
-        dutyLeaveIssued = false;
         CurrentState = EngineState.WaitingOutsideDuty;
         StatusMessage = $"Outside Duty - Next: #{state.DutyCounter + 1}";
         log.Information($"[Engine] Left duty. Next: #{state.DutyCounter + 1}");
@@ -412,27 +408,25 @@ public class MogtomeEngine
         }
 
         // Duty completion exit logic
-        if (dutyCompleted && !dutyLeaveIssued)
+        if (dutyCompleted)
         {
             // Cutscene protection: don't leave during cutscenes
             if (condition[ConditionFlag.OccupiedInCutSceneEvent] || condition[ConditionFlag.WatchingCutscene])
             {
-                StatusMessage = $"Duty done - waiting for cutscene...";
+                log.Information("[Engine] Delaying leave - in cutscene");
                 return;
             }
 
             var elapsed = (DateTime.UtcNow - dutyCompletedTime).TotalSeconds;
             if (elapsed >= DutyExitDelaySeconds)
             {
-                log.Information($"[Engine] Leaving duty after {elapsed:F0}s post-completion");
-                dutyLeaveIssued = true;
+                // Keep trying to leave until territory changes
                 LeaveDuty();
                 return;
             }
             else
             {
-                StatusMessage = $"Duty done - leaving in {(DutyExitDelaySeconds - elapsed):F0}s...";
-                return;
+                StatusMessage = $"Waiting to leave duty ({DutyExitDelaySeconds - elapsed:F0}s)";
             }
         }
 
