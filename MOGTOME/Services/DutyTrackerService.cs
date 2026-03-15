@@ -32,17 +32,30 @@ public class DutyTrackerService
 
     public void OnDutyStarted()
     {
-        state.DutyCounter++;
+        var isPrae = state.CurrentTerritory == DutyState.PraetoriumTerritoryId;
+        
+        // Only increment duty counter for Praetorium runs
+        if (isPrae)
+        {
+            state.DutyCounter++;
+            config.DutyCounter = state.DutyCounter;
+        }
+        
+        // Track daily Decumana runs
+        if (!isPrae)
+        {
+            state.DecumanaCounter++;
+        }
+        
         state.HasEnteredDuty = true;
         state.DutyStartTime = DateTime.UtcNow;
         state.MaxContentTime = 0;
         state.TimeInDuty = 0;
         state.StuckTickCount = 0;
 
-        config.DutyCounter = state.DutyCounter;
         config.Save();
 
-        log.Information($"[DutyTracker] Duty started -> counter: {state.DutyCounter}");
+        log.Information($"[DutyTracker] {(isPrae ? "Praetorium" : "Decumana")} started -> Prae counter: {state.DutyCounter}, Daily Decu: {state.DecumanaCounter}");
     }
 
     public void OnDutyCompleted()
@@ -75,14 +88,37 @@ public class DutyTrackerService
     public bool CheckDailyReset()
     {
         var now = DateTime.UtcNow;
-        // Daily reset is at 7 AM UTC (3 AM EST / 12 AM PST)
-        if (now.Hour == 7 && state.DutyCounter > 20)
+        var lastReset = state.LastDailyReset ?? DateTime.MinValue;
+        
+        // Check if it's a new day (7 AM UTC reset time)
+        var resetTimeToday = new DateTime(now.Year, now.Month, now.Day, 7, 0, 0, DateTimeKind.Utc);
+        if (now < resetTimeToday)
         {
+            resetTimeToday = resetTimeToday.AddDays(-1); // Yesterday's reset if before 7 AM today
+        }
+        
+        if (lastReset < resetTimeToday)
+        {
+            // Reset daily counters
+            var oldPrae = state.DutyCounter;
+            var oldDecu = state.DecumanaCounter;
+            
             state.DutyCounter = 0;
             state.DecumanaCounter = 0;
+            state.LastDailyReset = now;
+            
             config.DutyCounter = 0;
+            
+            // Reset daily Decumana stats
+            config.DailyDecuRuns = 0;
+            config.DailyDecuBestTime = float.MaxValue;
+            config.DailyDecuLongestRun = 0;
+            config.DailyDecuMogtomesEarned = 0;
+            config.LastDailyDecuReset = now;
+            
             config.Save();
-            log.Information("[DutyTracker] Daily reset detected! Counter reset to 0");
+            
+            log.Information($"[DutyTracker] Daily reset! Prae: {oldPrae}→0, Daily Decu: {oldDecu}→0");
             return true;
         }
         return false;

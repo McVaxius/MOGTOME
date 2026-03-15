@@ -85,6 +85,13 @@ public class Configuration : IPluginConfiguration
     public int TotalDecus { get; set; } = 0;
     public int DecuMogtomesEarned { get; set; } = 0;
     
+    // Daily Decumana stats
+    public int DailyDecuRuns { get; set; } = 0;
+    public float DailyDecuBestTime { get; set; } = float.MaxValue;
+    public float DailyDecuLongestRun { get; set; } = 0;
+    public int DailyDecuMogtomesEarned { get; set; } = 0;
+    public DateTime? LastDailyDecuReset { get; set; } = null;
+    
     public int TotalMogtomesEarned { get; set; } = 0;
 
     // --- UI Settings ---

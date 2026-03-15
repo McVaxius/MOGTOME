@@ -67,6 +67,20 @@ public class StatsWindow : Window, IDisposable
             ImGui.Text($"Total Runs: {config.TotalPraes + config.TotalDecus}");
             ImGui.Text($"Total Mogtomes: {config.TotalMogtomesEarned}");
             ImGui.Text($"Current Daily Counter: {state.DutyCounter}");
+            ImGui.Text($"Daily Decumana Runs: {state.DecumanaCounter}");
+            
+            // Daily Decumana stats (if any runs today)
+            if (config.DailyDecuRuns > 0)
+            {
+                ImGui.Spacing();
+                ImGui.TextColored(new Vector4(0.0f, 0.84f, 1.0f, 1.0f), "Today's Decumana Stats:");
+                if (config.DailyDecuBestTime < float.MaxValue)
+                    ImGui.Text($"  Best Today: {FormatTime(config.DailyDecuBestTime)}");
+                if (config.DailyDecuLongestRun > 0)
+                    ImGui.Text($"  Longest Today: {FormatTime(config.DailyDecuLongestRun)}");
+                ImGui.Text($"  Runs Today: {config.DailyDecuRuns}");
+                ImGui.Text($"  Mogtomes Today: {config.DailyDecuMogtomesEarned}");
+            }
         }
 
         ImGui.Separator();
@@ -211,6 +225,13 @@ public class StatsWindow : Window, IDisposable
         config.DecuTotalDeathsAll = 0;
         config.TotalDecus = 0;
         config.DecuMogtomesEarned = 0;
+        
+        // Daily Decumana stats
+        config.DailyDecuRuns = 0;
+        config.DailyDecuBestTime = float.MaxValue;
+        config.DailyDecuLongestRun = 0;
+        config.DailyDecuMogtomesEarned = 0;
+        config.LastDailyDecuReset = null;
         
         config.TotalMogtomesEarned = 0;
         config.Save();

@@ -7,6 +7,7 @@ public class DutyState
     // --- Duty Tracking ---
     public int DutyCounter { get; set; } = 0;
     public int DecumanaCounter { get; set; } = 0;
+    public DateTime? LastDailyReset { get; set; } = null;
     public bool IsInDuty { get; set; } = false;
     public bool IsInCombat { get; set; } = false;
     public bool IsPartyLeader { get; set; } = false;

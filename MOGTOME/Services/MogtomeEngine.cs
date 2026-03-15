@@ -388,7 +388,7 @@ public class MogtomeEngine
         }
         else
         {
-            // Decumana stats
+            // Decumana stats (all-time)
             if (state.LastCompletionDuration < config.DecuBestTime)
             {
                 config.DecuBestTime = state.LastCompletionDuration;
@@ -401,6 +401,17 @@ public class MogtomeEngine
                 config.DecuLongestRun = state.LastCompletionDuration;
                 config.DecuLongestRunDate = dateStr;
                 config.DecuLongestRunParty = partyComp;
+            }
+            
+            // Daily Decumana stats
+            config.DailyDecuRuns++;
+            if (state.LastCompletionDuration < config.DailyDecuBestTime)
+            {
+                config.DailyDecuBestTime = state.LastCompletionDuration;
+            }
+            if (state.LastCompletionDuration > config.DailyDecuLongestRun)
+            {
+                config.DailyDecuLongestRun = state.LastCompletionDuration;
             }
         }
 

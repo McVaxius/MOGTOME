@@ -112,6 +112,7 @@ public class MainWindow : Window, IDisposable
         ImGui.Text("Duty Information");
         ImGui.Indent();
         ImGui.Text($"Counter: {state.DutyCounter} / {config.PraetoriumThreshold} Prae | {config.MaxRuns} Total");
+        ImGui.Text($"Daily Decu: {state.DecumanaCounter} runs today");
 
         var currentDuty = state.DutyCounter < config.PraetoriumThreshold
             ? "The Praetorium"
