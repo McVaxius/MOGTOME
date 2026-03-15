@@ -1,14 +1,25 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
+using Dalamud.Interface.Utility;
 using Dalamud.Interface.Windowing;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Plugin.Services;
+using MOGTOME.Models;
 using MOGTOME.Services;
 
 namespace MOGTOME.Windows;
 
 public class StatsWindow : Window, IDisposable
 {
+    private enum MainTab { Summary, Detailed }
+    private enum DetailedSubTab { JobPerformance, PlayerStats, RecentRuns, Trends }
+
     private readonly Plugin plugin;
+
+    private MainTab currentMainTab = MainTab.Summary;
+    private DetailedSubTab currentDetailedTab = DetailedSubTab.JobPerformance;
 
     public StatsWindow(Plugin plugin)
         : base("MOGTOME - Statistics##MogtomeStats", ImGuiWindowFlags.None)
@@ -30,6 +41,30 @@ public class StatsWindow : Window, IDisposable
 
         ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Duty Statistics");
         ImGui.Separator();
+
+        // Main tab navigation
+        if (ImGui.Button("Summary")) currentMainTab = MainTab.Summary;
+        ImGui.SameLine();
+        if (ImGui.Button("Detailed")) currentMainTab = MainTab.Detailed;
+
+        ImGui.Spacing();
+
+        // Render selected tab
+        switch (currentMainTab)
+        {
+            case MainTab.Summary:
+                DrawSummaryTab();
+                break;
+            case MainTab.Detailed:
+                DrawDetailedTab();
+                break;
+        }
+    }
+
+    private void DrawSummaryTab()
+    {
+        var config = plugin.Configuration;
+        var state = plugin.State;
 
         // Side-by-side stats layout
         if (ImGui.BeginTable("StatsTable", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg))
@@ -69,7 +104,7 @@ public class StatsWindow : Window, IDisposable
             ImGui.Text($"Current Daily Counter: {state.DutyCounter}");
             ImGui.Text($"Daily Decumana Runs: {state.DecumanaCounter}");
             ImGui.Text($"Max Daily Decu Runs: {config.MaxDailyDecuRuns}");
-            ImGui.Text($"All-Time Max Daily Decu: {config.AllTimeMaxDailyDecu}"); // NEW
+            ImGui.Text($"All-Time Max Daily Decu: {config.AllTimeMaxDailyDecu}");
             
             // Reset time display
             var (countdown, localTime) = plugin.DutyTrackerService.GetResetTimeDisplay();
@@ -89,46 +124,43 @@ public class StatsWindow : Window, IDisposable
             }
         }
 
-        ImGui.Separator();
+        ImGui.Spacing();
 
-        // Current Party
-        if (ImGui.CollapsingHeader("Current Party", ImGuiTreeNodeFlags.DefaultOpen))
-        {
-            var krangleNames = config.StatsKrangleNames;
-            if (ImGui.Checkbox("Krangle Names", ref krangleNames))
-            {
-                config.StatsKrangleNames = krangleNames;
-                config.Save();
-            }
-            ImGui.SameLine();
-            ImGui.TextDisabled("Obfuscate player names");
-
-            ImGui.Spacing();
-            DrawPartyTable(krangleNames);
-        }
-
-        ImGui.Separator();
-
-        // Reset Stats
+        // Reset button
         if (ImGui.Button("Reset All Stats"))
         {
-            ImGui.OpenPopup("ConfirmResetStats");
+            ResetAllStats(config);
         }
+    }
 
-        if (ImGui.BeginPopup("ConfirmResetStats"))
+    private void DrawDetailedTab()
+    {
+        // Sub-tab navigation
+        if (ImGui.Button("Job Performance")) currentDetailedTab = DetailedSubTab.JobPerformance;
+        ImGui.SameLine();
+        if (ImGui.Button("Player Stats")) currentDetailedTab = DetailedSubTab.PlayerStats;
+        ImGui.SameLine();
+        if (ImGui.Button("Recent Runs")) currentDetailedTab = DetailedSubTab.RecentRuns;
+        ImGui.SameLine();
+        if (ImGui.Button("Trends")) currentDetailedTab = DetailedSubTab.Trends;
+
+        ImGui.Separator();
+
+        // Render selected sub-tab
+        switch (currentDetailedTab)
         {
-            ImGui.Text("Are you sure you want to reset ALL stats?");
-            if (ImGui.Button("Yes, Reset"))
-            {
-                ResetAllStats(config);
-                ImGui.CloseCurrentPopup();
-            }
-            ImGui.SameLine();
-            if (ImGui.Button("Cancel"))
-            {
-                ImGui.CloseCurrentPopup();
-            }
-            ImGui.EndPopup();
+            case DetailedSubTab.JobPerformance:
+                DrawJobPerformance();
+                break;
+            case DetailedSubTab.PlayerStats:
+                DrawPlayerStatistics();
+                break;
+            case DetailedSubTab.RecentRuns:
+                DrawRecentRuns();
+                break;
+            case DetailedSubTab.Trends:
+                DrawPerformanceTrends();
+                break;
         }
     }
 
@@ -352,5 +384,240 @@ public class StatsWindow : Window, IDisposable
         }
         
         return members.Count > 0 ? string.Join(", ", members) : "Unknown";
+    }
+
+    private void DrawJobPerformance()
+    {
+        ImGui.Text("Job Performance");
+        ImGui.Separator();
+        
+        if (!plugin.Configuration.EnableDetailedTracking || plugin.Configuration.RunHistory.Count == 0)
+        {
+            ImGui.TextDisabled("No run data available. Enable detailed tracking and complete some runs.");
+            return;
+        }
+
+        var jobStats = plugin.RunHistoryService.GetJobStatistics();
+        
+        // Create job cards in a grid layout
+        int columns = 3;
+        int currentColumn = 0;
+        
+        foreach (var jobStat in jobStats.OrderByDescending(x => x.Value.TotalRuns))
+        {
+            DrawJobCard(jobStat.Key, jobStat.Value);
+            
+            currentColumn++;
+            if (currentColumn < columns)
+            {
+                ImGui.SameLine();
+            }
+            else
+            {
+                currentColumn = 0;
+            }
+        }
+    }
+
+    private void DrawJobCard(byte jobId, JobStats stats)
+    {
+        var jobName = GetJobName(jobId);
+        var role = GetJobRole(jobId);
+        
+        ImGui.BeginChild($"JobCard_{jobId}", new Vector2(180, 140), true);
+        
+        // Job header with role
+        ImGui.Text($"{jobName} ({role})");
+        ImGui.Separator();
+        
+        // Stats
+        ImGui.Text($"Runs: {stats.TotalRuns}");
+        ImGui.Text($"Avg: {FormatTime(stats.AverageTime)}");
+        ImGui.Text($"Best: {FormatTime(stats.BestTime)}");
+        ImGui.Text($"Deaths: {stats.TotalDeaths}");
+        
+        // Success rate with color coding
+        var successRate = stats.TotalRuns > 0 ? (float)stats.SuccessfulRuns / stats.TotalRuns * 100 : 0f;
+        var rateColor = successRate > 95 ? new Vector4(0, 1, 0, 1) : successRate > 90 ? new Vector4(1, 1, 0, 1) : new Vector4(1, 0, 0, 1);
+        ImGui.TextColored(rateColor, $"Rate: {successRate:F1}%");
+        
+        ImGui.Text($"Mogtomes: {stats.TotalMogtomes}");
+        
+        ImGui.EndChild();
+    }
+
+    private void DrawPlayerStatistics()
+    {
+        ImGui.Text("Player Statistics");
+        ImGui.Separator();
+        
+        if (!plugin.Configuration.EnableDetailedTracking || plugin.Configuration.RunHistory.Count == 0)
+        {
+            ImGui.TextDisabled("No run data available. Enable detailed tracking and complete some runs.");
+            return;
+        }
+
+        var playerStats = plugin.RunHistoryService.GetPlayerStatistics();
+        
+        foreach (var playerStat in playerStats.OrderByDescending(x => x.Value.TotalRuns))
+        {
+            DrawPlayerCard(playerStat.Key, playerStat.Value);
+        }
+    }
+
+    private void DrawPlayerCard(ulong playerId, PlayerStats stats)
+    {
+        var displayName = plugin.Configuration.StatsKrangleNames ? "Player███" : stats.PlayerName;
+        if (stats.IsLocalPlayer) displayName += " (You)";
+        
+        ImGui.BeginChild($"PlayerCard_{playerId}", new Vector2(250, 120), true);
+        
+        ImGui.Text($"{displayName}");
+        if (!plugin.Configuration.StatsKrangleNames)
+            ImGui.Text($"({stats.WorldName})");
+        
+        ImGui.Separator();
+        
+        ImGui.Text($"Total: {stats.TotalRuns}");
+        ImGui.Text($"Prae: {stats.PraetoriumRuns} | Decu: {stats.DecumanaRuns}");
+        ImGui.Text($"Avg: {FormatTime(stats.AverageTime)}");
+        ImGui.Text($"Best: {FormatTime(stats.BestTime)}");
+        ImGui.Text($"Streak: {stats.CurrentStreak} (Best: {stats.BestStreak})");
+        ImGui.Text($"Job: {GetJobName(stats.MostPlayedJob)}");
+        ImGui.Text($"Mogtomes: {stats.TotalMogtomes}");
+        
+        ImGui.EndChild();
+    }
+
+    private void DrawRecentRuns()
+    {
+        ImGui.Text("Recent Runs (Last 25)");
+        ImGui.Separator();
+        
+        if (!plugin.Configuration.EnableDetailedTracking || plugin.Configuration.RunHistory.Count == 0)
+        {
+            ImGui.TextDisabled("No run data available. Enable detailed tracking and complete some runs.");
+            return;
+        }
+
+        var recentRuns = plugin.RunHistoryService.GetRecentRuns(25);
+        
+        if (ImGui.BeginTable("RecentRunsTable", 7, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.ScrollY))
+        {
+            // Headers
+            ImGui.TableSetupColumn("Time", ImGuiTableColumnFlags.WidthFixed, 60);
+            ImGui.TableSetupColumn("Player", ImGuiTableColumnFlags.WidthFixed, 120);
+            ImGui.TableSetupColumn("Job", ImGuiTableColumnFlags.WidthFixed, 40);
+            ImGui.TableSetupColumn("Duty", ImGuiTableColumnFlags.WidthFixed, 50);
+            ImGui.TableSetupColumn("Time", ImGuiTableColumnFlags.WidthFixed, 50);
+            ImGui.TableSetupColumn("Deaths", ImGuiTableColumnFlags.WidthFixed, 50);
+            ImGui.TableSetupColumn("Status", ImGuiTableColumnFlags.WidthFixed, 60);
+            ImGui.TableHeadersRow();
+            
+            // Data rows
+            foreach (var run in recentRuns)
+            {
+                ImGui.TableNextRow();
+                
+                ImGui.TableSetColumnIndex(0);
+                ImGui.Text(run.Timestamp.ToString("HH:mm"));
+                
+                ImGui.TableSetColumnIndex(1);
+                var displayName = plugin.Configuration.StatsKrangleNames ? "Player███" : run.PlayerName;
+                ImGui.Text(displayName);
+                
+                ImGui.TableSetColumnIndex(2);
+                ImGui.Text(GetJobName(run.JobId));
+                
+                ImGui.TableSetColumnIndex(3);
+                ImGui.Text(run.IsPraetorium ? "Prae" : "Decu");
+                
+                ImGui.TableSetColumnIndex(4);
+                ImGui.Text(FormatTime(run.CompletionTime));
+                
+                ImGui.TableSetColumnIndex(5);
+                ImGui.Text(run.DeathCount.ToString());
+                
+                ImGui.TableSetColumnIndex(6);
+                var statusColor = run.WasSuccessful ? new Vector4(0, 1, 0, 1) : new Vector4(1, 0, 0, 1);
+                ImGui.TextColored(statusColor, run.WasSuccessful ? "Success" : "Failed");
+            }
+            
+            ImGui.EndTable();
+        }
+    }
+
+    private void DrawPerformanceTrends()
+    {
+        ImGui.Text("Performance Trends");
+        ImGui.Separator();
+        
+        if (!plugin.Configuration.EnableDetailedTracking || plugin.Configuration.RunHistory.Count == 0)
+        {
+            ImGui.TextDisabled("No run data available. Enable detailed tracking and complete some runs.");
+            return;
+        }
+
+        var allRuns = plugin.Configuration.RunHistory;
+        var last10 = allRuns.TakeLast(10);
+        var last50 = allRuns.TakeLast(50);
+        
+        // Display metrics
+        ImGui.Text($"Average Completion Time (Last 10): {FormatTime(last10.DefaultIfEmpty().Average(x => x.CompletionTime))}");
+        ImGui.Text($"Average Completion Time (Last 50): {FormatTime(last50.DefaultIfEmpty().Average(x => x.CompletionTime))}");
+        ImGui.Text($"Average Completion Time (All time): {FormatTime(allRuns.Average(x => x.CompletionTime))}");
+        
+        var deathRate10 = last10.Any() ? (float)last10.Count(x => x.DeathCount > 0) / last10.Count() * 100 : 0;
+        var deathRateAll = (float)allRuns.Count(x => x.DeathCount > 0) / allRuns.Count * 100;
+        
+        ImGui.Text($"Death Rate (Last 10): {deathRate10:F1}%");
+        ImGui.Text($"Death Rate (All time): {deathRateAll:F1}%");
+        
+        // Most efficient job
+        var bestJob = allRuns
+            .GroupBy(x => x.JobId)
+            .Select(g => new { JobId = g.Key, AvgTime = g.Average(x => x.CompletionTime) })
+            .OrderBy(x => x.AvgTime)
+            .FirstOrDefault();
+        
+        if (bestJob != null)
+        {
+            ImGui.Text($"Most Efficient Job: {GetJobName(bestJob.JobId)} ({FormatTime(bestJob.AvgTime)} avg)");
+        }
+        
+        // Recent performance trend
+        ImGui.Spacing();
+        ImGui.Text("Recent Performance Trend:");
+        var recentRuns = allRuns.TakeLast(10).Reverse().ToList();
+        for (int i = 0; i < recentRuns.Count; i++)
+        {
+            var run = recentRuns[i];
+            var timeStr = FormatTime(run.CompletionTime);
+            var statusStr = run.WasSuccessful ? "✓" : "✗";
+            ImGui.Text($"  {run.Timestamp.ToString("MM/dd HH:mm")} - {GetJobName(run.JobId)} - {timeStr} {statusStr}");
+        }
+    }
+
+    private string GetJobName(byte jobId)
+    {
+        return jobId switch
+        {
+            1 => "GLA", 2 => "PGL", 3 => "MRD", 4 => "LNC", 5 => "ARC", 6 => "CNJ", 7 => "THM", 8 => "BLU",
+            9 => "CRP", 10 => "BSM", 11 => "ARM", 12 => "GSM", 13 => "LTW", 14 => "WVR", 15 => "ALC", 16 => "CUL",
+            17 => "MIN", 18 => "BTN", 19 => "FSH", 20 => "PLD", 21 => "MNK", 22 => "WAR", 23 => "DRG", 24 => "BRD",
+            25 => "NIN", 26 => "SMN", 27 => "SCH", 28 => "RDM", 29 => "BLM", 30 => "WHM", 31 => "DRK", 32 => "AST", 33 => "SAM",
+            34 => "MCH", 35 => "DNC", 36 => "RPR", 37 => "SGE", 38 => "VPR", 39 => "PCT",
+            _ => "UNK"
+        };
+    }
+
+    private string GetJobRole(byte jobId)
+    {
+        return jobId switch
+        {
+            1 or 3 or 20 or 22 or 31 => "Tank",
+            6 or 27 or 30 or 32 or 37 => "Healer",
+            _ => "DPS"
+        };
     }
 }
