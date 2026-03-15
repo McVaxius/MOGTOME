@@ -463,13 +463,16 @@ public class MogtomeEngine
             TryClickLeaveDutyButton();
         });
 
-        // Also try clicking Yes on any confirmation dialog that appears
-        System.Threading.Tasks.Task.Delay(1500).ContinueWith(_ => {
-            if (GameHelpers.ClickYesIfVisible())
-            {
-                log.Information("[Engine] Successfully clicked Yes on leave duty confirmation");
-            }
-        });
+        // Also try clicking Yes on any confirmation dialog that appears (multiple attempts)
+        for (int i = 0; i < 5; i++)
+        {
+            System.Threading.Tasks.Task.Delay(1000 + (i * 500)).ContinueWith(_ => {
+                if (GameHelpers.ClickYesIfVisible())
+                {
+                    log.Information($"[Engine] Successfully clicked Yes on leave duty confirmation (attempt {i + 1})");
+                }
+            });
+        }
 
         StatusMessage = $"Leaving duty (attempt #{leaveAttemptCount}) - {leaveReason}";
     }
@@ -524,9 +527,16 @@ public class MogtomeEngine
     {
         try
         {
-            // Click Yes on SelectYesno confirmation dialog
-            log.Information("[Engine] Clicking Yes on leave confirmation dialog");
-            GameHelpers.ClickYesIfVisible();
+            // Click Yes on SelectYesno confirmation dialog with retries
+            for (int i = 0; i < 3; i++)
+            {
+                System.Threading.Tasks.Task.Delay(300 * (i + 1)).ContinueWith(_ => {
+                    if (GameHelpers.ClickYesIfVisible())
+                    {
+                        log.Information($"[Engine] Successfully clicked Yes on leave confirmation (delayed attempt {i + 1})");
+                    }
+                });
+            }
         }
         catch (Exception ex)
         {
