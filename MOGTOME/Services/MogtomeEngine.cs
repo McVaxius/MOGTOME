@@ -483,10 +483,10 @@ public class MogtomeEngine
     {
         try
         {
-            log.Information("[Engine] Opening ContentsFinderMenu with U key and callback backup");
+            log.Information("[Engine] Opening duty panel with /dutyfinder command");
             
-            // Try U key first (most reliable)
-            commandManager.ProcessCommand("/keypress U");
+            // Use /dutyfinder command (FrenRider pattern)
+            commandManager.ProcessCommand("/dutyfinder");
             
             // Also try callback 0 as backup after a short delay
             System.Threading.Tasks.Task.Delay(200).ContinueWith(_ => {
@@ -518,24 +518,6 @@ public class MogtomeEngine
             // Click Leave button using callback pattern: ContentsFinderMenu true 43
             log.Information("[Engine] Clicking Leave button on ContentsFinderMenu");
             GameHelpers.FireAddonCallback("ContentsFinderMenu", true, 43);
-            
-            // Fallback: if ContentsFinderMenu isn't visible, try /leaveDuty command
-            System.Threading.Tasks.Task.Delay(300).ContinueWith(_ => {
-                try
-                {
-                    // Check if ContentsFinderMenu is still not visible
-                    var addon = RaptureAtkUnitManager.Instance()->GetAddonByName("ContentsFinderMenu");
-                    if (addon == null || !addon->IsVisible)
-                    {
-                        log.Information("[Engine] ContentsFinderMenu still not visible, trying /gaction \"Leave Duty\" command");
-                        commandManager.ProcessCommand("/gaction \"Leave Duty\"");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    log.Error($"[Engine] Fallback leave command failed: {ex.Message}");
-                }
-            });
             
             // Handle the confirmation dialog
             System.Threading.Tasks.Task.Delay(500).ContinueWith(_ => {
