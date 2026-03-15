@@ -527,8 +527,8 @@ public class MogtomeEngine
                     var addon = RaptureAtkUnitManager.Instance()->GetAddonByName("ContentsFinderMenu");
                     if (addon == null || !addon->IsVisible)
                     {
-                        log.Information("[Engine] ContentsFinderMenu still not visible, trying /leaveDuty command");
-                        commandManager.ProcessCommand("/leaveDuty");
+                        log.Information("[Engine] ContentsFinderMenu still not visible, trying /gaction \"Leave Duty\" command");
+                        commandManager.ProcessCommand("/gaction \"Leave Duty\"");
                     }
                 }
                 catch (Exception ex)
