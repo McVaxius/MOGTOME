@@ -103,6 +103,12 @@ public class DutyTrackerService
             var oldPrae = state.DutyCounter;
             var oldDecu = state.DecumanaCounter;
             
+            // Update max daily Decu runs before reset
+            if (state.DecumanaCounter > config.MaxDailyDecuRuns)
+            {
+                config.MaxDailyDecuRuns = state.DecumanaCounter;
+            }
+            
             state.DutyCounter = 0;
             state.DecumanaCounter = 0;
             state.LastDailyReset = now;
@@ -118,7 +124,7 @@ public class DutyTrackerService
             
             config.Save();
             
-            log.Information($"[DutyTracker] Daily reset! Prae: {oldPrae}→0, Daily Decu: {oldDecu}→0");
+            log.Information($"[DutyTracker] Daily reset! Prae: {oldPrae}→0, Daily Decu: {oldDecu}→0 (Max: {config.MaxDailyDecuRuns})");
             return true;
         }
         return false;

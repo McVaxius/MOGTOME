@@ -68,6 +68,7 @@ public class StatsWindow : Window, IDisposable
             ImGui.Text($"Total Mogtomes: {config.TotalMogtomesEarned}");
             ImGui.Text($"Current Daily Counter: {state.DutyCounter}");
             ImGui.Text($"Daily Decumana Runs: {state.DecumanaCounter}");
+            ImGui.Text($"Max Daily Decu Runs: {config.MaxDailyDecuRuns}");
             
             // Daily Decumana stats (if any runs today)
             if (config.DailyDecuRuns > 0)
@@ -231,6 +232,7 @@ public class StatsWindow : Window, IDisposable
         config.DailyDecuBestTime = float.MaxValue;
         config.DailyDecuLongestRun = 0;
         config.DailyDecuMogtomesEarned = 0;
+        config.MaxDailyDecuRuns = 0;
         config.LastDailyDecuReset = null;
         
         config.TotalMogtomesEarned = 0;

@@ -90,6 +90,7 @@ public class Configuration : IPluginConfiguration
     public float DailyDecuBestTime { get; set; } = float.MaxValue;
     public float DailyDecuLongestRun { get; set; } = 0;
     public int DailyDecuMogtomesEarned { get; set; } = 0;
+    public int MaxDailyDecuRuns { get; set; } = 0;
     public DateTime? LastDailyDecuReset { get; set; } = null;
     
     public int TotalMogtomesEarned { get; set; } = 0;
