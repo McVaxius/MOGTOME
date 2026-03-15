@@ -280,17 +280,6 @@ public class ConfigWindow : Window, IDisposable
 
         ImGui.Spacing();
         ImGui.TextWrapped("Open AutoDuty, pick Regular, pick Praetorium, then pick the \"(1044) The Praetorium - W2W 20250716 phecda\" path. This will save the path for your job and you shouldn't have to do it again in the future.");
-
-        // One-click path configuration button (only available after path is installed)
-        if (pathExists)
-        {
-            ImGui.Spacing();
-            if (ImGui.Button("Configure AutoDuty Path (One-Click)"))
-            {
-                plugin.AutoDutyIPC.SetPraetoriumPath();
-            }
-            ImGui.TextDisabled("Experimental - may not work yet. Uses IPC to configure AutoDuty automatically.");
-        }
     }
 
     private static void DrawDepLine(string name, bool ok, string detail, string? repoKey)
