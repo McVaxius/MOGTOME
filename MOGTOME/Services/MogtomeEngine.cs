@@ -1,4 +1,5 @@
 using System;
+using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Plugin.Services;
 using MOGTOME.IPC;
 using MOGTOME.Models;
@@ -47,6 +48,12 @@ public class MogtomeEngine
     private const float LoopInterval = 2.0f;
     private bool autoDutyStartedInDuty = false;
 
+    // Duty exit state
+    private bool dutyCompleted = false;
+    private DateTime dutyCompletedTime = DateTime.MinValue;
+    private bool dutyLeaveIssued = false;
+    private const int DutyExitDelaySeconds = 10;
+
     public MogtomeEngine(
         IPluginLog log, Configuration config, DutyState state,
         DutyTrackerService dutyTracker, DutyQueueService dutyQueue,
@@ -75,6 +82,23 @@ public class MogtomeEngine
         this.condition = condition;
         this.clientState = clientState;
         this.commandManager = commandManager;
+
+        // Hook duty completed event
+        Plugin.DutyStateService.DutyCompleted += OnDutyCompleted;
+    }
+
+    public void Dispose()
+    {
+        Plugin.DutyStateService.DutyCompleted -= OnDutyCompleted;
+    }
+
+    private void OnDutyCompleted(object? sender, ushort territoryId)
+    {
+        if (!IsRunning) return;
+        dutyCompleted = true;
+        dutyCompletedTime = DateTime.UtcNow;
+        dutyLeaveIssued = false;
+        log.Information($"[Engine] Duty completed event in territory {territoryId} - will leave in {DutyExitDelaySeconds}s");
     }
 
     public void Start()
@@ -230,11 +254,13 @@ public class MogtomeEngine
         dutyTracker.OnDutyStarted();
         rotationService.ForceRotation();
         autoDutyStartedInDuty = false;
+        dutyCompleted = false;
+        dutyLeaveIssued = false;
         CurrentState = EngineState.InDuty;
         StatusMessage = $"In Duty - #{state.DutyCounter} ({dutyTracker.GetCurrentDutyName()})";
         log.Information($"[Engine] Entered duty #{state.DutyCounter}");
 
-        // Update stats
+        // Always count instances fired up (even unsynced)
         var isPrae = state.CurrentTerritory == DutyState.PraetoriumTerritoryId;
         if (isPrae)
             config.TotalPraes++;
@@ -245,8 +271,8 @@ public class MogtomeEngine
 
     private void OnLeftDuty()
     {
-        // Update best/longest time stats
-        if (state.LastCompletionDuration > 0 && state.LastCompletionDuration < config.BailoutTimeout)
+        // Update best/longest time stats only for synced runs
+        if (!config.TestingModeUnsynced && state.LastCompletionDuration > 0 && state.LastCompletionDuration < config.BailoutTimeout)
         {
             var partyComp = GetPartyComposition();
             var dateStr = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm UTC");
@@ -267,11 +293,17 @@ public class MogtomeEngine
 
             config.Save();
         }
+        else if (config.TestingModeUnsynced)
+        {
+            log.Information("[Engine] Unsynced run - skipping stats tracking");
+        }
 
         dutyTracker.OnDutyCompleted();
         state.IsInDuty = false;
         outsideDutyTicks = 0;
         autoDutyStartedInDuty = false;
+        dutyCompleted = false;
+        dutyLeaveIssued = false;
         CurrentState = EngineState.WaitingOutsideDuty;
         StatusMessage = $"Outside Duty - Next: #{state.DutyCounter + 1}";
         log.Information($"[Engine] Left duty. Next: #{state.DutyCounter + 1}");
@@ -338,6 +370,38 @@ public class MogtomeEngine
             autoDutyStartedInDuty = true;
             log.Information("[Engine] Starting AutoDuty inside duty");
             autoDutyIPC.StartDuty();
+        }
+
+        // Duty completion exit logic
+        if (dutyCompleted && !dutyLeaveIssued)
+        {
+            // Cutscene protection: don't leave during cutscenes
+            if (condition[ConditionFlag.OccupiedInCutSceneEvent] || condition[ConditionFlag.WatchingCutscene])
+            {
+                StatusMessage = $"Duty done - waiting for cutscene...";
+                return;
+            }
+
+            var elapsed = (DateTime.UtcNow - dutyCompletedTime).TotalSeconds;
+            if (elapsed >= DutyExitDelaySeconds)
+            {
+                log.Information($"[Engine] Leaving duty after {elapsed:F0}s post-completion");
+                dutyLeaveIssued = true;
+                try
+                {
+                    commandManager.ProcessCommand("/leaveDuty");
+                }
+                catch (Exception ex)
+                {
+                    log.Error($"[Engine] LeaveDuty command failed: {ex.Message}");
+                }
+                return;
+            }
+            else
+            {
+                StatusMessage = $"Duty done - leaving in {(DutyExitDelaySeconds - elapsed):F0}s...";
+                return;
+            }
         }
 
         // Boss combat handler

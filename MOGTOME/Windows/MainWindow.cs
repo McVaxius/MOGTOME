@@ -145,7 +145,7 @@ public class MainWindow : Window, IDisposable
         DrawStatusLine("Potions", config.PotionItemId > 0 && state.PotionsAvailable, config.PotionItemName);
         DrawStatusLine("YesAlready", plugin.YesAlreadyIPC.IsPaused, "Paused by MOGTOME");
         DrawStatusLine("AutoDuty Path", plugin.AutoDutyPathService.PathExists(), "Praetorium W2W");
-        DrawStatusLine("Queue", true, config.QueueMethod == 0 ? "AutoDuty" : "Callback");
+        DrawStatusLine("Queue", true, "AutoDuty");
         DrawStatusLine("Bailout", true, $"{config.BailoutTimeout}s");
 
         ImGui.Unindent();

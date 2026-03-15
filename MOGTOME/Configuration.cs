@@ -18,7 +18,6 @@ public class Configuration : IPluginConfiguration
     public int PraetoriumThreshold { get; set; } = 99;
     public int MaxRuns { get; set; } = 9999;
     public string QuitCommand { get; set; } = "/ays m e";
-    public int QueueMethod { get; set; } = 0;
     public bool TestingModeUnsynced { get; set; } = false;
 
     // --- Food Settings ---
@@ -41,12 +40,6 @@ public class Configuration : IPluginConfiguration
     public bool AutoDutyPathInstalled { get; set; } = false;
 
     // --- Stats ---
-    
-    
-    
-    
-    
-    
     public float BestTimeEver { get; set; } = float.MaxValue;
     public string BestTimeDate { get; set; } = "";
     public string BestTimeParty { get; set; } = "";

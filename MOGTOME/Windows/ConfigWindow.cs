@@ -400,24 +400,6 @@ public class ConfigWindow : Window, IDisposable
         ImGui.TextDisabled("Command to execute when max runs reached.");
 
         ImGui.Separator();
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Queue Method");
-
-        var queueMethod = config.QueueMethod;
-        if (ImGui.RadioButton("AutoDuty (Recommended)", ref queueMethod, 0))
-        {
-            config.QueueMethod = 0;
-            changed = true;
-        }
-        ImGui.TextDisabled("Uses AutoDuty to queue and run the duty.");
-
-        if (ImGui.RadioButton("Callback Method", ref queueMethod, 1))
-        {
-            config.QueueMethod = 1;
-            changed = true;
-        }
-        ImGui.TextDisabled("Use if AutoDuty queueing is broken.");
-
-        ImGui.Separator();
 
         var testMode = config.TestingModeUnsynced;
         if (ImGui.Checkbox("Testing Mode: Unsynced solo+ runs", ref testMode))

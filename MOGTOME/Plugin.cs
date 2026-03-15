@@ -135,6 +135,7 @@ public sealed class Plugin : IDalamudPlugin
         // Stop engine if running
         if (Engine.IsRunning)
             Engine.Stop();
+        Engine.Dispose();
 
         WindowSystem.RemoveAllWindows();
         ConfigWindow.Dispose();

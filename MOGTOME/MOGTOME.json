@@ -7,7 +7,7 @@
   "Tags": [ "automation", "duty", "farming", "praetorium", "tomes" ],
   "CategoryTags": [ "other" ],
   "InternalName": "MOGTOME",
-  "AssemblyVersion": "0.0.0.3",
+  "AssemblyVersion": "0.0.0.5",
   "RepoUrl": "https://github.com/McVaxius/MOGTOME",
   "IconUrl": "https://raw.githubusercontent.com/McVaxius/MOGTOME/refs/heads/master/MOGTOME/images/icon.png",
   "ApplicableVersion": "any",

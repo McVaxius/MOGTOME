@@ -146,9 +146,11 @@ public class StatsWindow : Window, IDisposable
     private void DrawPartyTable(bool krangle)
     {
         var party = Plugin.PartyList;
-        if (party.Length == 0)
+        var localPlayer = Plugin.ObjectTable.LocalPlayer;
+
+        if (party.Length == 0 && localPlayer == null)
         {
-            ImGui.TextDisabled("  Not in a party.");
+            ImGui.TextDisabled("  Not logged in.");
             return;
         }
 
@@ -159,25 +161,47 @@ public class StatsWindow : Window, IDisposable
             ImGui.TableSetupColumn("Level", ImGuiTableColumnFlags.WidthFixed, 50);
             ImGui.TableHeadersRow();
 
-            for (var i = 0; i < party.Length; i++)
+            if (party.Length > 0)
             {
-                var member = party[i];
-                if (member == null) continue;
+                // In a party - show all members
+                for (var i = 0; i < party.Length; i++)
+                {
+                    var member = party[i];
+                    if (member == null) continue;
 
+                    ImGui.TableNextRow();
+
+                    ImGui.TableSetColumnIndex(0);
+                    var name = member.Name.ToString();
+                    if (krangle && !string.IsNullOrEmpty(name))
+                        name = KrangleName(name);
+                    ImGui.Text(name);
+
+                    ImGui.TableSetColumnIndex(1);
+                    var jobAbbr = member.ClassJob.Value.Abbreviation.ToString();
+                    ImGui.Text(jobAbbr);
+
+                    ImGui.TableSetColumnIndex(2);
+                    ImGui.Text(member.Level.ToString());
+                }
+            }
+            else if (localPlayer != null)
+            {
+                // Solo - show own name
                 ImGui.TableNextRow();
 
                 ImGui.TableSetColumnIndex(0);
-                var name = member.Name.ToString();
+                var name = localPlayer.Name.ToString();
                 if (krangle && !string.IsNullOrEmpty(name))
                     name = KrangleName(name);
                 ImGui.Text(name);
 
                 ImGui.TableSetColumnIndex(1);
-                var jobAbbr = member.ClassJob.Value.Abbreviation.ToString();
+                var jobAbbr = localPlayer.ClassJob.Value.Abbreviation.ToString();
                 ImGui.Text(jobAbbr);
 
                 ImGui.TableSetColumnIndex(2);
-                ImGui.Text(member.Level.ToString());
+                ImGui.Text(localPlayer.Level.ToString());
             }
 
             ImGui.EndTable();

@@ -44,37 +44,9 @@ public class DutyQueueService
         // Condition[34] = BoundByDuty
         if (condition[34]) return;
 
-        if (config.QueueMethod == 0)
-        {
-            QueueViaAutoDuty(isPraetorium);
-        }
-        else
-        {
-            QueueViaCallback(isPraetorium);
-        }
-    }
-
-    private void QueueViaAutoDuty(bool isPraetorium)
-    {
         var dutyName = isPraetorium ? "The Praetorium" : "The Porta Decumana";
         log.Information($"[DutyQueue] Queueing via AutoDuty: {dutyName}");
         autoDutyIPC.QueueDuty(dutyName);
-    }
-
-    private void QueueViaCallback(bool isPraetorium)
-    {
-        try
-        {
-            var dutyIndex = isPraetorium ? state.PraetoriumDutyIndex : DutyState.DecumanaDutyId;
-            log.Information($"[DutyQueue] Queueing via callback method: index={dutyIndex}");
-
-            // Open duty finder and select the duty
-            commandManager.ProcessCommand("/dutyfinder");
-        }
-        catch (Exception ex)
-        {
-            log.Error($"[DutyQueue] Callback queue failed: {ex.Message}");
-        }
     }
 
     public void DisableAutoQueueForRepair()
