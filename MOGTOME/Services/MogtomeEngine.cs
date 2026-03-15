@@ -48,10 +48,12 @@ public class MogtomeEngine
     private const float LoopInterval = 2.0f;
     private bool autoDutyStartedInDuty = false;
 
-    // Duty exit state
+    // Duty exit tracking
     private bool dutyCompleted = false;
-    private DateTime dutyCompletedTime = DateTime.MinValue;
+    private DateTime dutyCompletedTime;
     private bool dutyLeaveIssued = false;
+    private DateTime lastLeaveAttemptTime = DateTime.MinValue;
+    private int leaveAttemptCount = 0;
     private const int DutyExitDelaySeconds = 10;
 
     public MogtomeEngine(
@@ -387,14 +389,7 @@ public class MogtomeEngine
             {
                 log.Information($"[Engine] Leaving duty after {elapsed:F0}s post-completion");
                 dutyLeaveIssued = true;
-                try
-                {
-                    commandManager.ProcessCommand("/leaveDuty");
-                }
-                catch (Exception ex)
-                {
-                    log.Error($"[Engine] LeaveDuty command failed: {ex.Message}");
-                }
+                LeaveDuty();
                 return;
             }
             else
@@ -447,21 +442,132 @@ public class MogtomeEngine
         }
     }
 
+    private void LeaveDuty()
+    {
+        var now = DateTime.UtcNow;
+        // Throttle leave attempts to every 5 seconds
+        if ((now - lastLeaveAttemptTime).TotalSeconds < 5.0) return;
+        lastLeaveAttemptTime = now;
+        leaveAttemptCount++;
+
+        var elapsed = (DateTime.Now - dutyCompletedTime).TotalSeconds;
+        var leaveReason = $"Exit after duty ends - {elapsed:F0}s elapsed (configured: {DutyExitDelaySeconds}s)";
+        
+        log.Information($"[Engine] Leave duty attempt #{leaveAttemptCount} - REASON: {leaveReason}");
+        log.Information($"[Engine] Opening duty panel to leave");
+
+        // Open duty panel to access Leave Duty button
+        commandManager.ProcessCommand("/dutyfinder");
+
+        // Wait a moment for panel to open, then try to click Leave Duty
+        System.Threading.Tasks.Task.Delay(500).ContinueWith(_ => {
+            TryClickLeaveDutyButton();
+        });
+
+        // Also try clicking Yes on any confirmation dialog that appears
+        System.Threading.Tasks.Task.Delay(1000).ContinueWith(_ => {
+            if (GameHelpers.ClickYesIfVisible())
+            {
+                log.Information("[Engine] Successfully clicked Yes on leave duty confirmation");
+            }
+        });
+
+        StatusMessage = $"Leaving duty (attempt #{leaveAttemptCount}) - {leaveReason}";
+    }
+
+    private void TryClickLeaveDutyButton()
+    {
+        try
+        {
+            log.Information("[Engine] Opening ContentsFinderMenu with callback");
+            
+            // Try direct callback to open ContentsFinderMenu
+            try
+            {
+                GameHelpers.FireAddonCallback("ContentsFinderMenu", true, 0);
+            }
+            catch (Exception ex)
+            {
+                log.Error($"[Engine] ContentsFinderMenu callback failed: {ex.Message}");
+            }
+            
+            // Wait a moment for the menu to open, then click Leave button
+            System.Threading.Tasks.Task.Delay(500).ContinueWith(_ => {
+                TryClickLeaveButton();
+            });
+        }
+        catch (Exception ex)
+        {
+            log.Error($"[Engine] Error trying to leave duty: {ex.Message}");
+        }
+    }
+
+    private void TryClickLeaveButton()
+    {
+        try
+        {
+            // Click Leave button using callback pattern: ContentsFinderMenu true 43
+            log.Information("[Engine] Clicking Leave button on ContentsFinderMenu");
+            GameHelpers.FireAddonCallback("ContentsFinderMenu", true, 43);
+            
+            // Handle the confirmation dialog
+            System.Threading.Tasks.Task.Delay(500).ContinueWith(_ => {
+                HandleLeaveConfirmation();
+            });
+        }
+        catch (Exception ex)
+        {
+            log.Error($"[Engine] Error clicking Leave button: {ex.Message}");
+        }
+    }
+
+    private void HandleLeaveConfirmation()
+    {
+        try
+        {
+            // Click Yes on SelectYesno confirmation dialog
+            log.Information("[Engine] Clicking Yes on leave confirmation dialog");
+            GameHelpers.ClickYesIfVisible();
+        }
+        catch (Exception ex)
+        {
+            log.Error($"[Engine] Error handling leave confirmation: {ex.Message}");
+        }
+    }
+
     private string GetPartyComposition()
     {
         try
         {
             var party = Plugin.PartyList;
-            if (party.Length == 0) return "Solo";
+            var localPlayer = Plugin.ObjectTable.LocalPlayer;
+            if (party.Length == 0 && localPlayer == null) return "None";
 
-            var jobs = new System.Collections.Generic.List<string>();
+            var members = new System.Collections.Generic.List<string>();
+            
+            // Add party members
             for (var i = 0; i < party.Length; i++)
             {
                 var member = party[i];
                 if (member != null)
-                    jobs.Add(member.ClassJob.Value.Abbreviation.ToString());
+                {
+                    var name = member.Name.ToString();
+                    var job = member.ClassJob.Value.Abbreviation.ToString();
+                    var level = member.Level.ToString();
+                    members.Add($"{name}-{job}-{level}");
+                }
             }
-            return string.Join(" ", jobs);
+            
+            // Add local player if solo
+            if (party.Length == 0 && localPlayer != null)
+            {
+                var name = localPlayer.Name.ToString();
+                var job = localPlayer.ClassJob.Value.Abbreviation.ToString();
+                var level = localPlayer.Level.ToString();
+                members.Add($"{name}-{job}-{level}");
+            }
+            
+            return members.Count > 0 ? string.Join(", ", members) : "Unknown";
         }
         catch
         {

@@ -2,6 +2,7 @@ using System;
 using System.Numerics;
 using Dalamud.Interface.Windowing;
 using Dalamud.Bindings.ImGui;
+using MOGTOME.Services;
 
 namespace MOGTOME.Windows;
 
@@ -174,7 +175,7 @@ public class StatsWindow : Window, IDisposable
                     ImGui.TableSetColumnIndex(0);
                     var name = member.Name.ToString();
                     if (krangle && !string.IsNullOrEmpty(name))
-                        name = KrangleName(name);
+                        name = KrangleService.KrangleName(name);
                     ImGui.Text(name);
 
                     ImGui.TableSetColumnIndex(1);
@@ -193,7 +194,7 @@ public class StatsWindow : Window, IDisposable
                 ImGui.TableSetColumnIndex(0);
                 var name = localPlayer.Name.ToString();
                 if (krangle && !string.IsNullOrEmpty(name))
-                    name = KrangleName(name);
+                    name = KrangleService.KrangleName(name);
                 ImGui.Text(name);
 
                 ImGui.TableSetColumnIndex(1);
@@ -208,18 +209,6 @@ public class StatsWindow : Window, IDisposable
         }
     }
 
-    private static string KrangleName(string name)
-    {
-        if (string.IsNullOrEmpty(name)) return name;
-        var parts = name.Split(' ');
-        for (var i = 0; i < parts.Length; i++)
-        {
-            if (parts[i].Length > 1)
-                parts[i] = parts[i][0] + new string('*', parts[i].Length - 1);
-        }
-        return string.Join(" ", parts);
-    }
-
     private static string FormatTime(float seconds)
     {
         var ts = TimeSpan.FromSeconds(seconds);
@@ -231,15 +220,33 @@ public class StatsWindow : Window, IDisposable
     public string GetPartyComposition()
     {
         var party = Plugin.PartyList;
-        if (party.Length == 0) return "Solo";
+        var localPlayer = Plugin.ObjectTable.LocalPlayer;
+        if (party.Length == 0 && localPlayer == null) return "None";
 
-        var jobs = new System.Collections.Generic.List<string>();
+        var members = new System.Collections.Generic.List<string>();
+        
+        // Add party members
         for (var i = 0; i < party.Length; i++)
         {
             var member = party[i];
             if (member != null)
-                jobs.Add(member.ClassJob.Value.Abbreviation.ToString());
+            {
+                var name = member.Name.ToString();
+                var job = member.ClassJob.Value.Abbreviation.ToString();
+                var level = member.Level.ToString();
+                members.Add($"{name}-{job}-{level}");
+            }
         }
-        return string.Join(" ", jobs);
+        
+        // Add local player if solo
+        if (party.Length == 0 && localPlayer != null)
+        {
+            var name = localPlayer.Name.ToString();
+            var job = localPlayer.ClassJob.Value.Abbreviation.ToString();
+            var level = localPlayer.Level.ToString();
+            members.Add($"{name}-{job}-{level}");
+        }
+        
+        return members.Count > 0 ? string.Join(", ", members) : "Unknown";
     }
 }
