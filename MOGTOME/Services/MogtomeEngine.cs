@@ -34,6 +34,7 @@ public class MogtomeEngine
     private readonly StuckDetectionService stuckDetection;
     private readonly DialogHandlerService dialogHandler;
     private readonly AutoDutyPathService autoDutyPath;
+    private readonly RunHistoryService runHistoryService; // NEW
     private readonly AutoDutyIPC autoDutyIPC;
     private readonly AutomatonIPC automatonIPC;
     private readonly YesAlreadyIPC yesAlreadyIPC;
@@ -84,8 +85,8 @@ public class MogtomeEngine
         RepairService repairService, FoodService foodService,
         RotationService rotationService, BossHandlerService bossHandler,
         StuckDetectionService stuckDetection, DialogHandlerService dialogHandler,
-        AutoDutyPathService autoDutyPath, AutoDutyIPC autoDutyIPC,
-        AutomatonIPC automatonIPC, YesAlreadyIPC yesAlreadyIPC,
+        AutoDutyPathService autoDutyPath, RunHistoryService runHistoryService, // NEW
+        AutoDutyIPC autoDutyIPC, AutomatonIPC automatonIPC, YesAlreadyIPC yesAlreadyIPC,
         ICondition condition, IClientState clientState, ICommandManager commandManager)
     {
         this.log = log;
@@ -100,6 +101,7 @@ public class MogtomeEngine
         this.stuckDetection = stuckDetection;
         this.dialogHandler = dialogHandler;
         this.autoDutyPath = autoDutyPath;
+        this.runHistoryService = runHistoryService; // NEW
         this.autoDutyIPC = autoDutyIPC;
         this.automatonIPC = automatonIPC;
         this.yesAlreadyIPC = yesAlreadyIPC;
@@ -328,6 +330,9 @@ public class MogtomeEngine
         {
             log.Information("[Engine] Unsynced run - skipping stats tracking");
         }
+
+        // Record run in history after stats are updated
+        runHistoryService.RecordRun();
 
         dutyTracker.OnDutyCompleted();
         state.IsInDuty = false;

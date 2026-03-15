@@ -42,15 +42,16 @@ public sealed class Plugin : IDalamudPlugin
     public BossModIPC BossModIPC { get; init; }
 
     // Services
-    public DutyTrackerService DutyTrackerService { get; init; }
-    public DutyQueueService DutyQueueService { get; init; }
-    public RepairService RepairService { get; init; }
-    public FoodService FoodService { get; init; }
-    public RotationService RotationService { get; init; }
-    public BossHandlerService BossHandlerService { get; init; }
-    public StuckDetectionService StuckDetectionService { get; init; }
-    public DialogHandlerService DialogHandlerService { get; init; }
-    public AutoDutyPathService AutoDutyPathService { get; init; }
+    public DutyTrackerService DutyTrackerService { get; private set; }
+    public DutyQueueService DutyQueueService { get; private set; }
+    public RotationService RotationService { get; private set; }
+    public BossHandlerService BossHandlerService { get; private set; }
+    public RepairService RepairService { get; private set; }
+    public FoodService FoodService { get; private set; }
+    public DialogHandlerService DialogHandlerService { get; private set; }
+    public StuckDetectionService StuckDetectionService { get; private set; }
+    public AutoDutyPathService AutoDutyPathService { get; private set; }
+    public RunHistoryService RunHistoryService { get; private set; }
     public MogtomeEngine Engine { get; init; }
 
     // Windows
@@ -81,6 +82,7 @@ public sealed class Plugin : IDalamudPlugin
         StuckDetectionService = new StuckDetectionService(Log, Configuration, State, VNavIPC, CommandManager, Condition);
         DialogHandlerService = new DialogHandlerService(Log, YesAlreadyIPC, CommandManager, GameGui);
         AutoDutyPathService = new AutoDutyPathService(Log);
+        RunHistoryService = new RunHistoryService(Log, Configuration, State, PlayerState);
 
         // Engine
         Engine = new MogtomeEngine(
@@ -89,8 +91,8 @@ public sealed class Plugin : IDalamudPlugin
             RepairService, FoodService,
             RotationService, BossHandlerService,
             StuckDetectionService, DialogHandlerService,
-            AutoDutyPathService, AutoDutyIPC,
-            AutomatonIPC, YesAlreadyIPC,
+            AutoDutyPathService, RunHistoryService, // NEW
+            AutoDutyIPC, AutomatonIPC, YesAlreadyIPC,
             Condition, ClientState, CommandManager);
 
         // Windows

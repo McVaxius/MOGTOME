@@ -1,6 +1,7 @@
 using Dalamud.Configuration;
 using System;
 using System.Collections.Generic;
+using MOGTOME.Models;
 
 namespace MOGTOME;
 
@@ -93,6 +94,12 @@ public class Configuration : IPluginConfiguration
     public int MaxDailyDecuRuns { get; set; } = 0;
     public int AllTimeMaxDailyDecu { get; set; } = 0; // All-time record
     public DateTime? LastDailyDecuReset { get; set; } = null;
+    
+    // --- Detailed Stats Settings ---
+    public List<RunRecord> RunHistory { get; set; } = new();
+    public int MaxHistorySize { get; set; } = 1000;
+    public bool EnableDetailedTracking { get; set; } = true;
+    public bool RecordPartyMembers { get; set; } = true;
     
     public int TotalMogtomesEarned { get; set; } = 0;
 

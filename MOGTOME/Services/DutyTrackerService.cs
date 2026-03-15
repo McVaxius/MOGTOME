@@ -91,6 +91,8 @@ public class DutyTrackerService
             state.LastCompletionDuration = (float)(DateTime.UtcNow - state.DutyStartTime.Value).TotalSeconds;
             state.LastCompletionTime = DateTime.UtcNow;
             log.Information($"[DutyTracker] Duty completed in {state.LastCompletionDuration:F0}s -> counter: {state.DutyCounter}");
+            
+            // Record the run in history (will be done by MogtomeEngine)
         }
 
         state.Reset();
