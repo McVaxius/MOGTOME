@@ -456,49 +456,44 @@ public class MogtomeEngine
         var leaveReason = $"Exit after duty ends - {elapsed:F0}s elapsed (configured: {DutyExitDelaySeconds}s)";
         
         log.Information($"[Engine] Leave duty attempt #{leaveAttemptCount} - REASON: {leaveReason}");
-        log.Information($"[Engine] Opening ContentsFinderMenu with callback");
+        log.Information($"[Engine] Opening duty panel to leave");
 
-        // Use callback 0 to open ContentsFinderMenu (FrenRider pattern)
-        System.Threading.Tasks.Task.Run(async () =>
-        {
-            await System.Threading.Tasks.Task.Delay(100);
+        // Open duty panel to access Leave Duty button
+        commandManager.ProcessCommand("/dutyfinder");
+
+        // Wait a moment for panel to open, then try to click Leave Duty
+        System.Threading.Tasks.Task.Delay(500).ContinueWith(_ => {
             TryClickLeaveDutyButton();
         });
 
-        // Also try clicking Yes on any confirmation dialog that appears (multiple attempts)
-        for (int i = 0; i < 5; i++)
-        {
-            System.Threading.Tasks.Task.Delay(1000 + (i * 500)).ContinueWith(_ => {
-                if (GameHelpers.ClickYesIfVisible())
-                {
-                    log.Information($"[Engine] Successfully clicked Yes on leave duty confirmation (attempt {i + 1})");
-                }
-            });
-        }
+        // Also try clicking Yes on any confirmation dialog that appears
+        System.Threading.Tasks.Task.Delay(1000).ContinueWith(_ => {
+            if (GameHelpers.ClickYesIfVisible())
+            {
+                log.Information("[Engine] Successfully clicked Yes on leave duty confirmation");
+            }
+        });
 
         StatusMessage = $"Leaving duty (attempt #{leaveAttemptCount}) - {leaveReason}";
     }
 
-    private void TryClickLeaveDutyButton()
+    private unsafe void TryClickLeaveDutyButton()
     {
         try
         {
-            log.Information("[Engine] Opening duty panel with /dutyfinder command");
+            // Use xa docs callback pattern: Open ContentsFinderMenu directly, then click Leave button (node 43)
+            log.Information("[Engine] Opening ContentsFinderMenu with callback");
             
-            // Use /dutyfinder command (FrenRider pattern)
-            commandManager.ProcessCommand("/dutyfinder");
-            
-            // Also try callback 0 as backup after a short delay
-            System.Threading.Tasks.Task.Delay(200).ContinueWith(_ => {
-                try
-                {
-                    GameHelpers.FireAddonCallback("ContentsFinderMenu", true, 0);
-                }
-                catch (Exception ex)
-                {
-                    log.Error($"[Engine] ContentsFinderMenu callback backup failed: {ex.Message}");
-                }
-            });
+            // Try direct callback to open ContentsFinderMenu (pattern from Character true 12)
+            try
+            {
+                // Based on xa docs pattern - try different callback numbers to open ContentsFinderMenu
+                GameHelpers.FireAddonCallback("ContentsFinderMenu", true, 0);
+            }
+            catch (Exception ex)
+            {
+                log.Error($"[Engine] ContentsFinderMenu callback failed: {ex.Message}");
+            }
             
             // Wait a moment for the menu to open, then click Leave button
             System.Threading.Tasks.Task.Delay(500).ContinueWith(_ => {
@@ -515,7 +510,7 @@ public class MogtomeEngine
     {
         try
         {
-            // Click Leave button using callback pattern: ContentsFinderMenu true 43
+            // Click Leave button using xa docs pattern: ClickAddonButton("ContentsFinderMenu", 43)
             log.Information("[Engine] Clicking Leave button on ContentsFinderMenu");
             GameHelpers.FireAddonCallback("ContentsFinderMenu", true, 43);
             
@@ -534,16 +529,9 @@ public class MogtomeEngine
     {
         try
         {
-            // Click Yes on SelectYesno confirmation dialog with retries
-            for (int i = 0; i < 3; i++)
-            {
-                System.Threading.Tasks.Task.Delay(300 * (i + 1)).ContinueWith(_ => {
-                    if (GameHelpers.ClickYesIfVisible())
-                    {
-                        log.Information($"[Engine] Successfully clicked Yes on leave confirmation (delayed attempt {i + 1})");
-                    }
-                });
-            }
+            // Click Yes on SelectYesno confirmation dialog
+            log.Information("[Engine] Clicking Yes on leave confirmation dialog");
+            GameHelpers.ClickYesIfVisible();
         }
         catch (Exception ex)
         {
