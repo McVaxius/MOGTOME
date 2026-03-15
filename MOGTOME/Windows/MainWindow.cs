@@ -34,7 +34,8 @@ public class MainWindow : Window, IDisposable
         // Header
         ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "M.O.G.T.O.M.E.");
         ImGui.SameLine();
-        ImGui.TextDisabled("v0.0.0.3");
+        var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0.0";
+        ImGui.TextDisabled($"v{version}");
         
         // Ko-fi donation button in upper right
         ImGui.SameLine(ImGui.GetWindowWidth() - 120);
