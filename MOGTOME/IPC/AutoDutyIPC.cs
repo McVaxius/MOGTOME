@@ -59,6 +59,22 @@ public class AutoDutyIPC : IDisposable
         SetConfig("UsingAlternativeRotationPlugin", useAlternative ? "true" : "false");
     }
 
+    public void SetPraetoriumPath()
+    {
+        try
+        {
+            // Set AutoDuty to use the Praetorium W2W path
+            SetConfig("SelectedPathName", "(1044) The Praetorium - W2W 20250716 phecda");
+            SetConfig("SelectedPathTerritoryType", "1044");
+            SetConfig("SelectedMode", "Regular");
+            log.Information("[AutoDuty] Set Praetorium W2W path via IPC");
+        }
+        catch (Exception ex)
+        {
+            log.Warning($"[AutoDuty] SetPraetoriumPath failed: {ex.Message}");
+        }
+    }
+
     public void QueueDuty(string dutyName)
     {
         try

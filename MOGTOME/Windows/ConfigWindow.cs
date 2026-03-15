@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Threading.Tasks;
 using Dalamud.Interface.Windowing;
 using Dalamud.Bindings.ImGui;
 using Lumina.Excel.Sheets;
@@ -269,23 +270,24 @@ public class ConfigWindow : Window, IDisposable
         {
             if (ImGui.Button("Install Praetorium Path"))
             {
-                plugin.AutoDutyPathService.EnsurePathExists();
+                _ = Task.Run(async () => await plugin.AutoDutyPathService.EnsurePathExists());
             }
-            ImGui.TextDisabled("This copies the W2W path file to AutoDuty's paths folder.");
+            ImGui.TextDisabled("This downloads the W2W path file from GitHub to AutoDuty's paths folder.");
         }
-
-        // Copy AutoDuty paths folder path
-        if (ImGui.Button("Copy AutoDuty Paths Folder"))
-        {
-            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            var adPath = System.IO.Path.Combine(appData, "XIVLauncher", "pluginConfigs", "AutoDuty", "paths");
-            ImGui.SetClipboardText(adPath);
-        }
-        ImGui.SameLine();
-        ImGui.TextDisabled("Copy path folder location to clipboard");
 
         ImGui.Spacing();
-        ImGui.TextWrapped("To change AutoDuty's active path: Open AutoDuty > Paths tab > Select the Praetorium W2W path.");
+        ImGui.TextWrapped("Open AutoDuty, pick Regular, pick Praetorium, then pick the \"(1044) The Praetorium - W2W 20250716 phecda\" path. This will save the path for your job and you shouldn't have to do it again in the future.");
+
+        // One-click path configuration button (only available after path is installed)
+        if (pathExists)
+        {
+            ImGui.Spacing();
+            if (ImGui.Button("Configure AutoDuty Path (One-Click)"))
+            {
+                plugin.AutoDutyIPC.SetPraetoriumPath();
+            }
+            ImGui.TextDisabled("Experimental - may not work yet. Uses IPC to configure AutoDuty automatically.");
+        }
     }
 
     private static void DrawDepLine(string name, bool ok, string detail, string? repoKey)

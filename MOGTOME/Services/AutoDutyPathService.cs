@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Net.Http;
+using System.Threading.Tasks;
 using Dalamud.Plugin.Services;
 
 namespace MOGTOME.Services;
@@ -9,14 +11,15 @@ public class AutoDutyPathService
     private readonly IPluginLog log;
 
     private const string PathFileName = "(1044) The Praetorium - W2W 20250716 phecda.json";
-    private const string SourcePath = @"D:\temp\dhogsbreakfeast\Dungeons and Multiboxing\G.O.O.N\(1044) The Praetorium - W2W 20250716 phecda.json";
+    private const string PathUrl = "https://raw.githubusercontent.com/McVaxius/dhogsbreakfeast/refs/heads/main/Dungeons%20and%20Multiboxing/G.O.O.N/(1044)%20The%20Praetorium%20-%20W2W%2020250716%20phecda.json";
+    private static readonly HttpClient httpClient = new();
 
     public AutoDutyPathService(IPluginLog log)
     {
         this.log = log;
     }
 
-    public bool EnsurePathExists()
+    public async Task<bool> EnsurePathExists()
     {
         try
         {
@@ -35,18 +38,21 @@ public class AutoDutyPathService
                 return true;
             }
 
-            if (!File.Exists(SourcePath))
-            {
-                log.Warning($"[AutoDutyPath] Source path file not found: {SourcePath}");
-                return false;
-            }
-
             // Ensure directory exists
             Directory.CreateDirectory(autoDutyPathsFolder);
 
-            // Copy the file
-            File.Copy(SourcePath, targetPath);
-            log.Information($"[AutoDutyPath] Copied path file to: {targetPath}");
+            // Download from GitHub
+            log.Information($"[AutoDutyPath] Downloading path file from: {PathUrl}");
+            var response = await httpClient.GetAsync(PathUrl);
+            if (!response.IsSuccessStatusCode)
+            {
+                log.Warning($"[AutoDutyPath] Failed to download path file: {response.StatusCode}");
+                return false;
+            }
+
+            var content = await response.Content.ReadAsStringAsync();
+            await File.WriteAllTextAsync(targetPath, content);
+            log.Information($"[AutoDutyPath] Downloaded path file to: {targetPath}");
             return true;
         }
         catch (Exception ex)

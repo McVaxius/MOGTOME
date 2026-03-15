@@ -41,6 +41,12 @@ public class Configuration : IPluginConfiguration
     public bool AutoDutyPathInstalled { get; set; } = false;
 
     // --- Stats ---
+    
+    
+    
+    
+    
+    
     public float BestTimeEver { get; set; } = float.MaxValue;
     public string BestTimeDate { get; set; } = "";
     public string BestTimeParty { get; set; } = "";
