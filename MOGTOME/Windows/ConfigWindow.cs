@@ -36,6 +36,7 @@ public class ConfigWindow : Window, IDisposable
         { "SkipCutscene", "https://raw.githubusercontent.com/a08381/Dalamud.SkipCutscene/dist/repo.json" },
         { "AutoDuty", "https://raw.githubusercontent.com/ffxivcode/DalamudPlugins/main/pluginmaster.json" },
         { "SimpleTweaks", "" },
+        { "CustomResolution", "https://raw.githubusercontent.com/0x0ade/CustomResolution/main/pluginmaster.json" },
     };
 
     public ConfigWindow(Plugin plugin)
@@ -250,7 +251,7 @@ public class ConfigWindow : Window, IDisposable
         ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Optional Plugins");
         ImGui.Separator();
 
-        DrawDepLineOptional("CustomResolution", depCustomRes);
+        DrawDepLineOptional("CustomResolution (1pp by 0x0ade)", depCustomRes);
         DrawDepLineOptional("ChillFrames", depChillframes);
 
         ImGui.Spacing();
