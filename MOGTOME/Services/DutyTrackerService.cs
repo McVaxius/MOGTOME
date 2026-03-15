@@ -135,6 +135,13 @@ public class DutyTrackerService
                 config.MaxDailyDecuRuns = state.DecumanaCounter;
             }
             
+            // Update all-time maximum if today's count beats the record
+            if (state.DecumanaCounter > config.AllTimeMaxDailyDecu)
+            {
+                config.AllTimeMaxDailyDecu = state.DecumanaCounter;
+                log.Information($"[DutyTracker] NEW ALL-TIME RECORD: {config.AllTimeMaxDailyDecu} Decumana runs in one day!");
+            }
+            
             state.DutyCounter = 0;
             state.DecumanaCounter = 0;
             config.DutyCounter = 0;
@@ -151,7 +158,7 @@ public class DutyTrackerService
             
             config.Save();
             
-            log.Information($"[DutyTracker] Daily reset! Prae: {oldPrae}→0, Decu: {oldDecu}→0 (Max: {config.MaxDailyDecuRuns})");
+            log.Information($"[DutyTracker] Daily reset! Prae: {oldPrae}→0, Decu: {oldDecu}→0 (Max: {config.MaxDailyDecuRuns}, All-time: {config.AllTimeMaxDailyDecu})");
             return true;
         }
         

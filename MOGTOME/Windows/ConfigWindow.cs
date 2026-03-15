@@ -279,7 +279,7 @@ public class ConfigWindow : Window, IDisposable
         }
 
         ImGui.Spacing();
-        ImGui.TextWrapped("Open AutoDuty, pick Regular, pick Praetorium, then pick the \"(1044) The Praetorium - W2W 20250716 phecda\" path. This will save the path for your job and you shouldn't have to do it again in the future.");
+        ImGui.TextWrapped("BEFORE starting the M.O.G.T.O.M.E. plugin, Open AutoDuty, pick Regular, pick Praetorium, then pick the \"(1044) The Praetorium - W2W 20250716 phecda\" path. This will save the path for your job and you shouldn't have to do it again in the future.  Even so, always check this before starting your runs.");
     }
 
     private static void DrawDepLine(string name, bool ok, string detail, string? repoKey)
