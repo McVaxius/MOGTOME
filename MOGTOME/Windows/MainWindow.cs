@@ -119,6 +119,10 @@ public class MainWindow : Window, IDisposable
             : "The Porta Decumana";
         ImGui.Text($"Current: {currentDuty}");
 
+        // Reset countdown
+        var (countdown, localTime) = plugin.DutyTrackerService.GetResetTimeDisplay();
+        ImGui.Text($"Daily reset: {countdown} ({localTime})");
+
         if (config.TestingModeUnsynced)
             ImGui.TextColored(new Vector4(1.0f, 1.0f, 0.0f, 1.0f), "[TESTING MODE - Unsynced]");
 

@@ -70,6 +70,10 @@ public class StatsWindow : Window, IDisposable
             ImGui.Text($"Daily Decumana Runs: {state.DecumanaCounter}");
             ImGui.Text($"Max Daily Decu Runs: {config.MaxDailyDecuRuns}");
             
+            // Reset time display
+            var (countdown, localTime) = plugin.DutyTrackerService.GetResetTimeDisplay();
+            ImGui.Text($"Next daily reset: {countdown} ({localTime})");
+            
             // Daily Decumana stats (if any runs today)
             if (config.DailyDecuRuns > 0)
             {
@@ -234,6 +238,9 @@ public class StatsWindow : Window, IDisposable
         config.DailyDecuMogtomesEarned = 0;
         config.MaxDailyDecuRuns = 0;
         config.LastDailyDecuReset = null;
+        
+        // Reset next reset time (will be recalculated on next check)
+        plugin.State.NextResetTime = null;
         
         config.TotalMogtomesEarned = 0;
         config.Save();

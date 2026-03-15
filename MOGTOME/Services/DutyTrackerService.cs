@@ -18,6 +18,12 @@ public class DutyTrackerService
 
         state.DutyCounter = config.DutyCounter;
         state.CalculateTimeouts(2.0f);
+        
+        // Initialize next reset time if not set
+        if (state.NextResetTime == null)
+        {
+            CalculateNextResetTime();
+        }
     }
 
     /// <summary>
@@ -28,6 +34,26 @@ public class DutyTrackerService
     {
         state.DutyCounter = config.DutyCounter;
         log.Information($"[DutyTracker] Synced counters: {state.DutyCounter}");
+    }
+
+    /// <summary>
+    /// Calculate the next reset time (next 7 AM UTC that hasn't happened yet)
+    /// </summary>
+    private void CalculateNextResetTime()
+    {
+        var now = DateTime.UtcNow;
+        
+        // Find next 7 AM UTC (could be today or tomorrow)
+        var resetTime = new DateTime(now.Year, now.Month, now.Day, 7, 0, 0, DateTimeKind.Utc);
+        if (now >= resetTime)
+        {
+            resetTime = resetTime.AddDays(1); // Tomorrow's 7 AM UTC
+        }
+        
+        state.NextResetTime = resetTime;
+        config.Save();
+        
+        log.Information($"[DutyTracker] Next reset time set to: {resetTime:yyyy-MM-dd HH:mm UTC}");
     }
 
     public void OnDutyStarted()
@@ -88,16 +114,16 @@ public class DutyTrackerService
     public bool CheckDailyReset()
     {
         var now = DateTime.UtcNow;
-        var lastReset = state.LastDailyReset ?? DateTime.MinValue;
         
-        // Check if it's a new day (7 AM UTC reset time)
-        var resetTimeToday = new DateTime(now.Year, now.Month, now.Day, 7, 0, 0, DateTimeKind.Utc);
-        if (now < resetTimeToday)
+        // If we have no next reset time, calculate it
+        if (state.NextResetTime == null)
         {
-            resetTimeToday = resetTimeToday.AddDays(-1); // Yesterday's reset if before 7 AM today
+            CalculateNextResetTime();
+            return false;
         }
         
-        if (lastReset < resetTimeToday)
+        // Check if we've passed the saved reset time
+        if (now >= state.NextResetTime)
         {
             // Reset daily counters
             var oldPrae = state.DutyCounter;
@@ -111,8 +137,6 @@ public class DutyTrackerService
             
             state.DutyCounter = 0;
             state.DecumanaCounter = 0;
-            state.LastDailyReset = now;
-            
             config.DutyCounter = 0;
             
             // Reset daily Decumana stats
@@ -122,16 +146,59 @@ public class DutyTrackerService
             config.DailyDecuMogtomesEarned = 0;
             config.LastDailyDecuReset = now;
             
+            // Calculate next reset time
+            CalculateNextResetTime();
+            
             config.Save();
             
-            log.Information($"[DutyTracker] Daily reset! Prae: {oldPrae}→0, Daily Decu: {oldDecu}→0 (Max: {config.MaxDailyDecuRuns})");
+            log.Information($"[DutyTracker] Daily reset! Prae: {oldPrae}→0, Decu: {oldDecu}→0 (Max: {config.MaxDailyDecuRuns})");
             return true;
         }
+        
         return false;
     }
 
     public string GetCurrentDutyName()
     {
         return ShouldRunPraetorium() ? "The Praetorium" : "The Porta Decumana";
+    }
+
+    /// <summary>
+    /// Get reset time display with countdown and local time
+    /// </summary>
+    public (string countdown, string localTime) GetResetTimeDisplay()
+    {
+        if (state.NextResetTime == null)
+        {
+            return ("Calculating...", "Unknown");
+        }
+
+        var now = DateTime.UtcNow;
+        var timeUntilReset = state.NextResetTime.Value - now;
+        
+        // Format countdown
+        string countdown;
+        if (timeUntilReset.TotalHours > 24)
+        {
+            countdown = $"{(int)timeUntilReset.TotalDays}d {(int)timeUntilReset.Hours % 24}h";
+        }
+        else if (timeUntilReset.TotalHours > 1)
+        {
+            countdown = $"{(int)timeUntilReset.TotalHours}h {timeUntilReset.Minutes % 60}m";
+        }
+        else if (timeUntilReset.TotalMinutes > 1)
+        {
+            countdown = $"{(int)timeUntilReset.TotalMinutes}m {timeUntilReset.Seconds % 60}s";
+        }
+        else
+        {
+            countdown = $"{(int)timeUntilReset.TotalSeconds}s";
+        }
+
+        // Convert to local time for display
+        var localResetTime = state.NextResetTime.Value.ToLocalTime();
+        var localTime = localResetTime.ToString("yyyy-MM-dd HH:mm");
+
+        return (countdown, localTime);
     }
 }
