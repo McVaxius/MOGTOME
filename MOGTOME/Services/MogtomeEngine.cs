@@ -311,6 +311,41 @@ public class MogtomeEngine
         CurrentState = EngineState.WaitingOutsideDuty;
         StatusMessage = $"Outside Duty - Next: #{state.DutyCounter + 1}";
         log.Information($"[Engine] Left duty. Next: #{state.DutyCounter + 1}");
+
+        // Check if we should continue running
+        if (state.DutyCounter < config.MaxRuns)
+        {
+            log.Information($"[Engine] Continuing run sequence - {state.DutyCounter}/{config.MaxRuns} completed");
+            
+            // Auto-queue if we're the leader (like VERMAXION pattern)
+            if (state.IsPartyLeader)
+            {
+                // Small delay to ensure we're fully outside duty
+                System.Threading.Tasks.Task.Delay(2000).ContinueWith(_ => {
+                    try
+                    {
+                        var isPrae = dutyTracker.ShouldRunPraetorium();
+                        CurrentState = EngineState.Queueing;
+                        StatusMessage = $"Auto-queueing: {dutyTracker.GetCurrentDutyName()}";
+                        log.Information($"[Engine] Auto-queueing for next run: {dutyTracker.GetCurrentDutyName()}");
+                        dutyQueue.TryQueue(isPrae);
+                    }
+                    catch (Exception ex)
+                    {
+                        log.Error($"[Engine] Auto-queue failed: {ex.Message}");
+                    }
+                });
+            }
+            else
+            {
+                log.Information("[Engine] Waiting for party leader to queue next run");
+            }
+        }
+        else
+        {
+            log.Information($"[Engine] All runs completed - stopping");
+            HandleQuit();
+        }
     }
 
     private void UpdateOutsideDuty()
