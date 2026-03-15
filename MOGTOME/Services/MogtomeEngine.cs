@@ -454,18 +454,17 @@ public class MogtomeEngine
         var leaveReason = $"Exit after duty ends - {elapsed:F0}s elapsed (configured: {DutyExitDelaySeconds}s)";
         
         log.Information($"[Engine] Leave duty attempt #{leaveAttemptCount} - REASON: {leaveReason}");
-        log.Information($"[Engine] Opening ContentsFinderMenu with U key");
+        log.Information($"[Engine] Opening ContentsFinderMenu with callback");
 
-        // Use U key to open ContentsFinderMenu (xa docs pattern)
-        commandManager.ProcessCommand("/keypress U");
-
-        // Wait for menu to appear, then try to click Leave button
-        System.Threading.Tasks.Task.Delay(500).ContinueWith(_ => {
-            TryClickLeaveButton();
+        // Use callback 0 to open ContentsFinderMenu (FrenRider pattern)
+        System.Threading.Tasks.Task.Run(async () =>
+        {
+            await System.Threading.Tasks.Task.Delay(100);
+            TryClickLeaveDutyButton();
         });
 
         // Also try clicking Yes on any confirmation dialog that appears
-        System.Threading.Tasks.Task.Delay(1000).ContinueWith(_ => {
+        System.Threading.Tasks.Task.Delay(1500).ContinueWith(_ => {
             if (GameHelpers.ClickYesIfVisible())
             {
                 log.Information("[Engine] Successfully clicked Yes on leave duty confirmation");
@@ -473,6 +472,33 @@ public class MogtomeEngine
         });
 
         StatusMessage = $"Leaving duty (attempt #{leaveAttemptCount}) - {leaveReason}";
+    }
+
+    private void TryClickLeaveDutyButton()
+    {
+        try
+        {
+            log.Information("[Engine] Opening ContentsFinderMenu with callback");
+            
+            // Try direct callback to open ContentsFinderMenu (pattern from FrenRider)
+            try
+            {
+                GameHelpers.FireAddonCallback("ContentsFinderMenu", true, 0);
+            }
+            catch (Exception ex)
+            {
+                log.Error($"[Engine] ContentsFinderMenu callback failed: {ex.Message}");
+            }
+            
+            // Wait a moment for the menu to open, then click Leave button
+            System.Threading.Tasks.Task.Delay(500).ContinueWith(_ => {
+                TryClickLeaveButton();
+            });
+        }
+        catch (Exception ex)
+        {
+            log.Error($"[Engine] Error trying to leave duty: {ex.Message}");
+        }
     }
 
     private void TryClickLeaveButton()
