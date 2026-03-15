@@ -58,6 +58,25 @@ public class MogtomeEngine
     private const int DutyExitDelaySeconds = 10;
     private bool delayedRequeueInProgress = false;
 
+    // Requeue state machine
+    private bool requeueInProgress = false;
+    private DateTime requeueStartTime = DateTime.MinValue;
+    private int requeueAttempts = 0;
+    private const int MaxRequeueAttempts = 5;
+    private const float RequeueRetryInterval = 10.0f;
+    private RequeueState requeueState = RequeueState.Idle;
+
+    public enum RequeueState
+    {
+        Idle,
+        WaitingToStop,     // Wait 2s after leaving duty
+        StoppingAutoDuty,   // Execute /ad stop
+        WaitingToQueue,    // Wait 1s after stop
+        Queueing,           // Execute queue command
+        Complete,           // Successfully queued
+        Failed              // Max attempts reached
+    }
+
     public MogtomeEngine(
         IPluginLog log, Configuration config, DutyState state,
         DutyTrackerService dutyTracker, DutyQueueService dutyQueue,
@@ -258,6 +277,11 @@ public class MogtomeEngine
         rotationService.ForceRotation();
         autoDutyStartedInDuty = false;
         dutyCompleted = false;
+        
+        // Reset requeue state when successfully entering duty
+        requeueInProgress = false;
+        requeueState = RequeueState.Idle;
+        
         CurrentState = EngineState.InDuty;
         StatusMessage = $"In Duty - #{state.DutyCounter} ({dutyTracker.GetCurrentDutyName()})";
         log.Information($"[Engine] Entered duty #{state.DutyCounter}");
@@ -310,52 +334,19 @@ public class MogtomeEngine
         log.Information($"[Engine] Left duty. Next: #{state.DutyCounter + 1}");
 
         // Check if we should continue running
-        if (state.DutyCounter < config.MaxRuns)
+        if (state.DutyCounter < config.MaxRuns && state.IsPartyLeader)
         {
-            log.Information($"[Engine] Continuing run sequence - {state.DutyCounter}/{config.MaxRuns} completed");
+            log.Information($"[Engine] Starting requeue sequence - {state.DutyCounter}/{config.MaxRuns} completed");
             
-            // Auto-queue if we're the leader (like VERMAXION pattern)
-            if (state.IsPartyLeader)
-            {
-                delayedRequeueInProgress = true;
-                
-                // Small delay to ensure we're fully outside duty
-                System.Threading.Tasks.Task.Delay(2000).ContinueWith(_ => {
-                    try
-                    {
-                        // Stop AutoDuty from previous duty
-                        log.Information("[Engine] Stopping AutoDuty from previous duty");
-                        autoDutyIPC.StopDuty();
-                        
-                        // Wait for AutoDuty to fully stop
-                        System.Threading.Tasks.Task.Delay(1000).ContinueWith(_ => {
-                            try
-                            {
-                                var isPrae = dutyTracker.ShouldRunPraetorium();
-                                CurrentState = EngineState.Queueing;
-                                StatusMessage = $"Auto-queueing: {dutyTracker.GetCurrentDutyName()}";
-                                log.Information($"[Engine] Auto-queueing for next run: {dutyTracker.GetCurrentDutyName()}");
-                                dutyQueue.TryQueue(isPrae);
-                                delayedRequeueInProgress = false;
-                            }
-                            catch (Exception ex)
-                            {
-                                log.Error($"[Engine] Auto-queue failed: {ex.Message}");
-                                delayedRequeueInProgress = false;
-                            }
-                        });
-                    }
-                    catch (Exception ex)
-                    {
-                        log.Error($"[Engine] AutoDuty stop failed: {ex.Message}");
-                        delayedRequeueInProgress = false;
-                    }
-                });
-            }
-            else
-            {
-                log.Information("[Engine] Waiting for party leader to queue next run");
-            }
+            // Start requeue state machine
+            requeueInProgress = true;
+            requeueState = RequeueState.WaitingToStop;
+            requeueStartTime = DateTime.UtcNow;
+            requeueAttempts = 0;
+        }
+        else if (state.DutyCounter < config.MaxRuns && !state.IsPartyLeader)
+        {
+            log.Information("[Engine] Waiting for party leader to queue next run");
         }
         else
         {
@@ -384,7 +375,14 @@ public class MogtomeEngine
         // Auto-equip
         repairService.AutoEquipIfEnabled();
 
-        // Queue for duty if leader (but not if delayed requeue is in progress)
+        // Handle requeue state machine
+        if (requeueInProgress)
+        {
+            HandleRequeueStateMachine();
+            return; // Skip normal queue logic while requeue in progress
+        }
+
+        // Normal queue logic (only if not requeueing)
         if (state.IsPartyLeader && !delayedRequeueInProgress)
         {
             var isPrae = dutyTracker.ShouldRunPraetorium();
@@ -408,6 +406,79 @@ public class MogtomeEngine
             {
                 repairService.TryNpcRepair();
             }
+        }
+    }
+
+    private void HandleRequeueStateMachine()
+    {
+        var elapsed = (DateTime.UtcNow - requeueStartTime).TotalSeconds;
+        var isPrae = dutyTracker.ShouldRunPraetorium();
+        
+        switch (requeueState)
+        {
+            case RequeueState.WaitingToStop:
+                if (elapsed >= 2.0)
+                {
+                    log.Information("[Engine] Stopping AutoDuty from previous duty");
+                    autoDutyIPC.StopDuty();
+                    requeueState = RequeueState.StoppingAutoDuty;
+                    requeueStartTime = DateTime.UtcNow;
+                }
+                StatusMessage = $"Waiting to stop AutoDuty ({2.0 - elapsed:F0}s)";
+                break;
+                
+            case RequeueState.StoppingAutoDuty:
+                if (elapsed >= 1.0) // Give time for stop to process
+                {
+                    requeueState = RequeueState.WaitingToQueue;
+                    requeueStartTime = DateTime.UtcNow;
+                }
+                StatusMessage = "Stopping AutoDuty...";
+                break;
+                
+            case RequeueState.WaitingToQueue:
+                if (elapsed >= 1.0)
+                {
+                    CurrentState = EngineState.Queueing;
+                    StatusMessage = $"Auto-queueing: {dutyTracker.GetCurrentDutyName()}";
+                    log.Information($"[Engine] Auto-queueing for next run: {dutyTracker.GetCurrentDutyName()}");
+                    dutyQueue.TryQueue(isPrae);
+                    requeueState = RequeueState.Queueing;
+                    requeueStartTime = DateTime.UtcNow;
+                }
+                StatusMessage = $"Waiting to queue ({1.0 - elapsed:F0}s)";
+                break;
+                
+            case RequeueState.Queueing:
+                if (elapsed >= 5.0) // Give 5s for queue to process
+                {
+                    // Check if successfully queued (entered duty or in queue)
+                    if (condition[ConditionFlag.BoundByDuty] || CurrentState == EngineState.InDuty)
+                    {
+                        requeueState = RequeueState.Complete;
+                        requeueInProgress = false;
+                        log.Information("[Engine] Requeue completed successfully");
+                    }
+                    else
+                    {
+                        // Queue failed, retry
+                        requeueAttempts++;
+                        if (requeueAttempts >= MaxRequeueAttempts)
+                        {
+                            requeueState = RequeueState.Failed;
+                            requeueInProgress = false;
+                            log.Error("[Engine] Requeue failed after max attempts");
+                        }
+                        else
+                        {
+                            log.Warning($"[Engine] Requeue attempt {requeueAttempts} failed, retrying in {RequeueRetryInterval}s");
+                            requeueState = RequeueState.WaitingToStop;
+                            requeueStartTime = DateTime.UtcNow.AddSeconds(RequeueRetryInterval - 3.0); // Account for 2s wait
+                        }
+                    }
+                }
+                StatusMessage = "Queueing...";
+                break;
         }
     }
 
