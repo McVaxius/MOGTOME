@@ -18,6 +18,10 @@ public class DutyState
     public const ushort DecumanaTerritoryId = 1048;
     public const ushort LimsaLowerTerritoryId = 129;
 
+    // --- Duty Time Limits (in seconds) ---
+    public const float PraetoriumTimeLimit = 7200f; // 120 minutes
+    public const float DecumanaTimeLimit = 3600f;   // 60 minutes
+
     // --- Duty IDs for ContentsFinder ---
     public int PraetoriumDutyIndex { get; set; } = 16;
     public const int DecumanaDutyId = 830;
@@ -28,6 +32,7 @@ public class DutyState
     public float LastCompletionDuration { get; set; } = 0;
     public float MaxContentTime { get; set; } = 0;
     public float TimeInDuty { get; set; } = 0;
+    public float RemainingTimeAtCompletion { get; set; } = 0; // Remaining time when duty completes
 
     // --- Stuck Detection ---
     public float LastPositionX { get; set; } = 0;
@@ -68,6 +73,7 @@ public class DutyState
         DutyStartTime = null;
         MaxContentTime = 0;
         TimeInDuty = 0;
+        RemainingTimeAtCompletion = 0;
         StuckTickCount = 0;
         HasEnteredDuty = false;
     }

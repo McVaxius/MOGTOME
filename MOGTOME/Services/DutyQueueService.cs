@@ -2,6 +2,7 @@ using System;
 using Dalamud.Plugin.Services;
 using MOGTOME.IPC;
 using MOGTOME.Models;
+using MOGTOME.Services;
 
 namespace MOGTOME.Services;
 
@@ -16,6 +17,7 @@ public class DutyQueueService
     private readonly ICondition condition;
 
     private DateTime lastQueueAttempt = DateTime.MinValue;
+    private DateTime lastCommenceClickTime = DateTime.MinValue;
     private const float QueueCooldown = 10.0f;
 
     public DutyQueueService(
@@ -66,6 +68,34 @@ public class DutyQueueService
             automatonIPC.EnableAutoQueue();
             state.AutoQueueDisabledForRepair = false;
             log.Information("[DutyQueue] AutoQueue re-enabled after repair");
+        }
+    }
+
+    /// <summary>
+    /// Auto-accept duty pop for non-leaders.
+    /// All party members should accept unless engaged in repair.
+    /// Uses FrenRider's ContentsFinderConfirm approach.
+    /// </summary>
+    public void AutoAcceptDuty()
+    {
+        // Only auto-accept if not the party leader
+        if (state.IsPartyLeader) return;
+
+        // Don't accept if in the middle of repair
+        if (state.AutoQueueDisabledForRepair) return;
+
+        // Handle ContentsFinderConfirm popup (duty commence dialog) like FrenRider
+        if (GameHelpers.IsAddonVisible("ContentsFinderConfirm"))
+        {
+            var now = DateTime.UtcNow;
+            if ((now - lastCommenceClickTime).TotalSeconds > 2) // Rate limit to prevent spam
+            {
+                lastCommenceClickTime = now;
+                log.Information("[DutyQueue] Clicking Commence on ContentsFinderConfirm (non-leader)");
+                
+                // Fire commence callback - typically callback index 8 = Commence button
+                GameHelpers.FireAddonCallback("ContentsFinderConfirm", true, 8);
+            }
         }
     }
 }

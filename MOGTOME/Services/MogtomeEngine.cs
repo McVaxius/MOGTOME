@@ -140,6 +140,10 @@ public class MogtomeEngine
 
         try
         {
+            // Send /ad stop to reset AutoDuty state for all characters
+            log.Information("[Engine] Sending /ad stop to reset AutoDuty state");
+            commandManager.ProcessCommand("/ad stop");
+
             // Ensure AutoDuty path exists
             autoDutyPath.EnsurePathExists();
 
@@ -251,6 +255,9 @@ public class MogtomeEngine
             // Handle dialogs always
             dialogHandler.Update();
 
+            // Auto-accept duty pop for non-leaders
+            dutyQueue.AutoAcceptDuty();
+
             switch (CurrentState)
             {
                 case EngineState.WaitingOutsideDuty:
@@ -330,9 +337,6 @@ public class MogtomeEngine
         {
             log.Information("[Engine] Unsynced run - skipping stats tracking");
         }
-
-        // Record run in history after stats are updated
-        runHistoryService.RecordRun();
 
         dutyTracker.OnDutyCompleted();
         state.IsInDuty = false;
@@ -828,8 +832,9 @@ public class MogtomeEngine
             
             return members.Count > 0 ? string.Join(", ", members) : "Unknown";
         }
-        catch
+        catch (Exception ex)
         {
+            log.Error($"[Engine] GetPartyComposition failed: {ex.Message}");
             return "Unknown";
         }
     }

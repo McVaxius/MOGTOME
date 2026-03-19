@@ -40,6 +40,40 @@ public class StatsWindow : Window, IDisposable
         var state = plugin.State;
 
         ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Duty Statistics");
+        ImGui.SameLine(ImGui.GetWindowWidth() - 240);
+        if (ImGui.Button("Open Config", new Vector2(100, 0)))
+        {
+            try
+            {
+                var configPath = System.IO.Path.Combine(Plugin.PluginInterface.ConfigDirectory.FullName, "MOGTOME");
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = configPath,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log.Error($"Failed to open config folder: {ex.Message}");
+            }
+        }
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.SetTooltip("Open MOGTOME configuration folder");
+        }
+        ImGui.SameLine();
+        var krangleEnabled = plugin.Configuration.KrangleNames;
+        var krangleText = krangleEnabled ? "Un-Krangle" : "Krangle Names";
+        if (ImGui.Button(krangleText, new Vector2(120, 0)))
+        {
+            plugin.Configuration.KrangleNames = !krangleEnabled;
+            plugin.Configuration.Save();
+            KrangleService.ClearCache();
+        }
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.SetTooltip("Obfuscate names with military/exercise words.\nUseful for screenshots.");
+        }
         ImGui.Separator();
 
         // Main tab navigation
@@ -177,7 +211,8 @@ public class StatsWindow : Window, IDisposable
         {
             ImGui.Text($"Best: {FormatTime(bestTime)}");
             ImGui.TextDisabled($"Date: {bestTimeDate}");
-            ImGui.TextDisabled($"Party: {bestTimeParty}");
+            var krangledParty = plugin.Configuration.KrangleNames ? KrangleService.KrangleName(bestTimeParty) : bestTimeParty;
+            ImGui.TextDisabled($"Party: {krangledParty}");
         }
         else
         {
@@ -191,7 +226,8 @@ public class StatsWindow : Window, IDisposable
         {
             ImGui.Text($"Longest: {FormatTime(longestRun)}");
             ImGui.TextDisabled($"Date: {longestRunDate}");
-            ImGui.TextDisabled($"Party: {longestRunParty}");
+            var krangledLongestParty = plugin.Configuration.KrangleNames ? KrangleService.KrangleName(longestRunParty) : longestRunParty;
+            ImGui.TextDisabled($"Party: {krangledLongestParty}");
         }
         else
         {
@@ -366,6 +402,8 @@ public class StatsWindow : Window, IDisposable
             if (member != null)
             {
                 var name = member.Name.ToString();
+                if (plugin.Configuration.KrangleNames && !string.IsNullOrEmpty(name))
+                    name = KrangleService.KrangleName(name);
                 var job = member.ClassJob.Value.Abbreviation.ToString();
                 var level = member.Level.ToString();
                 members.Add($"{name}-{job}-{level}");
@@ -376,6 +414,8 @@ public class StatsWindow : Window, IDisposable
         if (party.Length == 0 && localPlayer != null)
         {
             var name = localPlayer.Name.ToString();
+            if (plugin.Configuration.KrangleNames && !string.IsNullOrEmpty(name))
+                name = KrangleService.KrangleName(name);
             var job = localPlayer.ClassJob.Value.Abbreviation.ToString();
             var level = localPlayer.Level.ToString();
             members.Add($"{name}-{job}-{level}");

@@ -5,6 +5,7 @@ using Dalamud.Interface.Windowing;
 using Dalamud.Bindings.ImGui;
 using MOGTOME.Models;
 using MOGTOME.Services;
+using MOGTOME.IPC;
 
 namespace MOGTOME.Windows;
 
@@ -104,6 +105,20 @@ public class MainWindow : Window, IDisposable
         if (ImGui.Button("Stats", new Vector2(60, 30)))
         {
             plugin.StatsWindow.Toggle();
+        }
+
+        ImGui.SameLine();
+        var krangleEnabled = plugin.Configuration.KrangleNames;
+        var krangleText = krangleEnabled ? "Un-Krangle" : "Krange";
+        if (ImGui.Button(krangleText, new Vector2(80, 30)))
+        {
+            plugin.Configuration.KrangleNames = !krangleEnabled;
+            plugin.Configuration.Save();
+            KrangleService.ClearCache();
+        }
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.SetTooltip("Obfuscate names with military/exercise words.\nUseful for screenshots.");
         }
 
         ImGui.Separator();

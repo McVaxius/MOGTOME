@@ -9,12 +9,14 @@ public class DutyTrackerService
     private readonly IPluginLog log;
     private readonly Configuration config;
     private readonly DutyState state;
+    private readonly RunHistoryService runHistoryService;
 
-    public DutyTrackerService(IPluginLog log, Configuration config, DutyState state)
+    public DutyTrackerService(IPluginLog log, Configuration config, DutyState state, RunHistoryService runHistoryService)
     {
         this.log = log;
         this.config = config;
         this.state = state;
+        this.runHistoryService = runHistoryService;
 
         state.DutyCounter = config.DutyCounter;
         state.CalculateTimeouts(2.0f);
@@ -84,15 +86,43 @@ public class DutyTrackerService
         log.Information($"[DutyTracker] {(isPrae ? "Praetorium" : "Decumana")} started -> Prae counter: {state.DutyCounter}, Daily Decu: {state.DecumanaCounter}");
     }
 
+    /// <summary>
+    /// Called when duty is completed
+    /// </summary>
     public void OnDutyCompleted()
     {
+        log.Information($"[DutyTracker] OnDutyCompleted called - DutyStartTime: {state.DutyStartTime}");
+        
         if (state.DutyStartTime.HasValue)
         {
-            state.LastCompletionDuration = (float)(DateTime.UtcNow - state.DutyStartTime.Value).TotalSeconds;
+            var isPrae = state.CurrentTerritory == DutyState.PraetoriumTerritoryId;
+            var timeLimit = isPrae ? DutyState.PraetoriumTimeLimit : DutyState.DecumanaTimeLimit;
+
+            var remainingTime = GameHelpers.GetDutyRemainingTime();
+            float actualDuration;
+
+            if (remainingTime > 0)
+            {
+                actualDuration = timeLimit - remainingTime;
+                state.RemainingTimeAtCompletion = remainingTime;
+                log.Information($"[DutyTracker] Duty completed using remaining time method: {timeLimit:F0}s - {remainingTime:F0}s = {actualDuration:F0}s");
+            }
+            else
+            {
+                actualDuration = (float)(DateTime.UtcNow - state.DutyStartTime.Value).TotalSeconds;
+                state.RemainingTimeAtCompletion = 0;
+                log.Information($"[DutyTracker] Duty completed using fallback method: {actualDuration:F0}s (remaining time unavailable)");
+            }
+
+            state.LastCompletionDuration = actualDuration;
             state.LastCompletionTime = DateTime.UtcNow;
+
             log.Information($"[DutyTracker] Duty completed in {state.LastCompletionDuration:F0}s -> counter: {state.DutyCounter}");
-            
-            // Record the run in history (will be done by MogtomeEngine)
+            log.Debug($"[DutyTracker] Time limit: {timeLimit:F0}s, Territory: {state.CurrentTerritory}, IsPrae: {isPrae}, Remaining: {remainingTime:F0}s");
+        }
+        else
+        {
+            log.Warning("[DutyTracker] OnDutyCompleted called but DutyStartTime was null");
         }
 
         state.Reset();

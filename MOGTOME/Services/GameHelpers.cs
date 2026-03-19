@@ -1,11 +1,13 @@
 using System;
 using System.Text;
 using Dalamud.Game.ClientState.Objects.Types;
+using Dalamud.Game.ClientState.Conditions;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Client.UI;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using GameObject = FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject;
 
@@ -52,7 +54,7 @@ public static class GameHelpers
     }
 
     /// <summary>
-    /// Fire a callback on an addon with parameters.
+    /// Fire callback on addon with parameters.
     /// Pattern from FrenRider GameHelpers.
     /// SND equivalent: /callback AddonName true/false arg1 arg2 ...
     /// </summary>
@@ -83,12 +85,28 @@ public static class GameHelpers
             {
                 addon->FireCallback((uint)atkValues.Length, ptr, updateState);
             }
-
-            Plugin.Log.Information($"[Callback] Fired on '{addonName}' with {args.Length} args, updateState={updateState}");
+            
+            Plugin.Log.Information($"[Callback] Fired callback on '{addonName}' with args: {string.Join(", ", args)}");
         }
         catch (Exception ex)
         {
-            Plugin.Log.Error($"[Callback] Failed for '{addonName}': {ex.Message}");
+            Plugin.Log.Error($"[Callback] Failed to fire callback on '{addonName}': {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Check if addon is visible.
+    /// </summary>
+    public static unsafe bool IsAddonVisible(string addonName)
+    {
+        try
+        {
+            var addon = RaptureAtkUnitManager.Instance()->GetAddonByName(addonName);
+            return addon != null && addon->IsVisible;
+        }
+        catch
+        {
+            return false;
         }
     }
 
@@ -160,6 +178,31 @@ public static class GameHelpers
         catch (Exception ex)
         {
             Plugin.Log.Error($"Command failed [{command}]: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Get remaining time for current duty.
+    /// Returns remaining time in seconds, 0 if not in duty.
+    /// TODO: Implement proper InstancedContent.ContentTimeLeft access.
+    /// </summary>
+    public static unsafe float GetDutyRemainingTime()
+    {
+        try
+        {
+            // Check if we're in a duty (Condition[34] = BoundByDuty)
+            if (!Plugin.Condition[34])
+                return 0f;
+
+            // TODO: Implement InstancedContent.ContentTimeLeft access
+            // For now, return 0 to trigger fallback method
+            Plugin.Log.Debug("[GameHelpers] GetDutyRemainingTime: Using fallback (not implemented yet)");
+            return 0f;
+        }
+        catch (Exception ex)
+        {
+            Plugin.Log.Error($"GetDutyRemainingTime failed: {ex.Message}");
+            return 0f;
         }
     }
 }

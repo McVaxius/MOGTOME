@@ -31,7 +31,9 @@ public sealed class Plugin : IDalamudPlugin
     private const string CommandName = "/mogtome";
     private const string AliasCommandName = "/mog";
 
-    public Configuration Configuration { get; init; }
+    // Per-account configuration management
+    public ConfigManager ConfigManager { get; init; }
+    public Configuration Configuration => ConfigManager.GetActiveConfig();
     public DutyState State { get; init; }
 
     // IPC
@@ -62,7 +64,10 @@ public sealed class Plugin : IDalamudPlugin
 
     public Plugin()
     {
-        Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
+        // Initialize ConfigManager first
+        ConfigManager = new ConfigManager(Log, PlayerState, ClientState, PluginInterface);
+        ConfigManager.EnsureAccountSelected();
+        
         State = new DutyState();
 
         // Initialize IPC
@@ -73,7 +78,8 @@ public sealed class Plugin : IDalamudPlugin
         BossModIPC = new BossModIPC(Log, CommandManager);
 
         // Initialize Services
-        DutyTrackerService = new DutyTrackerService(Log, Configuration, State);
+        RunHistoryService = new RunHistoryService(Log, Configuration, State, PlayerState);
+        DutyTrackerService = new DutyTrackerService(Log, Configuration, State, RunHistoryService);
         DutyQueueService = new DutyQueueService(Log, Configuration, State, AutoDutyIPC, AutomatonIPC, CommandManager, Condition);
         RepairService = new RepairService(Log, Configuration, State, CommandManager, Condition);
         FoodService = new FoodService(Log, Configuration, State, Condition);
@@ -82,7 +88,6 @@ public sealed class Plugin : IDalamudPlugin
         StuckDetectionService = new StuckDetectionService(Log, Configuration, State, VNavIPC, CommandManager, Condition);
         DialogHandlerService = new DialogHandlerService(Log, YesAlreadyIPC, CommandManager, GameGui);
         AutoDutyPathService = new AutoDutyPathService(Log);
-        RunHistoryService = new RunHistoryService(Log, Configuration, State, PlayerState);
 
         // Engine
         Engine = new MogtomeEngine(
@@ -138,6 +143,9 @@ public sealed class Plugin : IDalamudPlugin
         if (Engine.IsRunning)
             Engine.Stop();
         Engine.Dispose();
+
+        // Save current account configuration before disposing everything
+        ConfigManager.SaveCurrentAccount();
 
         WindowSystem.RemoveAllWindows();
         ConfigWindow.Dispose();
@@ -210,6 +218,9 @@ public sealed class Plugin : IDalamudPlugin
     private void OnDutyCompleted(object? sender, ushort territoryId)
     {
         Log.Information($"[Plugin] DutyCompleted event: territory={territoryId}");
+        
+        // Record run immediately when duty completes (party still together)
+        RunHistoryService.RecordRun();
     }
 
     private void ToggleConfigUi() => ConfigWindow.Toggle();

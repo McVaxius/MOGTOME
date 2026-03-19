@@ -106,6 +106,7 @@ public class Configuration : IPluginConfiguration
     // --- UI Settings ---
     public bool IsConfigWindowMovable { get; set; } = true;
     public bool StatsKrangleNames { get; set; } = false;
+    public bool KrangleNames { get; set; } = false;
 
     public void Save()
     {

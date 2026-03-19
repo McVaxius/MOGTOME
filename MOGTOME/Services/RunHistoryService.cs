@@ -58,7 +58,16 @@ public class RunHistoryService
     private RunRecord CreateRunRecord()
     {
         var localPlayer = Plugin.ObjectTable.LocalPlayer;
+        var partyList = Plugin.PartyList;
         var isPrae = state.CurrentTerritory == DutyState.PraetoriumTerritoryId;
+        
+        // Debug party detection
+        log.Information($"[RunHistory] Party detection: PartyList.Length={partyList.Length}, LocalPlayer={localPlayer?.Name}");
+        for (int i = 0; i < partyList.Length; i++)
+        {
+            var member = partyList[i];
+            log.Information($"[RunHistory] Party member {i}: {member?.Name}");
+        }
         
         return new RunRecord
         {
@@ -75,7 +84,7 @@ public class RunHistoryService
             IsPraetorium = isPrae,
             WasSuccessful = true,
             ItemLevel = (ushort)(localPlayer?.Level ?? 0), // Simplified for now
-            PartySize = (byte)Plugin.PartyList.Length
+            PartySize = (byte)partyList.Length
         };
     }
 
