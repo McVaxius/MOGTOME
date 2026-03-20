@@ -67,7 +67,7 @@ public class StatsWindow : Window, IDisposable
         if (ImGui.Button(krangleText, new Vector2(120, 0)))
         {
             plugin.Configuration.KrangleNames = !krangleEnabled;
-            plugin.Configuration.Save();
+            plugin.ConfigManager.SaveCurrentAccount();
             KrangleService.ClearCache();
         }
         if (ImGui.IsItemHovered())
@@ -310,8 +310,11 @@ public class StatsWindow : Window, IDisposable
         // Reset next reset time (will be recalculated on next check)
         plugin.State.NextResetTime = null;
         
+        // Clear run history - THIS WAS MISSING!
+        plugin.RunHistoryService.ClearRunHistory();
+        
         config.TotalMogtomesEarned = 0;
-        config.Save();
+        plugin.ConfigManager.SaveCurrentAccount();
     }
 
     private void DrawPartyTable(bool krangle)
@@ -429,7 +432,7 @@ public class StatsWindow : Window, IDisposable
         ImGui.Text("Job Performance");
         ImGui.Separator();
         
-        if (!plugin.Configuration.EnableDetailedTracking || plugin.Configuration.RunHistory.Count == 0)
+        if (!plugin.Configuration.EnableDetailedTracking || plugin.RunHistoryService.RunHistory.Count == 0)
         {
             ImGui.TextDisabled("No run data available. Enable detailed tracking and complete some runs.");
             return;
@@ -489,7 +492,7 @@ public class StatsWindow : Window, IDisposable
         ImGui.Text("Player Statistics");
         ImGui.Separator();
         
-        if (!plugin.Configuration.EnableDetailedTracking || plugin.Configuration.RunHistory.Count == 0)
+        if (!plugin.Configuration.EnableDetailedTracking || plugin.RunHistoryService.RunHistory.Count == 0)
         {
             ImGui.TextDisabled("No run data available. Enable detailed tracking and complete some runs.");
             return;
@@ -532,7 +535,7 @@ public class StatsWindow : Window, IDisposable
         ImGui.Text("Recent Runs (Last 25)");
         ImGui.Separator();
         
-        if (!plugin.Configuration.EnableDetailedTracking || plugin.Configuration.RunHistory.Count == 0)
+        if (!plugin.Configuration.EnableDetailedTracking || plugin.RunHistoryService.RunHistory.Count == 0)
         {
             ImGui.TextDisabled("No run data available. Enable detailed tracking and complete some runs.");
             return;
@@ -540,7 +543,7 @@ public class StatsWindow : Window, IDisposable
 
         var recentRuns = plugin.RunHistoryService.GetRecentRuns(25);
         
-        if (ImGui.BeginTable("RecentRunsTable", 7, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.ScrollY))
+        if (ImGui.BeginTable("RecentRunsTable", 8, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.ScrollY))
         {
             // Headers
             ImGui.TableSetupColumn("Time", ImGuiTableColumnFlags.WidthFixed, 60);
@@ -548,6 +551,7 @@ public class StatsWindow : Window, IDisposable
             ImGui.TableSetupColumn("Job", ImGuiTableColumnFlags.WidthFixed, 40);
             ImGui.TableSetupColumn("Duty", ImGuiTableColumnFlags.WidthFixed, 50);
             ImGui.TableSetupColumn("Time", ImGuiTableColumnFlags.WidthFixed, 50);
+            ImGui.TableSetupColumn("Party", ImGuiTableColumnFlags.WidthFixed, 180);
             ImGui.TableSetupColumn("Deaths", ImGuiTableColumnFlags.WidthFixed, 50);
             ImGui.TableSetupColumn("Status", ImGuiTableColumnFlags.WidthFixed, 60);
             ImGui.TableHeadersRow();
@@ -574,9 +578,22 @@ public class StatsWindow : Window, IDisposable
                 ImGui.Text(FormatTime(run.CompletionTime));
                 
                 ImGui.TableSetColumnIndex(5);
-                ImGui.Text(run.DeathCount.ToString());
+                // Show party size and members together
+                var partyMembers = plugin.RunHistoryService.GetPartyMembersForRun(run);
+                var partyDisplay = partyMembers.Count > 0 ? 
+                    $"{partyMembers.Count}: {string.Join(", ", partyMembers)}" : 
+                    $"{run.PartySize}: Unknown";
+                
+                if (plugin.Configuration.StatsKrangleNames && partyMembers.Count > 0)
+                {
+                    partyDisplay = $"{partyMembers.Count}: {string.Join(", ", partyMembers.Select(m => KrangleService.KrangleName(m)))}";
+                }
+                ImGui.Text(partyDisplay);
                 
                 ImGui.TableSetColumnIndex(6);
+                ImGui.Text(run.DeathCount.ToString());
+                
+                ImGui.TableSetColumnIndex(7);
                 var statusColor = run.WasSuccessful ? new Vector4(0, 1, 0, 1) : new Vector4(1, 0, 0, 1);
                 ImGui.TextColored(statusColor, run.WasSuccessful ? "Success" : "Failed");
             }
@@ -590,13 +607,13 @@ public class StatsWindow : Window, IDisposable
         ImGui.Text("Performance Trends");
         ImGui.Separator();
         
-        if (!plugin.Configuration.EnableDetailedTracking || plugin.Configuration.RunHistory.Count == 0)
+        if (!plugin.Configuration.EnableDetailedTracking || plugin.RunHistoryService.RunHistory.Count == 0)
         {
             ImGui.TextDisabled("No run data available. Enable detailed tracking and complete some runs.");
             return;
         }
 
-        var allRuns = plugin.Configuration.RunHistory;
+        var allRuns = plugin.RunHistoryService.RunHistory;
         var last10 = allRuns.TakeLast(10);
         var last50 = allRuns.TakeLast(50);
         

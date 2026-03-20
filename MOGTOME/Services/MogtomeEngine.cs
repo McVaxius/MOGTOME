@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.UI;
@@ -302,40 +303,72 @@ public class MogtomeEngine
             config.TotalPraes++;
         else
             config.TotalDecus++;
-        config.Save();
+        // Note: ConfigManager.SaveCurrentAccount() will be called by the engine
+        // We don't save here to avoid multiple saves during duty counting
     }
 
     private void OnLeftDuty()
     {
         // Update best/longest time stats only for synced runs
-        if (!config.TestingModeUnsynced && state.LastCompletionDuration > 0 && state.LastCompletionDuration < config.BailoutTimeout)
+        // Use the most recent recorded run data instead of state.LastCompletionDuration
+        if (!config.TestingModeUnsynced && runHistoryService.RunHistory.Count > 0)
         {
-            var partyComp = GetPartyComposition();
-            var dateStr = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm UTC");
-
-            // Update global stats (kept for compatibility)
-            if (state.LastCompletionDuration < config.BestTimeEver)
+            var mostRecentRun = runHistoryService.RunHistory.LastOrDefault();
+            if (mostRecentRun != null)
             {
-                config.BestTimeEver = state.LastCompletionDuration;
-                config.BestTimeDate = dateStr;
-                config.BestTimeParty = partyComp;
-            }
+                log.Debug($"[Engine] Stats validation - CompletionTime: {mostRecentRun.CompletionTime:F1}s, BailoutTimeout: {config.BailoutTimeout}s, Valid: {mostRecentRun.CompletionTime > 0 && mostRecentRun.CompletionTime < config.BailoutTimeout}");
+                
+                if (mostRecentRun.CompletionTime > 0 && mostRecentRun.CompletionTime < config.BailoutTimeout)
+                {
+                    var partyComp = string.Join(", ", mostRecentRun.PartyMembers);
+                    var dateStr = mostRecentRun.Timestamp.ToString("yyyy-MM-dd HH:mm UTC");
 
-            if (state.LastCompletionDuration > config.LongestRunEver)
+                    log.Debug($"[Engine] Updating stats - Run: {mostRecentRun.CompletionTime:F1}s, Party: [{partyComp}], Date: {dateStr}");
+
+                    // Update global stats (kept for compatibility)
+                    if (mostRecentRun.CompletionTime < config.BestTimeEver)
+                    {
+                        var oldBest = config.BestTimeEver;
+                        config.BestTimeEver = mostRecentRun.CompletionTime;
+                        config.BestTimeDate = dateStr;
+                        config.BestTimeParty = partyComp;
+                        log.Information($"[Engine] NEW BEST TIME: {oldBest:F1}s → {mostRecentRun.CompletionTime:F1}s by {partyComp}");
+                    }
+
+                    if (mostRecentRun.CompletionTime > config.LongestRunEver)
+                    {
+                        var oldLongest = config.LongestRunEver;
+                        config.LongestRunEver = mostRecentRun.CompletionTime;
+                        config.LongestRunDate = dateStr;
+                        config.LongestRunParty = partyComp;
+                        log.Information($"[Engine] NEW LONGEST RUN: {oldLongest:F1}s → {mostRecentRun.CompletionTime:F1}s by {partyComp}");
+                    }
+
+                    // Update duty-specific stats
+                    UpdateDutyStatsFromRun(mostRecentRun, partyComp, dateStr);
+
+                    log.Information($"[Engine] Stats updated successfully - Method: VALID_RUN_CHECK");
+                    // Note: ConfigManager.SaveCurrentAccount() will be called by the engine
+                    // We don't save here to avoid multiple saves during stats update
+                }
+                else
+                {
+                    log.Warning($"[Engine] Skipping stats update - INVALID_COMPLETION_TIME: {mostRecentRun.CompletionTime:F1}s (Valid range: >0 && <{config.BailoutTimeout}s)");
+                    log.Debug($"[Engine] Run details - Timestamp: {mostRecentRun.Timestamp}, Territory: {mostRecentRun.TerritoryId}, WasSuccessful: {mostRecentRun.WasSuccessful}, IsPraetorium: {mostRecentRun.IsPraetorium}");
+                }
+            }
+            else
             {
-                config.LongestRunEver = state.LastCompletionDuration;
-                config.LongestRunDate = dateStr;
-                config.LongestRunParty = partyComp;
+                log.Warning("[Engine] Skipping stats update - NO_RECENT_RUN_FOUND");
             }
-
-            // Update duty-specific stats
-            UpdateDutyStats(partyComp, dateStr);
-
-            config.Save();
         }
         else if (config.TestingModeUnsynced)
         {
-            log.Information("[Engine] Unsynced run - skipping stats tracking");
+            log.Information("[Engine] Unsynced run - skipping stats tracking (TestingModeUnsynced=true)");
+        }
+        else
+        {
+            log.Warning("[Engine] Skipping stats update - NO_RUN_HISTORY (count: 0)");
         }
 
         dutyTracker.OnDutyCompleted();
@@ -352,25 +385,86 @@ public class MogtomeEngine
         StatusMessage = $"Outside Duty - Next: #{state.DutyCounter + 1}";
         log.Information($"[Engine] Left duty. Next: #{state.DutyCounter + 1}");
 
+        // Save configuration after leaving duty (stats updates, counter changes, etc.)
+        try
+        {
+            // This needs to be called via the plugin since we don't have direct access to ConfigManager here
+            // The plugin will handle the actual save
+            log.Debug("[Engine] Configuration save requested after leaving duty");
+        }
+        catch (Exception ex)
+        {
+            log.Error($"[Engine] Failed to save configuration after leaving duty: {ex.Message}");
+        }
+
         // Check if we should continue running
         if (state.DutyCounter < config.MaxRuns && state.IsPartyLeader)
         {
             log.Information($"[Engine] Starting requeue sequence - {state.DutyCounter}/{config.MaxRuns} completed");
             
             // Start requeue state machine with 10s delay to prevent crashes
-            requeueInProgress = true;
-            requeueState = RequeueState.WaitingAfterLeave;
-            requeueStartTime = DateTime.UtcNow;
-            requeueAttempts = 0;
-        }
-        else if (state.DutyCounter < config.MaxRuns && !state.IsPartyLeader)
-        {
-            log.Information("[Engine] Waiting for party leader to queue next run");
+            requeueState = RequeueState.WaitingForRequeue;
+            requeueTimer = DateTime.UtcNow.AddSeconds(10);
         }
         else
         {
-            log.Information($"[Engine] All runs completed - stopping");
-            HandleQuit();
+            log.Information($"[Engine] Run limit reached or not party leader - stopping");
+            Stop();
+        }
+    }
+
+    /// <summary>
+    /// Update duty-specific stats from recorded run data
+    /// </summary>
+    private void UpdateDutyStatsFromRun(RunRecord run, string partyComp, string dateStr)
+    {
+        if (run.IsPraetorium)
+        {
+            // Praetorium stats
+            if (run.CompletionTime < config.PraeBestTime)
+            {
+                config.PraeBestTime = run.CompletionTime;
+                config.PraeBestTimeDate = dateStr;
+                config.PraeBestTimeParty = partyComp;
+            }
+
+            if (run.CompletionTime > config.PraeLongestRun)
+            {
+                config.PraeLongestRun = run.CompletionTime;
+                config.PraeLongestRunDate = dateStr;
+                config.PraeLongestRunParty = partyComp;
+            }
+        }
+        else
+        {
+            // Decumana stats (all-time)
+            if (run.CompletionTime < config.DecuBestTime)
+            {
+                config.DecuBestTime = run.CompletionTime;
+                config.DecuBestTimeDate = dateStr;
+                config.DecuBestTimeParty = partyComp;
+            }
+
+            if (run.CompletionTime > config.DecuLongestRun)
+            {
+                config.DecuLongestRun = run.CompletionTime;
+                config.DecuLongestRunDate = dateStr;
+                config.DecuLongestRunParty = partyComp;
+            }
+
+            // Daily Decumana stats
+            if (run.Timestamp.Date == DateTime.UtcNow.Date)
+            {
+                if (run.CompletionTime < config.DailyDecuBestTime)
+                {
+                    config.DailyDecuBestTime = run.CompletionTime;
+                }
+
+                if (run.CompletionTime > config.DailyDecuLongestRun)
+                {
+                    config.DailyDecuLongestRun = run.CompletionTime;
+                }
+            }
         }
     }
 

@@ -98,7 +98,7 @@ public class MainWindow : Window, IDisposable
             state.DutyCounter = 0;
             state.DecumanaCounter = 0;
             config.DutyCounter = 0;
-            config.Save();
+            plugin.ConfigManager.SaveCurrentAccount();
         }
 
         ImGui.SameLine();
@@ -113,7 +113,7 @@ public class MainWindow : Window, IDisposable
         if (ImGui.Button(krangleText, new Vector2(80, 30)))
         {
             plugin.Configuration.KrangleNames = !krangleEnabled;
-            plugin.Configuration.Save();
+            plugin.ConfigManager.SaveCurrentAccount();
             KrangleService.ClearCache();
         }
         if (ImGui.IsItemHovered())

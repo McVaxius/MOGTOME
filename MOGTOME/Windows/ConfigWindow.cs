@@ -162,7 +162,7 @@ public class ConfigWindow : Window, IDisposable
 
         if (changed)
         {
-            config.Save();
+            plugin.ConfigManager.SaveCurrentAccount();
         }
     }
 

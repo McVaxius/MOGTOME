@@ -183,20 +183,25 @@ public static class GameHelpers
 
     /// <summary>
     /// Get remaining time for current duty.
-    /// Returns remaining time in seconds, 0 if not in duty.
-    /// TODO: Implement proper InstancedContent.ContentTimeLeft access.
+    /// Returns remaining time in seconds, 0 if not in duty or unavailable.
+    /// Uses InstancedContent.ContentTimeLeft based on SND GetContentTimeLeft() pattern.
     /// </summary>
     public static unsafe float GetDutyRemainingTime()
     {
         try
         {
-            // Check if we're in a duty (Condition[34] = BoundByDuty)
-            if (!Plugin.Condition[34])
-                return 0f;
-
-            // TODO: Implement InstancedContent.ContentTimeLeft access
-            // For now, return 0 to trigger fallback method
-            Plugin.Log.Debug("[GameHelpers] GetDutyRemainingTime: Using fallback (not implemented yet)");
+            // Direct InstancedContent.ContentTimeLeft access
+            // Based on SND pattern: return InstancedContent.ContentTimeLeft
+            // No condition check needed per SND comments
+            var instanceContent = FFXIVClientStructs.FFXIV.Client.Game.InstanceContent.Instance();
+            if (instanceContent != null)
+            {
+                var remainingTime = instanceContent->ContentTimeLeft;
+                Plugin.Log.Debug($"[GameHelpers] GetDutyRemainingTime: {remainingTime:F0}s remaining");
+                return remainingTime;
+            }
+            
+            Plugin.Log.Debug("[GameHelpers] GetDutyRemainingTime: InstanceContent is null");
             return 0f;
         }
         catch (Exception ex)

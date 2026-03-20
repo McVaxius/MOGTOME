@@ -37,6 +37,13 @@ public class ConfigManager
         this.pluginInterface = pluginInterface;
         
         EnsureConfigFolderExists();
+        
+        // Check for migration first
+        if (HasSharedConfigToMigrate())
+        {
+            MigrateSharedConfig();
+        }
+        
         LoadAllAccounts();
     }
     
@@ -128,13 +135,112 @@ public class ConfigManager
     }
     
     /// <summary>
-    /// Save the current account configuration
+    /// Save the current account configuration to per-account JSON file
     /// </summary>
     public void SaveCurrentAccount()
     {
-        if (!string.IsNullOrEmpty(CurrentAccountId) && accounts.ContainsKey(CurrentAccountId))
+        try
         {
-            SaveAccount(CurrentAccountId);
+            var accountId = CurrentAccountId;
+            if (string.IsNullOrEmpty(accountId))
+            {
+                log.Warning("[ConfigManager] Cannot save - no account selected");
+                return;
+            }
+
+            var config = GetActiveConfig();
+            var fileName = $"{accountId}_MOGTOME.json";
+            var filePath = Path.Combine(GetConfigFolderPath(), fileName);
+            
+            config.SaveToFile(filePath);
+            log.Debug($"[ConfigManager] Saved account {accountId} to: {filePath}");
+        }
+        catch (Exception ex)
+        {
+            log.Error($"[ConfigManager] Failed to save current account: {ex.Message}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Load configuration for a specific account from JSON file
+    /// </summary>
+    private Configuration LoadAccountConfig(string accountId)
+    {
+        try
+        {
+            var fileName = $"{accountId}_MOGTOME.json";
+            var filePath = Path.Combine(GetConfigFolderPath(), fileName);
+            
+            var config = Configuration.LoadFromFile(filePath);
+            log.Debug($"[ConfigManager] Loaded account {accountId} from: {filePath}");
+            return config;
+        }
+        catch (Exception ex)
+        {
+            log.Error($"[ConfigManager] Failed to load account {accountId}: {ex.Message}");
+            return new Configuration();
+        }
+    }
+
+    /// <summary>
+    /// Check if shared config exists and needs migration
+    /// </summary>
+    private bool HasSharedConfigToMigrate()
+    {
+        var sharedConfigPath = Path.Combine(pluginInterface.ConfigDirectory.FullName, "MOGTOME.json");
+        return File.Exists(sharedConfigPath);
+    }
+
+    /// <summary>
+    /// Migrate shared config to per-account format
+    /// </summary>
+    private void MigrateSharedConfig()
+    {
+        try
+        {
+            var sharedConfigPath = Path.Combine(pluginInterface.ConfigDirectory.FullName, "MOGTOME.json");
+            
+            if (!File.Exists(sharedConfigPath))
+            {
+                log.Debug("[ConfigManager] No shared config to migrate");
+                return;
+            }
+
+            log.Information("[ConfigManager] Starting migration from shared config to per-account format");
+
+            // Load existing shared config
+            var sharedConfig = Configuration.LoadFromFile(sharedConfigPath);
+            
+            // Save to current account's file
+            var accountId = CurrentAccountId;
+            if (!string.IsNullOrEmpty(accountId))
+            {
+                var fileName = $"{accountId}_MOGTOME.json";
+                var filePath = Path.Combine(GetConfigFolderPath(), fileName);
+                sharedConfig.SaveToFile(filePath);
+                
+                // Backup and remove old shared file
+                var backupPath = sharedConfigPath + $".backup_{DateTime.Now:yyyyMMdd_HHmmss}";
+                File.Move(sharedConfigPath, backupPath);
+                
+                log.Information($"[ConfigManager] Migrated shared config to account {accountId}");
+                log.Information($"[ConfigManager] Shared config backed up to: {backupPath}");
+                
+                // Update current account to use migrated config
+                if (accounts.ContainsKey(accountId))
+                {
+                    accounts[accountId].Settings = sharedConfig;
+                }
+            }
+            else
+            {
+                log.Warning("[ConfigManager] Cannot migrate - no current account ID available");
+            }
+        }
+        catch (Exception ex)
+        {
+            log.Error($"[ConfigManager] Migration failed: {ex.Message}");
         }
     }
     
@@ -163,20 +269,25 @@ public class ConfigManager
     /// </summary>
     private AccountConfig CreateAccountForContentId(ulong contentId)
     {
+        var accountId = contentId.ToString();
+        
+        // Try to load existing config first
+        var existingConfig = LoadAccountConfig(accountId);
+        
         var account = new AccountConfig
         {
-            AccountId = contentId.ToString(),
+            AccountId = accountId,
             CreatedAt = DateTime.UtcNow,
             LastUsed = DateTime.UtcNow,
-            Settings = new Configuration()
+            Settings = existingConfig // Use loaded config or new if none exists
         };
         
-        log.Information($"[ConfigManager] Created account for content ID: {contentId}");
+        log.Information($"[ConfigManager] Created account for content ID: {contentId} (loaded existing: {existingConfig != null})");
         return account;
     }
     
     /// <summary>
-    /// Load all account configurations from disk
+    /// Load all account configurations from per-account JSON files
     /// </summary>
     private void LoadAllAccounts()
     {
@@ -189,17 +300,35 @@ public class ConfigManager
                 return;
             }
             
+            // Look for per-account configuration files
             var files = Directory.GetFiles(configPath, "*_MOGTOME.json");
+            int loadedCount = 0;
+            
             foreach (var file in files)
             {
                 try
                 {
-                    var json = File.ReadAllText(file);
-                    var account = JsonSerializer.Deserialize<AccountConfig>(json, GetJsonOptions());
-                    if (account != null)
+                    var fileName = Path.GetFileNameWithoutExtension(file);
+                    var accountId = fileName.Replace("_MOGTOME", "");
+                    
+                    if (ulong.TryParse(accountId, out var contentId))
                     {
-                        accounts[account.AccountId] = account;
-                        log.Debug($"[ConfigManager] Loaded account: {account.AccountId}");
+                        var config = Configuration.LoadFromFile(file);
+                        var account = new AccountConfig
+                        {
+                            AccountId = accountId,
+                            CreatedAt = DateTime.UtcNow, // We don't track creation date in JSON
+                            LastUsed = DateTime.UtcNow,
+                            Settings = config
+                        };
+                        
+                        accounts[accountId] = account;
+                        loadedCount++;
+                        log.Debug($"[ConfigManager] Loaded account: {accountId}");
+                    }
+                    else
+                    {
+                        log.Warning($"[ConfigManager] Invalid account ID in filename: {fileName}");
                     }
                 }
                 catch (Exception ex)
@@ -208,36 +337,11 @@ public class ConfigManager
                 }
             }
             
-            log.Information($"[ConfigManager] Loaded {accounts.Count} account configurations");
+            log.Information($"[ConfigManager] Loaded {loadedCount} account configurations from per-account JSON files");
         }
         catch (Exception ex)
         {
             log.Error($"[ConfigManager] Error loading accounts: {ex.Message}");
-        }
-    }
-    
-    /// <summary>
-    /// Save a specific account configuration to disk
-    /// </summary>
-    private void SaveAccount(string accountId)
-    {
-        try
-        {
-            if (!accounts.ContainsKey(accountId))
-                return;
-            
-            var account = accounts[accountId];
-            var json = JsonSerializer.Serialize(account, GetJsonOptions());
-            var fileName = $"{accountId}_MOGTOME.json";
-            var filePath = Path.Combine(GetConfigFolderPath(), fileName);
-            
-            log.Information($"[ConfigManager] Saving account {accountId} to: {filePath}");
-            File.WriteAllText(filePath, json);
-            log.Debug($"[ConfigManager] Saved account: {accountId}");
-        }
-        catch (Exception ex)
-        {
-            log.Error($"[ConfigManager] Error saving account {accountId}: {ex.Message}");
         }
     }
     

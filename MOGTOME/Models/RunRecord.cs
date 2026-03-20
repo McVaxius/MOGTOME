@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace MOGTOME.Models;
 
@@ -76,6 +77,11 @@ public class RunRecord
     /// Party size during the run
     /// </summary>
     public byte PartySize { get; set; } = 1;
+    
+    /// <summary>
+    /// List of party member names during the run
+    /// </summary>
+    public List<string> PartyMembers { get; set; } = new();
 }
 
 /// <summary>

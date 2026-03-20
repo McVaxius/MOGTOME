@@ -53,7 +53,8 @@ public class DutyTrackerService
         }
         
         state.NextResetTime = resetTime;
-        config.Save();
+        // Note: ConfigManager.SaveCurrentAccount() will be called by the caller
+        // We don't save here to avoid multiple saves during initialization
         
         log.Information($"[DutyTracker] Next reset time set to: {resetTime:yyyy-MM-dd HH:mm UTC}");
     }
@@ -81,48 +82,81 @@ public class DutyTrackerService
         state.TimeInDuty = 0;
         state.StuckTickCount = 0;
 
-        config.Save();
+        // Note: ConfigManager.SaveCurrentAccount() will be called by the engine
+        // We don't save here to avoid multiple saves during duty start
 
         log.Information($"[DutyTracker] {(isPrae ? "Praetorium" : "Decumana")} started -> Prae counter: {state.DutyCounter}, Daily Decu: {state.DecumanaCounter}");
     }
 
     /// <summary>
     /// Called when duty is completed
+    /// Enhanced with detailed timing method logging
     /// </summary>
     public void OnDutyCompleted()
     {
-        log.Information($"[DutyTracker] OnDutyCompleted called - DutyStartTime: {state.DutyStartTime}");
+        var now = DateTime.UtcNow;
+        log.Information($"[DutyTracker] OnDutyCompleted called - DutyStartTime: {state.DutyStartTime}, CurrentTime: {now}");
         
         if (state.DutyStartTime.HasValue)
         {
             var isPrae = state.CurrentTerritory == DutyState.PraetoriumTerritoryId;
             var timeLimit = isPrae ? DutyState.PraetoriumTimeLimit : DutyState.DecumanaTimeLimit;
+            var rawDuration = (float)(now - state.DutyStartTime.Value).TotalSeconds;
+
+            log.Debug($"[DutyTracker] Duty parameters - Territory: {state.CurrentTerritory}, IsPrae: {isPrae}, TimeLimit: {timeLimit:F0}s, RawDuration: {rawDuration:F0}s");
 
             var remainingTime = GameHelpers.GetDutyRemainingTime();
+            log.Information($"[DutyTracker] Remaining time check - API returned: {remainingTime:F0}s");
+            
             float actualDuration;
+            string timingMethod;
 
             if (remainingTime > 0)
             {
                 actualDuration = timeLimit - remainingTime;
                 state.RemainingTimeAtCompletion = remainingTime;
-                log.Information($"[DutyTracker] Duty completed using remaining time method: {timeLimit:F0}s - {remainingTime:F0}s = {actualDuration:F0}s");
+                timingMethod = "API_METHOD";
+                
+                log.Information($"[DutyTracker] [{timingMethod}] Duty completed: {timeLimit:F0}s - {remainingTime:F0}s = {actualDuration:F0}s");
+                log.Debug($"[DutyTracker] [{timingMethod}] TimeLimit: {timeLimit:F0}s, Remaining: {remainingTime:F0}s, Calculated: {actualDuration:F0}s");
+                
+                // Validate the calculated time
+                if (actualDuration < 0 || actualDuration > timeLimit)
+                {
+                    log.Warning($"[DutyTracker] [{timingMethod}] Invalid calculated duration {actualDuration:F0}s, falling back to raw duration");
+                    actualDuration = rawDuration;
+                    timingMethod = "API_FALLBACK";
+                }
             }
             else
             {
-                actualDuration = (float)(DateTime.UtcNow - state.DutyStartTime.Value).TotalSeconds;
+                actualDuration = rawDuration;
                 state.RemainingTimeAtCompletion = 0;
-                log.Information($"[DutyTracker] Duty completed using fallback method: {actualDuration:F0}s (remaining time unavailable)");
+                timingMethod = "FALLBACK_METHOD";
+                
+                log.Information($"[DutyTracker] [{timingMethod}] Duty completed: {actualDuration:F0}s (remaining time unavailable)");
+                log.Debug($"[DutyTracker] [{timingMethod}] RawDuration: {rawDuration:F0}s, Reason: API returned {remainingTime:F0}s");
+            }
+
+            // Final validation
+            if (actualDuration <= 0 || actualDuration > 7200) // 2 hours max sanity check
+            {
+                log.Error($"[DutyTracker] [{timingMethod}] Invalid final duration {actualDuration:F0}s, using fallback");
+                actualDuration = Math.Max(rawDuration, 1); // Ensure at least 1 second
+                timingMethod = "FINAL_FALLBACK";
             }
 
             state.LastCompletionDuration = actualDuration;
-            state.LastCompletionTime = DateTime.UtcNow;
+            state.LastCompletionTime = now;
 
-            log.Information($"[DutyTracker] Duty completed in {state.LastCompletionDuration:F0}s -> counter: {state.DutyCounter}");
-            log.Debug($"[DutyTracker] Time limit: {timeLimit:F0}s, Territory: {state.CurrentTerritory}, IsPrae: {isPrae}, Remaining: {remainingTime:F0}s");
+            log.Information($"[DutyTracker] [{timingMethod}] FINAL: Duty completed in {state.LastCompletionDuration:F0}s -> counter: {state.DutyCounter}");
+            log.Debug($"[DutyTracker] [{timingMethod}] Summary - TimeLimit: {timeLimit:F0}s, Territory: {state.CurrentTerritory}, IsPrae: {isPrae}, Remaining: {remainingTime:F0}s, Actual: {actualDuration:F0}s");
         }
         else
         {
-            log.Warning("[DutyTracker] OnDutyCompleted called but DutyStartTime was null");
+            log.Warning("[DutyTracker] DutyStartTime is null, cannot calculate completion time");
+            state.LastCompletionDuration = 0;
+            state.LastCompletionTime = now;
         }
 
         state.Reset();
@@ -188,7 +222,8 @@ public class DutyTrackerService
             // Calculate next reset time
             CalculateNextResetTime();
             
-            config.Save();
+            // Note: ConfigManager.SaveCurrentAccount() will be called by the caller
+            // We don't save here to avoid multiple saves during reset
             
             log.Information($"[DutyTracker] Daily reset! Prae: {oldPrae}→0, Decu: {oldDecu}→0 (Max: {config.MaxDailyDecuRuns}, All-time: {config.AllTimeMaxDailyDecu})");
             return true;

@@ -1,12 +1,14 @@
 using Dalamud.Configuration;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
 using MOGTOME.Models;
 
 namespace MOGTOME;
 
 [Serializable]
-public class Configuration : IPluginConfiguration
+public class Configuration
 {
     public int Version { get; set; } = 1;
 
@@ -96,7 +98,6 @@ public class Configuration : IPluginConfiguration
     public DateTime? LastDailyDecuReset { get; set; } = null;
     
     // --- Detailed Stats Settings ---
-    public List<RunRecord> RunHistory { get; set; } = new();
     public int MaxHistorySize { get; set; } = 1000;
     public bool EnableDetailedTracking { get; set; } = true;
     public bool RecordPartyMembers { get; set; } = true;
@@ -108,8 +109,78 @@ public class Configuration : IPluginConfiguration
     public bool StatsKrangleNames { get; set; } = false;
     public bool KrangleNames { get; set; } = false;
 
+    /// <summary>
+    /// Save configuration to a JSON file (replaces Dalamud SQLite system)
+    /// Used for per-account configuration storage
+    /// </summary>
+    public void SaveToFile(string filePath)
+    {
+        try
+        {
+            var json = JsonSerializer.Serialize(this, GetJsonOptions());
+            File.WriteAllText(filePath, json);
+            Plugin.Log.Debug($"[Configuration] Saved to file: {filePath}");
+        }
+        catch (Exception ex)
+        {
+            Plugin.Log.Error($"[Configuration] Failed to save to file {filePath}: {ex.Message}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Load configuration from a JSON file
+    /// Used for per-account configuration loading
+    /// </summary>
+    public static Configuration LoadFromFile(string filePath)
+    {
+        try
+        {
+            if (!File.Exists(filePath))
+            {
+                Plugin.Log.Debug($"[Configuration] File not found, creating new: {filePath}");
+                return new Configuration();
+            }
+
+            var json = File.ReadAllText(filePath);
+            var config = JsonSerializer.Deserialize<Configuration>(json, GetJsonOptions());
+            
+            if (config == null)
+            {
+                Plugin.Log.Warning($"[Configuration] Failed to deserialize config from {filePath}, creating new");
+                return new Configuration();
+            }
+
+            Plugin.Log.Debug($"[Configuration] Loaded from file: {filePath}");
+            return config;
+        }
+        catch (Exception ex)
+        {
+            Plugin.Log.Error($"[Configuration] Failed to load from file {filePath}: {ex.Message}");
+            return new Configuration();
+        }
+    }
+
+    /// <summary>
+    /// Get JSON serializer options for configuration
+    /// </summary>
+    private static JsonSerializerOptions GetJsonOptions()
+    {
+        return new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            PropertyNameCaseInsensitive = true
+        };
+    }
+
+    /// <summary>
+    /// Legacy Save method for backward compatibility
+    /// This should no longer be used - use SaveToFile instead
+    /// </summary>
+    [Obsolete("Use SaveToFile with per-account file path instead")]
     public void Save()
     {
-        Plugin.PluginInterface.SavePluginConfig(this);
+        Plugin.Log.Warning("[Configuration] Legacy Save() called - this should use SaveToFile with per-account path");
+        // Don't call Plugin.PluginInterface.SavePluginConfig(this) anymore
     }
 }

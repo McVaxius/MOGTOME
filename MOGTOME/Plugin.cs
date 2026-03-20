@@ -44,6 +44,7 @@ public sealed class Plugin : IDalamudPlugin
     public BossModIPC BossModIPC { get; init; }
 
     // Services
+    public DatabaseService DatabaseService { get; private set; }
     public DutyTrackerService DutyTrackerService { get; private set; }
     public DutyQueueService DutyQueueService { get; private set; }
     public RotationService RotationService { get; private set; }
@@ -78,7 +79,8 @@ public sealed class Plugin : IDalamudPlugin
         BossModIPC = new BossModIPC(Log, CommandManager);
 
         // Initialize Services
-        RunHistoryService = new RunHistoryService(Log, Configuration, State, PlayerState);
+        DatabaseService = new DatabaseService(Log, PluginInterface);
+        RunHistoryService = new RunHistoryService(Log, Configuration, State, PlayerState, ConfigManager, DatabaseService);
         DutyTrackerService = new DutyTrackerService(Log, Configuration, State, RunHistoryService);
         DutyQueueService = new DutyQueueService(Log, Configuration, State, AutoDutyIPC, AutomatonIPC, CommandManager, Condition);
         RepairService = new RepairService(Log, Configuration, State, CommandManager, Condition);

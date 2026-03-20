@@ -8,6 +8,7 @@ namespace MOGTOME.Services;
 
 /// <summary>
 /// Service for managing run history and detailed statistics
+/// Uses per-account SQLite databases to prevent multi-client conflicts
 /// </summary>
 public class RunHistoryService
 {
@@ -15,40 +16,167 @@ public class RunHistoryService
     private readonly Configuration config;
     private readonly DutyState state;
     private readonly IPlayerState playerState;
+    private readonly ConfigManager configManager;
+    private readonly DatabaseService databaseService;
+    private readonly List<RunRecord> runHistory = new();
 
-    public RunHistoryService(IPluginLog log, Configuration config, DutyState state, IPlayerState playerState)
+    public RunHistoryService(IPluginLog log, Configuration config, DutyState state, IPlayerState playerState, ConfigManager configManager, DatabaseService databaseService)
     {
         this.log = log;
         this.config = config;
         this.state = state;
         this.playerState = playerState;
+        this.configManager = configManager;
+        this.databaseService = databaseService;
+        
+        // Trigger migration from JSON to SQLite if needed
+        var accountId = playerState.ContentId.ToString();
+        databaseService.MigrateFromJson(accountId);
+        
+        // Load existing run records from SQLite database
+        LoadRunHistoryFromDatabase();
+    }
+
+    /// <summary>
+    /// Get the current run history (read-only)
+    /// </summary>
+    public IReadOnlyList<RunRecord> RunHistory => runHistory.AsReadOnly();
+
+    /// <summary>
+    /// Load run history from the account-specific database
+    /// </summary>
+    private void LoadRunHistoryFromDatabase()
+    {
+        try
+        {
+            var accountId = playerState.ContentId.ToString();
+            var records = databaseService.LoadRunRecords(accountId);
+            
+            runHistory.Clear();
+            runHistory.AddRange(records);
+            
+            log.Information($"[RunHistory] Loaded {records.Count} run records from database for account {accountId}");
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, "[RunHistory] Failed to load run history from database");
+        }
     }
 
     /// <summary>
     /// Record a completed duty run
+    /// Thread-safe implementation with retry logic
     /// </summary>
     public void RecordRun()
     {
         if (!config.EnableDetailedTracking)
             return;
 
+        lock (runHistory) // Prevent concurrent access
+        {
+            try
+            {
+                var runRecord = CreateRunRecord();
+                
+                // Add to in-memory history
+                runHistory.Add(runRecord);
+                
+                // Maintain history size limit
+                MaintainHistorySize();
+                
+                // Save to account-specific SQLite database with retry logic
+                var accountId = playerState.ContentId.ToString();
+                SaveRunWithRetry(accountId, runRecord);
+                
+                log.Debug($"[RunHistory] Recorded run: {runRecord.PlayerName} ({GetJobName(runRecord.JobId)}) - {runRecord.CompletionTime:F1}s");
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex, "[RunHistory] Failed to record run");
+                // Don't rethrow - we don't want to break the duty completion flow
+            }
+        }
+    }
+
+    /// <summary>
+    /// Save run record with retry logic to handle database conflicts
+    /// </summary>
+    private void SaveRunWithRetry(string accountId, RunRecord runRecord)
+    {
+        const int maxRetries = 3;
+        const int retryDelayMs = 50;
+        
+        for (int attempt = 1; attempt <= maxRetries; attempt++)
+        {
+            try
+            {
+                databaseService.AddRunRecord(accountId, runRecord);
+                log.Debug($"[RunHistory] Save successful on attempt {attempt} for account {accountId}");
+                return;
+            }
+            catch (Exception ex) when (attempt < maxRetries && (
+                ex.Message.Contains("database is locked") || 
+                ex.Message.Contains("used by another process") ||
+                ex.Message.Contains("being used") ||
+                ex.Message.Contains("file is in use")))
+            {
+                log.Warning($"[RunHistory] Save attempt {attempt} failed (database conflict), retrying in {retryDelayMs}ms...: {ex.Message}");
+                System.Threading.Thread.Sleep(retryDelayMs);
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex, $"[RunHistory] Save failed on attempt {attempt} for account {accountId}");
+                if (attempt == maxRetries)
+                    throw;
+                System.Threading.Thread.Sleep(retryDelayMs);
+            }
+        }
+        
+        // Final attempt - let it throw if it fails
         try
         {
-            var runRecord = CreateRunRecord();
-            
-            // Add to history
-            config.RunHistory.Add(runRecord);
-            
-            // Maintain history size limit
-            MaintainHistorySize();
-            
-            config.Save();
-            
-            log.Debug($"[RunHistory] Recorded run: {runRecord.PlayerName} ({GetJobName(runRecord.JobId)}) - {runRecord.CompletionTime:F1}s");
+            databaseService.AddRunRecord(accountId, runRecord);
+            log.Debug($"[RunHistory] Final save attempt successful for account {accountId}");
         }
         catch (Exception ex)
         {
-            log.Error(ex, "[RunHistory] Failed to record run");
+            log.Error(ex, $"[RunHistory] All save attempts failed for account {accountId}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Clear all run history for the current account
+    /// </summary>
+    public void ClearRunHistory()
+    {
+        try
+        {
+            // Clear in-memory history
+            runHistory.Clear();
+            
+            // Clear from database
+            var accountId = playerState.ContentId.ToString();
+            databaseService.ClearRunRecords(accountId);
+            
+            log.Information($"[RunHistory] Cleared all run history for account {accountId}");
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, "[RunHistory] Failed to clear run history");
+        }
+    }
+
+    /// <summary>
+    /// Maintain history size limit
+    /// </summary>
+    private void MaintainHistorySize()
+    {
+        if (runHistory.Count > config.MaxHistorySize)
+        {
+            var excessCount = runHistory.Count - config.MaxHistorySize;
+            runHistory.RemoveRange(0, excessCount);
+            log.Debug($"[RunHistory] Removed {excessCount} old records to maintain size limit");
         }
     }
 
@@ -69,6 +197,25 @@ public class RunHistoryService
             log.Information($"[RunHistory] Party member {i}: {member?.Name}");
         }
         
+        // Capture party members
+        var partyMembers = new List<string>();
+        for (int i = 0; i < partyList.Length; i++)
+        {
+            var member = partyList[i];
+            if (member != null && !string.IsNullOrEmpty(member.Name.ToString()))
+            {
+                partyMembers.Add(member.Name.ToString());
+            }
+        }
+        
+        // Add local player if solo
+        if (partyList.Length == 0 && localPlayer != null)
+        {
+            partyMembers.Add(localPlayer.Name.ToString());
+        }
+        
+        log.Information($"[RunHistory] Captured {partyMembers.Count} party members: {string.Join(", ", partyMembers)}");
+        
         return new RunRecord
         {
             Timestamp = DateTime.UtcNow,
@@ -84,8 +231,17 @@ public class RunHistoryService
             IsPraetorium = isPrae,
             WasSuccessful = true,
             ItemLevel = (ushort)(localPlayer?.Level ?? 0), // Simplified for now
-            PartySize = (byte)partyList.Length
+            PartySize = (byte)partyList.Length,
+            PartyMembers = partyMembers
         };
+    }
+
+    /// <summary>
+    /// Get party members for a specific run
+    /// </summary>
+    public List<string> GetPartyMembersForRun(RunRecord run)
+    {
+        return run.PartyMembers ?? new List<string>();
     }
 
     /// <summary>
@@ -111,24 +267,11 @@ public class RunHistoryService
     }
 
     /// <summary>
-    /// Maintain history size by removing oldest entries
-    /// </summary>
-    private void MaintainHistorySize()
-    {
-        if (config.RunHistory.Count > config.MaxHistorySize)
-        {
-            var excess = config.RunHistory.Count - config.MaxHistorySize;
-            config.RunHistory.RemoveRange(0, excess);
-            log.Debug($"[RunHistory] Removed {excess} old entries to maintain size limit");
-        }
-    }
-
-    /// <summary>
     /// Get job statistics across all runs
     /// </summary>
     public Dictionary<byte, JobStats> GetJobStatistics()
     {
-        return config.RunHistory
+        return runHistory
             .GroupBy(x => x.JobId)
             .ToDictionary(
                 g => g.Key,
@@ -153,7 +296,7 @@ public class RunHistoryService
     /// </summary>
     public Dictionary<ulong, PlayerStats> GetPlayerStatistics()
     {
-        return config.RunHistory
+        return runHistory
             .GroupBy(x => x.ContentId)
             .ToDictionary(
                 g => g.Key,
@@ -228,17 +371,7 @@ public class RunHistoryService
     /// </summary>
     public List<RunRecord> GetRecentRuns(int count = 25)
     {
-        return config.RunHistory.TakeLast(count).Reverse().ToList();
-    }
-
-    /// <summary>
-    /// Clear all run history
-    /// </summary>
-    public void ClearHistory()
-    {
-        config.RunHistory.Clear();
-        config.Save();
-        log.Information("[RunHistory] Run history cleared");
+        return runHistory.TakeLast(count).Reverse().ToList();
     }
 
     /// <summary>
