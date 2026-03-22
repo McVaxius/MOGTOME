@@ -532,7 +532,7 @@ public class RunHistoryService
             TerritoryId = state.DutyStartTerritory,
             CompletionTime = state.LastCompletionDuration,
             DeathCount = 0, // TODO: Implement death tracking
-            MogtomesEarned = isPrae ? 15 : 20, // Prae=15, Decu=20
+            MogtomesEarned = isPrae ? 7 : 3, // Prae=7, Decu=3
             IsPraetorium = isPrae,
             WasSuccessful = true,
             PartySize = (byte)partyList.Length,
