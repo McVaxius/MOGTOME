@@ -23,6 +23,7 @@ public class ConfigManager
     private Dictionary<string, AccountConfig> accounts = new Dictionary<string, AccountConfig>();
     private string currentAccountId = "";
     private const string ConfigFolder = "MOGTOME";
+    private bool hasLoggedNoAccount = false;
     
     public string CurrentAccountId 
     { 
@@ -55,7 +56,19 @@ public class ConfigManager
     {
         if (string.IsNullOrEmpty(CurrentAccountId) || !accounts.ContainsKey(CurrentAccountId))
         {
-            return CreateDefaultAccount();
+            if (!hasLoggedNoAccount)
+            {
+                log.Warning("[ConfigManager] No current account available - ContentId may not be ready yet (suppressing further warnings)");
+                hasLoggedNoAccount = true;
+            }
+            // Return a temporary configuration that won't be saved
+            return new AccountConfig
+            {
+                AccountId = "temporary",
+                CreatedAt = DateTime.UtcNow,
+                LastUsed = DateTime.UtcNow,
+                Settings = new Configuration()
+            };
         }
         
         return accounts[CurrentAccountId];
@@ -88,15 +101,23 @@ public class ConfigManager
     /// <summary>
     /// Ensure we have an account selected and current character tracked
     /// </summary>
-    public void EnsureAccountSelected()
+    public bool EnsureAccountSelected(ulong contentId, string charName, string worldName)
     {
         try
         {
-            var contentId = playerState.ContentId;
+            // Handle case where ContentId is 0 (shouldn't happen with delayed login, but guard anyway)
             if (contentId == 0)
             {
-                log.Warning("[ConfigManager] No local player, cannot select account");
-                return;
+                log.Warning("[ConfigManager] ContentId is 0, cannot select account - using fallback");
+                // Create fallback account with timestamp
+                var fallbackId = $"fallback_{DateTime.UtcNow:yyyyMMddHHmmss}";
+                if (!accounts.ContainsKey(fallbackId))
+                {
+                    accounts[fallbackId] = CreateAccountForContentId(0);
+                }
+                CurrentAccountId = fallbackId;
+                log.Warning($"[ConfigManager] Using fallback account: {fallbackId}");
+                return true;
             }
             
             var accountId = contentId.ToString();
@@ -110,36 +131,28 @@ public class ConfigManager
             
             var account = accounts[accountId];
             
-            // Try to get current character info
-            var localPlayer = Plugin.ObjectTable.LocalPlayer;
-            if (localPlayer != null)
+            // Create character config from provided info
+            var character = new CharacterConfig
             {
-                var characterName = localPlayer.Name.ToString();
-                var worldName = "Unknown";
-                
-                var character = new CharacterConfig
-                {
-                    CharacterName = characterName,
-                    WorldName = worldName,
-                    ContentId = contentId,
-                    LastUsed = DateTime.UtcNow
-                };
-                
-                account.SetCharacter(character);
-                account.LastUsed = DateTime.UtcNow;
-                
-                log.Information($"[ConfigManager] Selected account: {accountId}, character: {characterName}@{worldName}");
-            }
-            else
-            {
-                log.Warning("[ConfigManager] Local player not available, using default character config");
-            }
+                CharacterName = charName,
+                WorldName = worldName,
+                ContentId = contentId,
+                LastUsed = DateTime.UtcNow
+            };
             
+            account.SetCharacter(character);
+            account.LastUsed = DateTime.UtcNow;
+            
+            log.Information($"[ConfigManager] Selected account: {accountId}, character: {charName}@{worldName}");
+            
+            hasLoggedNoAccount = false;
             SaveCurrentAccount();
+            return true;
         }
         catch (Exception ex)
         {
             log.Error($"[ConfigManager] Error in EnsureAccountSelected: {ex.Message}");
+            return false;
         }
     }
     
@@ -154,6 +167,13 @@ public class ConfigManager
             if (string.IsNullOrEmpty(accountId))
             {
                 log.Warning("[ConfigManager] Cannot save - no account selected");
+                return;
+            }
+
+            // Prevent saving temporary or invalid accounts
+            if (accountId == "temporary" || accountId == "default")
+            {
+                log.Debug($"[ConfigManager] Skipping save for temporary account: {accountId}");
                 return;
             }
 
@@ -253,26 +273,7 @@ public class ConfigManager
         }
     }
     
-    /// <summary>
-    /// Create a default account configuration
-    /// </summary>
-    private AccountConfig CreateDefaultAccount()
-    {
-        var account = new AccountConfig
-        {
-            AccountId = "default",
-            CreatedAt = DateTime.UtcNow,
-            LastUsed = DateTime.UtcNow,
-            Settings = new Configuration()
-        };
         
-        accounts["default"] = account;
-        CurrentAccountId = "default";
-        
-        log.Information("[ConfigManager] Created default account configuration");
-        return account;
-    }
-    
     /// <summary>
     /// Create an account for a specific content ID
     /// </summary>
@@ -359,9 +360,7 @@ public class ConfigManager
     /// </summary>
     private string GetConfigFolderPath()
     {
-        var path = Path.Combine(pluginInterface.ConfigDirectory.FullName, ConfigFolder);
-        log.Information($"[ConfigManager] Config folder path: {path}");
-        return path;
+        return Path.Combine(pluginInterface.ConfigDirectory.FullName, ConfigFolder);
     }
     
     /// <summary>

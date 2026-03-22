@@ -1,6 +1,7 @@
 using System;
 using Dalamud.Plugin.Ipc;
 using Dalamud.Plugin.Services;
+using MOGTOME.Services;
 
 namespace MOGTOME.IPC;
 
@@ -8,13 +9,15 @@ public class AutoDutyIPC : IDisposable
 {
     private readonly IPluginLog log;
     private readonly ICommandManager commandManager;
+    private readonly RunHistoryService runHistoryService;
 
     private ICallGateSubscriber<string, string, object>? setConfig;
 
-    public AutoDutyIPC(IPluginLog log, ICommandManager commandManager)
+    public AutoDutyIPC(IPluginLog log, ICommandManager commandManager, RunHistoryService runHistoryService)
     {
         this.log = log;
         this.commandManager = commandManager;
+        this.runHistoryService = runHistoryService;
 
         try
         {
@@ -95,6 +98,19 @@ public class AutoDutyIPC : IDisposable
         try
         {
             log.Information("[AutoDuty] Starting via /ad start");
+            
+            // Capture party snapshot before starting AutoDuty
+            // This ensures we have the full party composition before anyone leaves
+            try
+            {
+                runHistoryService.CapturePartySnapshot();
+                log.Information("[AutoDuty] Party snapshot captured before /ad start");
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex, "[AutoDuty] Failed to capture party snapshot before /ad start");
+            }
+            
             commandManager.ProcessCommand("/ad start");
         }
         catch (Exception ex)

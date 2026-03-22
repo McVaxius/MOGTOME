@@ -20,6 +20,9 @@ public class StatsWindow : Window, IDisposable
 
     private MainTab currentMainTab = MainTab.Summary;
     private DetailedSubTab currentDetailedTab = DetailedSubTab.JobPerformance;
+    private bool isVisible = false;
+    private DateTime lastRefresh = DateTime.MinValue;
+    private const int REFRESH_INTERVAL_SECONDS = 10;
 
     public StatsWindow(Plugin plugin)
         : base("MOGTOME - Statistics##MogtomeStats", ImGuiWindowFlags.None)
@@ -36,6 +39,21 @@ public class StatsWindow : Window, IDisposable
 
     public override void Draw()
     {
+        // Auto-refresh every 10 seconds
+        if (DateTime.Now - lastRefresh > TimeSpan.FromSeconds(REFRESH_INTERVAL_SECONDS))
+        {
+            try
+            {
+                plugin.RunHistoryService.LoadRunHistoryFromDatabase(bypassValidation: true);
+                lastRefresh = DateTime.Now;
+                Plugin.Log.Debug("[StatsWindow] Auto-refreshed data from database");
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log.Error(ex, "[StatsWindow] Failed to auto-refresh data");
+            }
+        }
+
         var config = plugin.Configuration;
         var state = plugin.State;
 
@@ -555,6 +573,21 @@ public class StatsWindow : Window, IDisposable
         ImGui.Text("Recent Runs (Last 25)");
         ImGui.Separator();
         
+        // Auto-refresh every 10 seconds if window is open
+        if (DateTime.Now - lastRefresh > TimeSpan.FromSeconds(REFRESH_INTERVAL_SECONDS))
+        {
+            try
+            {
+                plugin.RunHistoryService.LoadRunHistoryFromDatabase(bypassValidation: true);
+                lastRefresh = DateTime.Now;
+                Plugin.Log.Debug("[StatsWindow] Auto-refreshed run history");
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log.Warning(ex, "[StatsWindow] Failed to auto-refresh run history");
+            }
+        }
+        
         if (!plugin.Configuration.EnableDetailedTracking || plugin.RunHistoryService.RunHistory.Count == 0)
         {
             ImGui.TextDisabled("No run data available. Enable detailed tracking and complete some runs.");
@@ -598,17 +631,22 @@ public class StatsWindow : Window, IDisposable
                 ImGui.Text(FormatTime(run.CompletionTime));
                 
                 ImGui.TableSetColumnIndex(5);
-                // Show party size and members together
+                // Show party size and members on separate lines
                 var partyMembers = plugin.RunHistoryService.GetPartyMembersForRun(run);
-                var partyDisplay = partyMembers.Count > 0 ? 
-                    $"{partyMembers.Count}: {string.Join(", ", partyMembers)}" : 
-                    $"{run.PartySize}: Unknown";
-                
-                if (plugin.Configuration.StatsKrangleNames && partyMembers.Count > 0)
+                if (partyMembers.Count > 0)
                 {
-                    partyDisplay = $"{partyMembers.Count}: {string.Join(", ", partyMembers.Select(m => KrangleService.KrangleName(m)))}";
+                    ImGui.Text($"{partyMembers.Count}:");
+                    foreach (var member in partyMembers)
+                    {
+                        var displayMember = plugin.Configuration.StatsKrangleNames ? 
+                            KrangleService.KrangleName(member) : member;
+                        ImGui.Text($"   {displayMember}");
+                    }
                 }
-                ImGui.Text(partyDisplay);
+                else
+                {
+                    ImGui.Text($"{run.PartySize}: Unknown");
+                }
                 
                 ImGui.TableSetColumnIndex(6);
                 ImGui.Text(run.DeathCount.ToString());

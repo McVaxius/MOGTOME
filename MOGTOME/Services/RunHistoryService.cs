@@ -19,6 +19,13 @@ public class RunHistoryService
     private readonly ConfigManager configManager;
     private readonly DatabaseService databaseService;
     private readonly List<RunRecord> runHistory = new();
+    private readonly List<RunRecord> recentRuns = new();
+    private readonly object runHistoryLock = new object();
+    
+    // Party snapshot storage - capture at /ad start, use at completion
+    private List<string> storedPartySnapshot = new List<string>();
+    private bool hasPartySnapshot = false;
+    private DateTime snapshotTimestamp = DateTime.MinValue;
 
     public RunHistoryService(IPluginLog log, Configuration config, DutyState state, IPlayerState playerState, ConfigManager configManager, DatabaseService databaseService)
     {
@@ -34,6 +41,87 @@ public class RunHistoryService
     }
 
     /// <summary>
+    /// Capture party snapshot when /ad start is executed (inside duty)
+    /// This stores the party composition for later use when recording the run
+    /// </summary>
+    public void CapturePartySnapshot()
+    {
+        try
+        {
+            var localPlayer = Plugin.ObjectTable.LocalPlayer;
+            var partyList = Plugin.PartyList;
+            
+            log.Information($"[RunHistory] Capturing party snapshot: PartyList.Length={partyList.Length}, LocalPlayer={localPlayer?.Name}");
+            
+            // Clear previous snapshot
+            storedPartySnapshot.Clear();
+            hasPartySnapshot = false;
+            snapshotTimestamp = DateTime.UtcNow;
+            
+            // Capture party members with full format
+            for (int i = 0; i < partyList.Length; i++)
+            {
+                var member = partyList[i];
+                log.Information($"[RunHistory] Snapshot processing PartyList[{i}]: {member?.Name}");
+                
+                if (member == null)
+                {
+                    log.Information($"[RunHistory] Snapshot skipping PartyList[{i}] - member is NULL");
+                    continue;
+                }
+                
+                if (string.IsNullOrEmpty(member.Name.ToString()))
+                {
+                    log.Information($"[RunHistory] Snapshot skipping PartyList[{i}] - member.Name is empty/null");
+                    continue;
+                }
+                
+                // Check ClassJob validity
+                if (!member.ClassJob.IsValid)
+                {
+                    log.Information($"[RunHistory] Snapshot skipping PartyList[{i}] - ClassJob is invalid");
+                    continue;
+                }
+                
+                var job = member.ClassJob.Value.Abbreviation.ToString();
+                var level = member.Level.ToString();
+                var formatted = $"{member.Name} - {job} - {level}";
+                
+                storedPartySnapshot.Add(formatted);
+                log.Information($"[RunHistory] SNAPSHOT CAPTURED PartyList[{i}]: {formatted}");
+            }
+            
+            // Add local player if solo with full format
+            if (partyList.Length == 0 && localPlayer != null)
+            {
+                var job = localPlayer.ClassJob.Value.Abbreviation.ToString();
+                var level = localPlayer.Level.ToString();
+                var formatted = $"{localPlayer.Name} - {job} - {level}";
+                storedPartySnapshot.Add(formatted);
+                log.Information($"[RunHistory] SNAPSHOT CAPTURED solo player: {formatted}");
+            }
+            
+            hasPartySnapshot = storedPartySnapshot.Count > 0;
+            log.Information($"[RunHistory] Party snapshot captured: {storedPartySnapshot.Count} members, hasSnapshot={hasPartySnapshot}");
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, "[RunHistory] Failed to capture party snapshot");
+        }
+    }
+
+    /// <summary>
+    /// Clear party snapshot (call when starting new duty)
+    /// </summary>
+    public void ClearPartySnapshot()
+    {
+        storedPartySnapshot.Clear();
+        hasPartySnapshot = false;
+        snapshotTimestamp = DateTime.MinValue;
+        log.Debug("[RunHistory] Party snapshot cleared");
+    }
+
+    /// <summary>
     /// Get the current run history (read-only)
     /// </summary>
     public IReadOnlyList<RunRecord> RunHistory => runHistory.AsReadOnly();
@@ -41,21 +129,144 @@ public class RunHistoryService
     /// <summary>
     /// Load run history from the account-specific database
     /// </summary>
-    public void LoadRunHistoryFromDatabase()
+    public void LoadRunHistoryFromDatabase(bool bypassValidation = false)
     {
         try
         {
-            var accountId = playerState.ContentId.ToString();
+            // Validate ContentId before database operations (unless bypassing for stats refresh)
+            var contentId = playerState.ContentId;
+            if (contentId == 0 && !bypassValidation)
+            {
+                log.Warning("[RunHistory] Skipping run history loading - ContentId not available yet (player not logged in)");
+                return;
+            }
+            
+            var accountId = contentId.ToString();
             var records = databaseService.LoadRunRecords(accountId);
             
             runHistory.Clear();
             runHistory.AddRange(records);
             
             log.Information($"[RunHistory] Loaded {records.Count} run records from database for account {accountId}");
+            
+            // Update JSON configuration stats from database records
+            UpdateJsonStatsFromRecords(records);
+            
+            // Save configuration to persist JSON updates
+            configManager.SaveCurrentAccount();
+            
+            log.Debug($"[RunHistory] Updated JSON stats from {records.Count} database records");
         }
         catch (Exception ex)
         {
             log.Error(ex, "[RunHistory] Failed to load run history from database");
+        }
+    }
+
+    /// <summary>
+    /// Update JSON configuration stats from database records
+    /// </summary>
+    private void UpdateJsonStatsFromRecords(List<RunRecord> records)
+    {
+        try
+        {
+            var config = configManager.GetCurrentAccount().Settings;
+            
+            // Basic counters
+            config.DutyCounter = records.Count;
+            config.TotalPraes = records.Count(r => r.IsPraetorium);
+            config.TotalDecus = records.Count(r => !r.IsPraetorium);
+            
+            // Separate records by duty type
+            var praeRecords = records.Where(r => r.IsPraetorium).ToList();
+            var decuRecords = records.Where(r => !r.IsPraetorium).ToList();
+            
+            // Praetorium stats
+            if (praeRecords.Any())
+            {
+                config.PraeBestTime = praeRecords.Min(r => r.CompletionTime);
+                config.PraeLongestRun = praeRecords.Max(r => r.CompletionTime);
+                config.PraeMogtomesEarned = praeRecords.Sum(r => r.MogtomesEarned);
+                config.PraeTotalDeathsSelf = praeRecords.Sum(r => r.DeathCount);
+            }
+            
+            // Decumana stats
+            if (decuRecords.Any())
+            {
+                config.DecuBestTime = decuRecords.Min(r => r.CompletionTime);
+                config.DecuLongestRun = decuRecords.Max(r => r.CompletionTime);
+                config.DecuMogtomesEarned = decuRecords.Sum(r => r.MogtomesEarned);
+                config.DecuTotalDeathsSelf = decuRecords.Sum(r => r.DeathCount);
+            }
+            
+            // Overall stats
+            if (records.Any())
+            {
+                config.BestTimeEver = records.Min(r => r.CompletionTime);
+                config.LongestRunEver = records.Max(r => r.CompletionTime);
+                config.TotalMogtomesEarned = records.Sum(r => r.MogtomesEarned);
+                config.TotalDeathsSelf = records.Sum(r => r.DeathCount);
+                
+                // Best time details
+                var bestRun = records.OrderBy(r => r.CompletionTime).First();
+                config.BestTimeDate = bestRun.Timestamp.ToString("yyyy-MM-dd HH:mm:ss");
+                config.BestTimeParty = string.Join(", ", bestRun.PartyMembers ?? new List<string>());
+                
+                // Longest run details
+                var longestRun = records.OrderByDescending(r => r.CompletionTime).First();
+                config.LongestRunDate = longestRun.Timestamp.ToString("yyyy-MM-dd HH:mm:ss");
+                config.LongestRunParty = string.Join(", ", longestRun.PartyMembers ?? new List<string>());
+            }
+            
+            // Daily stats (reset tracking)
+            UpdateDailyStats(records);
+            
+            log.Debug($"[RunHistory] Updated JSON stats: {records.Count} total, {config.TotalPraes} Prae, {config.TotalDecus} Decu");
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, "[RunHistory] Failed to update JSON stats from records");
+        }
+    }
+    
+    /// <summary>
+    /// Update daily statistics from records
+    /// </summary>
+    private void UpdateDailyStats(List<RunRecord> records)
+    {
+        try
+        {
+            var config = configManager.GetCurrentAccount().Settings;
+            var today = DateTime.UtcNow.Date;
+            
+            // Get today's Decumana runs
+            var todayDecuRuns = records.Where(r => !r.IsPraetorium && r.Timestamp.Date == today).ToList();
+            
+            config.DailyDecuRuns = todayDecuRuns.Count;
+            
+            if (todayDecuRuns.Any())
+            {
+                config.DailyDecuBestTime = todayDecuRuns.Min(r => r.CompletionTime);
+                config.DailyDecuLongestRun = todayDecuRuns.Max(r => r.CompletionTime);
+                config.DailyDecuMogtomesEarned = todayDecuRuns.Sum(r => r.MogtomesEarned);
+            }
+            
+            // Update max daily runs tracking
+            if (config.DailyDecuRuns > config.MaxDailyDecuRuns)
+            {
+                config.MaxDailyDecuRuns = config.DailyDecuRuns;
+            }
+            
+            if (config.DailyDecuRuns > config.AllTimeMaxDailyDecu)
+            {
+                config.AllTimeMaxDailyDecu = config.DailyDecuRuns;
+            }
+            
+            log.Debug($"[RunHistory] Updated daily stats: {config.DailyDecuRuns} Decu runs today");
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, "[RunHistory] Failed to update daily stats");
         }
     }
 
@@ -80,8 +291,16 @@ public class RunHistoryService
                 // Maintain history size limit
                 MaintainHistorySize();
                 
+                // Validate ContentId before database operations
+                var contentId = playerState.ContentId;
+                if (contentId == 0)
+                {
+                    log.Warning("[RunHistory] Skipping run recording - ContentId not available yet (player not logged in)");
+                    return;
+                }
+                
                 // Save to account-specific SQLite database with retry logic
-                var accountId = playerState.ContentId.ToString();
+                var accountId = contentId.ToString();
                 SaveRunWithRetry(accountId, runRecord);
                 
                 log.Debug($"[RunHistory] Recorded run: {runRecord.PlayerName} ({GetJobName(runRecord.JobId)}) - {runRecord.CompletionTime:F1}s");
@@ -151,8 +370,16 @@ public class RunHistoryService
             // Clear in-memory history
             runHistory.Clear();
             
+            // Validate ContentId before database operations
+            var contentId = playerState.ContentId;
+            if (contentId == 0)
+            {
+                log.Warning("[RunHistory] Skipping run history clearing - ContentId not available yet (player not logged in)");
+                return;
+            }
+            
             // Clear from database
-            var accountId = playerState.ContentId.ToString();
+            var accountId = contentId.ToString();
             databaseService.ClearRunRecords(accountId);
             
             log.Information($"[RunHistory] Cleared all run history for account {accountId}");
@@ -192,29 +419,84 @@ public class RunHistoryService
             log.Debug($"[RunHistory] CurrentTerritory={state.CurrentTerritory}, DutyStartTerritory={state.DutyStartTerritory}");
         }
         
-        // Debug party detection
-        log.Information($"[RunHistory] Party detection: PartyList.Length={partyList.Length}, LocalPlayer={localPlayer?.Name}");
-        for (int i = 0; i < partyList.Length; i++)
-        {
-            var member = partyList[i];
-            log.Information($"[RunHistory] Party member {i}: {member?.Name}");
-        }
-        
-        // Capture party members
+        // Capture party members - use stored snapshot if available, otherwise current PartyList
         var partyMembers = new List<string>();
-        for (int i = 0; i < partyList.Length; i++)
-        {
-            var member = partyList[i];
-            if (member != null && !string.IsNullOrEmpty(member.Name.ToString()))
-            {
-                partyMembers.Add(member.Name.ToString());
-            }
-        }
         
-        // Add local player if solo
-        if (partyList.Length == 0 && localPlayer != null)
+        if (hasPartySnapshot)
         {
-            partyMembers.Add(localPlayer.Name.ToString());
+            // Use stored snapshot captured at /ad start
+            partyMembers.AddRange(storedPartySnapshot);
+            log.Information($"[RunHistory] Using stored party snapshot: {partyMembers.Count} members captured at {snapshotTimestamp:HH:mm:ss}");
+            log.Information($"[RunHistory] Stored snapshot members: {string.Join(", ", partyMembers)}");
+        }
+        else
+        {
+            // Fallback: capture current PartyList (solo case or snapshot not taken)
+            log.Information($"[RunHistory] No party snapshot available, using current PartyList as fallback");
+            
+            // Debug party detection - enhanced logging
+            log.Information($"[RunHistory] Party detection: PartyList.Length={partyList.Length}, LocalPlayer={localPlayer?.Name}");
+            log.Information($"[RunHistory] LocalPlayer Address: {localPlayer?.Address:X16}");
+            
+            for (int i = 0; i < partyList.Length; i++)
+            {
+                var member = partyList[i];
+                if (member == null)
+                {
+                    log.Information($"[RunHistory] PartyList[{i}]: NULL");
+                    continue;
+                }
+                
+                var memberName = member.Name.ToString();
+                var memberAddress = member.Address.ToString("X16");
+                var isLocalPlayer = localPlayer != null && member.Address == localPlayer.Address;
+                var classJob = member.ClassJob.IsValid ? member.ClassJob.Value.Abbreviation.ToString() : "INVALID";
+                var level = member.Level;
+                
+                log.Information($"[RunHistory] PartyList[{i}]: Name={memberName}, Address={memberAddress}, IsLocalPlayer={isLocalPlayer}, Job={classJob}, Level={level}");
+            }
+            
+            // Capture party members with full format
+            for (int i = 0; i < partyList.Length; i++)
+            {
+                var member = partyList[i];
+                log.Information($"[RunHistory] Processing PartyList[{i}] for capture: member={member?.Name}");
+                
+                if (member == null)
+                {
+                    log.Information($"[RunHistory] Skipping PartyList[{i}] - member is NULL");
+                    continue;
+                }
+                
+                if (string.IsNullOrEmpty(member.Name.ToString()))
+                {
+                    log.Information($"[RunHistory] Skipping PartyList[{i}] - member.Name is empty/null");
+                    continue;
+                }
+                
+                // Check ClassJob validity
+                if (!member.ClassJob.IsValid)
+                {
+                    log.Information($"[RunHistory] Skipping PartyList[{i}] - ClassJob is invalid");
+                    continue;
+                }
+                
+                var job = member.ClassJob.Value.Abbreviation.ToString();
+                var level = member.Level.ToString();
+                var formatted = $"{member.Name} - {job} - {level}";
+                
+                partyMembers.Add(formatted);
+                log.Information($"[RunHistory] CAPTURED PartyList[{i}]: {formatted}");
+            }
+            
+            // Add local player if solo with full format
+            if (partyList.Length == 0 && localPlayer != null)
+            {
+                var job = localPlayer.ClassJob.Value.Abbreviation.ToString();
+                var level = localPlayer.Level.ToString();
+                var formatted = $"{localPlayer.Name} - {job} - {level}";
+                partyMembers.Add(formatted);
+            }
         }
         
         log.Information($"[RunHistory] Captured {partyMembers.Count} party members: {string.Join(", ", partyMembers)}");

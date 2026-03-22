@@ -56,7 +56,7 @@ public sealed class Plugin : IDalamudPlugin
     public StuckDetectionService StuckDetectionService { get; private set; }
     public AutoDutyPathService AutoDutyPathService { get; private set; }
     public RunHistoryService RunHistoryService { get; private set; }
-    public MogtomeEngine Engine { get; init; }
+    public MogtomeEngine Engine { get; private set; }
 
     // Windows
     public readonly WindowSystem WindowSystem = new("MOGTOME");
@@ -68,20 +68,21 @@ public sealed class Plugin : IDalamudPlugin
     {
         // Initialize ConfigManager first
         ConfigManager = new ConfigManager(Log, PlayerState, ClientState, PluginInterface);
-        ConfigManager.EnsureAccountSelected();
         
         State = new DutyState();
+
+        // Initialize Services (needed before IPC)
+        DatabaseService = new DatabaseService(Log, PluginInterface, ConfigManager);
+        RunHistoryService = new RunHistoryService(Log, Configuration, State, PlayerState, ConfigManager, DatabaseService);
 
         // Initialize IPC
         YesAlreadyIPC = new YesAlreadyIPC(Log);
         VNavIPC = new VNavIPC(Log, CommandManager);
-        AutoDutyIPC = new AutoDutyIPC(Log, CommandManager);
+        AutoDutyIPC = new AutoDutyIPC(Log, CommandManager, RunHistoryService);
         AutomatonIPC = new AutomatonIPC(Log);
         BossModIPC = new BossModIPC(Log, CommandManager);
 
-        // Initialize Services
-        DatabaseService = new DatabaseService(Log, PluginInterface, ConfigManager);
-        RunHistoryService = new RunHistoryService(Log, Configuration, State, PlayerState, ConfigManager, DatabaseService);
+        // Initialize remaining Services
         DutyTrackerService = new DutyTrackerService(Log, Configuration, State, RunHistoryService);
         DutyQueueService = new DutyQueueService(Log, Configuration, State, AutoDutyIPC, AutomatonIPC, CommandManager, Condition);
         RepairService = new RepairService(Log, Configuration, State, CommandManager, Condition);
@@ -92,16 +93,8 @@ public sealed class Plugin : IDalamudPlugin
         DialogHandlerService = new DialogHandlerService(Log, YesAlreadyIPC, CommandManager, GameGui);
         AutoDutyPathService = new AutoDutyPathService(Log);
 
-        // Engine
-        Engine = new MogtomeEngine(
-            Log, Configuration, State,
-            DutyTrackerService, DutyQueueService,
-            RepairService, FoodService,
-            RotationService, BossHandlerService,
-            StuckDetectionService, DialogHandlerService,
-            AutoDutyPathService, RunHistoryService, // NEW
-            AutoDutyIPC, AutomatonIPC, YesAlreadyIPC,
-            Condition, ClientState, CommandManager);
+        // Engine will be created in OnFrameworkUpdate after account selection
+        Engine = null!;
 
         // Windows
         ConfigWindow = new ConfigWindow(this, Log);
@@ -125,6 +118,7 @@ public sealed class Plugin : IDalamudPlugin
         PluginInterface.UiBuilder.Draw += WindowSystem.Draw;
         PluginInterface.UiBuilder.OpenConfigUi += ToggleConfigUi;
         PluginInterface.UiBuilder.OpenMainUi += ToggleMainUi;
+        ClientState.Login += OnLoginEvent;
         Framework.Update += OnFrameworkUpdate;
         DutyStateService.DutyStarted += OnDutyStarted;
         DutyStateService.DutyCompleted += OnDutyCompleted;
@@ -137,15 +131,19 @@ public sealed class Plugin : IDalamudPlugin
         DutyStateService.DutyCompleted -= OnDutyCompleted;
         DutyStateService.DutyStarted -= OnDutyStarted;
         Framework.Update -= OnFrameworkUpdate;
+        ClientState.Login -= OnLoginEvent;
 
         PluginInterface.UiBuilder.Draw -= WindowSystem.Draw;
         PluginInterface.UiBuilder.OpenConfigUi -= ToggleConfigUi;
         PluginInterface.UiBuilder.OpenMainUi -= ToggleMainUi;
 
-        // Stop engine if running
-        if (Engine.IsRunning)
-            Engine.Stop();
-        Engine.Dispose();
+        // Stop engine if running and dispose if initialized
+        if (Engine != null)
+        {
+            if (Engine.IsRunning)
+                Engine.Stop();
+            Engine.Dispose();
+        }
 
         // Save current account configuration before disposing everything
         ConfigManager.SaveCurrentAccount();
@@ -223,6 +221,49 @@ public sealed class Plugin : IDalamudPlugin
 
     private void OnFrameworkUpdate(IFramework fw)
     {
+        // Delayed login detection (LocalPlayer may not be ready immediately)
+        if (ClientState.IsLoggedIn && !wasLoggedIn)
+        {
+            wasLoggedIn = true;
+            loginDetectionDelay = 3; // Wait a few frames for LocalPlayer to be ready
+        }
+        else if (!ClientState.IsLoggedIn && wasLoggedIn)
+        {
+            wasLoggedIn = false;
+            loginDetectionDelay = 0;
+            accountInitialized = false; // Reset on logout so we re-detect on next login
+        }
+
+        if (loginDetectionDelay > 0)
+        {
+            loginDetectionDelay--;
+            if (loginDetectionDelay == 0)
+                OnLogin();
+        }
+        
+        // Initialize engine after account selection (proper dependency order)
+        if (Engine == null && accountInitialized)
+        {
+            try
+            {
+                Engine = new MogtomeEngine(
+                    Log, Configuration, State,
+                    DutyTrackerService, DutyQueueService,
+                    RepairService, FoodService,
+                    RotationService, BossHandlerService,
+                    StuckDetectionService, DialogHandlerService,
+                    AutoDutyPathService, RunHistoryService,
+                    AutoDutyIPC, AutomatonIPC, YesAlreadyIPC,
+                    Condition, ClientState, CommandManager);
+                
+                Log.Information("[Plugin] Engine initialized successfully with proper config");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "[Plugin] Failed to initialize engine");
+            }
+        }
+        
         // Initialize database service on first frame
         if (!databaseInitialized)
         {
@@ -241,7 +282,11 @@ public sealed class Plugin : IDalamudPlugin
             }
         }
         
-        Engine.Update();
+        // Only update engine if it's initialized
+        if (Engine != null)
+        {
+            Engine.Update();
+        }
     }
 
     private void TriggerMigrationForAllAccounts()
@@ -289,7 +334,46 @@ public sealed class Plugin : IDalamudPlugin
         // This ensures we have the correct completion time before recording
     }
 
+    private void OnLoginEvent()
+    {
+        // Don't run OnLogin here - Login event fires off main thread.
+        // Instead, set a delay so OnFrameworkUpdate picks it up.
+        loginDetectionDelay = 3;
+    }
+
+    private void OnLogin()
+    {
+        try
+        {
+            var localPlayer = Plugin.ObjectTable.LocalPlayer;
+            if (localPlayer == null)
+            {
+                Log.Warning("[Plugin] OnLogin called but LocalPlayer is null");
+                return;
+            }
+            
+            var charName = localPlayer.Name.ToString();
+            var worldName = localPlayer.HomeWorld.Value.Name.ToString();
+            var contentId = PlayerState.ContentId;
+            
+            Log.Information($"[Plugin] OnLogin: Character={charName}@{worldName}, ContentId={contentId:X16}");
+            
+            if (ConfigManager.EnsureAccountSelected(contentId, charName, worldName))
+            {
+                accountInitialized = true;
+                Log.Information($"[Plugin] Account selection completed successfully for {charName}@{worldName}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "[Plugin] Failed during login detection");
+        }
+    }
+
+    private bool accountInitialized = false;
     private bool databaseInitialized = false;
+    private bool wasLoggedIn = false;
+    private int loginDetectionDelay = 0;
 
     private void ToggleConfigUi() => ConfigWindow.Toggle();
     private void ToggleMainUi() => MainWindow.Toggle();

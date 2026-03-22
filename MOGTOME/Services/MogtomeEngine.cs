@@ -174,6 +174,7 @@ public class MogtomeEngine
             // Testing mode: Unsync ON + LevelSync OFF (overpowered solo, fast clear)
             // Normal mode:  Unsync ON + LevelSync ON  (appropriate level with party to get rewards)
             autoDutyIPC.SetConfig("Unsynced", "true");
+            
             if (config.TestingModeUnsynced)
             {
                 autoDutyIPC.SetConfig("LevelSync", "false");
