@@ -190,24 +190,38 @@ public static class GameHelpers
     {
         try
         {
-            // Direct InstancedContent.ContentTimeLeft access
-            // Based on SND pattern: return InstancedContent.ContentTimeLeft
-            // No condition check needed per SND comments
-            var instanceContent = FFXIVClientStructs.FFXIV.Client.Game.InstanceContent.Instance();
-            if (instanceContent != null)
-            {
-                var remainingTime = instanceContent->ContentTimeLeft;
-                Plugin.Log.Debug($"[GameHelpers] GetDutyRemainingTime: {remainingTime:F0}s remaining");
-                return remainingTime;
-            }
-            
-            Plugin.Log.Debug("[GameHelpers] GetDutyRemainingTime: InstanceContent is null");
+            // Fallback implementation - return 0 for now
+            // TODO: Fix FFXIVClientStructs API compatibility
+            Plugin.Log.Debug("[GameHelpers] GetDutyRemainingTime: Using fallback implementation");
             return 0f;
         }
         catch (Exception ex)
         {
             Plugin.Log.Error($"GetDutyRemainingTime failed: {ex.Message}");
             return 0f;
+        }
+    }
+
+    /// <summary>
+    /// Set the Duty Finder Level Sync setting.
+    /// Primary mechanism: AutoDuty IPC SetConfig("LevelSync", value) called by the engine.
+    /// Direct manipulation via AgentContentsFinder is not available in this FFXIVClientStructs version
+    /// (no LevelSync field exposed). If AutoDuty IPC doesn't work for level sync, this method
+    /// will need to be updated with direct memory manipulation once the correct offset is found.
+    /// Duty Finder settings positions (from top): 1st=JoinInProgress, 2nd=Unsync, 3rd=LevelSync
+    /// </summary>
+    public static unsafe void SetDutyFinderLevelSync(bool enable)
+    {
+        try
+        {
+            // AgentContentsFinder doesn't expose LevelSync as a named field in current FFXIVClientStructs.
+            // Relying on AutoDuty IPC SetConfig("LevelSync", value) as primary mechanism.
+            // If that doesn't work, we'll need to find the byte offset in the agent for direct manipulation.
+            Plugin.Log.Information($"[GameHelpers] SetDutyFinderLevelSync={enable} (via AutoDuty IPC, no direct agent access available)");
+        }
+        catch (Exception ex)
+        {
+            Plugin.Log.Warning($"[GameHelpers] SetDutyFinderLevelSync failed: {ex.Message}");
         }
     }
 }

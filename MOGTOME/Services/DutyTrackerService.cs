@@ -151,6 +151,17 @@ public class DutyTrackerService
 
             log.Information($"[DutyTracker] [{timingMethod}] FINAL: Duty completed in {state.LastCompletionDuration:F0}s -> counter: {state.DutyCounter}");
             log.Debug($"[DutyTracker] [{timingMethod}] Summary - TimeLimit: {timeLimit:F0}s, Territory: {state.CurrentTerritory}, IsPrae: {isPrae}, Remaining: {remainingTime:F0}s, Actual: {actualDuration:F0}s");
+            
+            // Now that we have the correct completion time, record the run
+            try
+            {
+                runHistoryService.RecordRun();
+                log.Debug($"[DutyTracker] Successfully called RecordRun() with completion time {state.LastCompletionDuration:F0}s");
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex, "[DutyTracker] Failed to call RecordRun() after time calculation");
+            }
         }
         else
         {

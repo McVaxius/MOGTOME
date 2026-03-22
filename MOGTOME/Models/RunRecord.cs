@@ -69,11 +69,6 @@ public class RunRecord
     public bool WasSuccessful { get; set; } = true;
     
     /// <summary>
-    /// Item level during the run
-    /// </summary>
-    public ushort ItemLevel { get; set; } = 0;
-    
-    /// <summary>
     /// Party size during the run
     /// </summary>
     public byte PartySize { get; set; } = 1;

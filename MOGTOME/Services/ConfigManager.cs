@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
@@ -77,6 +78,14 @@ public class ConfigManager
     }
     
     /// <summary>
+    /// Get all account IDs
+    /// </summary>
+    public List<string> GetAllAccountIds()
+    {
+        return accounts.Keys.ToList();
+    }
+    
+    /// <summary>
     /// Ensure we have an account selected and current character tracked
     /// </summary>
     public void EnsureAccountSelected()
@@ -126,7 +135,7 @@ public class ConfigManager
                 log.Warning("[ConfigManager] Local player not available, using default character config");
             }
             
-            SaveAccount(accountId);
+            SaveCurrentAccount();
         }
         catch (Exception ex)
         {

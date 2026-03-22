@@ -102,7 +102,7 @@ public class BossModIPC : IDisposable
         try
         {
             commandManager.ProcessCommand("/rotation auto");
-            log.Debug("[BossMod] RSR auto rotation enabled");
+            //log.Debug("[BossMod] RSR auto rotation enabled");
         }
         catch (Exception ex)
         {

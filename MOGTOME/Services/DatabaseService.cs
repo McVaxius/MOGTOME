@@ -4,10 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
+using Microsoft.Data.Sqlite;
 using MOGTOME.Models;
-using SQLite;
+using MOGTOME.Repositories;
 
 namespace MOGTOME.Services;
 
@@ -20,19 +22,111 @@ public class DatabaseService
 {
     private readonly IPluginLog log;
     private readonly IDalamudPluginInterface pluginInterface;
+    private readonly ConfigManager configManager;
     private readonly string databaseFolder;
-    private readonly Dictionary<string, SQLiteConnection> connections = new();
+    private readonly IRunRecordRepository repository;
+    private readonly object initializationLock = new object();
+    private volatile bool isInitialized = false;
+    
+    // Database version system
+    private const int DATABASE_VERSION = 1;
+    private const string VERSION_KEY = "DatabaseVersion";
 
-    public DatabaseService(IPluginLog log, IDalamudPluginInterface pluginInterface)
+    public DatabaseService(IPluginLog log, IDalamudPluginInterface pluginInterface, ConfigManager configManager)
     {
         this.log = log;
         this.pluginInterface = pluginInterface;
+        this.configManager = configManager;
         this.databaseFolder = Path.Combine(pluginInterface.ConfigDirectory.FullName, "MOGTOME", "RunHistory");
         
-        // Ensure database folder exists
+        // Only create directory - defer database operations
         Directory.CreateDirectory(databaseFolder);
         
+        // Initialize repository
+        this.repository = new SqliteRunRecordRepository(log, databaseFolder);
+        
         log.Information($"[DatabaseService] Initialized with SQLite database folder: {databaseFolder}");
+    }
+
+    /// <summary>
+    /// Check database version and reset if needed
+    /// </summary>
+    private void CheckAndResetDatabase(string accountId)
+    {
+        var dbPath = GetDatabasePath(accountId);
+        
+        if (File.Exists(dbPath))
+        {
+            try
+            {
+                using var connection = new SqliteConnection($"Data Source={dbPath};");
+                connection.Open();
+                
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = "PRAGMA user_version";
+                var version = Convert.ToInt32(cmd.ExecuteScalar());
+                
+                if (version < DATABASE_VERSION)
+                {
+                    log.Information($"[DatabaseService] Resetting database for account {accountId} (version {version} -> {DATABASE_VERSION})");
+                    connection.Close();
+                    File.Delete(dbPath);
+                }
+                else
+                {
+                    log.Debug($"[DatabaseService] Database version {version} is current for account {accountId}");
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Warning(ex, $"[DatabaseService] Error checking database version for {accountId}, resetting");
+                try
+                {
+                    File.Delete(dbPath);
+                    log.Information($"[DatabaseService] Successfully reset database for account {accountId}");
+                }
+                catch (Exception deleteEx)
+                {
+                    log.Error(deleteEx, $"[DatabaseService] Failed to delete database file for account {accountId}");
+                }
+            }
+        }
+        else
+        {
+            log.Debug($"[DatabaseService] No existing database for account {accountId}, will create new");
+        }
+    }
+
+    /// <summary>
+    /// Initialize database service (call from main thread)
+    /// </summary>
+    public void Initialize()
+    {
+        if (isInitialized) return;
+        
+        lock (initializationLock)
+        {
+            if (isInitialized) return;
+            
+            try
+            {
+                // Reset databases with old schema before initialization
+                var accounts = configManager.GetAllAccountIds();
+                foreach (var accountId in accounts)
+                {
+                    CheckAndResetDatabase(accountId);
+                }
+                
+                // Perform any heavy initialization here
+                log.Information("[DatabaseService] Database service initialization completed");
+                isInitialized = true;
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex, "[DatabaseService] Failed to initialize database service");
+                throw;
+            }
+        }
     }
 
     /// <summary>
@@ -44,65 +138,19 @@ public class DatabaseService
     }
 
     /// <summary>
-    /// Get or create a SQLite connection for the specified account
-    /// </summary>
-    private SQLiteConnection GetConnection(string accountId)
-    {
-        if (connections.ContainsKey(accountId))
-        {
-            return connections[accountId];
-        }
-
-        var dbPath = GetDatabasePath(accountId);
-        var connection = new SQLiteConnection($"Data Source={dbPath};Version=3;");
-        connection.Open();
-        
-        // Create tables if they don't exist
-        InitializeDatabase(connection);
-        
-        connections[accountId] = connection;
-        log.Debug($"[DatabaseService] Created SQLite connection for account {accountId}");
-        return connection;
-    }
-
-    /// <summary>
-    /// Initialize database schema with proper indexing
-    /// </summary>
-    private void InitializeDatabase(SQLiteConnection connection)
-    {
-        try
-        {
-            // Create RunRecords table with indexes for performance
-            connection.CreateTable<RunRecord>();
-
-            // Create indexes for common queries
-            connection.Execute("CREATE INDEX IF NOT EXISTS idx_timestamp ON RunRecords(Timestamp)");
-            connection.Execute("CREATE INDEX IF NOT EXISTS idx_contentid ON RunRecords(ContentId)");
-            connection.Execute("CREATE INDEX IF NOT EXISTS idx_territory ON RunRecords(TerritoryId)");
-            connection.Execute("CREATE INDEX IF NOT EXISTS idx_completiontime ON RunRecords(CompletionTime)");
-            
-            log.Debug("[DatabaseService] Database schema initialized with indexes");
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, "[DatabaseService] Failed to initialize database schema");
-            throw;
-        }
-    }
-
-    /// <summary>
     /// Load run records from the account-specific SQLite database
     /// </summary>
     public List<RunRecord> LoadRunRecords(string accountId)
     {
+        // Ensure service is initialized
+        if (!isInitialized)
+        {
+            throw new InvalidOperationException("DatabaseService not initialized. Call Initialize() first.");
+        }
+
         try
         {
-            var connection = GetConnection(accountId);
-            
-            var records = connection.Query<RunRecord>("SELECT * FROM RunRecords ORDER BY Timestamp DESC LIMIT 1000");
-
-            log.Debug($"[DatabaseService] Loaded {records.Count} run records from SQLite for account {accountId}");
-            return records.ToList();
+            return repository.LoadRunRecords(accountId);
         }
         catch (Exception ex)
         {
@@ -112,28 +160,82 @@ public class DatabaseService
     }
 
     /// <summary>
-    /// Add a single run record to the SQLite database
+    /// Fallback in-memory storage for critical operations when database fails
     /// </summary>
-    public void AddRunRecord(string accountId, RunRecord record)
+    private readonly Dictionary<string, List<RunRecord>> fallbackStorage = new();
+    
+    /// <summary>
+    /// Store run record with graceful degradation
+    /// </summary>
+    public void AddRunRecordWithFallback(string accountId, RunRecord record)
     {
         try
         {
-            var connection = GetConnection(accountId);
+            AddRunRecord(accountId, record);
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, $"[DatabaseService] Database operation failed, using fallback storage for account {accountId}");
             
-            // Insert the new record
-            connection.Insert(record);
-            
-            // Maintain size limit by deleting oldest records if needed
-            var count = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM RunRecords");
-            if (count > 1000)
+            // Store in fallback storage
+            lock (fallbackStorage)
             {
-                var excess = count - 1000;
-                connection.Execute("DELETE FROM RunRecords WHERE Id IN (SELECT Id FROM RunRecords ORDER BY Timestamp ASC LIMIT ?)", excess);
-                
-                log.Debug($"[DatabaseService] Deleted {excess} old records to maintain size limit");
+                if (!fallbackStorage.ContainsKey(accountId))
+                {
+                    fallbackStorage[accountId] = new List<RunRecord>();
+                }
+                fallbackStorage[accountId].Add(record);
             }
             
-            log.Debug($"[DatabaseService] Added run record for account {accountId}");
+            log.Information($"[DatabaseService] Stored run record in fallback storage for account {accountId}");
+        }
+    }
+    
+    /// <summary>
+    /// Load run records with fallback support
+    /// </summary>
+    public List<RunRecord> LoadRunRecordsWithFallback(string accountId)
+    {
+        try
+        {
+            var records = LoadRunRecords(accountId);
+            
+            // Add any records from fallback storage
+            lock (fallbackStorage)
+            {
+                if (fallbackStorage.TryGetValue(accountId, out var fallbackRecords))
+                {
+                    records.AddRange(fallbackRecords);
+                    log.Information($"[DatabaseService] Loaded {fallbackRecords.Count} records from fallback storage for account {accountId}");
+                }
+            }
+            
+            return records;
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, $"[DatabaseService] Database load failed, using fallback storage for account {accountId}");
+            
+            // Return only fallback storage
+            lock (fallbackStorage)
+            {
+                return fallbackStorage.TryGetValue(accountId, out var fallbackRecords) 
+                    ? fallbackRecords.ToList() 
+                    : new List<RunRecord>();
+            }
+        }
+    }
+    public void AddRunRecord(string accountId, RunRecord record)
+    {
+        // Ensure service is initialized
+        if (!isInitialized)
+        {
+            throw new InvalidOperationException("DatabaseService not initialized. Call Initialize() first.");
+        }
+
+        try
+        {
+            repository.AddRunRecord(accountId, record);
         }
         catch (Exception ex)
         {
@@ -147,12 +249,15 @@ public class DatabaseService
     /// </summary>
     public void ClearRunRecords(string accountId)
     {
+        // Ensure service is initialized
+        if (!isInitialized)
+        {
+            throw new InvalidOperationException("DatabaseService not initialized. Call Initialize() first.");
+        }
+
         try
         {
-            var connection = GetConnection(accountId);
-            connection.Execute("DELETE FROM RunRecords");
-            
-            log.Information($"[DatabaseService] Cleared all run records for account {accountId}");
+            repository.ClearRunRecords(accountId);
         }
         catch (Exception ex)
         {
@@ -166,6 +271,13 @@ public class DatabaseService
     /// </summary>
     public void MigrateFromJson(string accountId)
     {
+        // Ensure service is initialized before proceeding
+        if (!isInitialized)
+        {
+            log.Warning($"[DatabaseService] Migration called before initialization for account {accountId}");
+            return; // Skip migration, will be called after initialization
+        }
+
         try
         {
             var jsonPath = Path.Combine(databaseFolder, $"{accountId}_RunHistory.json");
@@ -188,20 +300,19 @@ public class DatabaseService
                 return;
             }
 
-            // Insert into SQLite
-            var connection = GetConnection(accountId);
+            // Insert into SQLite using repository
             var inserted = 0;
             
             foreach (var record in records)
             {
                 try
                 {
-                    connection.Insert(record);
+                    repository.AddRunRecord(accountId, record);
                     inserted++;
                 }
                 catch (Exception ex)
                 {
-                    log.Warning($"[DatabaseService] Failed to migrate record {record.Timestamp}: {ex.Message}");
+                    log.Error(ex, $"[DatabaseService] Failed to migrate record for account {accountId}");
                 }
             }
 
@@ -216,27 +327,5 @@ public class DatabaseService
         {
             log.Error(ex, $"[DatabaseService] Migration failed for account {accountId}");
         }
-    }
-
-    /// <summary>
-    /// Dispose of resources
-    /// </summary>
-    public void Dispose()
-    {
-        foreach (var connection in connections.Values)
-        {
-            try
-            {
-                connection.Close();
-                connection.Dispose();
-            }
-            catch (Exception ex)
-            {
-                log.Warning($"[DatabaseService] Error closing connection: {ex.Message}");
-            }
-        }
-        
-        connections.Clear();
-        log.Information("[DatabaseService] Disposed database service");
     }
 }

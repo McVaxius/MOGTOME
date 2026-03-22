@@ -146,7 +146,7 @@ public class MogtomeEngine
             commandManager.ProcessCommand("/ad stop");
 
             // Ensure AutoDuty path exists
-            autoDutyPath.EnsurePathExists();
+            _ = autoDutyPath.EnsurePathExists();
 
             // Initialize rotation
             rotationService.Initialize();
@@ -169,15 +169,21 @@ public class MogtomeEngine
             // Calculate timeouts
             state.CalculateTimeouts(LoopInterval);
 
-            // Configure unsynced mode if testing
+            // Both modes always use Unsync=true to avoid queuing with strangers.
+            // Testing mode: Unsync ON + LevelSync OFF (overpowered solo, fast clear)
+            // Normal mode:  Unsync ON + LevelSync ON  (solo at appropriate level)
+            autoDutyIPC.SetConfig("Unsynced", "true");
             if (config.TestingModeUnsynced)
             {
-                autoDutyIPC.SetConfig("Unsynced", "true");
-                log.Information("[Engine] Testing mode: Unsynced enabled");
+                autoDutyIPC.SetConfig("LevelSync", "false");
+                GameHelpers.SetDutyFinderLevelSync(false);
+                log.Information("[Engine] Testing mode: Unsync=ON, LevelSync=OFF");
             }
             else
             {
-                autoDutyIPC.SetConfig("Unsynced", "false");
+                autoDutyIPC.SetConfig("LevelSync", "true");
+                GameHelpers.SetDutyFinderLevelSync(true);
+                log.Information("[Engine] Normal mode: Unsync=ON, LevelSync=ON");
             }
 
             CurrentState = EngineState.WaitingOutsideDuty;
@@ -309,9 +315,13 @@ public class MogtomeEngine
 
     private void OnLeftDuty()
     {
-        // Update best/longest time stats only for synced runs
-        // Use the most recent recorded run data instead of state.LastCompletionDuration
-        if (!config.TestingModeUnsynced && runHistoryService.RunHistory.Count > 0)
+        // IMPORTANT: Call dutyTracker.OnDutyCompleted() FIRST
+        // This calculates completion time and calls RecordRun() to save the record.
+        // We must do this before reading stats so we get the FRESH record, not stale data.
+        dutyTracker.OnDutyCompleted();
+
+        // Now read the freshly created record for stats update
+        if ((!config.TestingModeUnsynced || config.ShowDebugRuns) && runHistoryService.RunHistory.Count > 0)
         {
             var mostRecentRun = runHistoryService.RunHistory.LastOrDefault();
             if (mostRecentRun != null)
@@ -323,7 +333,7 @@ public class MogtomeEngine
                     var partyComp = string.Join(", ", mostRecentRun.PartyMembers);
                     var dateStr = mostRecentRun.Timestamp.ToString("yyyy-MM-dd HH:mm UTC");
 
-                    log.Debug($"[Engine] Updating stats - Run: {mostRecentRun.CompletionTime:F1}s, Party: [{partyComp}], Date: {dateStr}");
+                    log.Debug($"[Engine] Updating stats - Run: {mostRecentRun.CompletionTime:F1}s, Party: [{partyComp}], Date: {dateStr}, Territory: {mostRecentRun.TerritoryId}, IsPrae: {mostRecentRun.IsPraetorium}");
 
                     // Update global stats (kept for compatibility)
                     if (mostRecentRun.CompletionTime < config.BestTimeEver)
@@ -348,8 +358,6 @@ public class MogtomeEngine
                     UpdateDutyStatsFromRun(mostRecentRun, partyComp, dateStr);
 
                     log.Information($"[Engine] Stats updated successfully - Method: VALID_RUN_CHECK");
-                    // Note: ConfigManager.SaveCurrentAccount() will be called by the engine
-                    // We don't save here to avoid multiple saves during stats update
                 }
                 else
                 {
@@ -362,16 +370,14 @@ public class MogtomeEngine
                 log.Warning("[Engine] Skipping stats update - NO_RECENT_RUN_FOUND");
             }
         }
-        else if (config.TestingModeUnsynced)
+        else if (config.TestingModeUnsynced && !config.ShowDebugRuns)
         {
-            log.Information("[Engine] Unsynced run - skipping stats tracking (TestingModeUnsynced=true)");
+            log.Information("[Engine] Unsynced run - skipping stats tracking (TestingModeUnsynced=true, ShowDebugRuns=false)");
         }
         else
         {
             log.Warning("[Engine] Skipping stats update - NO_RUN_HISTORY (count: 0)");
         }
-
-        dutyTracker.OnDutyCompleted();
         state.IsInDuty = false;
         outsideDutyTicks = 0;
         autoDutyStartedInDuty = false;
@@ -403,8 +409,8 @@ public class MogtomeEngine
             log.Information($"[Engine] Starting requeue sequence - {state.DutyCounter}/{config.MaxRuns} completed");
             
             // Start requeue state machine with 10s delay to prevent crashes
-            requeueState = RequeueState.WaitingForRequeue;
-            requeueTimer = DateTime.UtcNow.AddSeconds(10);
+            requeueState = RequeueState.WaitingAfterLeave;
+            requeueStartTime = DateTime.UtcNow;
         }
         else
         {

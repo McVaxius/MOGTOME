@@ -407,18 +407,18 @@ public class ConfigWindow : Window, IDisposable
         }
 
         var testMode = config.TestingModeUnsynced;
-        if (ImGui.Checkbox("Testing Mode: Unsynced solo+ runs", ref testMode))
+        if (ImGui.Checkbox("Testing Mode: Unsynced (no Level Sync)", ref testMode))
         {
             config.TestingModeUnsynced = testMode;
             changed = true;
         }
         if (testMode)
         {
-            ImGui.TextColored(new Vector4(1, 1, 0, 1), "WARNING: Duty will be queued Unsynced for testing purposes.");
+            ImGui.TextColored(new Vector4(1, 1, 0, 1), "WARNING: Running Unsynced without Level Sync (overpowered, fast clear).");
         }
         else
         {
-            ImGui.TextDisabled("Enable to run duties unsynced for testing.");
+            ImGui.TextDisabled("Default: Unsync+Level Sync (solo at appropriate level, no strangers).");
         }
 
         return changed;

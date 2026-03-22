@@ -29,12 +29,8 @@ public class RunHistoryService
         this.configManager = configManager;
         this.databaseService = databaseService;
         
-        // Trigger migration from JSON to SQLite if needed
-        var accountId = playerState.ContentId.ToString();
-        databaseService.MigrateFromJson(accountId);
-        
-        // Load existing run records from SQLite database
-        LoadRunHistoryFromDatabase();
+        // Note: Database operations moved to Plugin.OnFrameworkUpdate after initialization
+        // Constructor is now clean - no database operations here
     }
 
     /// <summary>
@@ -45,7 +41,7 @@ public class RunHistoryService
     /// <summary>
     /// Load run history from the account-specific database
     /// </summary>
-    private void LoadRunHistoryFromDatabase()
+    public void LoadRunHistoryFromDatabase()
     {
         try
         {
@@ -230,7 +226,6 @@ public class RunHistoryService
             MogtomesEarned = isPrae ? 15 : 20, // Prae=15, Decu=20
             IsPraetorium = isPrae,
             WasSuccessful = true,
-            ItemLevel = (ushort)(localPlayer?.Level ?? 0), // Simplified for now
             PartySize = (byte)partyList.Length,
             PartyMembers = partyMembers
         };

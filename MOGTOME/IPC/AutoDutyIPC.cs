@@ -51,7 +51,8 @@ public class AutoDutyIPC : IDisposable
         SetConfig("OnlyExitWhenDutyDone", "true");
         SetConfig("EnableTerminationActions", "false");
         SetConfig("Unsynced", "true");
-        log.Information($"[AutoDuty] Configured for MOGTOME (leader={isLeader})");
+        // LevelSync is set by the engine based on TestingModeUnsynced config
+        log.Information($"[AutoDuty] Configured for MOGTOME (leader={isLeader}) - Unsync=ON");
     }
 
     public void SetUsingAlternativeRotation(bool useAlternative)

@@ -79,7 +79,7 @@ public sealed class Plugin : IDalamudPlugin
         BossModIPC = new BossModIPC(Log, CommandManager);
 
         // Initialize Services
-        DatabaseService = new DatabaseService(Log, PluginInterface);
+        DatabaseService = new DatabaseService(Log, PluginInterface, ConfigManager);
         RunHistoryService = new RunHistoryService(Log, Configuration, State, PlayerState, ConfigManager, DatabaseService);
         DutyTrackerService = new DutyTrackerService(Log, Configuration, State, RunHistoryService);
         DutyQueueService = new DutyQueueService(Log, Configuration, State, AutoDutyIPC, AutomatonIPC, CommandManager, Condition);
@@ -201,6 +201,19 @@ public sealed class Plugin : IDalamudPlugin
                 ChatGui.Print($"[MOGTOME] State: {Engine.CurrentState} | Duty #{State.DutyCounter} | {Engine.StatusMessage}");
                 break;
 
+            case "debug":
+                var debugMode = !Configuration.DebugModeEnabled;
+                Configuration.DebugModeEnabled = debugMode;
+                ConfigManager.SaveCurrentAccount();
+                
+                var status = debugMode ? "ENABLED" : "DISABLED";
+                ChatGui.Print($"[MOGTOME] Debug mode {status}");
+                if (debugMode)
+                {
+                    ChatGui.Print("[MOGTOME] Debug checkbox now visible in Stats Window");
+                }
+                break;
+
             default:
                 MainWindow.Toggle();
                 break;
@@ -209,7 +222,55 @@ public sealed class Plugin : IDalamudPlugin
 
     private void OnFrameworkUpdate(IFramework fw)
     {
+        // Initialize database service on first frame
+        if (!databaseInitialized)
+        {
+            try
+            {
+                DatabaseService.Initialize();
+                databaseInitialized = true;
+                Log.Information("[Plugin] Database service initialized successfully");
+                
+                // Trigger migration for all accounts after initialization
+                TriggerMigrationForAllAccounts();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "[Plugin] Failed to initialize database service");
+            }
+        }
+        
         Engine.Update();
+    }
+
+    private void TriggerMigrationForAllAccounts()
+    {
+        try
+        {
+            // Get all configured accounts
+            var accounts = ConfigManager.GetAllAccountIds();
+            
+            foreach (var accountId in accounts)
+            {
+                try
+                {
+                    DatabaseService.MigrateFromJson(accountId);
+                    Log.Information($"[Plugin] Migration completed for account {accountId}");
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(ex, $"[Plugin] Migration failed for account {accountId}");
+                }
+            }
+            
+            // Reload run history after migration
+            RunHistoryService.LoadRunHistoryFromDatabase();
+            Log.Information("[Plugin] Run history reloaded after migration");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "[Plugin] Failed to trigger migrations");
+        }
     }
 
     private void OnDutyStarted(object? sender, ushort territoryId)
@@ -221,9 +282,11 @@ public sealed class Plugin : IDalamudPlugin
     {
         Log.Information($"[Plugin] DutyCompleted event: territory={territoryId}");
         
-        // Record run immediately when duty completes (party still together)
-        RunHistoryService.RecordRun();
+        // DutyTracker will handle time calculation and call RecordRun() after calculation
+        // This ensures we have the correct completion time before recording
     }
+
+    private bool databaseInitialized = false;
 
     private void ToggleConfigUi() => ConfigWindow.Toggle();
     private void ToggleMainUi() => MainWindow.Toggle();

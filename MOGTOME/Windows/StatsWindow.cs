@@ -100,6 +100,26 @@ public class StatsWindow : Window, IDisposable
         var config = plugin.Configuration;
         var state = plugin.State;
 
+        // Debug checkbox (only visible when debug mode is enabled)
+        if (config.DebugModeEnabled)
+        {
+            var showDebugRuns = config.ShowDebugRuns;
+            if (ImGui.Checkbox("Show debug runs", ref showDebugRuns))
+            {
+                config.ShowDebugRuns = showDebugRuns;
+                plugin.ConfigManager.SaveCurrentAccount();
+            }
+            if (showDebugRuns)
+            {
+                ImGui.TextColored(new Vector4(1.0f, 1.0f, 0.0f, 1.0f), "Unsynced runs are now included in statistics");
+            }
+            else
+            {
+                ImGui.TextDisabled("Unsynced runs are hidden from statistics");
+            }
+            ImGui.Spacing();
+        }
+
         // Side-by-side stats layout
         if (ImGui.BeginTable("StatsTable", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg))
         {
@@ -618,9 +638,9 @@ public class StatsWindow : Window, IDisposable
         var last50 = allRuns.TakeLast(50);
         
         // Display metrics
-        ImGui.Text($"Average Completion Time (Last 10): {FormatTime(last10.DefaultIfEmpty().Average(x => x.CompletionTime))}");
-        ImGui.Text($"Average Completion Time (Last 50): {FormatTime(last50.DefaultIfEmpty().Average(x => x.CompletionTime))}");
-        ImGui.Text($"Average Completion Time (All time): {FormatTime(allRuns.Average(x => x.CompletionTime))}");
+        ImGui.Text($"Average Completion Time (Last 10): {FormatTime(last10.DefaultIfEmpty().Average(x => x?.CompletionTime ?? 0f))}");
+        ImGui.Text($"Average Completion Time (Last 50): {FormatTime(last50.DefaultIfEmpty().Average(x => x?.CompletionTime ?? 0f))}");
+        ImGui.Text($"Average Completion Time (All time): {FormatTime(allRuns.Average(x => x?.CompletionTime ?? 0f))}");
         
         var deathRate10 = last10.Any() ? (float)last10.Count(x => x.DeathCount > 0) / last10.Count() * 100 : 0;
         var deathRateAll = (float)allRuns.Count(x => x.DeathCount > 0) / allRuns.Count * 100;

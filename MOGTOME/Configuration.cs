@@ -23,6 +23,10 @@ public class Configuration
     public string QuitCommand { get; set; } = "/ays m e";
     public bool TestingModeUnsynced { get; set; } = false;
 
+    // --- Debug Settings ---
+    public bool DebugModeEnabled { get; set; } = false;           // Controls UI visibility
+    public bool ShowDebugRuns { get; set; } = false;              // Controls showing unsynced runs in stats
+
     // --- Food Settings ---
     public int FoodItemId { get; set; } = 0;
     public string FoodItemName { get; set; } = "";
