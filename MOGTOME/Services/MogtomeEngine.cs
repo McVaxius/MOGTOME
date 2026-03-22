@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.UI;
@@ -127,7 +128,7 @@ public class MogtomeEngine
         log.Information($"[Engine] Duty completed event in territory {territoryId} - will leave in {DutyExitDelaySeconds}s");
     }
 
-    public void Start()
+    public async void Start()
     {
         if (IsRunning)
         {
@@ -171,7 +172,7 @@ public class MogtomeEngine
 
             // Both modes always use Unsync=true to avoid queuing with strangers.
             // Testing mode: Unsync ON + LevelSync OFF (overpowered solo, fast clear)
-            // Normal mode:  Unsync ON + LevelSync ON  (solo at appropriate level)
+            // Normal mode:  Unsync ON + LevelSync ON  (appropriate level with party to get rewards)
             autoDutyIPC.SetConfig("Unsynced", "true");
             if (config.TestingModeUnsynced)
             {
@@ -181,9 +182,93 @@ public class MogtomeEngine
             }
             else
             {
+                // Normal mode: Manually set duty finder options for Unsync+LevelSync
+                // AutoDuty IPC doesn't work for LevelSync, so we do it manually
+                log.Information("[Engine] Normal mode: Setting up duty finder for Unsync+LevelSync");
+                
+                try
+                {
+                    // 1. Open Duty Finder - use CommandHelper pattern
+                    log.Debug("[Engine] Step 1: Opening duty finder");
+                    
+                    // Try CommandManager first (for plugin commands)
+                    var commandProcessed = commandManager.ProcessCommand("/dutyfinder");
+                    if (commandProcessed)
+                    {
+                        log.Debug("[Engine] /dutyfinder command processed by CommandManager");
+                    }
+                    else
+                    {
+                        log.Debug("[Engine] /dutyfinder not handled by CommandManager, trying UIModule fallback");
+                        
+                        // Fallback: Send through UIModule for native FF14 commands
+                        try
+                        {
+                            unsafe
+                            {
+                                var uiModule = FFXIVClientStructs.FFXIV.Client.UI.UIModule.Instance();
+                                if (uiModule == null)
+                                {
+                                    log.Error("[Engine] UIModule is null, cannot send /dutyfinder command");
+                                    return;
+                                }
+
+                                var bytes = System.Text.Encoding.UTF8.GetBytes("/dutyfinder");
+                                var utf8String = FFXIVClientStructs.FFXIV.Client.System.String.Utf8String.FromSequence(bytes);
+                                uiModule->ProcessChatBoxEntry(utf8String, nint.Zero);
+                                log.Debug("[Engine] /dutyfinder sent via UIModule successfully");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            log.Error($"[Engine] Failed to send /dutyfinder via UIModule: {ex.Message}");
+                            return;
+                        }
+                    }
+                    
+                    // Wait for it to appear
+                    await Task.Delay(1000);
+                    
+                    // Check if it's visible
+                    if (!GameHelpers.IsAddonVisible("ContentsFinder"))
+                    {
+                        log.Warning("[Engine] ContentsFinder addon not visible after /dutyfinder - aborting setup");
+                        return;
+                    }
+                    
+                    log.Debug("[Engine] ContentsFinder addon is visible");
+                    
+                    // 2. Open Options
+                    log.Debug("[Engine] Step 2: Opening duty finder options");
+                    GameHelpers.FireAddonCallback("ContentsFinder", true, 15);
+                    await Task.Delay(2000);
+                    
+                    // 3. Set Unrestricted Party (Unsync)
+                    log.Debug("[Engine] Step 3: Setting Unrestricted Party (Unsync)");
+                    GameHelpers.FireAddonCallback("ContentsFinderSetting", true, 1, 1, 1);
+                    await Task.Delay(2000);
+                    
+                    // 4. Set Level Sync
+                    log.Debug("[Engine] Step 4: Setting Level Sync");
+                    GameHelpers.FireAddonCallback("ContentsFinderSetting", true, 1, 2, 1);
+                    await Task.Delay(2000);
+                    
+                    // 5. Confirm
+                    log.Debug("[Engine] Step 5: Confirming duty finder settings");
+                    GameHelpers.FireAddonCallback("ContentsFinderSetting", true, 0);
+                    await Task.Delay(2000);
+                    
+                    log.Information("[Engine] Duty finder setup complete: Unsync=ON, LevelSync=ON");
+                }
+                catch (Exception ex)
+                {
+                    log.Error($"[Engine] Failed to set up duty finder: {ex.Message}");
+                    // Continue anyway - AutoDuty will still try to queue
+                }
+                
+                // Also set AutoDuty IPC for consistency
                 autoDutyIPC.SetConfig("LevelSync", "true");
                 GameHelpers.SetDutyFinderLevelSync(true);
-                log.Information("[Engine] Normal mode: Unsync=ON, LevelSync=ON");
             }
 
             CurrentState = EngineState.WaitingOutsideDuty;

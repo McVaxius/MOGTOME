@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Dalamud.Game.Command;
 using Dalamud.IoC;
 using Dalamud.Plugin;
@@ -179,7 +180,7 @@ public sealed class Plugin : IDalamudPlugin
             case "start":
                 if (!Engine.IsRunning)
                 {
-                    Engine.Start();
+                    _ = Task.Run(() => Engine.Start());
                     ChatGui.Print("[MOGTOME] Started");
                 }
                 else

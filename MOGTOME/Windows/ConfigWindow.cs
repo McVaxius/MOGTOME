@@ -407,18 +407,18 @@ public class ConfigWindow : Window, IDisposable
         }
 
         var testMode = config.TestingModeUnsynced;
-        if (ImGui.Checkbox("Testing Mode: Unsynced (no Level Sync)", ref testMode))
+        if (ImGui.Checkbox("Testing Mode: Unsynced (uncheck level sync yourself if you really want to do this. Stats won't be recorded)", ref testMode))
         {
             config.TestingModeUnsynced = testMode;
             changed = true;
         }
         if (testMode)
         {
-            ImGui.TextColored(new Vector4(1, 1, 0, 1), "WARNING: Running Unsynced without Level Sync (overpowered, fast clear).");
+            ImGui.TextColored(new Vector4(1, 1, 0, 1), "WARNING: Running Unsynced without Level Sync (Testing mode. No Stats).");
         }
         else
         {
-            ImGui.TextDisabled("Default: Unsync+Level Sync (solo at appropriate level, no strangers).");
+            ImGui.TextDisabled("Default: Unsync+Level Sync (Sync+Level Sync for safety from Queueing with Randoms).");
         }
 
         return changed;

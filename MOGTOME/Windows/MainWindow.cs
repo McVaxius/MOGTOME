@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Numerics;
 using Dalamud.Interface.Windowing;
 using Dalamud.Bindings.ImGui;
@@ -75,7 +76,7 @@ public class MainWindow : Window, IDisposable
         {
             if (ImGui.Button("Start", new Vector2(80, 30)))
             {
-                engine.Start();
+                _ = Task.Run(() => engine.Start());
             }
         }
         else
