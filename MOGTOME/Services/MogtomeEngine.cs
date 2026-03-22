@@ -496,6 +496,7 @@ public class MogtomeEngine
             // Start requeue state machine with 10s delay to prevent crashes
             requeueState = RequeueState.WaitingAfterLeave;
             requeueStartTime = DateTime.UtcNow;
+            requeueInProgress = true;  // Fix: This was missing, causing requeue to never start
         }
         else
         {
