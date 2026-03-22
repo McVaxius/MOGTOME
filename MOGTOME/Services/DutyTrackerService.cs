@@ -61,7 +61,7 @@ public class DutyTrackerService
 
     public void OnDutyStarted()
     {
-        var isPrae = state.CurrentTerritory == DutyState.PraetoriumTerritoryId;
+        var isPrae = state.DutyStartTerritory == DutyState.PraetoriumTerritoryId;
         
         // Only increment duty counter for Praetorium runs
         if (isPrae)
@@ -99,11 +99,11 @@ public class DutyTrackerService
         
         if (state.DutyStartTime.HasValue)
         {
-            var isPrae = state.CurrentTerritory == DutyState.PraetoriumTerritoryId;
+            var isPrae = state.DutyStartTerritory == DutyState.PraetoriumTerritoryId;
             var timeLimit = isPrae ? DutyState.PraetoriumTimeLimit : DutyState.DecumanaTimeLimit;
             var rawDuration = (float)(now - state.DutyStartTime.Value).TotalSeconds;
 
-            log.Debug($"[DutyTracker] Duty parameters - Territory: {state.CurrentTerritory}, IsPrae: {isPrae}, TimeLimit: {timeLimit:F0}s, RawDuration: {rawDuration:F0}s");
+            log.Debug($"[DutyTracker] Duty parameters - CurrentTerritory: {state.CurrentTerritory}, DutyStartTerritory: {state.DutyStartTerritory}, IsPrae: {isPrae}, TimeLimit: {timeLimit:F0}s, RawDuration: {rawDuration:F0}s");
 
             var remainingTime = GameHelpers.GetDutyRemainingTime();
             log.Information($"[DutyTracker] Remaining time check - API returned: {remainingTime:F0}s");
@@ -150,7 +150,7 @@ public class DutyTrackerService
             state.LastCompletionTime = now;
 
             log.Information($"[DutyTracker] [{timingMethod}] FINAL: Duty completed in {state.LastCompletionDuration:F0}s -> counter: {state.DutyCounter}");
-            log.Debug($"[DutyTracker] [{timingMethod}] Summary - TimeLimit: {timeLimit:F0}s, Territory: {state.CurrentTerritory}, IsPrae: {isPrae}, Remaining: {remainingTime:F0}s, Actual: {actualDuration:F0}s");
+            log.Debug($"[DutyTracker] [{timingMethod}] Summary - TimeLimit: {timeLimit:F0}s, CurrentTerritory: {state.CurrentTerritory}, DutyStartTerritory: {state.DutyStartTerritory}, IsPrae: {isPrae}, Remaining: {remainingTime:F0}s, Actual: {actualDuration:F0}s");
             
             // Now that we have the correct completion time, record the run
             try

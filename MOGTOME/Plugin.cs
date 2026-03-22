@@ -277,6 +277,8 @@ public sealed class Plugin : IDalamudPlugin
     private void OnDutyStarted(object? sender, ushort territoryId)
     {
         Log.Information($"[Plugin] DutyStarted event: territory={territoryId}");
+        State.DutyStartTerritory = territoryId;  // Store the correct territory
+        Log.Debug($"[Plugin] Stored DutyStartTerritory={territoryId}");
     }
 
     private void OnDutyCompleted(object? sender, ushort territoryId)

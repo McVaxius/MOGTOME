@@ -12,6 +12,7 @@ public class DutyState
     public bool IsInCombat { get; set; } = false;
     public bool IsPartyLeader { get; set; } = false;
     public ushort CurrentTerritory { get; set; } = 0;
+    public ushort DutyStartTerritory { get; set; } = 0;
 
     // --- Territory IDs ---
     public const ushort PraetoriumTerritoryId = 1044;

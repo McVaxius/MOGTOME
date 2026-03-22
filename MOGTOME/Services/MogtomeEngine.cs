@@ -389,7 +389,7 @@ public class MogtomeEngine
         log.Information($"[Engine] Entered duty #{state.DutyCounter}");
 
         // Always count instances fired up (even unsynced)
-        var isPrae = state.CurrentTerritory == DutyState.PraetoriumTerritoryId;
+        var isPrae = state.DutyStartTerritory == DutyState.PraetoriumTerritoryId;
         if (isPrae)
             config.TotalPraes++;
         else
@@ -489,18 +489,26 @@ public class MogtomeEngine
         }
 
         // Check if we should continue running
-        if (state.DutyCounter < config.MaxRuns && state.IsPartyLeader)
+        if (state.DutyCounter < config.MaxRuns)
         {
-            log.Information($"[Engine] Starting requeue sequence - {state.DutyCounter}/{config.MaxRuns} completed");
-            
-            // Start requeue state machine with 10s delay to prevent crashes
-            requeueState = RequeueState.WaitingAfterLeave;
-            requeueStartTime = DateTime.UtcNow;
-            requeueInProgress = true;  // Fix: This was missing, causing requeue to never start
+            if (state.IsPartyLeader)
+            {
+                log.Information($"[Engine] Starting leader requeue sequence - {state.DutyCounter}/{config.MaxRuns} completed");
+                
+                // Start requeue state machine with 10s delay to prevent crashes
+                requeueState = RequeueState.WaitingAfterLeave;
+                requeueStartTime = DateTime.UtcNow;
+                requeueInProgress = true;
+            }
+            else
+            {
+                log.Information($"[Engine] Non-leader ready for next duty - {state.DutyCounter}/{config.MaxRuns} completed");
+                // Non-leader continues running, will "/ad start" when entering next duty
+            }
         }
         else
         {
-            log.Information($"[Engine] Run limit reached or not party leader - stopping");
+            log.Information($"[Engine] Run limit reached - stopping");
             Stop();
         }
     }
@@ -562,7 +570,7 @@ public class MogtomeEngine
 
     private void UpdateDutyStats(string partyComp, string dateStr)
     {
-        var isPrae = state.CurrentTerritory == DutyState.PraetoriumTerritoryId;
+        var isPrae = state.DutyStartTerritory == DutyState.PraetoriumTerritoryId;
         
         if (isPrae)
         {

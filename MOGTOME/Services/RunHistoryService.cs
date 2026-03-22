@@ -183,7 +183,14 @@ public class RunHistoryService
     {
         var localPlayer = Plugin.ObjectTable.LocalPlayer;
         var partyList = Plugin.PartyList;
-        var isPrae = state.CurrentTerritory == DutyState.PraetoriumTerritoryId;
+        var isPrae = state.DutyStartTerritory == DutyState.PraetoriumTerritoryId;
+        
+        // Validate territory
+        if (state.DutyStartTerritory != 1044 && state.DutyStartTerritory != 1048)
+        {
+            log.Warning($"[RunHistory] Invalid territory {state.DutyStartTerritory}, expected 1044 (Prae) or 1048 (Decu)");
+            log.Debug($"[RunHistory] CurrentTerritory={state.CurrentTerritory}, DutyStartTerritory={state.DutyStartTerritory}");
+        }
         
         // Debug party detection
         log.Information($"[RunHistory] Party detection: PartyList.Length={partyList.Length}, LocalPlayer={localPlayer?.Name}");
@@ -220,7 +227,7 @@ public class RunHistoryService
             ContentId = playerState.ContentId,
             JobId = localPlayer?.ClassJob.IsValid == true ? (byte)localPlayer.ClassJob.Value.RowId : (byte)0,
             Level = (byte)(localPlayer?.Level ?? 0),
-            TerritoryId = state.CurrentTerritory,
+            TerritoryId = state.DutyStartTerritory,
             CompletionTime = state.LastCompletionDuration,
             DeathCount = 0, // TODO: Implement death tracking
             MogtomesEarned = isPrae ? 15 : 20, // Prae=15, Decu=20
