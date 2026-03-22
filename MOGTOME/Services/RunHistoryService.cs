@@ -188,6 +188,16 @@ public class RunHistoryService
                 config.PraeLongestRun = praeRecords.Max(r => r.CompletionTime);
                 config.PraeMogtomesEarned = praeRecords.Sum(r => r.MogtomesEarned);
                 config.PraeTotalDeathsSelf = praeRecords.Sum(r => r.DeathCount);
+                
+                // Praetorium best run details
+                var bestPraeRun = praeRecords.OrderBy(r => r.CompletionTime).First();
+                config.PraeBestTimeDate = bestPraeRun.Timestamp.ToString("yyyy-MM-dd HH:mm:ss");
+                config.PraeBestTimeParty = string.Join(", ", bestPraeRun.PartyMembers ?? new List<string>());
+                
+                // Praetorium longest run details
+                var longestPraeRun = praeRecords.OrderByDescending(r => r.CompletionTime).First();
+                config.PraeLongestRunDate = longestPraeRun.Timestamp.ToString("yyyy-MM-dd HH:mm:ss");
+                config.PraeLongestRunParty = string.Join(", ", longestPraeRun.PartyMembers ?? new List<string>());
             }
             
             // Decumana stats
@@ -197,6 +207,16 @@ public class RunHistoryService
                 config.DecuLongestRun = decuRecords.Max(r => r.CompletionTime);
                 config.DecuMogtomesEarned = decuRecords.Sum(r => r.MogtomesEarned);
                 config.DecuTotalDeathsSelf = decuRecords.Sum(r => r.DeathCount);
+                
+                // Decumana best run details
+                var bestDecuRun = decuRecords.OrderBy(r => r.CompletionTime).First();
+                config.DecuBestTimeDate = bestDecuRun.Timestamp.ToString("yyyy-MM-dd HH:mm:ss");
+                config.DecuBestTimeParty = string.Join(", ", bestDecuRun.PartyMembers ?? new List<string>());
+                
+                // Decumana longest run details
+                var longestDecuRun = decuRecords.OrderByDescending(r => r.CompletionTime).First();
+                config.DecuLongestRunDate = longestDecuRun.Timestamp.ToString("yyyy-MM-dd HH:mm:ss");
+                config.DecuLongestRunParty = string.Join(", ", longestDecuRun.PartyMembers ?? new List<string>());
             }
             
             // Overall stats

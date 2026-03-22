@@ -249,8 +249,35 @@ public class StatsWindow : Window, IDisposable
         {
             ImGui.Text($"Best: {FormatTime(bestTime)}");
             ImGui.TextDisabled($"Date: {bestTimeDate}");
-            var krangledParty = plugin.Configuration.KrangleNames ? KrangleService.KrangleName(bestTimeParty) : bestTimeParty;
-            ImGui.TextDisabled($"Party: {krangledParty}");
+            
+            // Party display - multi-line formatting
+            if (!string.IsNullOrEmpty(bestTimeParty))
+            {
+                ImGui.TextDisabled("Party:");
+                var partyMembers = bestTimeParty.Split(", ");
+                foreach (var member in partyMembers)
+                {
+                    var trimmedMember = member.Trim();
+                    // Parse "Name - Job - Level" format
+                    var parts = trimmedMember.Split(" - ");
+                    if (parts.Length >= 3)
+                    {
+                        var name = parts[0];
+                        var job = parts[1];
+                        var level = parts[2];
+                        
+                        // Only krangle the name, not job/level
+                        var krangledName = plugin.Configuration.KrangleNames ? KrangleService.KrangleName(name) : name;
+                        ImGui.TextDisabled($"  {krangledName} - {job} - {level}");
+                    }
+                    else
+                    {
+                        // Fallback for unexpected format
+                        var krangledMember = plugin.Configuration.KrangleNames ? KrangleService.KrangleName(trimmedMember) : trimmedMember;
+                        ImGui.TextDisabled($"  {krangledMember}");
+                    }
+                }
+            }
         }
         else
         {
@@ -264,8 +291,35 @@ public class StatsWindow : Window, IDisposable
         {
             ImGui.Text($"Longest: {FormatTime(longestRun)}");
             ImGui.TextDisabled($"Date: {longestRunDate}");
-            var krangledLongestParty = plugin.Configuration.KrangleNames ? KrangleService.KrangleName(longestRunParty) : longestRunParty;
-            ImGui.TextDisabled($"Party: {krangledLongestParty}");
+            
+            // Party display - multi-line formatting
+            if (!string.IsNullOrEmpty(longestRunParty))
+            {
+                ImGui.TextDisabled("Party:");
+                var partyMembers = longestRunParty.Split(", ");
+                foreach (var member in partyMembers)
+                {
+                    var trimmedMember = member.Trim();
+                    // Parse "Name - Job - Level" format
+                    var parts = trimmedMember.Split(" - ");
+                    if (parts.Length >= 3)
+                    {
+                        var name = parts[0];
+                        var job = parts[1];
+                        var level = parts[2];
+                        
+                        // Only krangle the name, not job/level
+                        var krangledName = plugin.Configuration.KrangleNames ? KrangleService.KrangleName(name) : name;
+                        ImGui.TextDisabled($"  {krangledName} - {job} - {level}");
+                    }
+                    else
+                    {
+                        // Fallback for unexpected format
+                        var krangledMember = plugin.Configuration.KrangleNames ? KrangleService.KrangleName(trimmedMember) : trimmedMember;
+                        ImGui.TextDisabled($"  {krangledMember}");
+                    }
+                }
+            }
         }
         else
         {
