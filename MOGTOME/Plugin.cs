@@ -69,6 +69,7 @@ public sealed class Plugin : IDalamudPlugin
         // Initialize ConfigManager first
         ConfigManager = new ConfigManager(Log, PlayerState, ClientState, PluginInterface);
         
+                
         State = new DutyState();
 
         // Initialize Services (needed before IPC)
@@ -137,6 +138,7 @@ public sealed class Plugin : IDalamudPlugin
         PluginInterface.UiBuilder.OpenConfigUi -= ToggleConfigUi;
         PluginInterface.UiBuilder.OpenMainUi -= ToggleMainUi;
 
+        
         // Stop engine if running and dispose if initialized
         if (Engine != null)
         {

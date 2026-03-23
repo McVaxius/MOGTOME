@@ -142,6 +142,13 @@ public class MogtomeEngine
 
         try
         {
+            // FIRST: Force path selection via reflection (all party members, before anything else)
+            if (!condition[34]) // Only while not in duty
+            {
+                log.Information("[Engine] Forcing AutoDuty path selection via reflection (pre-start)");
+                autoDutyPath.ForcePathSelection();
+            }
+
             // Send /ad stop to reset AutoDuty state for all characters
             log.Information("[Engine] Sending /ad stop to reset AutoDuty state");
             commandManager.ProcessCommand("/ad stop");

@@ -279,7 +279,8 @@ public class ConfigWindow : Window, IDisposable
         }
 
         ImGui.Spacing();
-        ImGui.TextWrapped("BEFORE starting the M.O.G.T.O.M.E. plugin, Open AutoDuty, pick Regular, pick Praetorium, then pick the \"(1044) The Praetorium - W2W 20250716 phecda\" path. This will save the path for your job and you shouldn't have to do it again in the future.  Even so, always check this before starting your runs.");
+		//re-add back if reflect becomes a fool's errand
+        //ImGui.TextWrapped("BEFORE starting the M.O.G.T.O.M.E. plugin, Open AutoDuty, pick Regular, pick Praetorium, then pick the \"(1044) The Praetorium - W2W 20250716 phecda\" path. This will save the path for your job and you shouldn't have to do it again in the future.  Even so, always check this before starting your runs.");
     }
 
     private static void DrawDepLine(string name, bool ok, string detail, string? repoKey)
@@ -406,19 +407,30 @@ public class ConfigWindow : Window, IDisposable
             }
         }
 
-        var testMode = config.TestingModeUnsynced;
-        if (ImGui.Checkbox("Testing Mode: Unsynced (uncheck level sync yourself if you really want to do this. Stats won't be recorded)", ref testMode))
+        // Unsynced testing mode - only visible when debug mode enabled (/mog debug)
+        if (config.DebugModeEnabled)
         {
-            config.TestingModeUnsynced = testMode;
-            changed = true;
-        }
-        if (testMode)
-        {
-            ImGui.TextColored(new Vector4(1, 1, 0, 1), "WARNING: Running Unsynced without Level Sync (Testing mode. No Stats).");
+            var testMode = config.TestingModeUnsynced;
+            if (ImGui.Checkbox("Testing Mode: Unsynced (uncheck level sync yourself if you really want to do this. Stats won't be recorded)", ref testMode))
+            {
+                config.TestingModeUnsynced = testMode;
+                changed = true;
+            }
+            if (testMode)
+            {
+                ImGui.TextColored(new Vector4(1, 1, 0, 1), "WARNING: Running Unsynced without Level Sync (Testing mode. No Stats).");
+            }
+            else
+            {
+                ImGui.TextDisabled("Default: Unsync+Level Sync (Sync+Level Sync for safety from Queueing with Randoms).");
+            }
         }
         else
         {
-            ImGui.TextDisabled("Default: Unsync+Level Sync (Sync+Level Sync for safety from Queueing with Randoms).");
+            if (config.TestingModeUnsynced)
+            {
+                ImGui.TextColored(new Vector4(1, 1, 0, 1), "[Testing Mode active - enable debug to change]");
+            }
         }
 
         return changed;

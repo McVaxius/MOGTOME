@@ -151,6 +151,185 @@ public class MainWindow : Window, IDisposable
         ImGui.Unindent();
         ImGui.Separator();
 
+        // Debug Section (only visible when debug mode is enabled via /mog debug)
+        if (config.DebugModeEnabled)
+        {
+            ImGui.TextColored(new Vector4(1.0f, 0.5f, 0.0f, 1.0f), "Debug Tools");
+            ImGui.Indent();
+
+            // Force Path Selection button
+            if (ImGui.Button("FORCE PATH SELECTION", new Vector2(200, 25)))
+            {
+                plugin.AutoDutyPathService.ForcePathSelection();
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("Force AutoDuty to select:\nMode: Looping\nDuty Mode: Regular\nDuty: The Praetorium (1044)\nPath: phecda W2W\n\nLogs full AutoDuty structure to Dalamud log.");
+            }
+            ImGui.TextDisabled($"Result: {plugin.AutoDutyPathService.LastForceResult}");
+
+            // First row: Core research buttons
+            if (ImGui.SmallButton("Log AD Structure"))
+            {
+                plugin.AutoDutyPathService.LogAutoDutyStructure();
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("Dump AutoDuty plugin structure to Dalamud log for research.");
+            }
+
+            ImGui.SameLine();
+            if (ImGui.SmallButton("Log Config"))
+            {
+                var autoDutyPlugin = plugin.AutoDutyPathService.FindDalamudPluginInstance("AutoDuty");
+                if (autoDutyPlugin != null)
+                {
+                    var configObj = AutoDutyPathService.GetMemberValue(autoDutyPlugin.GetType(), autoDutyPlugin, "Configuration");
+                    plugin.AutoDutyPathService.LogAutoDutyStructure(autoDutyPlugin, configObj);
+                }
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("Dump AutoDuty Configuration structure to Dalamud log.");
+            }
+
+            ImGui.SameLine();
+            if (ImGui.SmallButton("Log Actions"))
+            {
+                var autoDutyPlugin = plugin.AutoDutyPathService.FindDalamudPluginInstance("AutoDuty");
+                if (autoDutyPlugin != null)
+                {
+                    var actions = AutoDutyPathService.GetMemberValue(autoDutyPlugin.GetType(), autoDutyPlugin, "Actions");
+                    plugin.AutoDutyPathService.LogAutoDutyStructure(autoDutyPlugin, actions);
+                }
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("Dump AutoDuty Actions list (currently empty, but shows structure).");
+            }
+
+            // Second row: Manager and exploration buttons
+            if (ImGui.SmallButton("Log Manager"))
+            {
+                var autoDutyPlugin = plugin.AutoDutyPathService.FindDalamudPluginInstance("AutoDuty");
+                if (autoDutyPlugin != null)
+                {
+                    var actionsManager = AutoDutyPathService.GetMemberValue(autoDutyPlugin.GetType(), autoDutyPlugin, "actions");
+                    plugin.AutoDutyPathService.LogAutoDutyStructure(autoDutyPlugin, actionsManager);
+                }
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("Dump AutoDuty ActionsManager (contains actionsList with command definitions).");
+            }
+
+            ImGui.SameLine();
+            if (ImGui.SmallButton("Explore Paths"))
+            {
+                var autoDutyPlugin = plugin.AutoDutyPathService.FindDalamudPluginInstance("AutoDuty");
+                if (autoDutyPlugin != null)
+                {
+                    // Try different approaches to find path data
+                    plugin.AutoDutyPathService.ExplorePathData(autoDutyPlugin);
+                }
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("Explore different locations for path data (Configuration, MainWindow, etc.).");
+            }
+
+            ImGui.SameLine();
+            if (ImGui.SmallButton("Log Tuples"))
+            {
+                var autoDutyPlugin = plugin.AutoDutyPathService.FindDalamudPluginInstance("AutoDuty");
+                if (autoDutyPlugin != null)
+                {
+                    var actionsManager = AutoDutyPathService.GetMemberValue(autoDutyPlugin.GetType(), autoDutyPlugin, "actions");
+                    var actionsList = AutoDutyPathService.GetMemberValue(actionsManager?.GetType(), actionsManager, "actionsList");
+                    plugin.AutoDutyPathService.LogActionsListTuples(actionsList);
+                }
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("Iterate through actionsList and log each tuple's contents (command definitions).");
+            }
+
+            // Third row: Path data exploration
+            if (ImGui.SmallButton("Path Selections"))
+            {
+                var autoDutyPlugin = plugin.AutoDutyPathService.FindDalamudPluginInstance("AutoDuty");
+                if (autoDutyPlugin != null)
+                {
+                    var configObj = AutoDutyPathService.GetMemberValue(autoDutyPlugin.GetType(), autoDutyPlugin, "Configuration");
+                    var pathSelections = AutoDutyPathService.GetMemberValue(configObj?.GetType(), configObj, "PathSelectionsByPath");
+                    plugin.AutoDutyPathService.LogPathSelections(pathSelections);
+                }
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("Explore PathSelectionsByPath dictionary (territory → path mappings).");
+            }
+
+            ImGui.SameLine();
+            if (ImGui.SmallButton("Check Current"))
+            {
+                var autoDutyPlugin = plugin.AutoDutyPathService.FindDalamudPluginInstance("AutoDuty");
+                if (autoDutyPlugin != null)
+                {
+                    plugin.AutoDutyPathService.LogCurrentSelection(autoDutyPlugin);
+                }
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("Check what path AutoDuty currently has selected.");
+            }
+
+            ImGui.SameLine();
+            if (ImGui.SmallButton("Find Methods"))
+            {
+                var autoDutyPlugin = plugin.AutoDutyPathService.FindDalamudPluginInstance("AutoDuty");
+                if (autoDutyPlugin != null)
+                {
+                    plugin.AutoDutyPathService.LogAutoDutyMethods(autoDutyPlugin);
+                }
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("Find Save/Apply/Load methods in AutoDuty.");
+            }
+
+            ImGui.SameLine();
+            if (ImGui.SmallButton("Config Fields"))
+            {
+                var autoDutyPlugin = plugin.AutoDutyPathService.FindDalamudPluginInstance("AutoDuty");
+                if (autoDutyPlugin != null)
+                {
+                    plugin.AutoDutyPathService.LogConfigFields(autoDutyPlugin);
+                }
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("Find actual config field names for path selection.");
+            }
+
+            ImGui.Spacing();
+
+            // Unsynced testing mode checkbox (only visible in debug)
+            var testMode = config.TestingModeUnsynced;
+            if (ImGui.Checkbox("Testing Mode: Unsynced (no stats)", ref testMode))
+            {
+                config.TestingModeUnsynced = testMode;
+                plugin.ConfigManager.SaveCurrentAccount();
+            }
+            if (testMode)
+            {
+                ImGui.TextColored(new Vector4(1, 1, 0, 1), "WARNING: Running Unsynced without Level Sync.");
+            }
+
+            ImGui.Unindent();
+            ImGui.Separator();
+        }
+
         // Party Info
         ImGui.Text("Party");
         ImGui.Indent();
