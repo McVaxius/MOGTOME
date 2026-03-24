@@ -10,14 +10,16 @@ public class AutoDutyIPC : IDisposable
     private readonly IPluginLog log;
     private readonly ICommandManager commandManager;
     private readonly RunHistoryService runHistoryService;
+    private readonly RotationService rotationService;
 
     private ICallGateSubscriber<string, string, object>? setConfig;
 
-    public AutoDutyIPC(IPluginLog log, ICommandManager commandManager, RunHistoryService runHistoryService)
+    public AutoDutyIPC(IPluginLog log, ICommandManager commandManager, RunHistoryService runHistoryService, RotationService rotationService)
     {
         this.log = log;
         this.commandManager = commandManager;
         this.runHistoryService = runHistoryService;
+        this.rotationService = rotationService;
 
         try
         {
@@ -112,6 +114,17 @@ public class AutoDutyIPC : IDisposable
             }
             
             commandManager.ProcessCommand("/ad start");
+            
+            // Refresh RSR after starting AutoDuty
+            try
+            {
+                rotationService.ForceRotation();
+                log.Information("[AutoDuty] RSR refreshed after /ad start");
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex, "[AutoDuty] Failed to refresh RSR after /ad start");
+            }
         }
         catch (Exception ex)
         {

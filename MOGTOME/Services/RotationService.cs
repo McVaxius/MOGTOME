@@ -11,17 +11,15 @@ public class RotationService
     private readonly Configuration config;
     private readonly DutyState state;
     private readonly BossModIPC bossModIPC;
-    private readonly AutoDutyIPC autoDutyIPC;
 
     public RotationService(
         IPluginLog log, Configuration config, DutyState state,
-        BossModIPC bossModIPC, AutoDutyIPC autoDutyIPC)
+        BossModIPC bossModIPC)
     {
         this.log = log;
         this.config = config;
         this.state = state;
         this.bossModIPC = bossModIPC;
-        this.autoDutyIPC = autoDutyIPC;
     }
 
     public void Initialize()
@@ -30,7 +28,7 @@ public class RotationService
         state.WhichBossMod = bossModIPC.WhichBossMod;
 
         // We use RSR for rotations
-        autoDutyIPC.SetUsingAlternativeRotation(false);
+        // autoDutyIPC.SetUsingAlternativeRotation(false); // Removed to avoid circular dependency
 
         log.Information($"[Rotation] Initialized: BossMod={state.WhichBossMod}, using RSR for rotation");
     }
@@ -48,7 +46,7 @@ public class RotationService
 
     public void DisableRotation()
     {
-        bossModIPC.DisableAI();
-        bossModIPC.DisableRSR();
+        // Do not disable RSR or BossMod AI - let them continue running
+        log.Debug("[Rotation] DisableRotation called - no action taken (RSR/BossMod left enabled)");
     }
 }

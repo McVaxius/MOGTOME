@@ -76,19 +76,21 @@ public sealed class Plugin : IDalamudPlugin
         DatabaseService = new DatabaseService(Log, PluginInterface, ConfigManager);
         RunHistoryService = new RunHistoryService(Log, Configuration, State, PlayerState, ConfigManager, DatabaseService);
 
-        // Initialize IPC
+        // Initialize IPC that RotationService needs
+        BossModIPC = new BossModIPC(Log, CommandManager);
+        RotationService = new RotationService(Log, Configuration, State, BossModIPC);
+
+        // Initialize remaining IPC
         YesAlreadyIPC = new YesAlreadyIPC(Log);
         VNavIPC = new VNavIPC(Log, CommandManager);
-        AutoDutyIPC = new AutoDutyIPC(Log, CommandManager, RunHistoryService);
+        AutoDutyIPC = new AutoDutyIPC(Log, CommandManager, RunHistoryService, RotationService);
         AutomatonIPC = new AutomatonIPC(Log);
-        BossModIPC = new BossModIPC(Log, CommandManager);
 
         // Initialize remaining Services
         DutyTrackerService = new DutyTrackerService(Log, Configuration, State, RunHistoryService);
         DutyQueueService = new DutyQueueService(Log, Configuration, State, AutoDutyIPC, AutomatonIPC, CommandManager, Condition);
         RepairService = new RepairService(Log, Configuration, State, CommandManager, Condition);
         FoodService = new FoodService(Log, Configuration, State, Condition);
-        RotationService = new RotationService(Log, Configuration, State, BossModIPC, AutoDutyIPC);
         BossHandlerService = new BossHandlerService(Log, Configuration, State, VNavIPC, CommandManager, Condition);
         StuckDetectionService = new StuckDetectionService(Log, Configuration, State, VNavIPC, CommandManager, Condition);
         DialogHandlerService = new DialogHandlerService(Log, YesAlreadyIPC, CommandManager, GameGui);

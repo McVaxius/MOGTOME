@@ -840,9 +840,6 @@ public class MogtomeEngine
         // Stuck detection
         stuckDetection.Update();
 
-        // Force rotation refresh periodically
-        rotationService.ForceRotation();
-
         StatusMessage = $"In Duty #{state.DutyCounter} - {state.TimeInDuty:F0}s";
     }
 
