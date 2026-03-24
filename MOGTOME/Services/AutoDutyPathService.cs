@@ -13,6 +13,7 @@ namespace MOGTOME.Services;
 public class AutoDutyPathService
 {
     private readonly IPluginLog log;
+    private readonly IDalamudPluginInterface PluginInterface;
 
     private const string PathFileName = "(1044) The Praetorium - W2W 20250716 phecda.json";
     private const string PathUrl = "https://raw.githubusercontent.com/McVaxius/dhogsbreakfeast/refs/heads/main/Dungeons%20and%20Multiboxing/G.O.O.N/(1044)%20The%20Praetorium%20-%20W2W%2020250716%20phecda.json";
@@ -30,9 +31,10 @@ public class AutoDutyPathService
     // Last result for UI display
     public string LastForceResult { get; private set; } = "Not attempted";
 
-    public AutoDutyPathService(IPluginLog log)
+    public AutoDutyPathService(IPluginLog log, IDalamudPluginInterface pluginInterface)
     {
         this.log = log;
+        this.PluginInterface = pluginInterface;
     }
 
     /// <summary>
@@ -104,21 +106,38 @@ public class AutoDutyPathService
             var territorySet = SetMemberValue(instanceType, pluginInstance, "currentTerritoryType", (uint)TargetTerritoryType);
             log.Information($"[AutoDutyPath] Set currentTerritoryType={TargetTerritoryType}: {territorySet}");
 
-            // Try setting currentPath by finding the target path index dynamically
-            var pathIndex = FindPathIndexByName(pluginInstance, TargetPathName);
+            // Try setting currentPath by finding the target path index using the FILE DATE method
+            var pathIndex = FindPathIndexByFileDate(TargetPathName);
             var pathSet = false;
             if (pathIndex >= 0)
             {
                 pathSet = SetMemberValue(instanceType, pluginInstance, "currentPath", pathIndex);
-                log.Information($"[AutoDutyPath] Set currentPath={pathIndex} for '{TargetPathName}': {pathSet}");
+                log.Information($"[AutoDutyPath] Set currentPath={pathIndex} for '{TargetPathName}' (FILE DATE METHOD): {pathSet}");
                 if (pathSet)
                 {
-                    LastForceResult = $"OK: Territory={TargetTerritoryType}, Path={pathIndex} ({TargetPathName})";
+                    LastForceResult = $"OK: Territory={TargetTerritoryType}, Path={pathIndex} ({TargetPathName}) [FileDate]";
                 }
             }
             else
             {
-                log.Warning($"[AutoDutyPath] Could not find path index for '{TargetPathName}'");
+                log.Warning($"[AutoDutyPath] Could not find path index for '{TargetPathName}' using file date method");
+                
+                // Fallback: try the old method (may be incorrect)
+                log.Information("[AutoDutyPath] Trying fallback method (PathSelectionsByPath)...");
+                var fallbackIndex = FindPathIndexByName(pluginInstance, TargetPathName);
+                if (fallbackIndex >= 0)
+                {
+                    pathSet = SetMemberValue(instanceType, pluginInstance, "currentPath", fallbackIndex);
+                    log.Information($"[AutoDutyPath] Set currentPath={fallbackIndex} (FALLBACK) for '{TargetPathName}': {pathSet}");
+                    if (pathSet)
+                    {
+                        LastForceResult = $"OK: Territory={TargetTerritoryType}, Path={fallbackIndex} (FALLBACK) ({TargetPathName})";
+                    }
+                }
+                else
+                {
+                    LastForceResult = $"FAILED: Could not find path index for '{TargetPathName}'";
+                }
             }
 
             // Step 5: Get Content from ContentHelper.DictionaryContent (already populated by AutoDuty init)
@@ -634,7 +653,577 @@ public class AutoDutyPathService
     // --- Dynamic Path Discovery Helper ---
 
     /// <summary>
+    /// Explore AutoDuty UI structure to find click/select methods and properties
+    /// </summary>
+    public void ExploreAutoDutyUI(object? autoDutyPlugin)
+    {
+        try
+        {
+            if (autoDutyPlugin == null)
+            {
+                log.Warning("[ExploreUI] autoDutyPlugin is null");
+                return;
+            }
+
+            var pluginType = autoDutyPlugin.GetType();
+            var pluginAssembly = pluginType.Assembly;
+            
+            log.Information("[ExploreUI] === EXPLORING AUTODUTY UI STRUCTURE ===");
+            
+            // Get MainTab type
+            var mainTabType = pluginAssembly.GetType("AutoDuty.Windows.MainTab");
+            if (mainTabType == null)
+            {
+                log.Error("[ExploreUI] MainTab type not found in assembly");
+                return;
+            }
+            
+            log.Information($"[ExploreUI] Found MainTab: {mainTabType.FullName}");
+            
+            // Explore all methods
+            var allMethods = mainTabType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
+            log.Information($"[ExploreUI] Total methods found: {allMethods.Length}");
+            
+            // Find click-related methods
+            var clickMethods = allMethods.Where(m => 
+                m.Name.Contains("Click") || 
+                m.Name.Contains("Select") || 
+                m.Name.Contains("DutyList") ||
+                m.Name.Contains("OnList") ||
+                m.Name.Contains("ListClick")).ToList();
+            
+            log.Information($"[ExploreUI] Click/Select methods ({clickMethods.Count}):");
+            foreach (var method in clickMethods)
+            {
+                var paramsStr = string.Join(", ", method.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
+                log.Information($"[ExploreUI]   {method.Name}({paramsStr})");
+            }
+            
+            // Find list-related methods
+            var listMethods = allMethods.Where(m => 
+                m.Name.Contains("List") && 
+                (m.Name.Contains("Selected") || m.Name.Contains("Index") || m.Name.Contains("Current"))).ToList();
+            
+            log.Information($"[ExploreUI] List selection methods ({listMethods.Count}):");
+            foreach (var method in listMethods)
+            {
+                var paramsStr = string.Join(", ", method.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
+                log.Information($"[ExploreUI]   {method.Name}({paramsStr})");
+            }
+            
+            // Explore all fields/properties
+            var allFields = mainTabType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
+            var allProps = mainTabType.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
+            
+            // Find selection-related fields
+            var selectionFields = allFields.Where(f => 
+                f.Name.Contains("Selected") || 
+                f.Name.Contains("Index") || 
+                f.Name.Contains("Current") ||
+                f.Name.Contains("List")).ToList();
+            
+            log.Information($"[ExploreUI] Selection-related fields ({selectionFields.Count}):");
+            foreach (var field in selectionFields)
+            {
+                log.Information($"[ExploreUI]   {field.FieldType.Name} {field.Name}");
+            }
+            
+            // Find selection-related properties
+            var selectionProps = allProps.Where(p => 
+                p.Name.Contains("Selected") || 
+                p.Name.Contains("Index") || 
+                p.Name.Contains("Current") ||
+                p.Name.Contains("List")).ToList();
+            
+            log.Information($"[ExploreUI] Selection-related properties ({selectionProps.Count}):");
+            foreach (var prop in selectionProps)
+            {
+                log.Information($"[ExploreUI]   {prop.PropertyType.Name} {prop.Name}");
+            }
+            
+            // NEW: Look for MainTab instance access patterns
+            log.Information("[ExploreUI] === MainTab INSTANCE ACCESS ===");
+            
+            // Check for static MainTab fields/properties
+            var staticMainTabFields = mainTabType.GetFields(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+                .Where(f => f.Name.Contains("Instance") || f.Name.Contains("Current") || f.Name == "Instance" || f.Name == "Current").ToList();
+            
+            log.Information($"[ExploreUI] Static MainTab access fields ({staticMainTabFields.Count}):");
+            foreach (var field in staticMainTabFields)
+            {
+                try
+                {
+                    var value = field.GetValue(null);
+                    log.Information($"[ExploreUI]   {field.FieldType.Name} {field.Name} = {value?.GetType().Name ?? "null"}");
+                }
+                catch (Exception ex)
+                {
+                    log.Information($"[ExploreUI]   {field.FieldType.Name} {field.Name} = ERROR: {ex.Message}");
+                }
+            }
+            
+            var staticMainTabProps = mainTabType.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+                .Where(p => p.Name.Contains("Instance") || p.Name.Contains("Current") || p.Name == "Instance" || p.Name == "Current").ToList();
+            
+            log.Information($"[ExploreUI] Static MainTab access properties ({staticMainTabProps.Count}):");
+            foreach (var prop in staticMainTabProps)
+            {
+                try
+                {
+                    var value = prop.GetValue(null);
+                    log.Information($"[ExploreUI]   {prop.PropertyType.Name} {prop.Name} = {value?.GetType().Name ?? "null"}");
+                }
+                catch (Exception ex)
+                {
+                    log.Information($"[ExploreUI]   {prop.PropertyType.Name} {prop.Name} = ERROR: {ex.Message}");
+                }
+            }
+            
+            // Check plugin instance for MainTab references
+            var autoDutyPluginType = autoDutyPlugin.GetType();
+            var pluginMainTabFields = autoDutyPluginType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                .Where(f => f.FieldType == mainTabType || f.FieldType.Name.Contains("MainTab") || f.Name.Contains("MainTab")).ToList();
+            
+            log.Information($"[ExploreUI] Plugin MainTab reference fields ({pluginMainTabFields.Count}):");
+            foreach (var field in pluginMainTabFields)
+            {
+                try
+                {
+                    var value = field.GetValue(autoDutyPlugin);
+                    log.Information($"[ExploreUI]   {field.FieldType.Name} {field.Name} = {value?.GetType().Name ?? "null"}");
+                }
+                catch (Exception ex)
+                {
+                    log.Information($"[ExploreUI]   {field.FieldType.Name} {field.Name} = ERROR: {ex.Message}");
+                }
+            }
+            
+            var pluginMainTabProps = autoDutyPluginType.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                .Where(p => p.PropertyType == mainTabType || p.PropertyType.Name.Contains("MainTab") || p.Name.Contains("MainTab")).ToList();
+            
+            log.Information($"[ExploreUI] Plugin MainTab reference properties ({pluginMainTabProps.Count}):");
+            foreach (var prop in pluginMainTabProps)
+            {
+                try
+                {
+                    var value = prop.GetValue(autoDutyPlugin);
+                    log.Information($"[ExploreUI]   {prop.PropertyType.Name} {prop.Name} = {value?.GetType().Name ?? "null"}");
+                }
+                catch (Exception ex)
+                {
+                    log.Information($"[ExploreUI]   {prop.PropertyType.Name} {prop.Name} = ERROR: {ex.Message}");
+                }
+            }
+            
+            log.Information("[ExploreUI] === UI EXPLORATION COMPLETE ===");
+        }
+        catch (Exception ex)
+        {
+            log.Error($"[ExploreUI] Exploration failed: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Simulate clicking on Praetorium in the AutoDuty UI
+    /// </summary>
+    public void SimulateUIClick(object? autoDutyPlugin)
+    {
+        try
+        {
+            if (autoDutyPlugin == null)
+            {
+                log.Warning("[SimulateClick] autoDutyPlugin is null");
+                return;
+            }
+
+            var pluginType = autoDutyPlugin.GetType();
+            var pluginAssembly = pluginType.Assembly;
+            
+            log.Information("[SimulateClick] === SIMULATING PRAETORIUM CLICK ===");
+            
+            // Get MainTab type
+            var mainTabType = pluginAssembly.GetType("AutoDuty.Windows.MainTab");
+            if (mainTabType == null)
+            {
+                log.Error("[SimulateClick] MainTab type not found");
+                return;
+            }
+            
+            // Get the path index for Praetorium
+            var pathIndex = FindPathIndexFromDictionaryPaths(autoDutyPlugin, TargetPathName);
+            if (pathIndex < 0)
+            {
+                log.Warning("[SimulateClick] Could not find Praetorium path index, using fallback");
+                pathIndex = FindPathIndexByName(autoDutyPlugin, TargetPathName);
+            }
+            
+            if (pathIndex < 0)
+            {
+                log.Error("[SimulateClick] Could not determine path index");
+                return;
+            }
+            
+            log.Information($"[SimulateClick] Using path index: {pathIndex}");
+            
+            // Try different approaches to simulate the click
+            
+            // Approach 1: Try calling click/select methods
+            var allMethods = mainTabType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
+            var clickMethods = allMethods.Where(m => 
+                m.Name.Contains("Click") || 
+                m.Name.Contains("Select") || 
+                m.Name.Contains("DutyList") ||
+                m.Name.Contains("OnList")).ToList();
+            
+            log.Information($"[SimulateClick] Testing {clickMethods.Count} click methods...");
+            
+            foreach (var method in clickMethods)
+            {
+                try
+                {
+                    var parameters = method.GetParameters();
+                    object?[] args;
+                    
+                    if (parameters.Length == 0)
+                    {
+                        args = new object?[] { };
+                    }
+                    else if (parameters.Length == 1)
+                    {
+                        if (parameters[0].ParameterType == typeof(int))
+                            args = new object?[] { pathIndex };
+                        else if (parameters[0].ParameterType == typeof(uint))
+                            args = new object?[] { (uint)pathIndex };
+                        else if (parameters[0].ParameterType == typeof(string))
+                            args = new object?[] { TargetPathName };
+                        else
+                            continue; // Skip incompatible parameter types
+                    }
+                    else
+                    {
+                        continue; // Skip methods with multiple parameters
+                    }
+                    
+                    // Try both static and instance invocation
+                    object? target = method.IsStatic ? null : autoDutyPlugin;
+                    
+                    method.Invoke(target, args);
+                    log.Information($"[SimulateClick] ✓ Called: {method.Name}({string.Join(", ", args)})");
+                    break; // Success, stop trying other methods
+                }
+                catch (Exception ex)
+                {
+                    log.Debug($"[SimulateClick] ✗ Failed: {method.Name} - {ex.Message}");
+                }
+            }
+            
+            // Approach 2: Try setting selection properties
+            var allFields = mainTabType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
+            var selectionFields = allFields.Where(f => 
+                f.Name.Contains("Selected") && f.Name.Contains("Index")).ToList();
+            
+            log.Information($"[SimulateClick] Testing {selectionFields.Count} selection fields...");
+            
+            foreach (var field in selectionFields)
+            {
+                try
+                {
+                    object? target = field.IsStatic ? null : autoDutyPlugin;
+                    
+                    if (field.FieldType == typeof(int))
+                        field.SetValue(target, pathIndex);
+                    else if (field.FieldType == typeof(uint))
+                        field.SetValue(target, (uint)pathIndex);
+                    else
+                        continue;
+                        
+                    log.Information($"[SimulateClick] ✓ Set field: {field.Name} = {pathIndex}");
+                }
+                catch (Exception ex)
+                {
+                    log.Debug($"[SimulateClick] ✗ Failed to set {field.Name}: {ex.Message}");
+                }
+            }
+            
+            // Approach 3: Try to trigger UI refresh
+            var refreshMethods = allMethods.Where(m => 
+                m.Name.Contains("Refresh") || 
+                m.Name.Contains("Update") || 
+                m.Name.Contains("Draw") || 
+                m.Name.Contains("Render")).Take(5).ToList();
+            
+            log.Information($"[SimulateClick] Testing {refreshMethods.Count} refresh methods...");
+            
+            foreach (var method in refreshMethods)
+            {
+                try
+                {
+                    if (method.GetParameters().Length == 0)
+                    {
+                        object? target = method.IsStatic ? null : autoDutyPlugin;
+                        method.Invoke(target, new object?[] { });
+                        log.Information($"[SimulateClick] ✓ Called refresh: {method.Name}");
+                        break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    log.Debug($"[SimulateClick] ✗ Failed refresh {method.Name}: {ex.Message}");
+                }
+            }
+            
+            log.Information("[SimulateClick] === CLICK SIMULATION COMPLETE ===");
+        }
+        catch (Exception ex)
+        {
+            log.Error($"[SimulateClick] Click simulation failed: {ex.Message}");
+        }
+    }
+    public int FindPathIndexFromDictionaryPaths(object? autoDutyPlugin, string targetPathName)
+    {
+        try
+        {
+            if (autoDutyPlugin == null)
+            {
+                log.Warning("[AutoDutyPath] autoDutyPlugin is null in FindPathIndexFromDictionaryPaths");
+                return -1;
+            }
+
+            var pluginType = autoDutyPlugin.GetType();
+            var pluginAssembly = pluginType.Assembly;
+            
+            // Get ContentPathsManager type
+            var contentPathsManagerType = pluginAssembly.GetType("AutoDuty.Managers.ContentPathsManager");
+            if (contentPathsManagerType == null)
+            {
+                log.Warning("[AutoDutyPath] ContentPathsManager type not found in assembly");
+                return -1;
+            }
+
+            // Get DictionaryPaths static field
+            var dictPathsField = contentPathsManagerType.GetField("DictionaryPaths", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+            if (dictPathsField == null)
+            {
+                log.Warning("[AutoDutyPath] DictionaryPaths field not found in ContentPathsManager");
+                return -1;
+            }
+
+            var dictPathsObj = dictPathsField.GetValue(null) as IDictionary;
+            if (dictPathsObj == null)
+            {
+                log.Warning("[AutoDutyPath] DictionaryPaths is null or not a dictionary");
+                return -1;
+            }
+
+            // Get Praetorium paths (territory 1044)
+            var targetTerritory = (uint)1044;
+            if (!dictPathsObj.Contains(targetTerritory))
+            {
+                log.Warning($"[AutoDutyPath] Territory {targetTerritory} not found in DictionaryPaths");
+                return -1;
+            }
+
+            var pathContainer = dictPathsObj[targetTerritory];
+            if (pathContainer == null)
+            {
+                log.Warning($"[AutoDutyPath] Path container for territory {targetTerritory} is null");
+                return -1;
+            }
+
+            // Get the Paths list from the container
+            var containerType = pathContainer.GetType();
+            var pathsField = containerType.GetField("Paths", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            if (pathsField == null)
+            {
+                log.Warning("[AutoDutyPath] Paths field not found in path container");
+                return -1;
+            }
+
+            var pathsList = pathsField.GetValue(pathContainer) as System.Collections.IList;
+            if (pathsList == null)
+            {
+                log.Warning("[AutoDutyPath] Paths list is null or not an IList");
+                return -1;
+            }
+
+            // Search through the Paths list to find our target path
+            log.Information($"[AutoDutyPath] Searching through {pathsList.Count} paths for '{targetPathName}'");
+            
+            for (int i = 0; i < pathsList.Count; i++)
+            {
+                var pathObj = pathsList[i];
+                if (pathObj != null)
+                {
+                    // Try to get the path name - check common properties
+                    var pathType = pathObj.GetType();
+                    var nameProp = pathType.GetProperty("Name") ?? pathType.GetProperty("PathName") ?? pathType.GetProperty("FileName");
+                    
+                    if (nameProp != null)
+                    {
+                        var pathName = nameProp.GetValue(pathObj)?.ToString();
+                        if (!string.IsNullOrEmpty(pathName))
+                        {
+                            log.Information($"[AutoDutyPath] Path[{i}]: {pathName}");
+                            
+                            if (IsTargetPath(pathName, targetPathName))
+                            {
+                                log.Information($"[AutoDutyPath] *** FOUND TARGET PATH at index {i}: {pathName} ***");
+                                return i;
+                            }
+                        }
+                    }
+                }
+            }
+
+            log.Warning($"[AutoDutyPath] Target path '{targetPathName}' not found in {pathsList.Count} paths");
+            return -1;
+        }
+        catch (Exception ex)
+        {
+            log.Error($"[AutoDutyPath] FindPathIndexFromDictionaryPaths failed: {ex.Message}");
+            return -1;
+        }
+    }
+
+    /// <summary>
+    /// Find the path index by searching AutoDuty paths folder for (1044)*.json files sorted by Date Modified.
+    /// This matches AutoDuty's UI sorting order and returns the correct index.
+    /// </summary>
+    public int FindPathIndexByFileDate(string targetPathName)
+    {
+        try
+        {
+            log.Information($"[AutoDutyPath] Finding path index by file date for: {targetPathName}");
+            
+            // Get AutoDuty plugin to find paths folder
+            var autoDutyPlugin = FindDalamudPluginInstance("AutoDuty");
+            if (autoDutyPlugin == null)
+            {
+                log.Warning("[AutoDutyPath] AutoDuty plugin not found for file date search");
+                return -1;
+            }
+            
+            var pluginAssembly = autoDutyPlugin.GetType().Assembly;
+            
+            // Try to get the paths folder location
+            // Look for Configuration.PathsDirectory or similar field
+            var config = GetMemberValue(autoDutyPlugin.GetType(), autoDutyPlugin, "Configuration") 
+                      ?? GetMemberValue(autoDutyPlugin.GetType(), autoDutyPlugin, "config");
+            
+            string? pathsDirectory = null;
+            if (config != null)
+            {
+                var configType = config.GetType();
+                var pathsDirField = configType.GetField("PathsDirectory", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                                   ?? configType.GetField("PathsFolder", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                                   ?? configType.GetField("PathDirectory", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                
+                if (pathsDirField != null)
+                {
+                    pathsDirectory = pathsDirField.GetValue(config) as string;
+                    log.Information($"[AutoDutyPath] Found paths directory from config: {pathsDirectory}");
+                }
+            }
+            
+            // Fallback: Try to get from plugin directly
+            if (string.IsNullOrEmpty(pathsDirectory))
+            {
+                var pluginType = autoDutyPlugin.GetType();
+                var pathsDirField = pluginType.GetField("PathsDirectory", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                                   ?? pluginType.GetField("PathsFolder", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                
+                if (pathsDirField != null)
+                {
+                    pathsDirectory = pathsDirField.GetValue(autoDutyPlugin) as string;
+                    log.Information($"[AutoDutyPath] Found paths directory from plugin: {pathsDirectory}");
+                }
+            }
+            
+            // Fallback: Try common AutoDuty paths locations using Dalamud plugin interface
+            if (string.IsNullOrEmpty(pathsDirectory))
+            {
+                // Get our plugin's config directory and navigate to AutoDuty's paths
+                var ourConfigDir = PluginInterface.ConfigDirectory.FullName;
+                var possiblePaths = new[]
+                {
+                    Path.Combine(ourConfigDir, "..", "AutoDuty", "paths"),
+                    Path.Combine(ourConfigDir, "..", "..", "AutoDuty", "paths"),
+                    Path.Combine(ourConfigDir, "..", "..", "installed", "AutoDuty", "paths"),
+                    Path.Combine(ourConfigDir, "..", "..", "..", "installed", "AutoDuty", "paths"),
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "XIVLauncher", "pluginConfigs", "AutoDuty", "paths")
+                };
+                
+                foreach (var path in possiblePaths)
+                {
+                    if (Directory.Exists(path))
+                    {
+                        pathsDirectory = path;
+                        log.Information($"[AutoDutyPath] Found paths directory via Dalamud config: {pathsDirectory}");
+                        break;
+                    }
+                }
+            }
+            
+            if (string.IsNullOrEmpty(pathsDirectory) || !Directory.Exists(pathsDirectory))
+            {
+                log.Error($"[AutoDutyPath] Could not find AutoDuty paths directory");
+                return -1;
+            }
+            
+            // Find all (1044)*.json files
+            var praetoriumFiles = Directory.GetFiles(pathsDirectory, "(1044)*.json")
+                .Where(file => File.Exists(file))
+                .ToList();
+            
+            log.Information($"[AutoDutyPath] Found {praetoriumFiles.Count()} Praetorium files in {pathsDirectory}");
+            
+            if (praetoriumFiles.Count == 0)
+            {
+                log.Warning("[AutoDutyPath] No (1044)*.json files found in paths directory");
+                return -1;
+            }
+            
+            // Sort by Date Modified ascending (AutoDuty UI order)
+            var sortedFiles = praetoriumFiles
+                .OrderBy(file => File.GetLastWriteTime(file))
+                .ToList();
+            
+            log.Information("[AutoDutyPath] Praetorium files sorted by Date Modified:");
+            for (int i = 0; i < sortedFiles.Count; i++)
+            {
+                var fileName = Path.GetFileName(sortedFiles[i]);
+                var date = File.GetLastWriteTime(sortedFiles[i]);
+                log.Information($"[AutoDutyPath]   Index {i}: {fileName} (Modified: {date:yyyy-MM-dd HH:mm:ss})");
+            }
+            
+            // Find the target file index
+            var targetFileName = Path.GetFileName(targetPathName);
+            var targetIndex = sortedFiles.FindIndex(file => 
+                Path.GetFileName(file).Equals(targetFileName, StringComparison.OrdinalIgnoreCase) ||
+                Path.GetFileName(file).Contains(targetFileName.Replace(".json", "")));
+            
+            if (targetIndex >= 0)
+            {
+                log.Information($"[AutoDutyPath] Found target file at index {targetIndex}: {Path.GetFileName(sortedFiles[targetIndex])}");
+                return targetIndex;
+            }
+            else
+            {
+                log.Warning($"[AutoDutyPath] Target file '{targetPathName}' not found in sorted list");
+                return -1;
+            }
+        }
+        catch (Exception ex)
+        {
+            log.Error($"[AutoDutyPath] FindPathIndexByFileDate failed: {ex.Message}");
+            return -1;
+        }
+    }
+
+    /// <summary>
     /// Find the path index by searching through PathSelectionsByPath for the target path name.
+    /// NOTE: This method may return incorrect index as it counts dictionary keys, not actual path order.
+    /// Use FindPathIndexFromDictionaryPaths() instead for correct results.
     /// </summary>
     public int FindPathIndexByName(object? autoDutyPlugin, string targetPathName)
     {

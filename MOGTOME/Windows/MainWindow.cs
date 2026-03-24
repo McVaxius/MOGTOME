@@ -168,6 +168,42 @@ public class MainWindow : Window, IDisposable
             }
             ImGui.TextDisabled($"Result: {plugin.AutoDutyPathService.LastForceResult}");
 
+            // Test Path Index Discovery button
+            if (ImGui.Button("TEST PATH INDEX", new Vector2(200, 25)))
+            {
+                var autoDutyPlugin = plugin.AutoDutyPathService.FindDalamudPluginInstance("AutoDuty");
+                if (autoDutyPlugin != null)
+                {
+                    // Test both methods and compare results
+                    var correctIndex = plugin.AutoDutyPathService.FindPathIndexFromDictionaryPaths(autoDutyPlugin, "(1044) The Praetorium - W2W 20250716 phecda");
+                    var fallbackIndex = plugin.AutoDutyPathService.FindPathIndexByName(autoDutyPlugin, "(1044) The Praetorium - W2W 20250716 phecda");
+                    
+                    Plugin.Log.Information($"[TEST] DictionaryPaths method result: {correctIndex}");
+                    Plugin.Log.Information($"[TEST] PathSelectionsByPath method result: {fallbackIndex}");
+                    
+                    if (correctIndex != fallbackIndex)
+                    {
+                        Plugin.Log.Information($"[TEST] *** MISMATCH DETECTED *** DictionaryPaths={correctIndex}, PathSelectionsByPath={fallbackIndex}");
+                    }
+                    else if (correctIndex >= 0)
+                    {
+                        Plugin.Log.Information($"[TEST] Both methods agree: Index {correctIndex}");
+                    }
+                    else
+                    {
+                        Plugin.Log.Information($"[TEST] Both methods failed to find path");
+                    }
+                }
+                else
+                {
+                    Plugin.Log.Error("[TEST] Could not find AutoDuty plugin");
+                }
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("Test path index discovery methods.\nCompares DictionaryPaths vs PathSelectionsByPath.\nResults logged to Dalamud log.");
+            }
+
             // First row: Core research buttons
             if (ImGui.SmallButton("Log AD Structure"))
             {

@@ -91,7 +91,8 @@ public class BossModIPC : IDisposable
         }
         else
         {
-            DisableRSR();
+            // Keep RSR enabled, don't disable it
+            // DisableRSR(); // REMOVED - never disable RSR
             SetPreset(preset);
             EnableAI();
         }

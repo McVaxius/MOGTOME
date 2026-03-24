@@ -94,7 +94,7 @@ public sealed class Plugin : IDalamudPlugin
         BossHandlerService = new BossHandlerService(Log, Configuration, State, VNavIPC, CommandManager, Condition);
         StuckDetectionService = new StuckDetectionService(Log, Configuration, State, VNavIPC, CommandManager, Condition);
         DialogHandlerService = new DialogHandlerService(Log, YesAlreadyIPC, CommandManager, GameGui);
-        AutoDutyPathService = new AutoDutyPathService(Log);
+        AutoDutyPathService = new AutoDutyPathService(Log, PluginInterface);
 
         // Engine will be created in OnFrameworkUpdate after account selection
         Engine = null!;

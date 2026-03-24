@@ -142,25 +142,25 @@ public class MogtomeEngine
 
         try
         {
-            // FIRST: Force path selection via reflection (all party members, before anything else)
-            if (!condition[34]) // Only while not in duty
-            {
-                log.Information("[Engine] Forcing AutoDuty path selection via reflection (pre-start)");
-                autoDutyPath.ForcePathSelection();
-            }
-
-            // Send /ad stop to reset AutoDuty state for all characters
+            // 1. Send /ad stop FIRST to reset AutoDuty state for all characters
             log.Information("[Engine] Sending /ad stop to reset AutoDuty state");
             commandManager.ProcessCommand("/ad stop");
 
-            // Ensure AutoDuty path exists
+            // 2. Configure AutoDuty BEFORE setting path
+            autoDutyIPC.ConfigureForMogtome(config.IsPartyLeader);
+
+            // 3. THEN: Force path selection via reflection (after configuration)
+            if (!condition[34]) // Only while not in duty
+            {
+                log.Information("[Engine] Forcing AutoDuty path selection via reflection (post-config)");
+                autoDutyPath.ForcePathSelection();
+            }
+
+            // 4. Ensure AutoDuty path exists
             _ = autoDutyPath.EnsurePathExists();
 
-            // Initialize rotation
+            // 5. Initialize rotation
             rotationService.Initialize();
-
-            // Configure AutoDuty
-            autoDutyIPC.ConfigureForMogtome(config.IsPartyLeader);
 
             // Pause YesAlready - we handle dialogs directly
             dialogHandler.Start();
