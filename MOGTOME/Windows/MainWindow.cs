@@ -113,7 +113,7 @@ public class MainWindow : Window, IDisposable
 
         ImGui.SameLine();
         var krangleEnabled = plugin.Configuration.KrangleNames;
-        var krangleText = krangleEnabled ? "Un-Krangle" : "Krange";
+        var krangleText = krangleEnabled ? "Un-Krangle" : "Krangle";
         if (ImGui.Button(krangleText, new Vector2(80, 30)))
         {
             plugin.Configuration.KrangleNames = !krangleEnabled;
