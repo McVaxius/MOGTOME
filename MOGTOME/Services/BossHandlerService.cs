@@ -9,7 +9,7 @@ namespace MOGTOME.Services;
 public class BossHandlerService
 {
     private readonly IPluginLog log;
-    private readonly Configuration config;
+    private Configuration config; // Remove readonly to allow updates
     private readonly DutyState state;
     private readonly VNavIPC vNavIPC;
     private readonly ICommandManager commandManager;
@@ -36,6 +36,19 @@ public class BossHandlerService
         this.vNavIPC = vNavIPC;
         this.commandManager = commandManager;
         this.condition = condition;
+    }
+
+    // ADD EVENT HANDLER
+    public void SubscribeToConfigChanges(ConfigManager configManager)
+    {
+        configManager.ConfigurationChanged += OnConfigurationChanged;
+        log.Debug("[BossHandler] Subscribed to configuration changes");
+    }
+
+    private void OnConfigurationChanged(Configuration newConfig)
+    {
+        this.config = newConfig;
+        log.Information($"[BossHandler] Configuration updated - PotionItemId: {config.PotionItemId}, PotionName: '{config.PotionItemName}'");
     }
 
     public void Update()
@@ -170,7 +183,16 @@ public class BossHandlerService
         {
             log.Information($"[BossHandler] Using potion: {config.PotionItemName} on {targetName}");
 
-            Plugin.CommandManager.ProcessCommand($"/useitem {config.PotionItemId}");
+            var result = GameHelpers.UseItem((uint)config.PotionItemId);
+            if (result)
+            {
+                log.Information($"[BossHandler] Successfully used {config.PotionItemName} on {targetName}");
+            }
+            else
+            {
+                log.Warning($"[BossHandler] Failed to use {config.PotionItemName} - UseItem returned false");
+            }
+            
             lastPotionUse = now;
         }
         catch (Exception ex)

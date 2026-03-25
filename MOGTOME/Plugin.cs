@@ -78,15 +78,13 @@ public sealed class Plugin : IDalamudPlugin
 
         // Initialize IPC that RotationService needs
         BossModIPC = new BossModIPC(Log, CommandManager);
-        RotationService = new RotationService(Log, Configuration, State, BossModIPC);
-
-        // Initialize remaining IPC
         YesAlreadyIPC = new YesAlreadyIPC(Log);
         VNavIPC = new VNavIPC(Log, CommandManager);
-        AutoDutyIPC = new AutoDutyIPC(Log, CommandManager, RunHistoryService, RotationService);
         AutomatonIPC = new AutomatonIPC(Log);
+        RotationService = new RotationService(Log, Configuration, State, BossModIPC);
+        AutoDutyIPC = new AutoDutyIPC(Log, CommandManager, RunHistoryService, RotationService);
 
-        // Initialize remaining Services
+        // Initialize Services (needs RotationService)
         DutyTrackerService = new DutyTrackerService(Log, Configuration, State, RunHistoryService);
         DutyQueueService = new DutyQueueService(Log, Configuration, State, AutoDutyIPC, AutomatonIPC, CommandManager, Condition);
         RepairService = new RepairService(Log, Configuration, State, CommandManager, Condition);
@@ -95,6 +93,11 @@ public sealed class Plugin : IDalamudPlugin
         StuckDetectionService = new StuckDetectionService(Log, Configuration, State, VNavIPC, CommandManager, Condition);
         DialogHandlerService = new DialogHandlerService(Log, YesAlreadyIPC, CommandManager, GameGui);
         AutoDutyPathService = new AutoDutyPathService(Log, PluginInterface);
+
+        // Wire up configuration change subscriptions
+        FoodService.SubscribeToConfigChanges(ConfigManager);
+        BossHandlerService.SubscribeToConfigChanges(ConfigManager);
+        RepairService.SubscribeToConfigChanges(ConfigManager);
 
         // Engine will be created in OnFrameworkUpdate after account selection
         Engine = null!;
@@ -365,7 +368,8 @@ public sealed class Plugin : IDalamudPlugin
             if (ConfigManager.EnsureAccountSelected(contentId, charName, worldName))
             {
                 accountInitialized = true;
-                Log.Information($"[Plugin] Account selection completed successfully for {charName}@{worldName}");
+                ConfigManager.NotifyConfigurationChanged(); // Notify services of new config
+                Log.Information($"[Plugin] Account selection completed and configuration notified for {charName}@{worldName}");
             }
         }
         catch (Exception ex)

@@ -1,5 +1,6 @@
 using System;
 using Dalamud.Plugin.Services;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using MOGTOME.Models;
 
 namespace MOGTOME.Services;
@@ -7,7 +8,7 @@ namespace MOGTOME.Services;
 public class RepairService
 {
     private readonly IPluginLog log;
-    private readonly Configuration config;
+    private Configuration config; // Remove readonly to allow updates
     private readonly DutyState state;
     private readonly ICommandManager commandManager;
     private readonly ICondition condition;
@@ -20,10 +21,23 @@ public class RepairService
         ICommandManager commandManager, ICondition condition)
     {
         this.log = log;
-        this.config = config;
+        this.config = config; // Still store initial config
         this.state = state;
         this.commandManager = commandManager;
         this.condition = condition;
+    }
+
+    // ADD EVENT HANDLER
+    public void SubscribeToConfigChanges(ConfigManager configManager)
+    {
+        configManager.ConfigurationChanged += OnConfigurationChanged;
+        log.Debug("[RepairService] Subscribed to configuration changes");
+    }
+
+    private void OnConfigurationChanged(Configuration newConfig)
+    {
+        this.config = newConfig;
+        log.Information($"[RepairService] Configuration updated - RepairThreshold: {config.RepairThreshold}%");
     }
 
     public bool NeedsRepair()
@@ -34,16 +48,60 @@ public class RepairService
         {
             // Use Dalamud's condition check - only check periodically
             var now = DateTime.UtcNow;
-            if ((now - lastRepairCheck).TotalSeconds < RepairCheckCooldown) return state.NeedsRepair;
+            if ((now - lastRepairCheck).TotalSeconds < RepairCheckCooldown) 
+            {
+                // Return cached result during cooldown
+                return state.NeedsRepair;
+            }
             lastRepairCheck = now;
 
-            // We'll check repair status via the game's repair check
-            // NeedsRepair is set by the engine when it detects low gear condition
-            return state.NeedsRepair;
+            // Check actual equipment durability
+            bool needsRepair = CheckEquipmentDurability(config.RepairThreshold);
+            
+            // Update cached state
+            state.NeedsRepair = needsRepair;
+            
+            if (needsRepair)
+            {
+                log.Debug($"[Repair] Equipment needs repair (threshold: {config.RepairThreshold}%)");
+            }
+            
+            return needsRepair;
         }
         catch (Exception ex)
         {
             log.Error($"[Repair] NeedsRepair check failed: {ex.Message}");
+            return false;
+        }
+    }
+
+    private static unsafe bool CheckEquipmentDurability(int repairThreshold)
+    {
+        try
+        {
+            var im = InventoryManager.Instance();
+            if (im == null) return false;
+
+            // Check equipped gear slots
+            var equippedContainer = im->GetInventoryContainer(InventoryType.EquippedItems);
+            if (equippedContainer == null) return false;
+
+            for (var i = 0; i < equippedContainer->Size; i++)
+            {
+                var item = equippedContainer->GetInventorySlot(i);
+                if (item == null || item->ItemId == 0) continue;
+
+                // Check condition (durability) - convert from 0-30000 to 0-100%
+                var actualCondition = item->Condition / 300;
+                if (actualCondition < repairThreshold)
+                    return true;
+            }
+
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Plugin.Log.Error($"[Repair] CheckEquipmentDurability failed: {ex.Message}");
             return false;
         }
     }

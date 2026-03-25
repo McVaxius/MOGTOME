@@ -24,6 +24,9 @@ public class ConfigManager
     private string currentAccountId = "";
     private const string ConfigFolder = "MOGTOME";
     private bool hasLoggedNoAccount = false;
+    private Configuration? lastKnownConfig;
+    
+    public event Action<Configuration>? ConfigurationChanged;
     
     public string CurrentAccountId 
     { 
@@ -47,6 +50,27 @@ public class ConfigManager
         }
         
         LoadAllAccounts();
+    }
+    
+    /// <summary>
+    /// Notify subscribers when configuration changes
+    /// </summary>
+    public void NotifyConfigurationChanged()
+    {
+        var currentConfig = GetActiveConfig();
+        
+        // Only notify if config actually changed
+        if (lastKnownConfig == null || 
+            currentConfig.FoodItemId != lastKnownConfig.FoodItemId ||
+            currentConfig.FoodItemName != lastKnownConfig.FoodItemName ||
+            currentConfig.PotionItemId != lastKnownConfig.PotionItemId ||
+            currentConfig.PotionItemName != lastKnownConfig.PotionItemName ||
+            currentConfig.RepairThreshold != lastKnownConfig.RepairThreshold)
+        {
+            lastKnownConfig = currentConfig;
+            ConfigurationChanged?.Invoke(currentConfig);
+            log.Debug("[ConfigManager] Configuration changed, notifying subscribers");
+        }
     }
     
     /// <summary>

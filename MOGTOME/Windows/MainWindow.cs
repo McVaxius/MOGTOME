@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Numerics;
+using System.IO;
+using Dalamud.Interface.Utility;
 using Dalamud.Interface.Windowing;
 using Dalamud.Bindings.ImGui;
 using MOGTOME.Models;
@@ -348,6 +351,75 @@ public class MainWindow : Window, IDisposable
                 ImGui.SetTooltip("Find actual config field names for path selection.");
             }
 
+            ImGui.SameLine();
+            if (ImGui.SmallButton("Check Repair"))
+            {
+                var needsRepair = plugin.RepairService.NeedsRepair();
+                var threshold = plugin.ConfigManager.GetActiveConfig().RepairThreshold;
+                Plugin.Log.Information($"[DEBUG] Repair Check - Threshold: {threshold}%, Needs Repair: {needsRepair}");
+                
+                // Check actual equipment durability for detailed info
+                try
+                {
+                    unsafe
+                    {
+                        var im = FFXIVClientStructs.FFXIV.Client.Game.InventoryManager.Instance();
+                        if (im != null)
+                        {
+                            var equippedContainer = im->GetInventoryContainer(FFXIVClientStructs.FFXIV.Client.Game.InventoryType.EquippedItems);
+                            if (equippedContainer != null)
+                            {
+                                var allItems = new List<string>();
+                                var lowItems = new List<string>();
+                                
+                                for (var i = 0; i < equippedContainer->Size; i++)
+                                {
+                                    var item = equippedContainer->GetInventorySlot(i);
+                                    if (item == null || item->ItemId == 0) continue;
+
+                                    var itemName = $"Item {item->ItemId}";
+                                    var actualCondition = item->Condition / 300; // Convert from 0-30000 to 0-100%
+                                    allItems.Add($"{itemName}: {actualCondition}%");
+                                    
+                                    if (actualCondition < threshold)
+                                    {
+                                        lowItems.Add($"{itemName}: {actualCondition}%");
+                                    }
+                                }
+                                
+                                Plugin.Log.Information($"[DEBUG] Equipment durability check - Total items: {allItems.Count}");
+                                Plugin.Log.Information($"[DEBUG] All items: {string.Join(", ", allItems)}");
+                                
+                                if (lowItems.Count > 0)
+                                {
+                                    Plugin.Log.Information($"[DEBUG] Items below {threshold}%: {string.Join(", ", lowItems)}");
+                                }
+                                else
+                                {
+                                    Plugin.Log.Information($"[DEBUG] All equipment above {threshold}% durability");
+                                }
+                            }
+                            else
+                            {
+                                Plugin.Log.Error("[DEBUG] Failed to get equipped container");
+                            }
+                        }
+                        else
+                        {
+                            Plugin.Log.Error("[DEBUG] Failed to get InventoryManager instance");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Plugin.Log.Error($"[DEBUG] Equipment check failed: {ex.Message}");
+                }
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("Check equipment durability and repair status.");
+            }
+
             ImGui.Spacing();
 
             // Unsynced testing mode checkbox (only visible in debug)
@@ -377,11 +449,36 @@ public class MainWindow : Window, IDisposable
         // Subsystem Status
         ImGui.Text("Subsystems");
         ImGui.Indent();
-
+        
         DrawStatusLine("Food", config.FoodItemId > 0, config.FoodItemName);
         DrawStatusLine("Potions", config.PotionItemId > 0 && state.PotionsAvailable, config.PotionItemName);
         DrawStatusLine("YesAlready", plugin.YesAlreadyIPC.IsPaused, "Paused by MOGTOME");
         DrawStatusLine("AutoDuty Path", plugin.AutoDutyPathService.PathExists(), "Praetorium W2W");
+        
+        ImGui.Unindent();
+        ImGui.Separator();
+        
+        // Debug section (only visible when debug mode is enabled)
+        if (config.DebugModeEnabled)
+        {
+            ImGui.Text("Debug Tools");
+            ImGui.Indent();
+            
+            if (ImGui.Button("Log All Configuration"))
+            {
+                LogAllConfiguration(plugin);
+            }
+            
+            ImGui.SameLine();
+            if (ImGui.Button("Log Config Path"))
+            {
+                Plugin.Log.Information($"[Config] Current account ID: {plugin.ConfigManager.CurrentAccountId}");
+                Plugin.Log.Information("[Config] Use Config folder button in Stats window to open config folder");
+            }
+            
+            ImGui.Unindent();
+            ImGui.Separator();
+        }
         DrawStatusLine("Queue", true, "AutoDuty");
         DrawStatusLine("Bailout", true, $"{config.BailoutTimeout}s");
 
@@ -392,14 +489,45 @@ public class MainWindow : Window, IDisposable
     {
         var color = active
             ? new Vector4(0.0f, 1.0f, 0.0f, 1.0f)
-            : new Vector4(0.5f, 0.5f, 0.5f, 1.0f);
-        var icon = active ? "[ON]" : "[OFF]";
-
-        ImGui.TextColored(color, $"{icon} {label}");
-        if (!string.IsNullOrEmpty(detail))
-        {
-            ImGui.SameLine();
-            ImGui.TextDisabled($"- {detail}");
-        }
+            : new Vector4(1.0f, 0.0f, 0.0f, 1.0f);
+        
+        ImGui.TextColored(color, $"{label}:");
+        ImGui.SameLine();
+        ImGui.Text(detail);
+    }
+    
+    private static void LogAllConfiguration(Plugin plugin)
+    {
+        var config = plugin.Configuration;
+        
+        Plugin.Log.Information("=== MOGTOME COMPLETE CONFIGURATION DUMP ===");
+        
+        // Account & Character Info
+        Plugin.Log.Information($"[Config] Account ID: {plugin.ConfigManager.CurrentAccountId}");
+        
+        // Food Settings
+        Plugin.Log.Information($"[Config] Food Item ID: {config.FoodItemId}");
+        Plugin.Log.Information($"[Config] Food Item Name: '{config.FoodItemName}'");
+        Plugin.Log.Information($"[Config] Food Available: {config.FoodItemId > 0}");
+        
+        // Potion Settings
+        Plugin.Log.Information($"[Config] Potion Item ID: {config.PotionItemId}");
+        Plugin.Log.Information($"[Config] Potion Item Name: '{config.PotionItemName}'");
+        Plugin.Log.Information($"[Config] Potion Target: {config.PotionTarget}");
+        
+        // Engine Settings
+        Plugin.Log.Information($"[Config] Debug Mode: {config.DebugModeEnabled}");
+        Plugin.Log.Information($"[Config] Testing Mode Unsynced: {config.TestingModeUnsynced}");
+        Plugin.Log.Information($"[Config] Bailout Timeout: {config.BailoutTimeout}s");
+        Plugin.Log.Information($"[Config] Show Debug Runs: {config.ShowDebugRuns}");
+        
+        // Krangle Settings
+        Plugin.Log.Information($"[Config] Krangle Names: {config.KrangleNames}");
+        Plugin.Log.Information($"[Config] Stats Krangle Names: {config.StatsKrangleNames}");
+        
+        // Tracking Settings
+        Plugin.Log.Information($"[Config] Enable Detailed Tracking: {config.EnableDetailedTracking}");
+        
+        Plugin.Log.Information("=== END CONFIGURATION DUMP ===");
     }
 }

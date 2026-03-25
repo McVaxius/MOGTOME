@@ -156,16 +156,37 @@ public class MogtomeEngine
                 autoDutyPath.ForcePathSelection();
             }
 
-            // 4. Ensure AutoDuty path exists
+            // 5. Check for repair needs before starting
+            log.Information("[Engine] Checking repair status before start");
+            if (repairService.NeedsRepair())
+            {
+                log.Information("[Engine] Repair needed - repairing before start");
+                CurrentState = EngineState.RepairingOutside;
+                StatusMessage = "Repairing before start...";
+                dutyQueue.DisableAutoQueueForRepair();
+                
+                if (state.IsPartyLeader)
+                {
+                    repairService.TrySelfRepair();
+                }
+                else
+                {
+                    repairService.TryNpcRepair();
+                }
+                // Don't set IsRunning yet - repair will complete first
+                return;
+            }
+
+            // 6. Ensure AutoDuty path exists
             _ = autoDutyPath.EnsurePathExists();
 
-            // 5. Initialize rotation
+            // 7. Initialize rotation
             rotationService.Initialize();
 
-            // Pause YesAlready - we handle dialogs directly
+            // 8. Pause YesAlready - we handle dialogs directly
             dialogHandler.Start();
 
-            // Disable AutoQueue initially
+            // 9. Disable AutoQueue initially
             automatonIPC.DisableAutoQueue();
 
             // Detect party leader
@@ -673,12 +694,16 @@ public class MogtomeEngine
             StatusMessage = $"Delayed requeue in progress...";
         }
 
-        // Non-leader repair check after 20 seconds outside duty
-        if (!state.IsPartyLeader && outsideDutyTicks > (int)(20 / LoopInterval))
+        // Non-leader repair check after 1 second outside duty
+        if (!state.IsPartyLeader && outsideDutyTicks > (int)(1 / LoopInterval))
         {
             if (repairService.NeedsRepair())
             {
+                CurrentState = EngineState.RepairingOutside;
+                StatusMessage = "Repairing...";
+                dutyQueue.DisableAutoQueueForRepair();
                 repairService.TryNpcRepair();
+                return; // Block all processing until repair complete
             }
         }
     }

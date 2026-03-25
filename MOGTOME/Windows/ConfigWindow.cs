@@ -146,6 +146,12 @@ public class ConfigWindow : Window, IDisposable
                 ImGui.EndTabItem();
             }
 
+            if (ImGui.BeginTabItem("Repair"))
+            {
+                changed |= DrawRepairTab(config);
+                ImGui.EndTabItem();
+            }
+
             if (ImGui.BeginTabItem("Advanced"))
             {
                 changed |= DrawAdvancedTab(config);
@@ -568,6 +574,41 @@ public class ConfigWindow : Window, IDisposable
 
             ImGui.EndCombo();
         }
+
+        return changed;
+    }
+
+    private bool DrawRepairTab(Configuration config)
+    {
+        var changed = false;
+
+        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Repair Settings");
+        ImGui.Separator();
+
+        // Repair threshold slider
+        var repairThreshold = config.RepairThreshold;
+        if (ImGui.SliderInt("Repair Threshold (%)", ref repairThreshold, 0, 100))
+        {
+            config.RepairThreshold = Math.Clamp(repairThreshold, 0, 100);
+            changed = true;
+        }
+        ImGui.TextDisabled("Repair when equipment durability falls below this percentage. Set to 0 to disable auto-repair.");
+
+        ImGui.Spacing();
+
+        // Repair method info
+        ImGui.TextColored(new Vector4(0.7f, 0.7f, 0.7f, 1.0f), "Repair Behavior:");
+        ImGui.TextWrapped("- Leader: Repairs automatically between duties when threshold is met");
+        ImGui.TextWrapped("- Non-leader: Repairs independently after 1 second outside duty");
+        ImGui.TextWrapped("- Solo: Treated as leader automatically");
+        ImGui.TextWrapped("- Repair METHOD (self/NPC) is configured in AutoDuty settings");
+        
+        ImGui.Spacing();
+        
+        // Current status info
+        ImGui.TextColored(new Vector4(0.7f, 0.7f, 0.7f, 1.0f), "Status:");
+        ImGui.Text($"  Current Threshold: {config.RepairThreshold}%");
+        ImGui.Text($"  Auto-Repair: {(config.RepairThreshold > 0 ? "Enabled" : "Disabled")}");
 
         return changed;
     }
