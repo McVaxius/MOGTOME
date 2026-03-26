@@ -77,6 +77,11 @@ public class RunRecord
     /// List of party member names during the run
     /// </summary>
     public List<string> PartyMembers { get; set; } = new();
+
+    /// <summary>
+    /// Whether the run was recorded while unsynced testing/debug mode was enabled
+    /// </summary>
+    public bool IsDebugRun { get; set; } = false;
 }
 
 /// <summary>

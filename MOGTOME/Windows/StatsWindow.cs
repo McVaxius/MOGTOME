@@ -126,6 +126,8 @@ public class StatsWindow : Window, IDisposable
             {
                 config.ShowDebugRuns = showDebugRuns;
                 plugin.ConfigManager.SaveCurrentAccount();
+                plugin.RunHistoryService.LoadRunHistoryFromDatabase(bypassValidation: true);
+                lastRefresh = DateTime.Now;
             }
             if (showDebugRuns)
             {

@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Excluded unsynced testing/debug runs from summary and detailed statistics unless `Show debug runs` is enabled
+- Recomputed JSON summary stats from the same filtered run set used by the stats UI to prevent hidden runs from leaking back in
+- Repaired party-size persistence so grouped runs keep their stored party count even after leaving duty
+
+### Changed
+- Added SQLite backfill for missing `IsDebugRun` metadata and missing party sizes on existing run records
+- Revalidated the BossModReborn dependency repo link against the CombatReborn distribution and kept the existing BMR repo target
 ### Project Setup
 - Created project structure and documentation
 - Defined comprehensive project gameplan

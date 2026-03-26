@@ -124,7 +124,7 @@ public class RunHistoryService
     /// <summary>
     /// Get the current run history (read-only)
     /// </summary>
-    public IReadOnlyList<RunRecord> RunHistory => runHistory.AsReadOnly();
+    public IReadOnlyList<RunRecord> RunHistory => GetVisibleRuns().AsReadOnly();
 
     /// <summary>
     /// Load run history from the account-specific database
@@ -147,7 +147,8 @@ public class RunHistoryService
             runHistory.Clear();
             runHistory.AddRange(records);
             
-            log.Information($"[RunHistory] Loaded {records.Count} run records from database for account {accountId}");
+            var visibleRunCount = GetVisibleRuns(records).Count;
+            log.Information($"[RunHistory] Loaded {records.Count} run records from database for account {accountId} ({visibleRunCount} visible in stats)");
             
             // Update JSON configuration stats from database records
             UpdateJsonStatsFromRecords(records);
@@ -171,15 +172,18 @@ public class RunHistoryService
         try
         {
             var config = configManager.GetCurrentAccount().Settings;
+            var visibleRecords = GetVisibleRuns(records);
+
+            ResetSummaryStats(config);
             
             // Basic counters
-            config.DutyCounter = records.Count;
-            config.TotalPraes = records.Count(r => r.IsPraetorium);
-            config.TotalDecus = records.Count(r => !r.IsPraetorium);
+            config.DutyCounter = visibleRecords.Count;
+            config.TotalPraes = visibleRecords.Count(r => r.IsPraetorium);
+            config.TotalDecus = visibleRecords.Count(r => !r.IsPraetorium);
             
             // Separate records by duty type
-            var praeRecords = records.Where(r => r.IsPraetorium).ToList();
-            var decuRecords = records.Where(r => !r.IsPraetorium).ToList();
+            var praeRecords = visibleRecords.Where(r => r.IsPraetorium).ToList();
+            var decuRecords = visibleRecords.Where(r => !r.IsPraetorium).ToList();
             
             // Praetorium stats
             if (praeRecords.Any())
@@ -220,33 +224,82 @@ public class RunHistoryService
             }
             
             // Overall stats
-            if (records.Any())
+            if (visibleRecords.Any())
             {
-                config.BestTimeEver = records.Min(r => r.CompletionTime);
-                config.LongestRunEver = records.Max(r => r.CompletionTime);
-                config.TotalMogtomesEarned = records.Sum(r => r.MogtomesEarned);
-                config.TotalDeathsSelf = records.Sum(r => r.DeathCount);
+                config.BestTimeEver = visibleRecords.Min(r => r.CompletionTime);
+                config.LongestRunEver = visibleRecords.Max(r => r.CompletionTime);
+                config.TotalMogtomesEarned = visibleRecords.Sum(r => r.MogtomesEarned);
+                config.TotalDeathsSelf = visibleRecords.Sum(r => r.DeathCount);
                 
                 // Best time details
-                var bestRun = records.OrderBy(r => r.CompletionTime).First();
+                var bestRun = visibleRecords.OrderBy(r => r.CompletionTime).First();
                 config.BestTimeDate = bestRun.Timestamp.ToString("yyyy-MM-dd HH:mm:ss");
                 config.BestTimeParty = string.Join(", ", bestRun.PartyMembers ?? new List<string>());
                 
                 // Longest run details
-                var longestRun = records.OrderByDescending(r => r.CompletionTime).First();
+                var longestRun = visibleRecords.OrderByDescending(r => r.CompletionTime).First();
                 config.LongestRunDate = longestRun.Timestamp.ToString("yyyy-MM-dd HH:mm:ss");
                 config.LongestRunParty = string.Join(", ", longestRun.PartyMembers ?? new List<string>());
             }
             
             // Daily stats (reset tracking)
-            UpdateDailyStats(records);
+            UpdateDailyStats(visibleRecords);
             
-            log.Debug($"[RunHistory] Updated JSON stats: {records.Count} total, {config.TotalPraes} Prae, {config.TotalDecus} Decu");
+            log.Debug($"[RunHistory] Updated JSON stats: {visibleRecords.Count} visible total, {config.TotalPraes} Prae, {config.TotalDecus} Decu");
         }
         catch (Exception ex)
         {
             log.Error(ex, "[RunHistory] Failed to update JSON stats from records");
         }
+    }
+
+    private void ResetSummaryStats(Configuration config)
+    {
+        config.DutyCounter = 0;
+        config.TotalPraes = 0;
+        config.TotalDecus = 0;
+        config.TotalMogtomesEarned = 0;
+        config.TotalDeathsSelf = 0;
+        config.TotalDeathsOthers = 0;
+        config.TotalDeathsAll = 0;
+        config.MostDeathsSelf = 0;
+        config.MostDeathsOthers = 0;
+        config.MostDeathsAll = 0;
+
+        config.BestTimeEver = float.MaxValue;
+        config.BestTimeDate = string.Empty;
+        config.BestTimeParty = string.Empty;
+        config.LongestRunEver = 0f;
+        config.LongestRunDate = string.Empty;
+        config.LongestRunParty = string.Empty;
+
+        config.PraeBestTime = float.MaxValue;
+        config.PraeBestTimeDate = string.Empty;
+        config.PraeBestTimeParty = string.Empty;
+        config.PraeLongestRun = 0f;
+        config.PraeLongestRunDate = string.Empty;
+        config.PraeLongestRunParty = string.Empty;
+        config.PraeMostDeathsSelf = 0;
+        config.PraeMostDeathsOthers = 0;
+        config.PraeMostDeathsAll = 0;
+        config.PraeTotalDeathsSelf = 0;
+        config.PraeTotalDeathsOthers = 0;
+        config.PraeTotalDeathsAll = 0;
+        config.PraeMogtomesEarned = 0;
+
+        config.DecuBestTime = float.MaxValue;
+        config.DecuBestTimeDate = string.Empty;
+        config.DecuBestTimeParty = string.Empty;
+        config.DecuLongestRun = 0f;
+        config.DecuLongestRunDate = string.Empty;
+        config.DecuLongestRunParty = string.Empty;
+        config.DecuMostDeathsSelf = 0;
+        config.DecuMostDeathsOthers = 0;
+        config.DecuMostDeathsAll = 0;
+        config.DecuTotalDeathsSelf = 0;
+        config.DecuTotalDeathsOthers = 0;
+        config.DecuTotalDeathsAll = 0;
+        config.DecuMogtomesEarned = 0;
     }
     
     /// <summary>
@@ -258,6 +311,11 @@ public class RunHistoryService
         {
             var config = configManager.GetCurrentAccount().Settings;
             var today = DateTime.UtcNow.Date;
+
+            config.DailyDecuRuns = 0;
+            config.DailyDecuBestTime = float.MaxValue;
+            config.DailyDecuLongestRun = 0f;
+            config.DailyDecuMogtomesEarned = 0;
             
             // Get today's Decumana runs
             var todayDecuRuns = records.Where(r => !r.IsPraetorium && r.Timestamp.Date == today).ToList();
@@ -520,6 +578,16 @@ public class RunHistoryService
         }
         
         log.Information($"[RunHistory] Captured {partyMembers.Count} party members: {string.Join(", ", partyMembers)}");
+        var recordedPartySize = partyMembers.Count;
+        if (recordedPartySize == 0)
+        {
+            recordedPartySize = partyList.Length;
+        }
+
+        if (recordedPartySize == 0 && localPlayer != null)
+        {
+            recordedPartySize = 1;
+        }
         
         return new RunRecord
         {
@@ -535,8 +603,9 @@ public class RunHistoryService
             MogtomesEarned = isPrae ? 7 : 3, // Prae=7, Decu=3
             IsPraetorium = isPrae,
             WasSuccessful = true,
-            PartySize = (byte)partyList.Length,
-            PartyMembers = partyMembers
+            PartySize = (byte)Math.Clamp(recordedPartySize, 0, byte.MaxValue),
+            PartyMembers = partyMembers,
+            IsDebugRun = config.TestingModeUnsynced
         };
     }
 
@@ -575,7 +644,7 @@ public class RunHistoryService
     /// </summary>
     public Dictionary<byte, JobStats> GetJobStatistics()
     {
-        return runHistory
+        return GetVisibleRuns()
             .GroupBy(x => x.JobId)
             .ToDictionary(
                 g => g.Key,
@@ -600,7 +669,7 @@ public class RunHistoryService
     /// </summary>
     public Dictionary<ulong, PlayerStats> GetPlayerStatistics()
     {
-        return runHistory
+        return GetVisibleRuns()
             .GroupBy(x => x.ContentId)
             .ToDictionary(
                 g => g.Key,
@@ -675,7 +744,23 @@ public class RunHistoryService
     /// </summary>
     public List<RunRecord> GetRecentRuns(int count = 25)
     {
-        return runHistory.TakeLast(count).Reverse().ToList();
+        return GetVisibleRuns().TakeLast(count).Reverse().ToList();
+    }
+
+    private List<RunRecord> GetVisibleRuns()
+    {
+        return GetVisibleRuns(runHistory);
+    }
+
+    private List<RunRecord> GetVisibleRuns(IEnumerable<RunRecord> records)
+    {
+        var visibleRuns = config.ShowDebugRuns
+            ? records
+            : records.Where(r => !r.IsDebugRun);
+
+        return visibleRuns
+            .OrderBy(r => r.Timestamp)
+            .ToList();
     }
 
     /// <summary>

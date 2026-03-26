@@ -42,7 +42,8 @@ public class SqliteRunRecordRepository : IRunRecordRepository
                 IsPraetorium INTEGER NOT NULL,
                 WasSuccessful INTEGER NOT NULL,
                 PartySize INTEGER NOT NULL,
-                PartyMembers TEXT NOT NULL
+                PartyMembers TEXT NOT NULL,
+                IsDebugRun INTEGER NOT NULL DEFAULT 0
             );
             
             CREATE INDEX IF NOT EXISTS idx_runrecords_timestamp ON RunRecords(Timestamp);
@@ -55,6 +56,66 @@ public class SqliteRunRecordRepository : IRunRecordRepository
         // Enable WAL mode for performance
         cmd.CommandText = "PRAGMA journal_mode=WAL";
         cmd.ExecuteNonQuery();
+
+        EnsureColumnExists(connection, "RunRecords", "IsDebugRun", "INTEGER NOT NULL DEFAULT 0");
+        RepairStoredPartySizes(connection);
+    }
+
+    private void EnsureColumnExists(SqliteConnection connection, string tableName, string columnName, string columnDefinition)
+    {
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = $"PRAGMA table_info({tableName})";
+
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            if (string.Equals(reader.GetString(1), columnName, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+        }
+
+        using var alterCmd = connection.CreateCommand();
+        alterCmd.CommandText = $"ALTER TABLE {tableName} ADD COLUMN {columnName} {columnDefinition}";
+        alterCmd.ExecuteNonQuery();
+        log.Information($"[SqliteRepository] Added missing column {tableName}.{columnName}");
+    }
+
+    private void RepairStoredPartySizes(SqliteConnection connection)
+    {
+        using var selectCmd = connection.CreateCommand();
+        selectCmd.CommandText = "SELECT rowid, PartySize, PartyMembers FROM RunRecords WHERE PartySize <= 0";
+
+        using var reader = selectCmd.ExecuteReader();
+        var repairs = new List<(long RowId, int PartySize)>();
+
+        while (reader.Read())
+        {
+            var rowId = reader.GetInt64(0);
+            var storedPartySize = reader.GetInt32(1);
+            var partyMembersJson = reader.GetString(2);
+            var partyMembers = JsonSerializer.Deserialize<List<string>>(partyMembersJson) ?? new List<string>();
+            var repairedPartySize = storedPartySize > 0 ? storedPartySize : partyMembers.Count;
+
+            if (repairedPartySize > 0)
+            {
+                repairs.Add((rowId, repairedPartySize));
+            }
+        }
+
+        foreach (var repair in repairs)
+        {
+            using var updateCmd = connection.CreateCommand();
+            updateCmd.CommandText = "UPDATE RunRecords SET PartySize = @PartySize WHERE rowid = @RowId";
+            updateCmd.Parameters.AddWithValue("@PartySize", repair.PartySize);
+            updateCmd.Parameters.AddWithValue("@RowId", repair.RowId);
+            updateCmd.ExecuteNonQuery();
+        }
+
+        if (repairs.Count > 0)
+        {
+            log.Information($"[SqliteRepository] Repaired {repairs.Count} run records with missing party sizes");
+        }
     }
     
     public List<RunRecord> LoadRunRecords(string accountId)
@@ -75,11 +136,20 @@ public class SqliteRunRecordRepository : IRunRecordRepository
             InitializeDatabase(connection);
             
             using var cmd = connection.CreateCommand();
-            cmd.CommandText = "SELECT * FROM RunRecords ORDER BY Timestamp DESC LIMIT 1000";
+            cmd.CommandText = @"
+                SELECT ContentId, Timestamp, TerritoryId, CompletionTime, MogtomesEarned,
+                       IsPraetorium, WasSuccessful, PartySize, PartyMembers, IsDebugRun
+                FROM RunRecords
+                ORDER BY Timestamp DESC
+                LIMIT 1000
+            ";
             
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
+                var partyMembers = JsonSerializer.Deserialize<List<string>>(reader.GetString(8)) ?? new List<string>();
+                var storedPartySize = reader.GetInt32(7);
+
                 var record = new RunRecord
                 {
                     ContentId = (ulong)reader.GetInt64(0),
@@ -89,8 +159,9 @@ public class SqliteRunRecordRepository : IRunRecordRepository
                     MogtomesEarned = reader.GetInt32(4),
                     IsPraetorium = reader.GetBoolean(5),
                     WasSuccessful = reader.GetBoolean(6),
-                    PartySize = (byte)reader.GetInt32(7),
-                    PartyMembers = JsonSerializer.Deserialize<List<string>>(reader.GetString(8)) ?? new List<string>()
+                    PartySize = (byte)Math.Clamp(storedPartySize > 0 ? storedPartySize : partyMembers.Count, 0, byte.MaxValue),
+                    PartyMembers = partyMembers,
+                    IsDebugRun = reader.GetBoolean(9)
                 };
                 records.Add(record);
             }
@@ -123,8 +194,8 @@ public class SqliteRunRecordRepository : IRunRecordRepository
             
             using var cmd = connection.CreateCommand();
             cmd.CommandText = @"
-                INSERT INTO RunRecords (ContentId, Timestamp, TerritoryId, CompletionTime, MogtomesEarned, IsPraetorium, WasSuccessful, PartySize, PartyMembers)
-                VALUES (@ContentId, @Timestamp, @TerritoryId, @CompletionTime, @MogtomesEarned, @IsPraetorium, @WasSuccessful, @PartySize, @PartyMembers)
+                INSERT INTO RunRecords (ContentId, Timestamp, TerritoryId, CompletionTime, MogtomesEarned, IsPraetorium, WasSuccessful, PartySize, PartyMembers, IsDebugRun)
+                VALUES (@ContentId, @Timestamp, @TerritoryId, @CompletionTime, @MogtomesEarned, @IsPraetorium, @WasSuccessful, @PartySize, @PartyMembers, @IsDebugRun)
             ";
             
             cmd.Parameters.AddWithValue("@ContentId", record.ContentId);
@@ -136,6 +207,7 @@ public class SqliteRunRecordRepository : IRunRecordRepository
             cmd.Parameters.AddWithValue("@WasSuccessful", record.WasSuccessful);
             cmd.Parameters.AddWithValue("@PartySize", record.PartySize);
             cmd.Parameters.AddWithValue("@PartyMembers", JsonSerializer.Serialize(record.PartyMembers));
+            cmd.Parameters.AddWithValue("@IsDebugRun", record.IsDebugRun);
             
             cmd.ExecuteNonQuery();
             log.Debug($"[SqliteRepository] Added run record for account {accountId}");
