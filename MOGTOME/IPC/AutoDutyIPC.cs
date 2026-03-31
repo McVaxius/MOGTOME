@@ -47,6 +47,8 @@ public class AutoDutyIPC : IDisposable
 
     public void ConfigureForMogtome(bool isLeader)
     {
+        SetConfig("AutoDutyModeEnum", "Looping");
+        SetConfig("DutyModeEnum", "Regular");
         SetConfig("AutoManageRotationPluginState", "true");
         SetConfig("AutoManageBossModAISettings", "true");
         SetConfig("BM_UpdatePresetsAutomatically", "true");
@@ -69,11 +71,9 @@ public class AutoDutyIPC : IDisposable
     {
         try
         {
-            // Set AutoDuty to use the Praetorium W2W path
-            SetConfig("SelectedPathName", "(1044) The Praetorium - W2W 20250716 phecda");
-            SetConfig("SelectedPathTerritoryType", "1044");
-            SetConfig("SelectedMode", "Regular");
-            log.Information("[AutoDuty] Set Praetorium W2W path via IPC");
+            SetConfig("AutoDutyModeEnum", "Looping");
+            SetConfig("DutyModeEnum", "Regular");
+            log.Information("[AutoDuty] Prepared AutoDuty Looping/Regular mode for Praetorium path selection");
         }
         catch (Exception ex)
         {

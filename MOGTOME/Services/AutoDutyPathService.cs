@@ -81,17 +81,25 @@ public class AutoDutyPathService
                 log.Information($"[AutoDutyPath] Found config: Type={config.GetType().FullName}");
                 
                 // Step 3a: Set Mode to Looping (typically an enum or int)
-                var modeSet = TrySetModeValue(config, "mode", "Looping")
+                var modeSet = TrySetModeValue(config, "AutoDutyModeEnum", "Looping")
+                    || TrySetModeValue(config, "autoDutyModeEnum", "Looping")
+                    || TrySetModeValue(config, "mode", "Looping")
                     || TrySetModeValue(config, "Mode", "Looping")
                     || TrySetModeValue(config, "SelectedMode", "Looping")
                     || TrySetModeValue(config, "CurrentMode", "Looping");
                 log.Information($"[AutoDutyPath] Set Mode=Looping: {modeSet}");
+                if (!modeSet)
+                    log.Warning("[AutoDutyPath] Failed to set AutoDuty mode to Looping.");
 
                 // Step 3b: Set DutyMode to Regular
-                var dutyModeSet = TrySetModeValue(config, "dutyMode", "Regular")
+                var dutyModeSet = TrySetModeValue(config, "DutyModeEnum", "Regular")
+                    || TrySetModeValue(config, "dutyModeEnum", "Regular")
+                    || TrySetModeValue(config, "dutyMode", "Regular")
                     || TrySetModeValue(config, "DutyMode", "Regular")
                     || TrySetModeValue(config, "SelectedDutyMode", "Regular");
                 log.Information($"[AutoDutyPath] Set DutyMode=Regular: {dutyModeSet}");
+                if (!dutyModeSet)
+                    log.Warning("[AutoDutyPath] Failed to set DutyMode=Regular. AutoDuty defaults to Support, so queue behavior may be wrong.");
             }
             else
             {

@@ -120,6 +120,9 @@ public sealed class Plugin : IDalamudPlugin
             HelpMessage = "MOGTOME: /mog [start|stop|config] or /mog to open UI."
         });
 
+        AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+        TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+
         // Events
         PluginInterface.UiBuilder.Draw += WindowSystem.Draw;
         PluginInterface.UiBuilder.OpenConfigUi += ToggleConfigUi;
@@ -138,6 +141,9 @@ public sealed class Plugin : IDalamudPlugin
         DutyStateService.DutyStarted -= OnDutyStarted;
         Framework.Update -= OnFrameworkUpdate;
         ClientState.Login -= OnLoginEvent;
+
+        AppDomain.CurrentDomain.UnhandledException -= OnUnhandledException;
+        TaskScheduler.UnobservedTaskException -= OnUnobservedTaskException;
 
         PluginInterface.UiBuilder.Draw -= WindowSystem.Draw;
         PluginInterface.UiBuilder.OpenConfigUi -= ToggleConfigUi;
@@ -346,6 +352,23 @@ public sealed class Plugin : IDalamudPlugin
         // Don't run OnLogin here - Login event fires off main thread.
         // Instead, set a delay so OnFrameworkUpdate picks it up.
         loginDetectionDelay = 3;
+    }
+
+    private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+        if (e.ExceptionObject is Exception ex)
+        {
+            Log.Error(ex, $"[Plugin] Unhandled AppDomain exception (terminating={e.IsTerminating})");
+            return;
+        }
+
+        Log.Error($"[Plugin] Unhandled AppDomain exception object (terminating={e.IsTerminating}): {e.ExceptionObject}");
+    }
+
+    private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    {
+        Log.Error(e.Exception, "[Plugin] Unobserved task exception");
+        e.SetObserved();
     }
 
     private void OnLogin()
