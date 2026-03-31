@@ -25,7 +25,7 @@ public class ConfigWindow : Window, IDisposable
     // Dependency check cache
     private DateTime lastDepCheck = DateTime.MinValue;
     private bool depRsr, depBmr, depVbm, depVnav, depTextAdv, depCutsceneSkip, depAutoDuty, depSimpleTweaks;
-    private bool depCustomRes, depChillframes;
+    private bool depCustomRes, depChillframes, depKrangler, depDps, depTtsl;
     private bool allDepsGreen = false;
 
     // Plugin repo URLs for clipboard
@@ -187,6 +187,9 @@ public class ConfigWindow : Window, IDisposable
             depSimpleTweaks = false;
             depCustomRes = false;
             depChillframes = false;
+            depKrangler = false;
+            depDps = false;
+            depTtsl = false;
 
             foreach (var p in installed)
             {
@@ -202,6 +205,9 @@ public class ConfigWindow : Window, IDisposable
                     case "AutoDuty": depAutoDuty = true; break;
                     case "SimpleTweaksPlugin": depSimpleTweaks = true; break;
                     case "ChillFrames": depChillframes = true; break;
+                    case "Krangler": depKrangler = true; break;
+                    case "DPS": depDps = true; break;
+                    case "TTSL": depTtsl = true; break;
                 }
                 
                 // Check for CustomResolution with random suffix
@@ -263,8 +269,15 @@ public class ConfigWindow : Window, IDisposable
         ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Optional Plugins");
         ImGui.Separator();
 
+        DrawDepLineOptional("Krangler", depKrangler, "Recommended. Type Dhog in plugin search if you want appearance/nameplate chaos during runs.");
         DrawDepLineOptional("CustomResolution (1pp by 0x0ade)", depCustomRes);
         DrawDepLineOptional("ChillFrames", depChillframes);
+        DrawDepLineOptional(
+            "DPS (Dhog Potato System)",
+            depDps,
+            "Experimental and not recommended. Type Dhog in plugin search if you still want the background render-off helper.",
+            "Experimental and not recommended.");
+        DrawDepLineOptional("TTSL (Thick Thighs Save Lives)", depTtsl, "Experimental and not available yet. When it exists, type Dhog in plugin search.");
 
         ImGui.Spacing();
         ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "AutoDuty Path");
@@ -318,13 +331,19 @@ public class ConfigWindow : Window, IDisposable
         ImGui.TextColored(color, $"- {detail}");
     }
 
-    private static void DrawDepLineOptional(string name, bool exists)
+    private static void DrawDepLineOptional(string name, bool exists, string? missingDetail = null, string? installedWarning = null)
     {
         var color = exists ? new Vector4(0, 1, 0, 1) : new Vector4(0.5f, 0.5f, 0.5f, 1);
         var icon = exists ? "[OK]" : "[--]";
         ImGui.TextColored(color, $"{icon} {name}");
         ImGui.SameLine();
-        ImGui.TextDisabled(exists ? "Installed" : "Not installed (optional)");
+        ImGui.TextDisabled(exists ? "Installed" : (string.IsNullOrWhiteSpace(missingDetail) ? "Not installed (optional)" : missingDetail));
+
+        if (exists && !string.IsNullOrWhiteSpace(installedWarning))
+        {
+            ImGui.SameLine();
+            ImGui.TextColored(new Vector4(1, 0, 0, 1), installedWarning);
+        }
     }
 
     private bool DrawPartyTab(Configuration config)

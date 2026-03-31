@@ -701,7 +701,10 @@ public class StatsWindow : Window, IDisposable
                 }
                 else
                 {
-                    ImGui.Text($"{run.PartySize}: Unknown");
+                    var fallbackPartyText = run.PartySize > 0
+                        ? $"{run.PartySize}: Not captured"
+                        : "Party data not captured";
+                    ImGui.Text(fallbackPartyText);
                 }
                 
                 ImGui.TableSetColumnIndex(6);
@@ -776,7 +779,7 @@ public class StatsWindow : Window, IDisposable
             17 => "MIN", 18 => "BTN", 19 => "FSH", 20 => "PLD", 21 => "MNK", 22 => "WAR", 23 => "DRG", 24 => "BRD",
             25 => "NIN", 26 => "SMN", 27 => "SCH", 28 => "RDM", 29 => "BLM", 30 => "WHM", 31 => "DRK", 32 => "AST", 33 => "SAM",
             34 => "MCH", 35 => "DNC", 36 => "RPR", 37 => "SGE", 38 => "VPR", 39 => "PCT",
-            _ => "UNK"
+            _ => "Unknown"
         };
     }
 
