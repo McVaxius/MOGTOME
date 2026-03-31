@@ -319,6 +319,7 @@ public class MogtomeEngine
 
         try
         {
+            autoDutyIPC.StopDuty();
             dialogHandler.Stop();
             rotationService.DisableRotation();
             dutyQueue.EnableAutoQueueAfterRepair();
