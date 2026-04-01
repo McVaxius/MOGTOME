@@ -25,6 +25,8 @@ public enum EngineState
 
 public class MogtomeEngine
 {
+    private const string PhantomGaiusName = "Phantom Gaius";
+
     private readonly IPluginLog log;
     private readonly Configuration config;
     private readonly DutyState state;
@@ -989,9 +991,13 @@ public class MogtomeEngine
 
         var now = DateTime.UtcNow;
         var currentTarget = Plugin.TargetManager.Target as IBattleChara;
+        var targetName = currentTarget?.Name.TextValue ?? string.Empty;
         var aggressiveRefresh =
             state.DutyStartTerritory == DutyState.PraetoriumTerritoryId &&
-            (!condition[ConditionFlag.InCombat] || currentTarget == null || currentTarget.CurrentHp <= 1);
+            (!condition[ConditionFlag.InCombat] ||
+             currentTarget == null ||
+             currentTarget.CurrentHp <= 1 ||
+             targetName.Contains(PhantomGaiusName, StringComparison.OrdinalIgnoreCase));
 
         var refreshInterval = aggressiveRefresh
             ? PraetoriumAggressiveRefreshSeconds
@@ -1002,9 +1008,9 @@ public class MogtomeEngine
 
         lastRotationRefreshUtc = now;
         rotationService.EnableRotation();
-        log.Debug("[Engine] Refreshed rotation state inside duty ({Mode}, target={Target}, hp={Hp})",
+        log.Debug("[Engine] Refreshed BossMod AI + RSR inside duty ({Mode}, target={Target}, hp={Hp})",
             aggressiveRefresh ? "aggressive" : "normal",
-            currentTarget?.Name.TextValue ?? "none",
+            targetName.Length > 0 ? targetName : "none",
             currentTarget?.CurrentHp ?? 0);
     }
 

@@ -49,8 +49,10 @@ public class AutoDutyIPC : IDisposable
     {
         SetConfig("AutoDutyModeEnum", "Looping");
         SetConfig("DutyModeEnum", "Regular");
-        SetConfig("AutoManageRotationPluginState", "true");
-        SetConfig("AutoManageBossModAISettings", "true");
+        // MOGTOME keeps BossMod AI and RSR armed itself so Praetorium combat
+        // does not lose melee movement during Phantom Gaius split transitions.
+        SetConfig("AutoManageRotationPluginState", "false");
+        SetConfig("AutoManageBossModAISettings", "false");
         SetConfig("BM_UpdatePresetsAutomatically", "true");
         SetConfig("maxDistanceToTargetRoleBased", "true");
         SetConfig("positionalRoleBased", "true");
@@ -59,7 +61,7 @@ public class AutoDutyIPC : IDisposable
         SetConfig("EnableTerminationActions", "false");
         SetConfig("Unsynced", "true");
         // LevelSync is set by the engine based on TestingModeUnsynced config
-        log.Information($"[AutoDuty] Configured for MOGTOME (leader={isLeader}) - Unsync=ON");
+        log.Information($"[AutoDuty] Configured for MOGTOME (leader={isLeader}) - Unsync=ON, BossMod/RSR auto-manage=OFF");
     }
 
     public void SetUsingAlternativeRotation(bool useAlternative)
@@ -115,15 +117,15 @@ public class AutoDutyIPC : IDisposable
             
             commandManager.ProcessCommand("/ad start");
             
-            // Refresh RSR after starting AutoDuty
+            // Refresh the combat stack after starting AutoDuty.
             try
             {
                 rotationService.ForceRotation();
-                log.Information("[AutoDuty] RSR refreshed after /ad start");
+                log.Information("[AutoDuty] BossMod AI + RSR refreshed after /ad start");
             }
             catch (Exception ex)
             {
-                log.Error(ex, "[AutoDuty] Failed to refresh RSR after /ad start");
+                log.Error(ex, "[AutoDuty] Failed to refresh BossMod AI + RSR after /ad start");
             }
         }
         catch (Exception ex)

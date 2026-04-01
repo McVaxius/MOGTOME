@@ -27,26 +27,24 @@ public class RotationService
         bossModIPC.DetectBossMod();
         state.WhichBossMod = bossModIPC.WhichBossMod;
 
-        // We use RSR for rotations
-        // autoDutyIPC.SetUsingAlternativeRotation(false); // Removed to avoid circular dependency
-
-        log.Information($"[Rotation] Initialized: BossMod={state.WhichBossMod}, using RSR for rotation");
+        log.Information($"[Rotation] Initialized: BossMod={state.WhichBossMod}, using BossMod AI + RSR");
     }
 
     public void ForceRotation()
     {
-        // Always use RSR
+        bossModIPC.EnableAI();
         bossModIPC.EnableRSR();
     }
 
     public void EnableRotation()
     {
+        bossModIPC.EnableAI();
         bossModIPC.EnableRSR();
     }
 
     public void DisableRotation()
     {
         // Do not disable RSR or BossMod AI - let them continue running
-        log.Debug("[Rotation] DisableRotation called - no action taken (RSR/BossMod left enabled)");
+        log.Debug("[Rotation] DisableRotation called - no action taken (BossMod AI/RSR left enabled)");
     }
 }
