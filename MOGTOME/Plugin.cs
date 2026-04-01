@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dalamud.Game.Command;
 using Dalamud.IoC;
@@ -14,6 +15,13 @@ namespace MOGTOME;
 
 public sealed class Plugin : IDalamudPlugin
 {
+    private sealed class ExternalExceptionLogState
+    {
+        public DateTime LastLoggedUtc { get; set; }
+        public int SuppressedCount { get; set; }
+        public bool SuppressionBannerLogged { get; set; }
+    }
+
     [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
     [PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
     [PluginService] internal static IClientState ClientState { get; private set; } = null!;
@@ -63,6 +71,10 @@ public sealed class Plugin : IDalamudPlugin
     public ConfigWindow ConfigWindow { get; init; }
     public MainWindow MainWindow { get; init; }
     public StatsWindow StatsWindow { get; init; }
+
+    private static readonly TimeSpan ExternalExceptionSuppressionWindow = TimeSpan.FromSeconds(10);
+    private readonly object externalExceptionLogLock = new();
+    private readonly Dictionary<string, ExternalExceptionLogState> externalExceptionLogStates = new(StringComparer.Ordinal);
 
     public Plugin()
     {
@@ -358,7 +370,7 @@ public sealed class Plugin : IDalamudPlugin
     {
         if (e.ExceptionObject is Exception ex)
         {
-            Log.Error(ex, $"[Plugin] Unhandled AppDomain exception (terminating={e.IsTerminating})");
+            LogObservedException(ex, "AppDomain exception", $"terminating={e.IsTerminating}");
             return;
         }
 
@@ -367,8 +379,132 @@ public sealed class Plugin : IDalamudPlugin
 
     private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
     {
-        Log.Error(e.Exception, "[Plugin] Unobserved task exception");
+        LogObservedException(e.Exception, "task exception", null);
         e.SetObserved();
+    }
+
+    private void LogObservedException(Exception ex, string category, string? extraContext)
+    {
+        var source = ClassifyExceptionSource(ex);
+        var isExternal = !string.Equals(source, "MOGTOME", StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(source, "Unknown", StringComparison.OrdinalIgnoreCase);
+
+        if (!isExternal)
+        {
+            var contextSuffix = string.IsNullOrWhiteSpace(extraContext) ? string.Empty : $", {extraContext}";
+            Log.Error(ex, $"[Plugin] {UppercaseFirst(category)} (source={source}{contextSuffix})");
+            return;
+        }
+
+        var fingerprint = BuildExternalExceptionFingerprint(source, ex, category);
+        var now = DateTime.UtcNow;
+        string? suppressionBanner = null;
+        string? suppressionSummary = null;
+        var suppressFullLog = false;
+
+        lock (externalExceptionLogLock)
+        {
+            PruneExternalExceptionLogState_NoLock(now);
+
+            if (!externalExceptionLogStates.TryGetValue(fingerprint, out var state))
+            {
+                state = new ExternalExceptionLogState();
+                externalExceptionLogStates[fingerprint] = state;
+            }
+
+            if (state.LastLoggedUtc != DateTime.MinValue &&
+                now - state.LastLoggedUtc < ExternalExceptionSuppressionWindow)
+            {
+                state.SuppressedCount++;
+                suppressFullLog = true;
+
+                if (!state.SuppressionBannerLogged)
+                {
+                    state.SuppressionBannerLogged = true;
+                    suppressionBanner = $"[Plugin] Suppressing repeated external {category} logs from {source} for {ExternalExceptionSuppressionWindow.TotalSeconds:F0}s";
+                }
+            }
+            else
+            {
+                if (state.SuppressedCount > 0)
+                {
+                    suppressionSummary = $"[Plugin] Suppressed {state.SuppressedCount} repeated external {category} logs from {source} over the last {ExternalExceptionSuppressionWindow.TotalSeconds:F0}s";
+                }
+
+                state.LastLoggedUtc = now;
+                state.SuppressedCount = 0;
+                state.SuppressionBannerLogged = false;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(suppressionBanner))
+            Log.Warning(suppressionBanner);
+
+        if (suppressFullLog)
+            return;
+
+        if (!string.IsNullOrWhiteSpace(suppressionSummary))
+            Log.Warning(suppressionSummary);
+
+        var extraSuffix = string.IsNullOrWhiteSpace(extraContext) ? string.Empty : $", {extraContext}";
+        Log.Error(ex, $"[Plugin] External {category} observed via MOGTOME hook (source={source}{extraSuffix})");
+    }
+
+    private void PruneExternalExceptionLogState_NoLock(DateTime now)
+    {
+        List<string>? staleKeys = null;
+
+        foreach (var entry in externalExceptionLogStates)
+        {
+            if (entry.Value.LastLoggedUtc != DateTime.MinValue &&
+                now - entry.Value.LastLoggedUtc <= TimeSpan.FromMinutes(5))
+            {
+                continue;
+            }
+
+            staleKeys ??= [];
+            staleKeys.Add(entry.Key);
+        }
+
+        if (staleKeys == null)
+            return;
+
+        foreach (var key in staleKeys)
+            externalExceptionLogStates.Remove(key);
+    }
+
+    private static string BuildExternalExceptionFingerprint(string source, Exception ex, string category)
+    {
+        var root = ex.GetBaseException();
+        var stackTrace = root.StackTrace ?? string.Empty;
+        var newlineIndex = stackTrace.IndexOfAny(['\r', '\n']);
+        var firstFrame = newlineIndex >= 0 ? stackTrace[..newlineIndex] : stackTrace;
+        return $"{category}|{source}|{root.GetType().FullName}|{root.Message}|{firstFrame}";
+    }
+
+    private static string ClassifyExceptionSource(Exception ex)
+    {
+        var text = ex.ToString();
+        if (text.Contains("MOGTOME.", StringComparison.OrdinalIgnoreCase))
+            return "MOGTOME";
+        if (text.Contains("AutoDuty.", StringComparison.OrdinalIgnoreCase))
+            return "AutoDuty";
+        if (text.Contains("PandorasBox.", StringComparison.OrdinalIgnoreCase))
+            return "Pandora's Box";
+        if (text.Contains("RotationSolverReborn", StringComparison.OrdinalIgnoreCase))
+            return "RotationSolverReborn";
+        if (text.Contains("TwistOfFayte", StringComparison.OrdinalIgnoreCase))
+            return "TwistOfFayte";
+
+        return string.IsNullOrWhiteSpace(ex.Source) ? "Unknown" : ex.Source;
+    }
+
+    private static string UppercaseFirst(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return value;
+
+        return char.ToUpperInvariant(value[0]) + value[1..];
     }
 
     private void OnLogin()

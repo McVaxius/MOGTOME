@@ -37,6 +37,66 @@ public class AutoDutyPathService
         this.PluginInterface = pluginInterface;
     }
 
+    public bool IsAutoDutyInitialized(out string status)
+    {
+        try
+        {
+            var autoDutyPlugin = FindDalamudPluginInstance("AutoDuty");
+            if (autoDutyPlugin == null)
+            {
+                status = "AutoDuty plugin not found or not loaded";
+                return false;
+            }
+
+            var configMainType = autoDutyPlugin.GetType().Assembly.GetType("AutoDuty.Windows.ConfigurationMain");
+            if (configMainType == null)
+            {
+                status = "AutoDuty.Windows.ConfigurationMain type not found";
+                return false;
+            }
+
+            var configMain = GetMemberValue(configMainType, null, "Instance");
+            if (configMain == null)
+            {
+                status = "ConfigurationMain.Instance is null";
+                return false;
+            }
+
+            if (GetMemberValue(configMainType, configMain, "Initialized") is bool initialized && initialized)
+            {
+                status = "Ready";
+                return true;
+            }
+
+            status = "AutoDuty profile initialization still in progress";
+            return false;
+        }
+        catch (Exception ex)
+        {
+            status = $"Readiness check failed: {ex.Message}";
+            return false;
+        }
+    }
+
+    public async Task<bool> WaitForAutoDutyInitializationAsync(TimeSpan timeout, TimeSpan pollInterval)
+    {
+        var deadline = DateTime.UtcNow + timeout;
+        var lastStatus = "Unknown";
+
+        while (DateTime.UtcNow < deadline)
+        {
+            if (IsAutoDutyInitialized(out lastStatus))
+            {
+                return true;
+            }
+
+            await Task.Delay(pollInterval);
+        }
+
+        log.Warning($"[AutoDutyPath] AutoDuty readiness wait timed out after {timeout.TotalSeconds:F0}s: {lastStatus}");
+        return false;
+    }
+
     /// <summary>
     /// Force AutoDuty to select the phecda Praetorium path via reflection.
     /// Steps: Mode=Looping, DutyMode=Regular, Duty=Praetorium (1044), Path=phecda W2W

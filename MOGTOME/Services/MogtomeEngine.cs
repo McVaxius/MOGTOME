@@ -142,6 +142,26 @@ public class MogtomeEngine
 
         try
         {
+            log.Information("[Engine] Waiting for AutoDuty to finish profile initialization");
+            var autoDutyReady = await autoDutyPath.WaitForAutoDutyInitializationAsync(TimeSpan.FromSeconds(20), TimeSpan.FromMilliseconds(500));
+            if (CurrentState != EngineState.Initializing)
+            {
+                log.Warning("[Engine] Start aborted while waiting for AutoDuty readiness");
+                return;
+            }
+
+            if (!autoDutyReady)
+            {
+                const string startupFailure = "AutoDuty is still initializing or faulted; retry MOGTOME after login settles";
+                log.Warning($"[Engine] {startupFailure}");
+                Plugin.ChatGui.Print($"[MOGTOME] {startupFailure}");
+                CurrentState = EngineState.Idle;
+                StatusMessage = "Idle";
+                return;
+            }
+
+            log.Information("[Engine] AutoDuty readiness gate passed");
+
             // 1. Send /ad stop FIRST to reset AutoDuty state for all characters
             log.Information("[Engine] Sending /ad stop to reset AutoDuty state");
             commandManager.ProcessCommand("/ad stop");
