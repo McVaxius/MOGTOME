@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
 using Dalamud.Plugin.Services;
+using Dalamud.Memory;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using MOGTOME.IPC;
 
 namespace MOGTOME.Services;
@@ -10,9 +13,17 @@ public class DialogHandlerService
     private readonly YesAlreadyIPC yesAlreadyIPC;
     private readonly ICommandManager commandManager;
     private readonly IGameGui gameGui;
+    private static readonly IReadOnlyList<string> RaiseOfferPatterns =
+    [
+        "Would you like to be raised",
+        "Accept Raise",
+    ];
 
     private DateTime lastDialogCheck = DateTime.MinValue;
     private const float DialogCheckCooldown = 0.5f;
+    private string lastHandledDialog = string.Empty;
+    private DateTime lastHandledDialogAt = DateTime.MinValue;
+    private static readonly TimeSpan DialogHandleCooldown = TimeSpan.FromSeconds(2);
 
     public DialogHandlerService(
         IPluginLog log, YesAlreadyIPC yesAlreadyIPC,
@@ -44,14 +55,59 @@ public class DialogHandlerService
 
         try
         {
-            // Check for SelectYesno addon
-            CheckAndConfirmDialog("SelectYesno");
+            TryAcceptRaiseOffer();
             // Check for ContentFinderConfirm addon
             CheckAndConfirmDialog("ContentsFinderConfirm");
         }
         catch (Exception ex)
         {
             log.Error($"[DialogHandler] Update failed: {ex.Message}");
+        }
+    }
+
+    private unsafe void TryAcceptRaiseOffer()
+    {
+        nint addonPtr = gameGui.GetAddonByName("SelectYesno", 1);
+        if (addonPtr == 0)
+            return;
+
+        var addon = (AddonSelectYesno*)addonPtr;
+        if (addon == null || !addon->AtkUnitBase.IsVisible)
+            return;
+
+        var promptNode = addon->PromptText;
+        if (promptNode == null || promptNode->NodeText.StringPtr == null)
+            return;
+
+        var promptSeString = MemoryHelper.ReadSeStringNullTerminated(new IntPtr(promptNode->NodeText.StringPtr));
+        var dialogText = promptSeString.TextValue?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(dialogText))
+            return;
+
+        var now = DateTime.UtcNow;
+        if (string.Equals(dialogText, lastHandledDialog, StringComparison.OrdinalIgnoreCase) &&
+            now - lastHandledDialogAt < DialogHandleCooldown)
+        {
+            return;
+        }
+
+        foreach (var pattern in RaiseOfferPatterns)
+        {
+            if (!dialogText.Contains(pattern, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            if (GameHelpers.ClickYesIfVisible())
+            {
+                lastHandledDialog = dialogText;
+                lastHandledDialogAt = now;
+                log.Information($"[DialogHandler] Accepted raise offer: {dialogText}");
+            }
+            else
+            {
+                log.Warning($"[DialogHandler] Raise offer detected but Yes click failed: {dialogText}");
+            }
+
+            return;
         }
     }
 
