@@ -16,9 +16,6 @@ namespace MOGTOME.Windows;
 public class MainWindow : Window, IDisposable
 {
     private readonly Plugin plugin;
-    private const string ConflictPluginPopupId = "Twist of Fayte Conflict##MOGTOME";
-    private bool openConflictPluginPopup;
-    private string conflictPluginPopupMessage = string.Empty;
     private Vector2? pendingWindowPosition;
     private bool pendingPositionConditionReset;
 
@@ -34,12 +31,6 @@ public class MainWindow : Window, IDisposable
     }
 
     public void Dispose() { }
-
-    public void QueueConflictPopup(string message)
-    {
-        conflictPluginPopupMessage = message;
-        openConflictPluginPopup = true;
-    }
 
     public void QueueResetToOrigin()
         => QueueWindowPosition(new Vector2(1f, 1f));
@@ -60,8 +51,6 @@ public class MainWindow : Window, IDisposable
 
     public override void Draw()
     {
-        DrawConflictPluginPopup();
-
         var config = plugin.Configuration;
         var state = plugin.State;
         var engine = plugin.Engine;
@@ -102,6 +91,32 @@ public class MainWindow : Window, IDisposable
         }
         
         ImGui.Separator();
+
+        if (engine == null)
+        {
+            ImGui.TextColored(new Vector4(1.0f, 1.0f, 0.0f, 1.0f), "State: Initializing");
+            ImGui.Text("Status: Waiting for account and engine initialization.");
+            ImGui.Separator();
+
+            if (ImGui.Button("Config", new Vector2(70, 30)))
+                plugin.ConfigWindow.Toggle();
+
+            ImGui.SameLine();
+            if (ImGui.Button("Stats", new Vector2(60, 30)))
+                plugin.StatsWindow.Toggle();
+
+            ImGui.SameLine();
+            if (ImGui.Button("Reset", new Vector2(60, 30)))
+            {
+                state.DutyCounter = 0;
+                state.DecumanaCounter = 0;
+                config.DutyCounter = 0;
+                plugin.ConfigManager.SaveCurrentAccount();
+            }
+
+            FinalizePendingWindowPlacement();
+            return;
+        }
 
         // Engine Status
         var statusColor = engine.CurrentState switch
@@ -207,11 +222,12 @@ public class MainWindow : Window, IDisposable
             // Force Path Selection button
             if (ImGui.Button("FORCE PATH SELECTION", new Vector2(200, 25)))
             {
-                plugin.AutoDutyPathService.ForcePathSelection();
+                plugin.AutoDutyPathService.ForcePathSelection(config.PraetoriumPathFileName);
             }
             if (ImGui.IsItemHovered())
             {
-                ImGui.SetTooltip("Force AutoDuty to select:\nMode: Looping\nDuty Mode: Regular\nDuty: The Praetorium (1044)\nPath: phecda W2W\n\nLogs full AutoDuty structure to Dalamud log.");
+                var selectedPath = plugin.AutoDutyPathService.GetPraetoriumPathDisplayName(config.PraetoriumPathFileName);
+                ImGui.SetTooltip($"Force AutoDuty to select:\nMode: Looping\nDuty Mode: Regular\nDuty: The Praetorium (1044)\nPath: {selectedPath}\n\nLogs full AutoDuty structure to Dalamud log.");
             }
             ImGui.TextDisabled($"Result: {plugin.AutoDutyPathService.LastForceResult}");
 
@@ -497,7 +513,10 @@ public class MainWindow : Window, IDisposable
         DrawStatusLine("Food", config.FoodItemId > 0 && state.FoodAvailable, FormatConsumableLabel(config.FoodItemName, config.FoodUseHighQuality));
         DrawStatusLine("Potions", config.PotionItemId > 0 && state.PotionsAvailable, FormatConsumableLabel(config.PotionItemName, config.PotionUseHighQuality));
         DrawStatusLine("YesAlready", plugin.YesAlreadyIPC.IsPaused, "Paused by MOGTOME");
-        DrawStatusLine("AutoDuty Path", plugin.AutoDutyPathService.PathExists(), "Praetorium W2W");
+        DrawStatusLine(
+            "AutoDuty Path",
+            plugin.AutoDutyPathService.PathExists(config.PraetoriumPathFileName),
+            plugin.AutoDutyPathService.GetPraetoriumPathDisplayName(config.PraetoriumPathFileName));
         
         ImGui.Unindent();
         ImGui.Separator();
@@ -529,28 +548,6 @@ public class MainWindow : Window, IDisposable
         ImGui.Unindent();
 
         FinalizePendingWindowPlacement();
-    }
-
-    private void DrawConflictPluginPopup()
-    {
-        if (openConflictPluginPopup)
-        {
-            ImGui.OpenPopup(ConflictPluginPopupId);
-            openConflictPluginPopup = false;
-        }
-
-        if (!ImGui.BeginPopupModal(ConflictPluginPopupId, ImGuiWindowFlags.AlwaysAutoResize))
-            return;
-
-        ImGui.TextColored(new Vector4(1.0f, 0.35f, 0.35f, 1.0f), "Twist of Fayte conflict");
-        ImGui.Spacing();
-        ImGui.TextWrapped(conflictPluginPopupMessage);
-        ImGui.Spacing();
-
-        if (ImGui.Button("OK", new Vector2(120, 0)))
-            ImGui.CloseCurrentPopup();
-
-        ImGui.EndPopup();
     }
 
     private void QueueWindowPosition(Vector2 position)

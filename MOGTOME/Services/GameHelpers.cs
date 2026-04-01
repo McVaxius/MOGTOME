@@ -3,6 +3,7 @@ using System.Text;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Game.ClientState.Conditions;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.Game.Event;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.System.String;
@@ -190,10 +191,15 @@ public static class GameHelpers
     {
         try
         {
-            // Fallback implementation - return 0 for now
-            // TODO: Fix FFXIVClientStructs API compatibility
-            Plugin.Log.Debug("[GameHelpers] GetDutyRemainingTime: Using fallback implementation");
-            return 0f;
+            var eventFramework = EventFramework.Instance();
+            if (eventFramework == null)
+                return 0f;
+
+            var instanceContentDirector = eventFramework->GetInstanceContentDirector();
+            if (instanceContentDirector == null || !instanceContentDirector->HasTimer())
+                return 0f;
+
+            return instanceContentDirector->ContentTimeLeft;
         }
         catch (Exception ex)
         {

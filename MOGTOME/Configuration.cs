@@ -47,6 +47,7 @@ public class Configuration
 
     // --- Dependency Check ---
     public bool AutoDutyPathInstalled { get; set; } = false;
+    public string PraetoriumPathFileName { get; set; } = "(1044) The Praetorium - W2W 20250716 phecda.json";
 
     // --- Stats ---
     // Global stats (kept for compatibility)

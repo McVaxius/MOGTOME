@@ -1,8 +1,8 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
 using Dalamud.Plugin;
@@ -12,12 +12,18 @@ namespace MOGTOME.Services;
 
 public class AutoDutyPathService
 {
+    public sealed record PraetoriumPathOption(string FileName, string DisplayName);
+
     private readonly IPluginLog log;
     private readonly IDalamudPluginInterface PluginInterface;
+    private const string BundledPathsRelativeFolder = @"data\autoduty-paths";
+    private static readonly IReadOnlyList<PraetoriumPathOption> BundledPraetoriumPaths =
+    [
+        new("(1044) The Praetorium - W2W 20250716 phecda.json", "phecda W2W (2025-07-16)"),
+        new("(1044) The Praetorium - W2W 20241027 Ritsuko.json", "Ritsuko W2W (2024-10-27)"),
+    ];
 
     private const string PathFileName = "(1044) The Praetorium - W2W 20250716 phecda.json";
-    private const string PathUrl = "https://raw.githubusercontent.com/McVaxius/dhogsbreakfeast/refs/heads/main/Dungeons%20and%20Multiboxing/G.O.O.N/(1044)%20The%20Praetorium%20-%20W2W%2020250716%20phecda.json";
-    private static readonly HttpClient httpClient = new();
 
     // Reflection constants
     private static readonly BindingFlags AllFlags =
@@ -35,6 +41,32 @@ public class AutoDutyPathService
     {
         this.log = log;
         this.PluginInterface = pluginInterface;
+    }
+
+    public IReadOnlyList<PraetoriumPathOption> GetPraetoriumPathOptions()
+        => BundledPraetoriumPaths;
+
+    public string GetDefaultPraetoriumPathFileName()
+        => BundledPraetoriumPaths[0].FileName;
+
+    public string ResolvePraetoriumPathFileName(string? configuredPathFileName)
+    {
+        if (!string.IsNullOrWhiteSpace(configuredPathFileName))
+        {
+            var match = BundledPraetoriumPaths.FirstOrDefault(path =>
+                path.FileName.Equals(configuredPathFileName, StringComparison.OrdinalIgnoreCase));
+            if (match != null)
+                return match.FileName;
+        }
+
+        return GetDefaultPraetoriumPathFileName();
+    }
+
+    public string GetPraetoriumPathDisplayName(string? configuredPathFileName)
+    {
+        var resolved = ResolvePraetoriumPathFileName(configuredPathFileName);
+        return BundledPraetoriumPaths.First(path =>
+            path.FileName.Equals(resolved, StringComparison.OrdinalIgnoreCase)).DisplayName;
     }
 
     public bool IsAutoDutyInitialized(out string status)
@@ -98,15 +130,19 @@ public class AutoDutyPathService
     }
 
     /// <summary>
-    /// Force AutoDuty to select the phecda Praetorium path via reflection.
-    /// Steps: Mode=Looping, DutyMode=Regular, Duty=Praetorium (1044), Path=phecda W2W
+    /// Force AutoDuty to select the configured bundled Praetorium path via reflection.
+    /// Steps: Mode=Looping, DutyMode=Regular, Duty=Praetorium (1044), Path=configured W2W
     /// Called before anything else on Start, for all party members, while not in duty.
     /// </summary>
-    public bool ForcePathSelection()
+    public bool ForcePathSelection(string? configuredPathFileName)
     {
         try
         {
+            var selectedPathFileName = ResolvePraetoriumPathFileName(configuredPathFileName);
+            var selectedPathName = Path.GetFileNameWithoutExtension(selectedPathFileName) ?? selectedPathFileName;
+
             log.Information("[AutoDutyPath] === FORCE PATH SELECTION START ===");
+            log.Information($"[AutoDutyPath] Selected Praetorium path: {selectedPathFileName}");
 
             // Step 1: Find AutoDuty plugin using Reflections.md pattern
             var autoDutyPlugin = FindDalamudPluginInstance("AutoDuty");
@@ -175,36 +211,36 @@ public class AutoDutyPathService
             log.Information($"[AutoDutyPath] Set currentTerritoryType={TargetTerritoryType}: {territorySet}");
 
             // Try setting currentPath by finding the target path index using the FILE DATE method
-            var pathIndex = FindPathIndexByFileDate(TargetPathName);
+            var pathIndex = FindPathIndexByFileDate(selectedPathFileName);
             var pathSet = false;
             if (pathIndex >= 0)
             {
                 pathSet = SetMemberValue(instanceType, pluginInstance, "currentPath", pathIndex);
-                log.Information($"[AutoDutyPath] Set currentPath={pathIndex} for '{TargetPathName}' (FILE DATE METHOD): {pathSet}");
+                log.Information($"[AutoDutyPath] Set currentPath={pathIndex} for '{selectedPathName}' (FILE DATE METHOD): {pathSet}");
                 if (pathSet)
                 {
-                    LastForceResult = $"OK: Territory={TargetTerritoryType}, Path={pathIndex} ({TargetPathName}) [FileDate]";
+                    LastForceResult = $"OK: Territory={TargetTerritoryType}, Path={pathIndex} ({selectedPathName}) [FileDate]";
                 }
             }
             else
             {
-                log.Warning($"[AutoDutyPath] Could not find path index for '{TargetPathName}' using file date method");
+                log.Warning($"[AutoDutyPath] Could not find path index for '{selectedPathName}' using file date method");
                 
                 // Fallback: try the old method (may be incorrect)
                 log.Information("[AutoDutyPath] Trying fallback method (PathSelectionsByPath)...");
-                var fallbackIndex = FindPathIndexByName(pluginInstance, TargetPathName);
+                var fallbackIndex = FindPathIndexByName(pluginInstance, selectedPathName);
                 if (fallbackIndex >= 0)
                 {
                     pathSet = SetMemberValue(instanceType, pluginInstance, "currentPath", fallbackIndex);
-                    log.Information($"[AutoDutyPath] Set currentPath={fallbackIndex} (FALLBACK) for '{TargetPathName}': {pathSet}");
+                    log.Information($"[AutoDutyPath] Set currentPath={fallbackIndex} (FALLBACK) for '{selectedPathName}': {pathSet}");
                     if (pathSet)
                     {
-                        LastForceResult = $"OK: Territory={TargetTerritoryType}, Path={fallbackIndex} (FALLBACK) ({TargetPathName})";
+                        LastForceResult = $"OK: Territory={TargetTerritoryType}, Path={fallbackIndex} (FALLBACK) ({selectedPathName})";
                     }
                 }
                 else
                 {
-                    LastForceResult = $"FAILED: Could not find path index for '{TargetPathName}'";
+                    LastForceResult = $"FAILED: Could not find path index for '{selectedPathName}'";
                 }
             }
 
@@ -443,9 +479,9 @@ public class AutoDutyPathService
                                     foreach (var key in keysToUpdate)
                                         innerDict[key] = jobWithRoleNone;
                                     
-                                    // Set the W2W path to ALL jobs
-                                    innerDict[PathFileName] = jobWithRoleAll;
-                                    log.Information($"[AutoDutyPath] Set PathSelectionsByPath[{TargetTerritoryType}][{PathFileName}] = All jobs");
+                                    // Set the selected W2W path to ALL jobs
+                                    innerDict[selectedPathFileName] = jobWithRoleAll;
+                                    log.Information($"[AutoDutyPath] Set PathSelectionsByPath[{TargetTerritoryType}][{selectedPathFileName}] = All jobs");
                                     
                                     // Call Config.Save() to persist
                                     var saveMethod = configType.GetMethod("Save", AllFlags);
@@ -2169,7 +2205,7 @@ public class AutoDutyPathService
         return false;
     }
 
-    public async Task<bool> EnsurePathExists()
+    public Task<bool> EnsurePathExists()
     {
         try
         {
@@ -2177,50 +2213,73 @@ public class AutoDutyPathService
             if (string.IsNullOrEmpty(autoDutyPathsFolder))
             {
                 log.Warning("[AutoDutyPath] Could not determine AutoDuty paths folder");
-                return false;
+                return Task.FromResult(false);
             }
 
-            
-            var targetPath = Path.Combine(autoDutyPathsFolder, PathFileName);
-
-            if (File.Exists(targetPath))
+            var bundledPathsFolder = GetBundledPathsFolder();
+            if (string.IsNullOrEmpty(bundledPathsFolder) || !Directory.Exists(bundledPathsFolder))
             {
-                log.Information($"[AutoDutyPath] Path file already exists: {targetPath}");
-                return true;
+                log.Warning($"[AutoDutyPath] Bundled path folder is missing: {bundledPathsFolder}");
+                return Task.FromResult(false);
             }
 
-            // Ensure directory exists
             Directory.CreateDirectory(autoDutyPathsFolder);
+            var installedCount = 0;
 
-            // Download from GitHub
-            log.Information($"[AutoDutyPath] Downloading path file from: {PathUrl}");
-            var response = await httpClient.GetAsync(PathUrl);
-            if (!response.IsSuccessStatusCode)
+            foreach (var option in BundledPraetoriumPaths)
             {
-                log.Warning($"[AutoDutyPath] Failed to download path file: {response.StatusCode}");
-                return false;
+                var sourcePath = Path.Combine(bundledPathsFolder, option.FileName);
+                if (!File.Exists(sourcePath))
+                {
+                    log.Warning($"[AutoDutyPath] Bundled path missing from plugin data folder: {sourcePath}");
+                    continue;
+                }
+
+                var targetPath = Path.Combine(autoDutyPathsFolder, option.FileName);
+                var shouldCopy = !File.Exists(targetPath) ||
+                                 new FileInfo(targetPath).Length != new FileInfo(sourcePath).Length ||
+                                 File.GetLastWriteTimeUtc(targetPath) != File.GetLastWriteTimeUtc(sourcePath);
+
+                if (shouldCopy)
+                {
+                    File.Copy(sourcePath, targetPath, overwrite: true);
+                    File.SetLastWriteTimeUtc(targetPath, File.GetLastWriteTimeUtc(sourcePath));
+                    log.Information($"[AutoDutyPath] Installed bundled path: {option.FileName}");
+                }
+                else
+                {
+                    log.Debug($"[AutoDutyPath] Bundled path already current: {option.FileName}");
+                }
+
+                installedCount++;
             }
 
-            var content = await response.Content.ReadAsStringAsync();
-            await File.WriteAllTextAsync(targetPath, content);
-            log.Information($"[AutoDutyPath] Downloaded path file to: {targetPath}");
-            return true;
+            if (installedCount == 0)
+            {
+                log.Warning("[AutoDutyPath] No bundled Praetorium paths were installed");
+                return Task.FromResult(false);
+            }
+
+            return Task.FromResult(true);
         }
         catch (Exception ex)
         {
             log.Error($"[AutoDutyPath] EnsurePathExists failed: {ex.Message}");
-            return false;
+            return Task.FromResult(false);
         }
     }
 
     public bool PathExists()
+        => PathExists(PathFileName);
+
+    public bool PathExists(string? configuredPathFileName)
     {
         try
         {
             var autoDutyPathsFolder = GetAutoDutyPathsFolder();
             if (string.IsNullOrEmpty(autoDutyPathsFolder)) return false;
 
-            var targetPath = Path.Combine(autoDutyPathsFolder, PathFileName);
+            var targetPath = Path.Combine(autoDutyPathsFolder, ResolvePraetoriumPathFileName(configuredPathFileName));
             return File.Exists(targetPath);
         }
         catch
@@ -2230,6 +2289,23 @@ public class AutoDutyPathService
     }
 
     // --- File-based path management ---
+
+    private string? GetBundledPathsFolder()
+    {
+        try
+        {
+            var assemblyDirectory = Path.GetDirectoryName(typeof(AutoDutyPathService).Assembly.Location);
+            if (string.IsNullOrWhiteSpace(assemblyDirectory))
+                return null;
+
+            return Path.Combine(assemblyDirectory, BundledPathsRelativeFolder);
+        }
+        catch (Exception ex)
+        {
+            log.Error($"[AutoDutyPath] GetBundledPathsFolder failed: {ex.Message}");
+            return null;
+        }
+    }
 
     private string? GetAutoDutyPathsFolder()
     {

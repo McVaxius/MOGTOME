@@ -10,7 +10,8 @@ public sealed class ConflictPluginService
 {
     private const string TwistOfFayteDisplayName = "Twist of Fayte";
     private const string TwistOfFayteShortName = "twistoffayte";
-    private const string TwistOfFayteDisableCommand = "/xldisableplugin  TwistOfFayte";
+    private const string TwistOfFayteLegacyShortName = "twistofffayte";
+    private const string TwistOfFayteDisableCommand = "/xldisableplugin TwistOfFayte";
 
     private static readonly TimeSpan DisableAttemptCooldown = TimeSpan.FromSeconds(5);
     private static readonly TimeSpan DisableWaitTimeout = TimeSpan.FromSeconds(10);
@@ -21,7 +22,7 @@ public sealed class ConflictPluginService
     private readonly object stateLock = new();
 
     private DateTime lastDisableAttemptUtc = DateTime.MinValue;
-    private string? pendingPopupMessage;
+    private string? pendingWarningMessage;
 
     public ConflictPluginService(IPluginLog log, ICommandManager commandManager)
     {
@@ -35,7 +36,7 @@ public sealed class ConflictPluginService
         {
             foreach (var plugin in Plugin.PluginInterface.InstalledPlugins)
             {
-                if (!MatchesTwistOfFayte(plugin.InternalName, plugin.GetType().GetProperty("Name")?.GetValue(plugin)?.ToString()))
+                if (!MatchesTwistOfFayte(plugin.InternalName, plugin.Name))
                     continue;
 
                 return (true, plugin.IsLoaded);
@@ -85,47 +86,47 @@ public sealed class ConflictPluginService
 
             if (showPopup)
             {
-                QueuePopup(
-                    $"{successMessage}\n\nIf you need it again later, re-enable it after your MOGTOME run.");
+                QueueWarning(
+                    $"{successMessage}\n\nMOGTOME kept running. Click the warning window once to dismiss it, or use the disable button there if the plugin comes back.");
             }
 
             return true;
         }
 
-        var failureMessage = $"{TwistOfFayteDisplayName} is still enabled. Disable it manually with {TwistOfFayteDisableCommand} before starting MOGTOME.";
+        var failureMessage = $"{TwistOfFayteDisplayName} is still enabled. MOGTOME will keep running, but you should disable it with {TwistOfFayteDisableCommand}.";
         Plugin.ChatGui.Print($"[MOGTOME] {failureMessage}");
         log.Warning($"[Conflict] {failureMessage}");
 
         if (showPopup)
         {
-            QueuePopup(
-                $"{failureMessage}\n\nMOGTOME will stay stopped until the conflicting plugin is disabled.");
+            QueueWarning(
+                $"{failureMessage}\n\nUse the warning window button to try disabling it again, or dismiss the warning and keep going.");
         }
 
-        return false;
+        return true;
     }
 
-    public bool TryTakePendingPopup(out string message)
+    public bool TryTakePendingWarning(out string message)
     {
         lock (stateLock)
         {
-            if (string.IsNullOrWhiteSpace(pendingPopupMessage))
+            if (string.IsNullOrWhiteSpace(pendingWarningMessage))
             {
                 message = string.Empty;
                 return false;
             }
 
-            message = pendingPopupMessage;
-            pendingPopupMessage = null;
+            message = pendingWarningMessage;
+            pendingWarningMessage = null;
             return true;
         }
     }
 
-    private void QueuePopup(string message)
+    private void QueueWarning(string message)
     {
         lock (stateLock)
         {
-            pendingPopupMessage = message;
+            pendingWarningMessage = message;
         }
     }
 
@@ -149,9 +150,9 @@ public sealed class ConflictPluginService
         var normalizedDisplayName = NormalizePluginToken(displayName);
 
         return normalizedInternalName == TwistOfFayteShortName ||
-               normalizedInternalName == "twistofffayte" ||
+               normalizedInternalName == TwistOfFayteLegacyShortName ||
                normalizedDisplayName == TwistOfFayteShortName ||
-               normalizedDisplayName == "twistofffayte";
+               normalizedDisplayName == TwistOfFayteLegacyShortName;
     }
 
     private static string NormalizePluginToken(string? value)

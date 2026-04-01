@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -53,6 +54,12 @@ public class MogtomeEngine
     private int outsideDutyTicks = 0;
     private const float LoopInterval = 2.0f;
     private bool autoDutyStartedInDuty = false;
+    private DateTime dutyEnteredUtc = DateTime.MinValue;
+    private DateTime lastPraetoriumReadyWaitLogUtc = DateTime.MinValue;
+    private DateTime lastRotationRefreshUtc = DateTime.MinValue;
+    private const float PraetoriumDutyReadyFallbackSeconds = 20.0f;
+    private const float RotationRefreshIntervalSeconds = 10.0f;
+    private const float PraetoriumAggressiveRefreshSeconds = 3.0f;
 
     // Duty exit tracking
     private bool dutyCompleted = false;
@@ -154,11 +161,7 @@ public class MogtomeEngine
 
             if (!conflictingPluginsReady)
             {
-                const string conflictFailure = "Twist of Fayte is still enabled; disable it before starting MOGTOME";
-                log.Warning($"[Engine] {conflictFailure}");
-                CurrentState = EngineState.Idle;
-                StatusMessage = "Idle";
-                return;
+                log.Warning("[Engine] Twist of Fayte warning path reported a soft failure, but startup will continue");
             }
 
             log.Information("[Engine] Waiting for AutoDuty to finish profile initialization");
@@ -181,6 +184,24 @@ public class MogtomeEngine
 
             log.Information("[Engine] AutoDuty readiness gate passed");
 
+            StatusMessage = "Installing bundled AutoDuty paths...";
+            var bundledPathsReady = await autoDutyPath.EnsurePathExists();
+            if (CurrentState != EngineState.Initializing)
+            {
+                log.Warning("[Engine] Start aborted while installing bundled AutoDuty paths");
+                return;
+            }
+
+            if (!bundledPathsReady)
+            {
+                const string pathFailure = "Bundled Praetorium paths could not be installed into AutoDuty.";
+                log.Warning($"[Engine] {pathFailure}");
+                Plugin.ChatGui.Print($"[MOGTOME] {pathFailure}");
+                CurrentState = EngineState.Idle;
+                StatusMessage = "Idle";
+                return;
+            }
+
             // 1. Send /ad stop FIRST to reset AutoDuty state for all characters
             log.Information("[Engine] Sending /ad stop to reset AutoDuty state");
             commandManager.ProcessCommand("/ad stop");
@@ -192,7 +213,7 @@ public class MogtomeEngine
             if (!condition[34]) // Only while not in duty
             {
                 log.Information("[Engine] Forcing AutoDuty path selection via reflection (post-config)");
-                autoDutyPath.ForcePathSelection();
+                autoDutyPath.ForcePathSelection(config.PraetoriumPathFileName);
             }
 
             // 5. Check for repair needs before starting
@@ -216,16 +237,13 @@ public class MogtomeEngine
                 return;
             }
 
-            // 6. Ensure AutoDuty path exists
-            _ = autoDutyPath.EnsurePathExists();
-
-            // 7. Initialize rotation
+            // 6. Initialize rotation
             rotationService.Initialize();
 
-            // 8. Pause YesAlready - we handle dialogs directly
+            // 7. Pause YesAlready - we handle dialogs directly
             dialogHandler.Start();
 
-            // 9. Disable AutoQueue initially
+            // 8. Disable AutoQueue initially
             automatonIPC.DisableAutoQueue();
 
             // Detect party leader
@@ -451,6 +469,9 @@ public class MogtomeEngine
         rotationService.ForceRotation();
         autoDutyStartedInDuty = false;
         dutyCompleted = false;
+        dutyEnteredUtc = DateTime.UtcNow;
+        lastPraetoriumReadyWaitLogUtc = DateTime.MinValue;
+        lastRotationRefreshUtc = DateTime.MinValue;
         
         // Reset requeue state when successfully entering duty
         requeueInProgress = false;
@@ -871,9 +892,14 @@ public class MogtomeEngine
 
     private void UpdateInDuty()
     {
+        RefreshInDutyRotationIfNeeded();
+
         // Start AutoDuty if not already started (handles the case where we're already in duty)
         if (!autoDutyStartedInDuty)
         {
+            if (!IsReadyToStartAutoDutyInsideDuty())
+                return;
+
             autoDutyStartedInDuty = true;
             log.Information("[Engine] Starting AutoDuty inside duty");
             autoDutyIPC.StartDuty();
@@ -909,6 +935,77 @@ public class MogtomeEngine
         stuckDetection.Update();
 
         StatusMessage = $"In Duty #{state.DutyCounter} - {state.TimeInDuty:F0}s";
+    }
+
+    private bool IsReadyToStartAutoDutyInsideDuty()
+    {
+        if (state.DutyStartTerritory != DutyState.PraetoriumTerritoryId)
+            return true;
+
+        var remainingTime = GameHelpers.GetDutyRemainingTime();
+        if (remainingTime > 0f && remainingTime < DutyState.PraetoriumTimeLimit)
+            return true;
+
+        var now = DateTime.UtcNow;
+        var secondsSinceEnter = dutyEnteredUtc == DateTime.MinValue
+            ? double.MaxValue
+            : (now - dutyEnteredUtc).TotalSeconds;
+
+        if (remainingTime > 0f)
+        {
+            StatusMessage = $"In Duty - waiting for Praetorium timer ({remainingTime:F0}s)";
+            if ((now - lastPraetoriumReadyWaitLogUtc).TotalSeconds >= 5.0)
+            {
+                lastPraetoriumReadyWaitLogUtc = now;
+                log.Information($"[Engine] Praetorium duty entered but timer is still at {remainingTime:F0}s; waiting before starting AutoDuty");
+            }
+            return false;
+        }
+
+        if (secondsSinceEnter < PraetoriumDutyReadyFallbackSeconds)
+        {
+            StatusMessage = $"In Duty - waiting for Praetorium timer ({PraetoriumDutyReadyFallbackSeconds - secondsSinceEnter:F0}s fallback)";
+            if ((now - lastPraetoriumReadyWaitLogUtc).TotalSeconds >= 5.0)
+            {
+                lastPraetoriumReadyWaitLogUtc = now;
+                log.Information($"[Engine] Praetorium duty timer not visible yet; waiting {PraetoriumDutyReadyFallbackSeconds - secondsSinceEnter:F0}s more before fallback start");
+            }
+            return false;
+        }
+
+        if ((now - lastPraetoriumReadyWaitLogUtc).TotalSeconds >= 5.0)
+        {
+            lastPraetoriumReadyWaitLogUtc = now;
+            log.Warning("[Engine] Praetorium duty timer never appeared; allowing AutoDuty start after fallback wait");
+        }
+
+        return true;
+    }
+
+    private void RefreshInDutyRotationIfNeeded()
+    {
+        if (!state.IsInDuty || dutyCompleted)
+            return;
+
+        var now = DateTime.UtcNow;
+        var currentTarget = Plugin.TargetManager.Target as IBattleChara;
+        var aggressiveRefresh =
+            state.DutyStartTerritory == DutyState.PraetoriumTerritoryId &&
+            (!condition[ConditionFlag.InCombat] || currentTarget == null || currentTarget.CurrentHp <= 1);
+
+        var refreshInterval = aggressiveRefresh
+            ? PraetoriumAggressiveRefreshSeconds
+            : RotationRefreshIntervalSeconds;
+
+        if ((now - lastRotationRefreshUtc).TotalSeconds < refreshInterval)
+            return;
+
+        lastRotationRefreshUtc = now;
+        rotationService.EnableRotation();
+        log.Debug("[Engine] Refreshed rotation state inside duty ({Mode}, target={Target}, hp={Hp})",
+            aggressiveRefresh ? "aggressive" : "normal",
+            currentTarget?.Name.TextValue ?? "none",
+            currentTarget?.CurrentHp ?? 0);
     }
 
     private void UpdateRepairing()

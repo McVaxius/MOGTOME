@@ -76,6 +76,7 @@ public sealed class Plugin : IDalamudPlugin
     public ConfigWindow ConfigWindow { get; init; }
     public MainWindow MainWindow { get; init; }
     public StatsWindow StatsWindow { get; init; }
+    public ConflictPluginWarningWindow ConflictPluginWarningWindow { get; init; }
 
     private static readonly TimeSpan ExternalExceptionSuppressionWindow = TimeSpan.FromSeconds(10);
     private readonly object externalExceptionLogLock = new();
@@ -124,9 +125,11 @@ public sealed class Plugin : IDalamudPlugin
         ConfigWindow = new ConfigWindow(this, Log);
         MainWindow = new MainWindow(this);
         StatsWindow = new StatsWindow(this);
+        ConflictPluginWarningWindow = new ConflictPluginWarningWindow(this);
         WindowSystem.AddWindow(ConfigWindow);
         WindowSystem.AddWindow(MainWindow);
         WindowSystem.AddWindow(StatsWindow);
+        WindowSystem.AddWindow(ConflictPluginWarningWindow);
 
         // Commands
         CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
@@ -185,6 +188,7 @@ public sealed class Plugin : IDalamudPlugin
         ConfigWindow.Dispose();
         MainWindow.Dispose();
         StatsWindow.Dispose();
+        ConflictPluginWarningWindow.Dispose();
 
         YesAlreadyIPC.Dispose();
         VNavIPC.Dispose();
@@ -209,6 +213,12 @@ public sealed class Plugin : IDalamudPlugin
         switch (arg)
         {
             case "start":
+                if (Engine == null)
+                {
+                    ChatGui.Print("[MOGTOME] Engine is still initializing. Try again in a moment.");
+                    break;
+                }
+
                 if (!Engine.IsRunning)
                 {
                     _ = Task.Run(() => Engine.Start());
@@ -221,6 +231,12 @@ public sealed class Plugin : IDalamudPlugin
                 break;
 
             case "stop":
+                if (Engine == null)
+                {
+                    ChatGui.Print("[MOGTOME] Engine is still initializing.");
+                    break;
+                }
+
                 Engine.Stop();
                 ChatGui.Print("[MOGTOME] Stopped");
                 break;
@@ -230,6 +246,12 @@ public sealed class Plugin : IDalamudPlugin
                 break;
 
             case "status":
+                if (Engine == null)
+                {
+                    ChatGui.Print("[MOGTOME] Engine is still initializing.");
+                    break;
+                }
+
                 ChatGui.Print($"[MOGTOME] State: {Engine.CurrentState} | Duty #{State.DutyCounter} | {Engine.StatusMessage}");
                 break;
 
@@ -349,10 +371,9 @@ public sealed class Plugin : IDalamudPlugin
             }
         }
 
-        if (ConflictPluginService.TryTakePendingPopup(out var conflictPopupMessage))
+        if (ConflictPluginService.TryTakePendingWarning(out var conflictPopupMessage))
         {
-            MainWindow.IsOpen = true;
-            MainWindow.QueueConflictPopup(conflictPopupMessage);
+            ConflictPluginWarningWindow.ShowWarning(conflictPopupMessage);
         }
         
         // Only update engine if it's initialized

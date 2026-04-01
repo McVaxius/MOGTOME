@@ -243,7 +243,7 @@ public class ConfigWindow : Window, IDisposable
                 if (p.InternalName.StartsWith("CustomResolution")) depCustomRes = true;
             }
 
-            var pathOk = plugin.AutoDutyPathService.PathExists();
+            var pathOk = plugin.AutoDutyPathService.PathExists(plugin.Configuration.PraetoriumPathFileName);
             allDepsGreen = depRsr && (depBmr || depVbm) && !(depBmr && depVbm) && depVnav && depTextAdv && depCutsceneSkip && depAutoDuty && depSimpleTweaks && pathOk;
         }
         catch (Exception ex)
@@ -326,18 +326,19 @@ public class ConfigWindow : Window, IDisposable
         ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "AutoDuty Path");
         ImGui.Separator();
 
-        var pathExists = plugin.AutoDutyPathService.PathExists();
+        var pathDisplayName = plugin.AutoDutyPathService.GetPraetoriumPathDisplayName(config.PraetoriumPathFileName);
+        var pathExists = plugin.AutoDutyPathService.PathExists(config.PraetoriumPathFileName);
         ImGui.TextColored(
             pathExists ? new Vector4(0, 1, 0, 1) : new Vector4(1, 0, 0, 1),
-            pathExists ? "Praetorium path: INSTALLED" : "Praetorium path: NOT FOUND");
+            pathExists ? $"Praetorium path: INSTALLED ({pathDisplayName})" : $"Praetorium path: NOT FOUND ({pathDisplayName})");
 
         if (!pathExists)
         {
-            if (ImGui.Button("Install Praetorium Path"))
+            if (ImGui.Button("Install Bundled Praetorium Paths"))
             {
                 _ = Task.Run(async () => await plugin.AutoDutyPathService.EnsurePathExists());
             }
-            ImGui.TextDisabled("This downloads the W2W path file from GitHub to AutoDuty's paths folder.");
+            ImGui.TextDisabled("This copies the bundled W2W Praetorium path files from MOGTOME's data folder into AutoDuty's paths folder.");
         }
 
         ImGui.Spacing();
@@ -410,7 +411,7 @@ public class ConfigWindow : Window, IDisposable
                 disableAction();
         }
 
-        ImGui.TextDisabled("MOGTOME auto-sends /xldisableplugin  TwistOfFayte when you start it.");
+        ImGui.TextDisabled("MOGTOME tries /xldisableplugin TwistOfFayte when you start it, but it no longer blocks startup.");
     }
 
     private void QueueWindowPosition(Vector2 position)
@@ -488,6 +489,35 @@ public class ConfigWindow : Window, IDisposable
             dutyCounterChanged = true;
         }
         ImGui.TextDisabled("Current Praetorium run count. Set to 0 for first run of the day.");
+
+        var selectedPraetoriumPath = plugin.AutoDutyPathService.ResolvePraetoriumPathFileName(config.PraetoriumPathFileName);
+        if (!string.Equals(selectedPraetoriumPath, config.PraetoriumPathFileName, StringComparison.OrdinalIgnoreCase))
+        {
+            config.PraetoriumPathFileName = selectedPraetoriumPath;
+            changed = true;
+        }
+
+        var selectedPraetoriumPathLabel = plugin.AutoDutyPathService.GetPraetoriumPathDisplayName(selectedPraetoriumPath);
+        if (ImGui.BeginCombo("Praetorium AutoDuty Path", selectedPraetoriumPathLabel))
+        {
+            foreach (var option in plugin.AutoDutyPathService.GetPraetoriumPathOptions())
+            {
+                var isSelected = string.Equals(option.FileName, selectedPraetoriumPath, StringComparison.OrdinalIgnoreCase);
+                if (ImGui.Selectable(option.DisplayName, isSelected))
+                {
+                    config.PraetoriumPathFileName = option.FileName;
+                    selectedPraetoriumPath = option.FileName;
+                    selectedPraetoriumPathLabel = option.DisplayName;
+                    changed = true;
+                }
+
+                if (isSelected)
+                    ImGui.SetItemDefaultFocus();
+            }
+
+            ImGui.EndCombo();
+        }
+        ImGui.TextDisabled("Bundled with MOGTOME and copied into AutoDuty's paths folder on start/install. Default: phecda.");
 
         var praeThreshold = config.PraetoriumThreshold;
         if (ImGui.InputInt("Praetorium Threshold", ref praeThreshold))
