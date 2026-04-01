@@ -3,6 +3,7 @@ using MOGTOME.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace MOGTOME.Services;
 
@@ -10,7 +11,7 @@ namespace MOGTOME.Services;
 /// Service for managing run history and detailed statistics
 /// Uses per-account SQLite databases to prevent multi-client conflicts
 /// </summary>
-public class RunHistoryService
+public class RunHistoryService : IDisposable
 {
     private readonly IPluginLog log;
     private readonly Configuration config;
@@ -21,6 +22,10 @@ public class RunHistoryService
     private readonly List<RunRecord> runHistory = new();
     private readonly List<RunRecord> recentRuns = new();
     private readonly object runHistoryLock = new object();
+    private readonly Queue<PendingRunSave> pendingRunSaves = new();
+    private readonly object pendingSaveLock = new object();
+    private Task? pendingSaveWorker;
+    private bool isDisposing;
     
     // Party snapshot storage - capture at /ad start, use at completion
     private List<string> storedPartySnapshot = new List<string>();
@@ -38,6 +43,30 @@ public class RunHistoryService
         
         // Note: Database operations moved to Plugin.OnFrameworkUpdate after initialization
         // Constructor is now clean - no database operations here
+    }
+
+    public void Dispose()
+    {
+        isDisposing = true;
+
+        Task? pendingWorker;
+        lock (pendingSaveLock)
+        {
+            pendingWorker = pendingSaveWorker;
+        }
+
+        if (pendingWorker == null)
+            return;
+
+        try
+        {
+            if (!pendingWorker.Wait(TimeSpan.FromSeconds(2)))
+                log.Warning("[RunHistory] Timed out waiting for pending run-history saves during dispose");
+        }
+        catch (Exception ex)
+        {
+            log.Warning(ex, "[RunHistory] Failed while waiting for pending run-history saves during dispose");
+        }
     }
 
     /// <summary>
@@ -142,10 +171,13 @@ public class RunHistoryService
             }
             
             var accountId = contentId.ToString();
-            var records = databaseService.LoadRunRecords(accountId);
-            
-            runHistory.Clear();
-            runHistory.AddRange(records);
+            var records = databaseService.LoadRunRecordsWithFallback(accountId);
+
+            lock (runHistoryLock)
+            {
+                runHistory.Clear();
+                runHistory.AddRange(records);
+            }
             
             var visibleRunCount = GetVisibleRuns(records).Count;
             log.Information($"[RunHistory] Loaded {records.Count} run records from database for account {accountId} ({visibleRunCount} visible in stats)");
@@ -357,7 +389,7 @@ public class RunHistoryService
         if (!config.EnableDetailedTracking)
             return;
 
-        lock (runHistory) // Prevent concurrent access
+        lock (runHistoryLock)
         {
             try
             {
@@ -377,9 +409,9 @@ public class RunHistoryService
                     return;
                 }
                 
-                // Save to account-specific SQLite database with retry logic
+                // Persist off-thread so duty completion is not held on SQLite retries.
                 var accountId = contentId.ToString();
-                SaveRunWithRetry(accountId, runRecord);
+                QueueRunSave(accountId, runRecord);
                 
                 log.Debug($"[RunHistory] Recorded run: {runRecord.PlayerName} ({GetJobName(runRecord.JobId)}) - {runRecord.CompletionTime:F1}s");
             }
@@ -394,7 +426,54 @@ public class RunHistoryService
     /// <summary>
     /// Save run record with retry logic to handle database conflicts
     /// </summary>
-    private void SaveRunWithRetry(string accountId, RunRecord runRecord)
+    private void QueueRunSave(string accountId, RunRecord runRecord)
+    {
+        if (isDisposing)
+        {
+            log.Warning("[RunHistory] Skipping queued run save during dispose for account {AccountId}", accountId);
+            return;
+        }
+
+        lock (pendingSaveLock)
+        {
+            pendingRunSaves.Enqueue(new PendingRunSave(accountId, runRecord));
+
+            if (pendingSaveWorker == null || pendingSaveWorker.IsCompleted)
+                pendingSaveWorker = Task.Run(ProcessPendingRunSavesAsync);
+        }
+    }
+
+    private async Task ProcessPendingRunSavesAsync()
+    {
+        while (true)
+        {
+            PendingRunSave? pendingSave = null;
+
+            lock (pendingSaveLock)
+            {
+                if (pendingRunSaves.Count > 0)
+                {
+                    pendingSave = pendingRunSaves.Dequeue();
+                }
+                else
+                {
+                    pendingSaveWorker = null;
+                    return;
+                }
+            }
+
+            try
+            {
+                await SaveRunWithRetryAsync(pendingSave.AccountId, pendingSave.RunRecord).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex, "[RunHistory] Background save failed for account {AccountId}", pendingSave.AccountId);
+            }
+        }
+    }
+
+    private async Task SaveRunWithRetryAsync(string accountId, RunRecord runRecord)
     {
         const int maxRetries = 3;
         const int retryDelayMs = 50;
@@ -407,35 +486,30 @@ public class RunHistoryService
                 log.Debug($"[RunHistory] Save successful on attempt {attempt} for account {accountId}");
                 return;
             }
-            catch (Exception ex) when (attempt < maxRetries && (
-                ex.Message.Contains("database is locked") || 
-                ex.Message.Contains("used by another process") ||
-                ex.Message.Contains("being used") ||
-                ex.Message.Contains("file is in use")))
+            catch (Exception ex) when (attempt < maxRetries && IsDatabaseConflict(ex))
             {
                 log.Warning($"[RunHistory] Save attempt {attempt} failed (database conflict), retrying in {retryDelayMs}ms...: {ex.Message}");
-                System.Threading.Thread.Sleep(retryDelayMs);
+                await Task.Delay(retryDelayMs).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 log.Error(ex, $"[RunHistory] Save failed on attempt {attempt} for account {accountId}");
-                if (attempt == maxRetries)
-                    throw;
-                System.Threading.Thread.Sleep(retryDelayMs);
+                if (attempt < maxRetries)
+                    await Task.Delay(retryDelayMs).ConfigureAwait(false);
             }
         }
-        
-        // Final attempt - let it throw if it fails
-        try
-        {
-            databaseService.AddRunRecord(accountId, runRecord);
-            log.Debug($"[RunHistory] Final save attempt successful for account {accountId}");
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, $"[RunHistory] All save attempts failed for account {accountId}");
-            throw;
-        }
+
+        log.Warning("[RunHistory] All direct save attempts failed for account {AccountId}; moving run record into fallback storage", accountId);
+        databaseService.AddRunRecordWithFallback(accountId, runRecord);
+    }
+
+    private static bool IsDatabaseConflict(Exception ex)
+    {
+        var message = ex.Message;
+        return message.Contains("database is locked", StringComparison.OrdinalIgnoreCase) ||
+               message.Contains("used by another process", StringComparison.OrdinalIgnoreCase) ||
+               message.Contains("being used", StringComparison.OrdinalIgnoreCase) ||
+               message.Contains("file is in use", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -446,7 +520,10 @@ public class RunHistoryService
         try
         {
             // Clear in-memory history
-            runHistory.Clear();
+            lock (runHistoryLock)
+            {
+                runHistory.Clear();
+            }
             
             // Validate ContentId before database operations
             var contentId = playerState.ContentId;
@@ -749,7 +826,10 @@ public class RunHistoryService
 
     private List<RunRecord> GetVisibleRuns()
     {
-        return GetVisibleRuns(runHistory);
+        lock (runHistoryLock)
+        {
+            return GetVisibleRuns(runHistory.ToList());
+        }
     }
 
     private List<RunRecord> GetVisibleRuns(IEnumerable<RunRecord> records)
@@ -778,4 +858,6 @@ public class RunHistoryService
             _ => "Unknown"
         };
     }
+
+    private sealed record PendingRunSave(string AccountId, RunRecord RunRecord);
 }

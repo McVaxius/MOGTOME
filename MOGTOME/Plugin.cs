@@ -176,6 +176,8 @@ public sealed class Plugin : IDalamudPlugin
             Engine.Dispose();
         }
 
+        RunHistoryService.Dispose();
+
         // Save current account configuration before disposing everything
         ConfigManager.SaveCurrentAccount();
 
