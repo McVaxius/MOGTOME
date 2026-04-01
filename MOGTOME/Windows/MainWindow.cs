@@ -20,6 +20,7 @@ public class MainWindow : Window, IDisposable
     private bool openConflictPluginPopup;
     private string conflictPluginPopupMessage = string.Empty;
     private Vector2? pendingWindowPosition;
+    private bool pendingPositionConditionReset;
 
     public MainWindow(Plugin plugin)
         : base("MOGTOME - Status##MogtomeMain", ImGuiWindowFlags.None)
@@ -53,10 +54,7 @@ public class MainWindow : Window, IDisposable
             Position = pendingWindowPosition.Value;
             PositionCondition = ImGuiCond.Always;
             pendingWindowPosition = null;
-        }
-        else if (PositionCondition != ImGuiCond.None)
-        {
-            PositionCondition = ImGuiCond.None;
+            pendingPositionConditionReset = true;
         }
     }
 
@@ -87,6 +85,20 @@ public class MainWindow : Window, IDisposable
         if (ImGui.IsItemHovered())
         {
             ImGui.SetTooltip("Support development on Ko-fi");
+        }
+
+        ImGui.SameLine(ImGui.GetWindowWidth() - 60);
+        if (ImGui.SmallButton("Discord"))
+        {
+            System.Diagnostics.Process.Start(new ProcessStartInfo
+            {
+                FileName = Plugin.DiscordUrl,
+                UseShellExecute = true
+            });
+        }
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.SetTooltip(Plugin.DiscordChannelHint);
         }
         
         ImGui.Separator();
@@ -515,6 +527,8 @@ public class MainWindow : Window, IDisposable
         DrawStatusLine("Bailout", true, $"{config.BailoutTimeout}s");
 
         ImGui.Unindent();
+
+        FinalizePendingWindowPlacement();
     }
 
     private void DrawConflictPluginPopup()
@@ -554,6 +568,16 @@ public class MainWindow : Window, IDisposable
         var maxX = MathF.Max(1f, viewport.Size.X - width - 20f);
         var maxY = MathF.Max(1f, viewport.Size.Y - height - 20f);
         return new Vector2(1f + (Random.Shared.NextSingle() * maxX), 1f + (Random.Shared.NextSingle() * maxY));
+    }
+
+    private void FinalizePendingWindowPlacement()
+    {
+        if (!pendingPositionConditionReset)
+            return;
+
+        pendingPositionConditionReset = false;
+        Position = null;
+        PositionCondition = ImGuiCond.None;
     }
 
     private static void DrawStatusLine(string label, bool active, string detail)

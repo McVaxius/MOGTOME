@@ -16,6 +16,7 @@ public class ConfigWindow : Window, IDisposable
     private readonly Plugin plugin;
     private readonly IPluginLog Log;
     private Vector2? pendingWindowPosition;
+    private bool pendingPositionConditionReset;
 
     // Food/Pot search state
     private string foodSearch = "";
@@ -72,10 +73,7 @@ public class ConfigWindow : Window, IDisposable
             Position = pendingWindowPosition.Value;
             PositionCondition = ImGuiCond.Always;
             pendingWindowPosition = null;
-        }
-        else if (PositionCondition != ImGuiCond.None)
-        {
-            PositionCondition = ImGuiCond.None;
+            pendingPositionConditionReset = true;
         }
     }
 
@@ -193,6 +191,8 @@ public class ConfigWindow : Window, IDisposable
         {
             plugin.ConfigManager.SaveCurrentAccount();
         }
+
+        FinalizePendingWindowPlacement();
     }
 
     private void CheckDependencies()
@@ -428,6 +428,16 @@ public class ConfigWindow : Window, IDisposable
         var maxX = MathF.Max(1f, viewport.Size.X - width - 20f);
         var maxY = MathF.Max(1f, viewport.Size.Y - height - 20f);
         return new Vector2(1f + (Random.Shared.NextSingle() * maxX), 1f + (Random.Shared.NextSingle() * maxY));
+    }
+
+    private void FinalizePendingWindowPlacement()
+    {
+        if (!pendingPositionConditionReset)
+            return;
+
+        pendingPositionConditionReset = false;
+        Position = null;
+        PositionCondition = ImGuiCond.None;
     }
 
     private bool DrawPartyTab(Configuration config)

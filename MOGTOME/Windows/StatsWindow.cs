@@ -18,6 +18,7 @@ public class StatsWindow : Window, IDisposable
 
     private readonly Plugin plugin;
     private Vector2? pendingWindowPosition;
+    private bool pendingPositionConditionReset;
 
     private MainTab currentMainTab = MainTab.Summary;
     private DetailedSubTab currentDetailedTab = DetailedSubTab.JobPerformance;
@@ -51,10 +52,7 @@ public class StatsWindow : Window, IDisposable
             Position = pendingWindowPosition.Value;
             PositionCondition = ImGuiCond.Always;
             pendingWindowPosition = null;
-        }
-        else if (PositionCondition != ImGuiCond.None)
-        {
-            PositionCondition = ImGuiCond.None;
+            pendingPositionConditionReset = true;
         }
     }
 
@@ -132,6 +130,8 @@ public class StatsWindow : Window, IDisposable
                 DrawDetailedTab();
                 break;
         }
+
+        FinalizePendingWindowPlacement();
     }
 
     private void DrawSummaryTab()
@@ -829,5 +829,15 @@ public class StatsWindow : Window, IDisposable
         var maxX = MathF.Max(1f, viewport.Size.X - width - 20f);
         var maxY = MathF.Max(1f, viewport.Size.Y - height - 20f);
         return new Vector2(1f + (Random.Shared.NextSingle() * maxX), 1f + (Random.Shared.NextSingle() * maxY));
+    }
+
+    private void FinalizePendingWindowPlacement()
+    {
+        if (!pendingPositionConditionReset)
+            return;
+
+        pendingPositionConditionReset = false;
+        Position = null;
+        PositionCondition = ImGuiCond.None;
     }
 }

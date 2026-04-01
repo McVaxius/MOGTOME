@@ -16,6 +16,9 @@ namespace MOGTOME;
 
 public sealed class Plugin : IDalamudPlugin
 {
+    public const string DiscordUrl = "https://discord.gg/VsXqydsvpu";
+    public const string DiscordChannelHint = "Scroll down to \"The Dumpster Fire\" channel for plugin-specific issues and suggestions.";
+
     private sealed class ExternalExceptionLogState
     {
         public DateTime LastLoggedUtc { get; set; }
@@ -104,7 +107,7 @@ public sealed class Plugin : IDalamudPlugin
         RepairService = new RepairService(Log, Configuration, State, CommandManager, Condition);
         FoodService = new FoodService(Log, Configuration, State, Condition);
         BossHandlerService = new BossHandlerService(Log, Configuration, State, VNavIPC, CommandManager, Condition);
-        StuckDetectionService = new StuckDetectionService(Log, Configuration, State, VNavIPC, CommandManager, Condition);
+        StuckDetectionService = new StuckDetectionService(Log, Configuration, State, VNavIPC, Condition);
         DialogHandlerService = new DialogHandlerService(Log, YesAlreadyIPC, CommandManager, GameGui);
         AutoDutyPathService = new AutoDutyPathService(Log, PluginInterface);
         ConflictPluginService = new ConflictPluginService(Log, CommandManager);
