@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Game.ClientState.Conditions;
@@ -11,6 +12,7 @@ using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using GameObject = FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject;
+using Lumina.Excel.Sheets;
 
 namespace MOGTOME.Services;
 
@@ -20,6 +22,17 @@ namespace MOGTOME.Services;
 /// </summary>
 public static class GameHelpers
 {
+    private static readonly HashSet<string> KnownInnTerritoryNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "The Mizzenmast",
+        "The Roost",
+        "The Hourglass",
+        "The Forgotten Knight",
+        "Bokairo Inn",
+        "The Pendants",
+        "The Baldesion Annex",
+    };
+
     /// <summary>
     /// Click Yes on SelectYesno dialog if visible.
     /// Uses AtkUnitBase.FireCallback with proper AtkValue array.
@@ -180,6 +193,36 @@ public static class GameHelpers
         {
             Plugin.Log.Error($"Command failed [{command}]: {ex.Message}");
         }
+    }
+
+    public static string GetTerritoryName(uint territoryId)
+    {
+        try
+        {
+            var sheet = Plugin.DataManager.GetExcelSheet<TerritoryType>();
+            if (sheet != null && sheet.TryGetRow(territoryId, out var territory))
+            {
+                var placeName = territory.PlaceName.Value.Name.ToString().Trim();
+                if (!string.IsNullOrWhiteSpace(placeName))
+                    return placeName;
+            }
+        }
+        catch (Exception ex)
+        {
+            Plugin.Log.Debug(ex, "[GameHelpers] Failed to resolve territory name for {TerritoryId}", territoryId);
+        }
+
+        return $"Territory {territoryId}";
+    }
+
+    public static bool IsInnTerritory(ushort territoryId)
+    {
+        var territoryName = GetTerritoryName(territoryId);
+        if (territoryName.StartsWith("Territory ", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        return territoryName.Contains("Inn", StringComparison.OrdinalIgnoreCase)
+            || KnownInnTerritoryNames.Contains(territoryName);
     }
 
     /// <summary>

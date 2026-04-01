@@ -18,6 +18,7 @@ public class DutyQueueService
 
     private DateTime lastQueueAttempt = DateTime.MinValue;
     private DateTime lastCommenceClickTime = DateTime.MinValue;
+    private DateTime lastDeclineClickTime = DateTime.MinValue;
     private const float QueueCooldown = 10.0f;
 
     public DutyQueueService(
@@ -105,5 +106,20 @@ public class DutyQueueService
                 GameHelpers.FireAddonCallback("ContentsFinderConfirm", true, 8);
             }
         }
+    }
+
+    public bool CancelDutyPopForRepair()
+    {
+        if (!GameHelpers.IsAddonVisible("ContentsFinderConfirm"))
+            return false;
+
+        var now = DateTime.UtcNow;
+        if ((now - lastDeclineClickTime).TotalSeconds <= 2)
+            return false;
+
+        lastDeclineClickTime = now;
+        log.Warning("[DutyQueue] Declining ContentsFinderConfirm while repair is active");
+        GameHelpers.FireAddonCallback("ContentsFinderConfirm", true, -2);
+        return true;
     }
 }

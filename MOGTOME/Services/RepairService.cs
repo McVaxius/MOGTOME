@@ -132,6 +132,27 @@ public class RepairService
         }
     }
 
+    public void ReturnToInnIfNeeded()
+    {
+        try
+        {
+            var territoryId = (ushort)Plugin.ClientState.TerritoryType;
+            var territoryName = GameHelpers.GetTerritoryName(territoryId);
+            if (GameHelpers.IsInnTerritory(territoryId))
+            {
+                log.Information($"[Repair] Repair completed while already in inn territory {territoryName} ({territoryId})");
+                return;
+            }
+
+            log.Information($"[Repair] Repair completed outside inn territory {territoryName} ({territoryId}); sending /li inn");
+            GameHelpers.SendCommand("/li inn");
+        }
+        catch (Exception ex)
+        {
+            log.Error($"[Repair] ReturnToInnIfNeeded failed: {ex.Message}");
+        }
+    }
+
     public void AutoEquipIfEnabled()
     {
         // No-op: AutoDuty handles equipment management

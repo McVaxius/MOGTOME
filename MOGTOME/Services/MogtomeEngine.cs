@@ -83,6 +83,13 @@ public class MogtomeEngine
     private int repairRecoveryAttempts = 0;
     private const float RepairRecoveryWatchdogSeconds = 120.0f;
     private const float RepairRecoveryStopDelaySeconds = 2.0f;
+    private bool sawQueueConditionOutsideDuty = false;
+    private bool pendingQueueRecoveryAfterRepair = false;
+    private DateTime queueRecoveryStopUntilUtc = DateTime.MinValue;
+    private DateTime queueRecoveryResumeUtc = DateTime.MinValue;
+    private const int QueueConditionIndex = 91;
+    private const float QueueRecoveryStopSeconds = 10.0f;
+    private const float QueueRecoveryRepairGraceSeconds = 30.0f;
 
     public enum RequeueState
     {
@@ -431,11 +438,20 @@ public class MogtomeEngine
             // Condition[26] = InCombat
             state.IsInCombat = condition[26];
 
-            // Handle dialogs always
-            dialogHandler.Update();
+            if (IsRepairFlowActive() && (condition[QueueConditionIndex] || GameHelpers.IsAddonVisible("ContentsFinderConfirm")))
+            {
+                dutyQueue.CancelDutyPopForRepair();
+            }
+            else
+            {
+                // Handle dialogs always unless repair is actively protecting an inn/NPC repair flow.
+                dialogHandler.Update();
 
-            // Auto-accept duty pop for non-leaders
-            dutyQueue.AutoAcceptDuty();
+                // Auto-accept duty pop for non-leaders
+                dutyQueue.AutoAcceptDuty();
+            }
+
+            HandleQueueConditionTransitions(inDuty);
 
             switch (CurrentState)
             {
@@ -470,6 +486,7 @@ public class MogtomeEngine
         lastPraetoriumReadyWaitLogUtc = DateTime.MinValue;
         lastRotationRefreshUtc = DateTime.MinValue;
         ResetRepairRecoveryWatchdog();
+        ResetQueueRecoveryState();
         
         // Reset requeue state when successfully entering duty
         requeueInProgress = false;
@@ -559,6 +576,7 @@ public class MogtomeEngine
         autoDutyStartedInDuty = false;
         dutyCompleted = false;
         ResetRepairRecoveryWatchdog();
+        ResetQueueRecoveryState();
         
         // Reset requeue state when successfully entering duty
         requeueInProgress = false;
@@ -730,6 +748,11 @@ public class MogtomeEngine
         // Auto-equip
         repairService.AutoEquipIfEnabled();
 
+        if (HandleQueueRecoveryPause())
+        {
+            return;
+        }
+
         // Handle requeue state machine
         if (requeueInProgress)
         {
@@ -870,6 +893,9 @@ public class MogtomeEngine
 
     private void UpdateQueueing()
     {
+        if (HandleQueueRecoveryPause())
+            return;
+
         if (HandleRepairRecoveryWatchdog())
             return;
 
@@ -1005,16 +1031,31 @@ public class MogtomeEngine
 
     private void UpdateRepairing()
     {
-        // Wait for repair to complete, then re-enable queue
         outsideDutyTicks++;
-        if (outsideDutyTicks > 5)
+        StatusMessage = "Repairing...";
+        if (outsideDutyTicks <= 5)
+            return;
+
+        if (repairService.NeedsRepair())
+            return;
+
+        repairService.ReturnToInnIfNeeded();
+        dutyQueue.EnableAutoQueueAfterRepair();
+        CurrentState = EngineState.WaitingOutsideDuty;
+        outsideDutyTicks = 0;
+        ArmRepairRecoveryWatchdog();
+
+        if (pendingQueueRecoveryAfterRepair)
         {
-            dutyQueue.EnableAutoQueueAfterRepair();
-            CurrentState = EngineState.WaitingOutsideDuty;
-            outsideDutyTicks = 0;
-            ArmRepairRecoveryWatchdog();
-            StatusMessage = "Repair done, resuming";
+            pendingQueueRecoveryAfterRepair = false;
+            if (!IsQueueRecoveryActive())
+            {
+                BeginQueueRecovery("Queue condition ended while repair was active");
+            }
+            return;
         }
+
+        StatusMessage = "Repair done, resuming";
     }
 
     private void EnterRepairMode(bool useNpcRepair, string statusMessage)
@@ -1048,6 +1089,106 @@ public class MogtomeEngine
         repairRecoveryWatchStartedUtc = DateTime.MinValue;
         repairRecoveryRetryReadyUtc = DateTime.MinValue;
         repairRecoveryAttempts = 0;
+    }
+
+    private bool IsRepairFlowActive()
+        => CurrentState == EngineState.RepairingOutside || state.AutoQueueDisabledForRepair;
+
+    private bool IsQueueRecoveryActive()
+        => queueRecoveryStopUntilUtc != DateTime.MinValue;
+
+    private void ResetQueueRecoveryState()
+    {
+        sawQueueConditionOutsideDuty = false;
+        pendingQueueRecoveryAfterRepair = false;
+        queueRecoveryStopUntilUtc = DateTime.MinValue;
+        queueRecoveryResumeUtc = DateTime.MinValue;
+    }
+
+    private void BeginQueueRecovery(string reason)
+    {
+        var now = DateTime.UtcNow;
+        sawQueueConditionOutsideDuty = false;
+        pendingQueueRecoveryAfterRepair = false;
+        queueRecoveryStopUntilUtc = now.AddSeconds(QueueRecoveryStopSeconds);
+        queueRecoveryResumeUtc = DateTime.MinValue;
+        CurrentState = EngineState.WaitingOutsideDuty;
+        outsideDutyTicks = 0;
+        StatusMessage = $"Queue recovery: waiting after /ad stop ({QueueRecoveryStopSeconds:F0}s)";
+        log.Warning($"[Engine] {reason}; sending /ad stop, waiting {QueueRecoveryStopSeconds:F0}s, then holding {QueueRecoveryRepairGraceSeconds:F0}s for repairs");
+        autoDutyIPC.StopDuty();
+    }
+
+    private void HandleQueueConditionTransitions(bool inDuty)
+    {
+        if (inDuty)
+        {
+            ResetQueueRecoveryState();
+            return;
+        }
+
+        if (IsQueueRecoveryActive())
+            return;
+
+        if (condition[QueueConditionIndex])
+        {
+            sawQueueConditionOutsideDuty = true;
+            return;
+        }
+
+        if (!sawQueueConditionOutsideDuty)
+            return;
+
+        sawQueueConditionOutsideDuty = false;
+        if (IsRepairFlowActive())
+        {
+            pendingQueueRecoveryAfterRepair = true;
+            log.Warning("[Engine] Queue condition ended while repair is active; deferring queue recovery until repair completes");
+            return;
+        }
+
+        BeginQueueRecovery("Queue condition ended before duty entry");
+    }
+
+    private bool HandleQueueRecoveryPause()
+    {
+        if (!IsQueueRecoveryActive())
+            return false;
+
+        if (state.IsInDuty || condition[34])
+        {
+            ResetQueueRecoveryState();
+            return false;
+        }
+
+        var now = DateTime.UtcNow;
+        var stopRemaining = (queueRecoveryStopUntilUtc - now).TotalSeconds;
+        if (stopRemaining > 0)
+        {
+            StatusMessage = $"Queue recovery: waiting after /ad stop ({Math.Ceiling(stopRemaining):F0}s)";
+            return true;
+        }
+
+        if (queueRecoveryResumeUtc == DateTime.MinValue)
+        {
+            queueRecoveryResumeUtc = now.AddSeconds(QueueRecoveryRepairGraceSeconds);
+            log.Information($"[Engine] Queue recovery: allowing {QueueRecoveryRepairGraceSeconds:F0}s for repairs before resuming duty entry");
+        }
+
+        var repairRemaining = (queueRecoveryResumeUtc - now).TotalSeconds;
+        if (repairRemaining > 0)
+        {
+            StatusMessage = $"Queue recovery: allowing repairs ({Math.Ceiling(repairRemaining):F0}s)";
+            return true;
+        }
+
+        queueRecoveryStopUntilUtc = DateTime.MinValue;
+        queueRecoveryResumeUtc = DateTime.MinValue;
+        CurrentState = EngineState.WaitingOutsideDuty;
+        outsideDutyTicks = 0;
+        StatusMessage = "Queue recovery: resuming duty entry";
+        log.Information("[Engine] Queue recovery wait complete; resuming duty entry attempts");
+        return false;
     }
 
     private bool HandleRepairRecoveryWatchdog()
