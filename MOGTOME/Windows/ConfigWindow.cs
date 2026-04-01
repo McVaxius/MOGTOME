@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Dalamud.Interface.Windowing;
+using Dalamud.Interface.Utility;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Plugin.Services;
 using Lumina.Excel.Sheets;
@@ -14,6 +15,7 @@ public class ConfigWindow : Window, IDisposable
 {
     private readonly Plugin plugin;
     private readonly IPluginLog Log;
+    private Vector2? pendingWindowPosition;
 
     // Food/Pot search state
     private string foodSearch = "";
@@ -56,6 +58,26 @@ public class ConfigWindow : Window, IDisposable
     }
 
     public void Dispose() { }
+
+    public void QueueResetToOrigin()
+        => QueueWindowPosition(new Vector2(1f, 1f));
+
+    public void QueueRandomVisibleJump()
+        => QueueWindowPosition(GetRandomVisiblePosition());
+
+    public override void PreDraw()
+    {
+        if (pendingWindowPosition.HasValue)
+        {
+            Position = pendingWindowPosition.Value;
+            PositionCondition = ImGuiCond.Always;
+            pendingWindowPosition = null;
+        }
+        else if (PositionCondition != ImGuiCond.None)
+        {
+            PositionCondition = ImGuiCond.None;
+        }
+    }
 
     private void EnsureItemsLoaded()
     {
@@ -388,7 +410,24 @@ public class ConfigWindow : Window, IDisposable
                 disableAction();
         }
 
-        ImGui.TextDisabled("MOGTOME auto-sends /xldisableplugin twistofffayte when you start it.");
+        ImGui.TextDisabled("MOGTOME auto-sends /xldisableplugin  TwistOfFayte when you start it.");
+    }
+
+    private void QueueWindowPosition(Vector2 position)
+    {
+        pendingWindowPosition = position;
+    }
+
+    private Vector2 GetRandomVisiblePosition()
+    {
+        var viewport = ImGuiHelpers.MainViewport;
+        var currentSize = Size ?? Vector2.Zero;
+        var minimumSize = SizeConstraints?.MinimumSize ?? Vector2.Zero;
+        var width = MathF.Max(currentSize.X, minimumSize.X);
+        var height = MathF.Max(currentSize.Y, minimumSize.Y);
+        var maxX = MathF.Max(1f, viewport.Size.X - width - 20f);
+        var maxY = MathF.Max(1f, viewport.Size.Y - height - 20f);
+        return new Vector2(1f + (Random.Shared.NextSingle() * maxX), 1f + (Random.Shared.NextSingle() * maxY));
     }
 
     private bool DrawPartyTab(Configuration config)

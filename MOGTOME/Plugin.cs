@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Threading.Tasks;
 using Dalamud.Game.Command;
 using Dalamud.IoC;
@@ -131,7 +132,7 @@ public sealed class Plugin : IDalamudPlugin
         });
         CommandManager.AddHandler(AliasCommandName, new CommandInfo(OnAliasCommand)
         {
-            HelpMessage = "MOGTOME: /mog [start|stop|config] or /mog to open UI."
+            HelpMessage = "MOGTOME: /mog [start|stop|config|status|debug|ws|j] or /mog to open UI."
         });
 
         AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
@@ -240,10 +241,44 @@ public sealed class Plugin : IDalamudPlugin
                 }
                 break;
 
+            case "ws":
+                ResetWindowPositions();
+                break;
+
+            case "j":
+                JumpWindowsToRandomVisibleLocations();
+                break;
+
             default:
                 MainWindow.Toggle();
                 break;
         }
+    }
+
+    private void ResetWindowPositions()
+    {
+        MainWindow.QueueResetToOrigin();
+        ConfigWindow.QueueResetToOrigin();
+        StatsWindow.QueueResetToOrigin();
+
+        MainWindow.IsOpen = true;
+        ConfigWindow.IsOpen = true;
+        StatsWindow.IsOpen = true;
+
+        ChatGui.Print("[MOGTOME] Queued main/config/stats window reset to 1,1.");
+    }
+
+    private void JumpWindowsToRandomVisibleLocations()
+    {
+        MainWindow.QueueRandomVisibleJump();
+        ConfigWindow.QueueRandomVisibleJump();
+        StatsWindow.QueueRandomVisibleJump();
+
+        MainWindow.IsOpen = true;
+        ConfigWindow.IsOpen = true;
+        StatsWindow.IsOpen = true;
+
+        ChatGui.Print("[MOGTOME] Queued random visible jumps for main/config/stats windows.");
     }
 
     private void OnFrameworkUpdate(IFramework fw)

@@ -17,6 +17,7 @@ public class StatsWindow : Window, IDisposable
     private enum DetailedSubTab { JobPerformance, PlayerStats, RecentRuns, Trends }
 
     private readonly Plugin plugin;
+    private Vector2? pendingWindowPosition;
 
     private MainTab currentMainTab = MainTab.Summary;
     private DetailedSubTab currentDetailedTab = DetailedSubTab.JobPerformance;
@@ -36,6 +37,26 @@ public class StatsWindow : Window, IDisposable
     }
 
     public void Dispose() { }
+
+    public void QueueResetToOrigin()
+        => QueueWindowPosition(new Vector2(1f, 1f));
+
+    public void QueueRandomVisibleJump()
+        => QueueWindowPosition(GetRandomVisiblePosition());
+
+    public override void PreDraw()
+    {
+        if (pendingWindowPosition.HasValue)
+        {
+            Position = pendingWindowPosition.Value;
+            PositionCondition = ImGuiCond.Always;
+            pendingWindowPosition = null;
+        }
+        else if (PositionCondition != ImGuiCond.None)
+        {
+            PositionCondition = ImGuiCond.None;
+        }
+    }
 
     public override void Draw()
     {
@@ -791,5 +812,22 @@ public class StatsWindow : Window, IDisposable
             6 or 27 or 30 or 32 or 37 => "Healer",
             _ => "DPS"
         };
+    }
+
+    private void QueueWindowPosition(Vector2 position)
+    {
+        pendingWindowPosition = position;
+    }
+
+    private Vector2 GetRandomVisiblePosition()
+    {
+        var viewport = ImGuiHelpers.MainViewport;
+        var currentSize = Size ?? Vector2.Zero;
+        var minimumSize = SizeConstraints?.MinimumSize ?? Vector2.Zero;
+        var width = MathF.Max(currentSize.X, minimumSize.X);
+        var height = MathF.Max(currentSize.Y, minimumSize.Y);
+        var maxX = MathF.Max(1f, viewport.Size.X - width - 20f);
+        var maxY = MathF.Max(1f, viewport.Size.Y - height - 20f);
+        return new Vector2(1f + (Random.Shared.NextSingle() * maxX), 1f + (Random.Shared.NextSingle() * maxY));
     }
 }

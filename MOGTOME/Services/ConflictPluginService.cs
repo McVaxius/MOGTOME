@@ -9,8 +9,8 @@ namespace MOGTOME.Services;
 public sealed class ConflictPluginService
 {
     private const string TwistOfFayteDisplayName = "Twist of Fayte";
-    private const string TwistOfFayteShortName = "twistofffayte";
-    private const string TwistOfFayteDisableCommand = "/xldisableplugin twistofffayte";
+    private const string TwistOfFayteShortName = "twistoffayte";
+    private const string TwistOfFayteDisableCommand = "/xldisableplugin  TwistOfFayte";
 
     private static readonly TimeSpan DisableAttemptCooldown = TimeSpan.FromSeconds(5);
     private static readonly TimeSpan DisableWaitTimeout = TimeSpan.FromSeconds(10);
@@ -148,9 +148,9 @@ public sealed class ConflictPluginService
         var normalizedInternalName = NormalizePluginToken(internalName);
         var normalizedDisplayName = NormalizePluginToken(displayName);
 
-        return normalizedInternalName == "twistofffayte" ||
-               normalizedInternalName == "twistoffayte" ||
-               normalizedDisplayName == "twistoffayte" ||
+        return normalizedInternalName == TwistOfFayteShortName ||
+               normalizedInternalName == "twistofffayte" ||
+               normalizedDisplayName == TwistOfFayteShortName ||
                normalizedDisplayName == "twistofffayte";
     }
 
