@@ -208,8 +208,8 @@ public class RunHistoryService : IDisposable
 
             ResetSummaryStats(config);
             
-            // Basic counters
-            config.DutyCounter = visibleRecords.Count;
+            // DutyCounter is the live per-day Praetorium progress tracker.
+            // Do not overwrite it from all visible run-history records.
             config.TotalPraes = visibleRecords.Count(r => r.IsPraetorium);
             config.TotalDecus = visibleRecords.Count(r => !r.IsPraetorium);
             
@@ -287,7 +287,6 @@ public class RunHistoryService : IDisposable
 
     private void ResetSummaryStats(Configuration config)
     {
-        config.DutyCounter = 0;
         config.TotalPraes = 0;
         config.TotalDecus = 0;
         config.TotalMogtomesEarned = 0;

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
@@ -17,11 +18,8 @@ public class AutoDutyPathService
     private readonly IPluginLog log;
     private readonly IDalamudPluginInterface PluginInterface;
     private const string BundledPathsRelativeFolder = @"data\autoduty-paths";
-    private static readonly IReadOnlyList<PraetoriumPathOption> BundledPraetoriumPaths =
-    [
-        new("(1044) The Praetorium - W2W 20250716 phecda.json", "phecda W2W (2025-07-16)"),
-        new("(1044) The Praetorium - W2W 20241027 Ritsuko.json", "Ritsuko W2W (2024-10-27)"),
-    ];
+    private const string DefaultPraetoriumPathFileName = "(1044) The Praetorium - W2W 20250716 phecda.json";
+    private IReadOnlyList<PraetoriumPathOption>? bundledPraetoriumPaths;
 
     private const string PathFileName = "(1044) The Praetorium - W2W 20250716 phecda.json";
 
@@ -44,16 +42,23 @@ public class AutoDutyPathService
     }
 
     public IReadOnlyList<PraetoriumPathOption> GetPraetoriumPathOptions()
-        => BundledPraetoriumPaths;
+        => bundledPraetoriumPaths ??= LoadBundledPraetoriumPaths();
 
     public string GetDefaultPraetoriumPathFileName()
-        => BundledPraetoriumPaths[0].FileName;
+    {
+        var options = GetPraetoriumPathOptions();
+        var defaultOption = options.FirstOrDefault(option =>
+            option.FileName.Equals(DefaultPraetoriumPathFileName, StringComparison.OrdinalIgnoreCase));
+        return defaultOption?.FileName ?? options.FirstOrDefault()?.FileName ?? DefaultPraetoriumPathFileName;
+    }
 
     public string ResolvePraetoriumPathFileName(string? configuredPathFileName)
     {
+        var options = GetPraetoriumPathOptions();
+
         if (!string.IsNullOrWhiteSpace(configuredPathFileName))
         {
-            var match = BundledPraetoriumPaths.FirstOrDefault(path =>
+            var match = options.FirstOrDefault(path =>
                 path.FileName.Equals(configuredPathFileName, StringComparison.OrdinalIgnoreCase));
             if (match != null)
                 return match.FileName;
@@ -65,8 +70,9 @@ public class AutoDutyPathService
     public string GetPraetoriumPathDisplayName(string? configuredPathFileName)
     {
         var resolved = ResolvePraetoriumPathFileName(configuredPathFileName);
-        return BundledPraetoriumPaths.First(path =>
-            path.FileName.Equals(resolved, StringComparison.OrdinalIgnoreCase)).DisplayName;
+        return GetPraetoriumPathOptions()
+            .FirstOrDefault(path => path.FileName.Equals(resolved, StringComparison.OrdinalIgnoreCase))
+            ?.DisplayName ?? BuildPraetoriumPathDisplayName(resolved);
     }
 
     public bool IsAutoDutyInitialized(out string status)
@@ -211,36 +217,47 @@ public class AutoDutyPathService
             log.Information($"[AutoDutyPath] Set currentTerritoryType={TargetTerritoryType}: {territorySet}");
 
             // Try setting currentPath by finding the target path index using the FILE DATE method
-            var pathIndex = FindPathIndexByFileDate(selectedPathFileName);
+            var pathIndex = FindPathIndexFromDictionaryPaths(pluginInstance, selectedPathName);
             var pathSet = false;
             if (pathIndex >= 0)
             {
                 pathSet = SetMemberValue(instanceType, pluginInstance, "currentPath", pathIndex);
-                log.Information($"[AutoDutyPath] Set currentPath={pathIndex} for '{selectedPathName}' (FILE DATE METHOD): {pathSet}");
+                log.Information($"[AutoDutyPath] Set currentPath={pathIndex} for '{selectedPathName}' (DICTIONARY PATHS METHOD): {pathSet}");
                 if (pathSet)
                 {
-                    LastForceResult = $"OK: Territory={TargetTerritoryType}, Path={pathIndex} ({selectedPathName}) [FileDate]";
+                    LastForceResult = $"OK: Territory={TargetTerritoryType}, Path={pathIndex} ({selectedPathName}) [DictionaryPaths]";
                 }
             }
             else
             {
-                log.Warning($"[AutoDutyPath] Could not find path index for '{selectedPathName}' using file date method");
+                log.Warning($"[AutoDutyPath] Could not find path index for '{selectedPathName}' using DictionaryPaths; trying file date fallback");
                 
-                // Fallback: try the old method (may be incorrect)
-                log.Information("[AutoDutyPath] Trying fallback method (PathSelectionsByPath)...");
-                var fallbackIndex = FindPathIndexByName(pluginInstance, selectedPathName);
+                var fallbackIndex = FindPathIndexByFileDate(selectedPathFileName);
                 if (fallbackIndex >= 0)
                 {
                     pathSet = SetMemberValue(instanceType, pluginInstance, "currentPath", fallbackIndex);
-                    log.Information($"[AutoDutyPath] Set currentPath={fallbackIndex} (FALLBACK) for '{selectedPathName}': {pathSet}");
+                    log.Information($"[AutoDutyPath] Set currentPath={fallbackIndex} (FILE DATE FALLBACK) for '{selectedPathName}': {pathSet}");
                     if (pathSet)
                     {
-                        LastForceResult = $"OK: Territory={TargetTerritoryType}, Path={fallbackIndex} (FALLBACK) ({selectedPathName})";
+                        LastForceResult = $"OK: Territory={TargetTerritoryType}, Path={fallbackIndex} ({selectedPathName}) [FileDateFallback]";
                     }
                 }
                 else
                 {
-                    LastForceResult = $"FAILED: Could not find path index for '{selectedPathName}'";
+                    log.Information("[AutoDutyPath] Trying final fallback method (PathSelectionsByPath)...");
+                    fallbackIndex = FindPathIndexByName(pluginInstance, selectedPathName);
+                    if (fallbackIndex >= 0)
+                    {
+                        pathSet = SetMemberValue(instanceType, pluginInstance, "currentPath", fallbackIndex);
+                        log.Information($"[AutoDutyPath] Set currentPath={fallbackIndex} (PATHSELECTIONS FALLBACK) for '{selectedPathName}': {pathSet}");
+                        if (pathSet)
+                        {
+                            LastForceResult = $"OK: Territory={TargetTerritoryType}, Path={fallbackIndex} ({selectedPathName}) [PathSelectionsFallback]";
+                        }
+                    }
+
+                    if (!pathSet)
+                        LastForceResult = $"FAILED: Could not find path index for '{selectedPathName}'";
                 }
             }
 
@@ -1137,13 +1154,16 @@ public class AutoDutyPathService
             // Get the Paths list from the container
             var containerType = pathContainer.GetType();
             var pathsField = containerType.GetField("Paths", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            if (pathsField == null)
+            var pathsProperty = containerType.GetProperty("Paths", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            if (pathsField == null && pathsProperty == null)
             {
-                log.Warning("[AutoDutyPath] Paths field not found in path container");
+                log.Warning("[AutoDutyPath] Paths field/property not found in path container");
                 return -1;
             }
 
-            var pathsList = pathsField.GetValue(pathContainer) as System.Collections.IList;
+            var pathsList =
+                pathsProperty?.GetValue(pathContainer) as System.Collections.IList ??
+                pathsField?.GetValue(pathContainer) as System.Collections.IList;
             if (pathsList == null)
             {
                 log.Warning("[AutoDutyPath] Paths list is null or not an IList");
@@ -2216,17 +2236,18 @@ public class AutoDutyPathService
                 return Task.FromResult(false);
             }
 
+            var bundledPathOptions = GetPraetoriumPathOptions();
             var bundledPathsFolder = GetBundledPathsFolder();
             if (string.IsNullOrEmpty(bundledPathsFolder) || !Directory.Exists(bundledPathsFolder))
             {
-                log.Warning($"[AutoDutyPath] Bundled path folder is missing: {bundledPathsFolder}");
+                log.Warning($"[AutoDutyPath] Bundled path folder is missing. Checked: {string.Join(" | ", GetBundledPathsFolderCandidates())}");
                 return Task.FromResult(false);
             }
 
             Directory.CreateDirectory(autoDutyPathsFolder);
             var installedCount = 0;
 
-            foreach (var option in BundledPraetoriumPaths)
+            foreach (var option in bundledPathOptions)
             {
                 var sourcePath = Path.Combine(bundledPathsFolder, option.FileName);
                 if (!File.Exists(sourcePath))
@@ -2294,17 +2315,94 @@ public class AutoDutyPathService
     {
         try
         {
-            var assemblyDirectory = Path.GetDirectoryName(typeof(AutoDutyPathService).Assembly.Location);
-            if (string.IsNullOrWhiteSpace(assemblyDirectory))
-                return null;
-
-            return Path.Combine(assemblyDirectory, BundledPathsRelativeFolder);
+            return GetBundledPathsFolderCandidates().FirstOrDefault(Directory.Exists)
+                ?? GetBundledPathsFolderCandidates().FirstOrDefault();
         }
         catch (Exception ex)
         {
             log.Error($"[AutoDutyPath] GetBundledPathsFolder failed: {ex.Message}");
             return null;
         }
+    }
+
+    private IReadOnlyList<string> GetBundledPathsFolderCandidates()
+    {
+        var candidates = new List<string>();
+
+        void AddCandidate(string? baseDirectory)
+        {
+            if (string.IsNullOrWhiteSpace(baseDirectory))
+                return;
+
+            var candidate = Path.GetFullPath(Path.Combine(baseDirectory, BundledPathsRelativeFolder));
+            if (!candidates.Any(existing => existing.Equals(candidate, StringComparison.OrdinalIgnoreCase)))
+                candidates.Add(candidate);
+        }
+
+        AddCandidate(PluginInterface.AssemblyLocation.Directory?.FullName);
+        AddCandidate(Path.GetDirectoryName(typeof(AutoDutyPathService).Assembly.Location));
+        AddCandidate(AppContext.BaseDirectory);
+
+        return candidates;
+    }
+
+    private IReadOnlyList<PraetoriumPathOption> LoadBundledPraetoriumPaths()
+    {
+        try
+        {
+            var bundledPathsFolder = GetBundledPathsFolder();
+            if (!string.IsNullOrWhiteSpace(bundledPathsFolder) && Directory.Exists(bundledPathsFolder))
+            {
+                var options = Directory.EnumerateFiles(bundledPathsFolder, "(1044)*.json", SearchOption.TopDirectoryOnly)
+                    .Select(Path.GetFileName)
+                    .Where(fileName => !string.IsNullOrWhiteSpace(fileName))
+                    .Select(fileName => new PraetoriumPathOption(fileName!, BuildPraetoriumPathDisplayName(fileName!)))
+                    .OrderBy(option => option.FileName.Equals(DefaultPraetoriumPathFileName, StringComparison.OrdinalIgnoreCase) ? 0 : 1)
+                    .ThenBy(option => option.DisplayName, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                if (options.Count > 0)
+                {
+                    log.Information($"[AutoDutyPath] Loaded {options.Count} bundled Praetorium path option(s) from {bundledPathsFolder}");
+                    return options;
+                }
+
+                log.Warning($"[AutoDutyPath] No bundled Praetorium JSON files were found in {bundledPathsFolder}");
+            }
+            else
+            {
+                log.Warning($"[AutoDutyPath] Bundled Praetorium path folder could not be resolved. Checked: {string.Join(" | ", GetBundledPathsFolderCandidates())}");
+            }
+        }
+        catch (Exception ex)
+        {
+            log.Error($"[AutoDutyPath] Failed to load bundled Praetorium paths: {ex.Message}");
+        }
+
+        return
+        [
+            new(DefaultPraetoriumPathFileName, BuildPraetoriumPathDisplayName(DefaultPraetoriumPathFileName)),
+        ];
+    }
+
+    private static string BuildPraetoriumPathDisplayName(string fileName)
+    {
+        var match = Regex.Match(
+            fileName,
+            @"^\(1044\)\s+The Praetorium\s+-\s+(?<variant>.+?)\s+(?<date>\d{8})\s+(?<author>.+)\.json$",
+            RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
+        if (!match.Success)
+            return Path.GetFileNameWithoutExtension(fileName) ?? fileName;
+
+        var variant = match.Groups["variant"].Value.Trim();
+        var author = match.Groups["author"].Value.Trim();
+        var rawDate = match.Groups["date"].Value;
+        var formattedDate = rawDate.Length == 8
+            ? $"{rawDate[..4]}-{rawDate[4..6]}-{rawDate[6..8]}"
+            : rawDate;
+
+        return $"{author} {variant} ({formattedDate})";
     }
 
     private string? GetAutoDutyPathsFolder()
