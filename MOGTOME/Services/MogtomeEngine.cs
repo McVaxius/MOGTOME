@@ -78,6 +78,11 @@ public class MogtomeEngine
     private const int MaxRequeueAttempts = 5;
     private const float RequeueRetryInterval = 10.0f;
     private RequeueState requeueState = RequeueState.Idle;
+    private DateTime repairRecoveryWatchStartedUtc = DateTime.MinValue;
+    private DateTime repairRecoveryRetryReadyUtc = DateTime.MinValue;
+    private int repairRecoveryAttempts = 0;
+    private const float RepairRecoveryWatchdogSeconds = 120.0f;
+    private const float RepairRecoveryStopDelaySeconds = 2.0f;
 
     public enum RequeueState
     {
@@ -223,18 +228,7 @@ public class MogtomeEngine
             if (repairService.NeedsRepair())
             {
                 log.Information("[Engine] Repair needed - repairing before start");
-                CurrentState = EngineState.RepairingOutside;
-                StatusMessage = "Repairing before start...";
-                dutyQueue.DisableAutoQueueForRepair();
-                
-                if (state.IsPartyLeader)
-                {
-                    repairService.TrySelfRepair();
-                }
-                else
-                {
-                    repairService.TryNpcRepair();
-                }
+                EnterRepairMode(useNpcRepair: !state.IsPartyLeader, "Repairing before start...");
                 // Don't set IsRunning yet - repair will complete first
                 return;
             }
@@ -385,6 +379,7 @@ public class MogtomeEngine
             dialogHandler.Stop();
             rotationService.DisableRotation();
             dutyQueue.EnableAutoQueueAfterRepair();
+            ResetRepairRecoveryWatchdog();
         }
         catch (Exception ex)
         {
@@ -474,6 +469,7 @@ public class MogtomeEngine
         dutyEnteredUtc = DateTime.UtcNow;
         lastPraetoriumReadyWaitLogUtc = DateTime.MinValue;
         lastRotationRefreshUtc = DateTime.MinValue;
+        ResetRepairRecoveryWatchdog();
         
         // Reset requeue state when successfully entering duty
         requeueInProgress = false;
@@ -562,6 +558,7 @@ public class MogtomeEngine
         outsideDutyTicks = 0;
         autoDutyStartedInDuty = false;
         dutyCompleted = false;
+        ResetRepairRecoveryWatchdog();
         
         // Reset requeue state when successfully entering duty
         requeueInProgress = false;
@@ -726,10 +723,7 @@ public class MogtomeEngine
         // Repair check
         if (repairService.NeedsRepair())
         {
-            CurrentState = EngineState.RepairingOutside;
-            StatusMessage = "Repairing...";
-            dutyQueue.DisableAutoQueueForRepair();
-            repairService.TrySelfRepair();
+            EnterRepairMode(useNpcRepair: !state.IsPartyLeader, "Repairing...");
             return;
         }
 
@@ -741,6 +735,11 @@ public class MogtomeEngine
         {
             HandleRequeueStateMachine();
             return; // Skip normal queue logic while requeue in progress
+        }
+
+        if (HandleRepairRecoveryWatchdog())
+        {
+            return;
         }
 
         // Normal queue logic (only if not requeueing)
@@ -758,19 +757,6 @@ public class MogtomeEngine
         else if (delayedRequeueInProgress)
         {
             StatusMessage = $"Delayed requeue in progress...";
-        }
-
-        // Non-leader repair check after 1 second outside duty
-        if (!state.IsPartyLeader && outsideDutyTicks > (int)(1 / LoopInterval))
-        {
-            if (repairService.NeedsRepair())
-            {
-                CurrentState = EngineState.RepairingOutside;
-                StatusMessage = "Repairing...";
-                dutyQueue.DisableAutoQueueForRepair();
-                repairService.TryNpcRepair();
-                return; // Block all processing until repair complete
-            }
         }
     }
 
@@ -884,6 +870,9 @@ public class MogtomeEngine
 
     private void UpdateQueueing()
     {
+        if (HandleRepairRecoveryWatchdog())
+            return;
+
         // If we're now in duty, the state will change via OnEnteredDuty
         // Otherwise keep waiting
         if (!condition[34])
@@ -1023,8 +1012,97 @@ public class MogtomeEngine
             dutyQueue.EnableAutoQueueAfterRepair();
             CurrentState = EngineState.WaitingOutsideDuty;
             outsideDutyTicks = 0;
+            ArmRepairRecoveryWatchdog();
             StatusMessage = "Repair done, resuming";
         }
+    }
+
+    private void EnterRepairMode(bool useNpcRepair, string statusMessage)
+    {
+        ResetRepairRecoveryWatchdog();
+        CurrentState = EngineState.RepairingOutside;
+        StatusMessage = statusMessage;
+        outsideDutyTicks = 0;
+        dutyQueue.DisableAutoQueueForRepair();
+
+        if (useNpcRepair)
+        {
+            repairService.TryNpcRepair();
+        }
+        else
+        {
+            repairService.TrySelfRepair();
+        }
+    }
+
+    private void ArmRepairRecoveryWatchdog()
+    {
+        repairRecoveryWatchStartedUtc = DateTime.UtcNow;
+        repairRecoveryRetryReadyUtc = DateTime.MinValue;
+        repairRecoveryAttempts = 0;
+        log.Information($"[Engine] Repair flow complete; if still outside duty after {RepairRecoveryWatchdogSeconds:F0}s, MOGTOME will /ad stop and retry");
+    }
+
+    private void ResetRepairRecoveryWatchdog()
+    {
+        repairRecoveryWatchStartedUtc = DateTime.MinValue;
+        repairRecoveryRetryReadyUtc = DateTime.MinValue;
+        repairRecoveryAttempts = 0;
+    }
+
+    private bool HandleRepairRecoveryWatchdog()
+    {
+        if (repairRecoveryWatchStartedUtc == DateTime.MinValue || state.IsInDuty)
+            return false;
+
+        var now = DateTime.UtcNow;
+        if (repairRecoveryRetryReadyUtc != DateTime.MinValue)
+        {
+            var remaining = (repairRecoveryRetryReadyUtc - now).TotalSeconds;
+            if (remaining > 0)
+            {
+                StatusMessage = $"Repair recovery: waiting to requeue ({Math.Ceiling(remaining):F0}s)";
+                return true;
+            }
+
+            repairRecoveryRetryReadyUtc = DateTime.MinValue;
+            repairRecoveryWatchStartedUtc = now;
+
+            if (state.IsPartyLeader)
+            {
+                var isPrae = dutyTracker.ShouldRunPraetorium();
+                var dutyName = dutyTracker.GetCurrentDutyName();
+                CurrentState = EngineState.Queueing;
+                StatusMessage = $"Repair recovery retry {repairRecoveryAttempts}: {dutyName}";
+                log.Warning($"[Engine] Repair recovery retry {repairRecoveryAttempts}: force-queueing {dutyName} after /ad stop");
+                dutyQueue.ForceQueue(isPrae);
+                return true;
+            }
+
+            StatusMessage = $"Repair recovery retry {repairRecoveryAttempts}: waiting for leader";
+            return true;
+        }
+
+        var elapsed = (now - repairRecoveryWatchStartedUtc).TotalSeconds;
+        if (elapsed < RepairRecoveryWatchdogSeconds)
+            return false;
+
+        repairRecoveryAttempts++;
+        if (state.IsPartyLeader)
+        {
+            var dutyName = dutyTracker.GetCurrentDutyName();
+            log.Warning($"[Engine] Still outside duty {elapsed:F0}s after repair; sending /ad stop and retrying {dutyName} (attempt {repairRecoveryAttempts})");
+            autoDutyIPC.StopDuty();
+            repairRecoveryRetryReadyUtc = now.AddSeconds(RepairRecoveryStopDelaySeconds);
+            StatusMessage = $"Repair recovery: restarting {dutyName}";
+            return true;
+        }
+
+        log.Warning($"[Engine] Still outside duty {elapsed:F0}s after repair; sending /ad stop and waiting for leader retry (attempt {repairRecoveryAttempts})");
+        autoDutyIPC.StopDuty();
+        repairRecoveryWatchStartedUtc = now;
+        StatusMessage = "Repair recovery: waiting for leader";
+        return true;
     }
 
     private void HandleQuit()

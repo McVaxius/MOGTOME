@@ -35,19 +35,27 @@ public class DutyQueueService
     }
 
     public void TryQueue(bool isPraetorium)
+        => TryQueueInternal(isPraetorium, ignoreCooldown: false);
+
+    public void ForceQueue(bool isPraetorium)
+        => TryQueueInternal(isPraetorium, ignoreCooldown: true);
+
+    private void TryQueueInternal(bool isPraetorium, bool ignoreCooldown)
     {
         if (state.IsInDuty) return;
         if (!state.IsPartyLeader) return;
 
         var now = DateTime.UtcNow;
-        if ((now - lastQueueAttempt).TotalSeconds < QueueCooldown) return;
+        if (!ignoreCooldown && (now - lastQueueAttempt).TotalSeconds < QueueCooldown) return;
         lastQueueAttempt = now;
 
         // Condition[34] = BoundByDuty
         if (condition[34]) return;
 
         var dutyName = isPraetorium ? "The Praetorium" : "The Porta Decumana";
-        log.Information($"[DutyQueue] Queueing via AutoDuty: {dutyName}");
+        log.Information(ignoreCooldown
+            ? $"[DutyQueue] Force-queueing via AutoDuty: {dutyName}"
+            : $"[DutyQueue] Queueing via AutoDuty: {dutyName}");
         autoDutyIPC.QueueDuty(dutyName);
     }
 
