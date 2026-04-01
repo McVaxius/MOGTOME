@@ -26,6 +26,7 @@ public class ConfigWindow : Window, IDisposable
     private DateTime lastDepCheck = DateTime.MinValue;
     private bool depRsr, depBmr, depVbm, depVnav, depTextAdv, depCutsceneSkip, depAutoDuty, depSimpleTweaks;
     private bool depCustomRes, depChillframes, depKrangler, depDps, depTtsl;
+    private bool depTwistOfFayteInstalled, depTwistOfFayteEnabled;
     private bool allDepsGreen = false;
 
     // Plugin repo URLs for clipboard
@@ -190,6 +191,12 @@ public class ConfigWindow : Window, IDisposable
             depKrangler = false;
             depDps = false;
             depTtsl = false;
+            depTwistOfFayteInstalled = false;
+            depTwistOfFayteEnabled = false;
+
+            var twistOfFayteStatus = plugin.ConflictPluginService.GetTwistOfFayteStatus();
+            depTwistOfFayteInstalled = twistOfFayteStatus.IsInstalled;
+            depTwistOfFayteEnabled = twistOfFayteStatus.IsLoaded;
 
             foreach (var p in installed)
             {
@@ -280,6 +287,20 @@ public class ConfigWindow : Window, IDisposable
         DrawDepLineOptional("TTSL (Thick Thighs Save Lives)", depTtsl, "Experimental and not available yet. When it exists, type Dhog in plugin search.");
 
         ImGui.Spacing();
+        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Conflicting Plugins");
+        ImGui.Separator();
+
+        DrawConflictPluginLine(
+            "Twist of Fayte",
+            depTwistOfFayteInstalled,
+            depTwistOfFayteEnabled,
+            () =>
+            {
+                _ = plugin.ConflictPluginService.EnsureTwistOfFayteDisabledAsync("Dependency Check", showPopup: false);
+                lastDepCheck = DateTime.MinValue;
+            });
+
+        ImGui.Spacing();
         ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "AutoDuty Path");
         ImGui.Separator();
 
@@ -344,6 +365,30 @@ public class ConfigWindow : Window, IDisposable
             ImGui.SameLine();
             ImGui.TextColored(new Vector4(1, 0, 0, 1), installedWarning);
         }
+    }
+
+    private static void DrawConflictPluginLine(string name, bool installed, bool enabled, System.Action disableAction)
+    {
+        var color = enabled ? new Vector4(1, 0, 0, 1) : new Vector4(0, 1, 0, 1);
+        var icon = enabled ? "[!!]" : "[OK]";
+        var detail = enabled
+            ? "Enabled - known MOGTOME conflict"
+            : installed
+                ? "Installed but disabled"
+                : "Not installed";
+
+        ImGui.TextColored(color, $"{icon} {name}");
+        ImGui.SameLine();
+        ImGui.TextColored(color, $"- {detail}");
+
+        if (enabled)
+        {
+            ImGui.SameLine();
+            if (ImGui.SmallButton($"Disable now##{name}"))
+                disableAction();
+        }
+
+        ImGui.TextDisabled("MOGTOME auto-sends /xldisableplugin twistofffayte when you start it.");
     }
 
     private bool DrawPartyTab(Configuration config)
@@ -480,11 +525,19 @@ public class ConfigWindow : Window, IDisposable
 
         if (config.FoodItemId > 0)
         {
-            ImGui.Text($"  Selected: {config.FoodItemName} (ID: {config.FoodItemId})");
+            ImGui.Text($"  Selected: {config.FoodItemName} {(config.FoodUseHighQuality ? "[HQ]" : "[NQ]")} (ID: {config.FoodItemId})");
+            var useFoodHq = config.FoodUseHighQuality;
+            if (ImGui.Checkbox("Use HQ food", ref useFoodHq))
+            {
+                config.FoodUseHighQuality = useFoodHq;
+                changed = true;
+            }
+            ImGui.TextDisabled("Uses the selected meal as HQ when enabled; leave off for normal-quality food.");
             if (ImGui.SmallButton("Clear Food"))
             {
                 config.FoodItemId = 0;
                 config.FoodItemName = "";
+                config.FoodUseHighQuality = false;
                 changed = true;
             }
         }
@@ -509,11 +562,19 @@ public class ConfigWindow : Window, IDisposable
 
         if (config.PotionItemId > 0)
         {
-            ImGui.Text($"  Selected: {config.PotionItemName} (ID: {config.PotionItemId})");
+            ImGui.Text($"  Selected: {config.PotionItemName} {(config.PotionUseHighQuality ? "[HQ]" : "[NQ]")} (ID: {config.PotionItemId})");
+            var usePotionHq = config.PotionUseHighQuality;
+            if (ImGui.Checkbox("Use HQ potion", ref usePotionHq))
+            {
+                config.PotionUseHighQuality = usePotionHq;
+                changed = true;
+            }
+            ImGui.TextDisabled("Uses the selected medicine as HQ when enabled; leave off for normal-quality tinctures/potions.");
             if (ImGui.SmallButton("Clear Potion"))
             {
                 config.PotionItemId = 0;
                 config.PotionItemName = "";
+                config.PotionUseHighQuality = false;
                 changed = true;
             }
 

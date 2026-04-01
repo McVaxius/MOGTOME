@@ -16,6 +16,9 @@ namespace MOGTOME.Windows;
 public class MainWindow : Window, IDisposable
 {
     private readonly Plugin plugin;
+    private const string ConflictPluginPopupId = "Twist of Fayte Conflict##MOGTOME";
+    private bool openConflictPluginPopup;
+    private string conflictPluginPopupMessage = string.Empty;
 
     public MainWindow(Plugin plugin)
         : base("MOGTOME - Status##MogtomeMain", ImGuiWindowFlags.None)
@@ -30,8 +33,16 @@ public class MainWindow : Window, IDisposable
 
     public void Dispose() { }
 
+    public void QueueConflictPopup(string message)
+    {
+        conflictPluginPopupMessage = message;
+        openConflictPluginPopup = true;
+    }
+
     public override void Draw()
     {
+        DrawConflictPluginPopup();
+
         var config = plugin.Configuration;
         var state = plugin.State;
         var engine = plugin.Engine;
@@ -450,8 +461,8 @@ public class MainWindow : Window, IDisposable
         ImGui.Text("Subsystems");
         ImGui.Indent();
         
-        DrawStatusLine("Food", config.FoodItemId > 0, config.FoodItemName);
-        DrawStatusLine("Potions", config.PotionItemId > 0 && state.PotionsAvailable, config.PotionItemName);
+        DrawStatusLine("Food", config.FoodItemId > 0 && state.FoodAvailable, FormatConsumableLabel(config.FoodItemName, config.FoodUseHighQuality));
+        DrawStatusLine("Potions", config.PotionItemId > 0 && state.PotionsAvailable, FormatConsumableLabel(config.PotionItemName, config.PotionUseHighQuality));
         DrawStatusLine("YesAlready", plugin.YesAlreadyIPC.IsPaused, "Paused by MOGTOME");
         DrawStatusLine("AutoDuty Path", plugin.AutoDutyPathService.PathExists(), "Praetorium W2W");
         
@@ -485,6 +496,28 @@ public class MainWindow : Window, IDisposable
         ImGui.Unindent();
     }
 
+    private void DrawConflictPluginPopup()
+    {
+        if (openConflictPluginPopup)
+        {
+            ImGui.OpenPopup(ConflictPluginPopupId);
+            openConflictPluginPopup = false;
+        }
+
+        if (!ImGui.BeginPopupModal(ConflictPluginPopupId, ImGuiWindowFlags.AlwaysAutoResize))
+            return;
+
+        ImGui.TextColored(new Vector4(1.0f, 0.35f, 0.35f, 1.0f), "Twist of Fayte conflict");
+        ImGui.Spacing();
+        ImGui.TextWrapped(conflictPluginPopupMessage);
+        ImGui.Spacing();
+
+        if (ImGui.Button("OK", new Vector2(120, 0)))
+            ImGui.CloseCurrentPopup();
+
+        ImGui.EndPopup();
+    }
+
     private static void DrawStatusLine(string label, bool active, string detail)
     {
         var color = active
@@ -508,11 +541,13 @@ public class MainWindow : Window, IDisposable
         // Food Settings
         Plugin.Log.Information($"[Config] Food Item ID: {config.FoodItemId}");
         Plugin.Log.Information($"[Config] Food Item Name: '{config.FoodItemName}'");
+        Plugin.Log.Information($"[Config] Food HQ: {config.FoodUseHighQuality}");
         Plugin.Log.Information($"[Config] Food Available: {config.FoodItemId > 0}");
         
         // Potion Settings
         Plugin.Log.Information($"[Config] Potion Item ID: {config.PotionItemId}");
         Plugin.Log.Information($"[Config] Potion Item Name: '{config.PotionItemName}'");
+        Plugin.Log.Information($"[Config] Potion HQ: {config.PotionUseHighQuality}");
         Plugin.Log.Information($"[Config] Potion Target: {config.PotionTarget}");
         
         // Engine Settings
@@ -529,5 +564,13 @@ public class MainWindow : Window, IDisposable
         Plugin.Log.Information($"[Config] Enable Detailed Tracking: {config.EnableDetailedTracking}");
         
         Plugin.Log.Information("=== END CONFIGURATION DUMP ===");
+    }
+
+    private static string FormatConsumableLabel(string name, bool highQuality)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return string.Empty;
+
+        return $"{name} [{(highQuality ? "HQ" : "NQ")}]";
     }
 }

@@ -25,6 +25,7 @@ public class BossHandlerService
     // Potion cooldown
     private DateTime lastPotionUse = DateTime.MinValue;
     private const float PotionCooldown = 15.0f;
+    private bool? lastPotionAvailability;
 
     public BossHandlerService(
         IPluginLog log, Configuration config, DutyState state,
@@ -48,7 +49,7 @@ public class BossHandlerService
     private void OnConfigurationChanged(Configuration newConfig)
     {
         this.config = newConfig;
-        log.Information($"[BossHandler] Configuration updated - PotionItemId: {config.PotionItemId}, PotionName: '{config.PotionItemName}'");
+        log.Information($"[BossHandler] Configuration updated - PotionItemId: {config.PotionItemId}, PotionName: '{config.PotionItemName}', HQ={config.PotionUseHighQuality}");
     }
 
     public void Update()
@@ -158,6 +159,16 @@ public class BossHandlerService
     private void HandlePotions(string targetName)
     {
         if (config.PotionItemId <= 0) return;
+
+        var availableCount = GameHelpers.GetInventoryItemCount((uint)config.PotionItemId, config.PotionUseHighQuality);
+        state.PotionsAvailable = availableCount > 0;
+        if (lastPotionAvailability != state.PotionsAvailable)
+        {
+            lastPotionAvailability = state.PotionsAvailable;
+            var qualityLabel = config.PotionUseHighQuality ? "HQ" : "NQ";
+            log.Information($"[BossHandler] {qualityLabel} potion availability changed for {config.PotionItemName}: count={availableCount}");
+        }
+
         if (!state.PotionsAvailable) return;
 
         var now = DateTime.UtcNow;
@@ -181,16 +192,17 @@ public class BossHandlerService
 
         try
         {
-            log.Information($"[BossHandler] Using potion: {config.PotionItemName} on {targetName}");
+            var qualityLabel = config.PotionUseHighQuality ? "HQ" : "NQ";
+            log.Information($"[BossHandler] Using potion: {config.PotionItemName} [{qualityLabel}] on {targetName}");
 
-            var result = GameHelpers.UseItem((uint)config.PotionItemId);
+            var result = GameHelpers.UseItem((uint)config.PotionItemId, config.PotionUseHighQuality);
             if (result)
             {
-                log.Information($"[BossHandler] Successfully used {config.PotionItemName} on {targetName}");
+                log.Information($"[BossHandler] Successfully used {config.PotionItemName} [{qualityLabel}] on {targetName}");
             }
             else
             {
-                log.Warning($"[BossHandler] Failed to use {config.PotionItemName} - UseItem returned false");
+                log.Warning($"[BossHandler] Failed to use {config.PotionItemName} [{qualityLabel}] - UseItem returned false");
             }
             
             lastPotionUse = now;

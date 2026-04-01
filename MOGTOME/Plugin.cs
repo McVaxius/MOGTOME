@@ -63,6 +63,7 @@ public sealed class Plugin : IDalamudPlugin
     public DialogHandlerService DialogHandlerService { get; private set; }
     public StuckDetectionService StuckDetectionService { get; private set; }
     public AutoDutyPathService AutoDutyPathService { get; private set; }
+    public ConflictPluginService ConflictPluginService { get; private set; }
     public RunHistoryService RunHistoryService { get; private set; }
     public MogtomeEngine Engine { get; private set; }
 
@@ -105,6 +106,7 @@ public sealed class Plugin : IDalamudPlugin
         StuckDetectionService = new StuckDetectionService(Log, Configuration, State, VNavIPC, CommandManager, Condition);
         DialogHandlerService = new DialogHandlerService(Log, YesAlreadyIPC, CommandManager, GameGui);
         AutoDutyPathService = new AutoDutyPathService(Log, PluginInterface);
+        ConflictPluginService = new ConflictPluginService(Log, CommandManager);
 
         // Wire up configuration change subscriptions
         FoodService.SubscribeToConfigChanges(ConfigManager);
@@ -277,7 +279,7 @@ public sealed class Plugin : IDalamudPlugin
                     RepairService, FoodService,
                     RotationService, BossHandlerService,
                     StuckDetectionService, DialogHandlerService,
-                    AutoDutyPathService, RunHistoryService,
+                    AutoDutyPathService, ConflictPluginService, RunHistoryService,
                     AutoDutyIPC, AutomatonIPC, YesAlreadyIPC,
                     Condition, ClientState, CommandManager);
                 
@@ -305,6 +307,12 @@ public sealed class Plugin : IDalamudPlugin
             {
                 Log.Error(ex, "[Plugin] Failed to initialize database service");
             }
+        }
+
+        if (ConflictPluginService.TryTakePendingPopup(out var conflictPopupMessage))
+        {
+            MainWindow.IsOpen = true;
+            MainWindow.QueueConflictPopup(conflictPopupMessage);
         }
         
         // Only update engine if it's initialized

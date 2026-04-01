@@ -17,6 +17,7 @@ public class FoodService
     private const float FoodRefreshThreshold = 90.0f;
 
     private DateTime lastFoodCheck = DateTime.MinValue;
+    private bool? lastFoodAvailability;
     private const float FoodCheckCooldown = 5.0f;
 
     public FoodService(IPluginLog log, Configuration config, DutyState state, ICondition condition)
@@ -37,23 +38,20 @@ public class FoodService
     private void OnConfigurationChanged(Configuration newConfig)
     {
         this.config = newConfig; // Update stored config
-        log.Information($"[Food] Configuration updated - FoodItemId: {config.FoodItemId}, FoodName: '{config.FoodItemName}'");
+        log.Information($"[Food] Configuration updated - FoodItemId: {config.FoodItemId}, FoodName: '{config.FoodItemName}', HQ={config.FoodUseHighQuality}");
     }
 
     public void Update()
     {
-        log.Information($"[Food] Update - FoodItemId: {config.FoodItemId}, FoodName: '{config.FoodItemName}'");
-        
         if (config.FoodItemId <= 0) 
         {
-            log.Information("[Food] No food configured");
+            state.FoodAvailable = false;
             return;
         }
 
         var now = DateTime.UtcNow;
         if ((now - lastFoodCheck).TotalSeconds < FoodCheckCooldown) 
         {
-            log.Debug($"[Food] Cooldown: {(now - lastFoodCheck).TotalSeconds:F1}s");
             return;
         }
         lastFoodCheck = now;
@@ -62,18 +60,14 @@ public class FoodService
         var inCombat = condition[26]; // Condition[26] = InCombat
         var boundByDuty = condition[34]; // Condition[34] = BoundByDuty
         
-        log.Information($"[Food] Conditions - InCombat: {inCombat}, BoundByDuty: {boundByDuty}");
-        
         // FrenRider pattern: Only block eating when in duty AND combat simultaneously
         if (boundByDuty && inCombat)
         {
-            log.Information("[Food] Skipping - In duty + combat");
             return;
         }
 
         if (inCombat) 
         {
-            log.Information("[Food] Skipping - In combat");
             return;
         }
 
@@ -83,14 +77,27 @@ public class FoodService
             var player = Plugin.ObjectTable.LocalPlayer;
             if (player == null) 
             {
-                log.Information("[Food] No player object");
                 return;
             }
 
             // Check if player HP > 0 (alive)
             if (player.CurrentHp == 0) 
             {
-                log.Information("[Food] Player dead");
+                return;
+            }
+
+            var availableCount = GameHelpers.GetInventoryItemCount((uint)config.FoodItemId, config.FoodUseHighQuality);
+            state.FoodAvailable = availableCount > 0;
+            if (lastFoodAvailability != state.FoodAvailable)
+            {
+                lastFoodAvailability = state.FoodAvailable;
+                var qualityLabel = config.FoodUseHighQuality ? "HQ" : "NQ";
+                log.Information($"[Food] {qualityLabel} availability changed for {config.FoodItemName}: count={availableCount}");
+            }
+
+            if (!state.FoodAvailable)
+            {
+                log.Warning($"[Food] No {(config.FoodUseHighQuality ? "HQ" : "NQ")} {config.FoodItemName} found");
                 return;
             }
 
@@ -104,16 +111,9 @@ public class FoodService
                 }
             }
 
-            log.Information($"[Food] Well Fed: {wellFedRemaining:F1}s (threshold: {FoodRefreshThreshold}s)");
-            
             if (wellFedRemaining < FoodRefreshThreshold)
             {
-                log.Information($"[Food] Need to eat - {config.FoodItemName}");
                 ConsumeFood();
-            }
-            else
-            {
-                log.Information("[Food] Well Fed sufficient");
             }
         }
         catch (Exception ex)
@@ -122,40 +122,20 @@ public class FoodService
         }
     }
 
-    private unsafe int GetInventoryItemCount(uint itemId)
-    {
-        try
-        {
-            var im = InventoryManager.Instance();
-            if (im == null) 
-            {
-                log.Error("[Food] InventoryManager.Instance() null");
-                return 0;
-            }
-            var count = im->GetInventoryItemCount(itemId) + im->GetInventoryItemCount(itemId, true);
-            log.Debug($"[Food] Inventory count for {itemId}: {count}");
-            return count;
-        }
-        catch (Exception ex)
-        {
-            log.Error($"[Food] GetInventoryItemCount({itemId}) failed: {ex.Message}");
-            return 0;
-        }
-    }
-
     private void ConsumeFood()
     {
         try
         {
-            log.Information($"[Food] Consuming: {config.FoodItemName} (ID: {config.FoodItemId})");
-            var result = GameHelpers.UseItem((uint)config.FoodItemId);
+            var qualityLabel = config.FoodUseHighQuality ? "HQ" : "NQ";
+            log.Information($"[Food] Consuming: {config.FoodItemName} [{qualityLabel}] (ID: {config.FoodItemId})");
+            var result = GameHelpers.UseItem((uint)config.FoodItemId, config.FoodUseHighQuality);
             if (result)
             {
-                log.Information($"[Food] Successfully ate {config.FoodItemName}");
+                log.Information($"[Food] Successfully ate {config.FoodItemName} [{qualityLabel}]");
             }
             else
             {
-                log.Warning($"[Food] Failed to eat {config.FoodItemName} - UseItem returned false");
+                log.Warning($"[Food] Failed to eat {config.FoodItemName} [{qualityLabel}] - UseItem returned false");
             }
         }
         catch (Exception ex)

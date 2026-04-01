@@ -30,10 +30,12 @@ public class Configuration
     // --- Food Settings ---
     public int FoodItemId { get; set; } = 0;
     public string FoodItemName { get; set; } = "";
+    public bool FoodUseHighQuality { get; set; } = false;
 
     // --- Potion Settings ---
     public int PotionItemId { get; set; } = 0;
     public string PotionItemName { get; set; } = "";
+    public bool PotionUseHighQuality { get; set; } = false;
     public int PotionTarget { get; set; } = 0;
 
     // --- Repair Settings (handled by AutoDuty) ---

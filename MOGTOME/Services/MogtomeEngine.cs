@@ -36,6 +36,7 @@ public class MogtomeEngine
     private readonly StuckDetectionService stuckDetection;
     private readonly DialogHandlerService dialogHandler;
     private readonly AutoDutyPathService autoDutyPath;
+    private readonly ConflictPluginService conflictPluginService;
     private readonly RunHistoryService runHistoryService; // NEW
     private readonly AutoDutyIPC autoDutyIPC;
     private readonly AutomatonIPC automatonIPC;
@@ -87,7 +88,7 @@ public class MogtomeEngine
         RepairService repairService, FoodService foodService,
         RotationService rotationService, BossHandlerService bossHandler,
         StuckDetectionService stuckDetection, DialogHandlerService dialogHandler,
-        AutoDutyPathService autoDutyPath, RunHistoryService runHistoryService, // NEW
+        AutoDutyPathService autoDutyPath, ConflictPluginService conflictPluginService, RunHistoryService runHistoryService, // NEW
         AutoDutyIPC autoDutyIPC, AutomatonIPC automatonIPC, YesAlreadyIPC yesAlreadyIPC,
         ICondition condition, IClientState clientState, ICommandManager commandManager)
     {
@@ -103,6 +104,7 @@ public class MogtomeEngine
         this.stuckDetection = stuckDetection;
         this.dialogHandler = dialogHandler;
         this.autoDutyPath = autoDutyPath;
+        this.conflictPluginService = conflictPluginService;
         this.runHistoryService = runHistoryService; // NEW
         this.autoDutyIPC = autoDutyIPC;
         this.automatonIPC = automatonIPC;
@@ -142,6 +144,23 @@ public class MogtomeEngine
 
         try
         {
+            StatusMessage = "Checking conflicting plugins...";
+            var conflictingPluginsReady = await conflictPluginService.EnsureTwistOfFayteDisabledAsync("MOGTOME start", showPopup: true);
+            if (CurrentState != EngineState.Initializing)
+            {
+                log.Warning("[Engine] Start aborted while resolving conflicting plugins");
+                return;
+            }
+
+            if (!conflictingPluginsReady)
+            {
+                const string conflictFailure = "Twist of Fayte is still enabled; disable it before starting MOGTOME";
+                log.Warning($"[Engine] {conflictFailure}");
+                CurrentState = EngineState.Idle;
+                StatusMessage = "Idle";
+                return;
+            }
+
             log.Information("[Engine] Waiting for AutoDuty to finish profile initialization");
             var autoDutyReady = await autoDutyPath.WaitForAutoDutyInitializationAsync(TimeSpan.FromSeconds(20), TimeSpan.FromMilliseconds(500));
             if (CurrentState != EngineState.Initializing)
@@ -213,7 +232,10 @@ public class MogtomeEngine
             DetectPartyLeader();
 
             // Check potion availability
-            state.PotionsAvailable = config.PotionItemId > 0;
+            state.PotionsAvailable = config.PotionItemId > 0 &&
+                                     GameHelpers.GetInventoryItemCount((uint)config.PotionItemId, config.PotionUseHighQuality) > 0;
+            state.FoodAvailable = config.FoodItemId > 0 &&
+                                  GameHelpers.GetInventoryItemCount((uint)config.FoodItemId, config.FoodUseHighQuality) > 0;
 
             // Calculate timeouts
             state.CalculateTimeouts(LoopInterval);

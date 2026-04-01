@@ -231,6 +231,13 @@ public static class GameHelpers
     /// Copied from FrenRider GameHelpers.
     /// </summary>
     public static unsafe bool UseItem(uint itemId)
+        => UseItem(itemId, highQuality: false);
+
+    /// <summary>
+    /// Use an item from inventory by item ID, optionally as HQ.
+    /// HQ item actions use the same base item row with the HQ action ID offset.
+    /// </summary>
+    public static unsafe bool UseItem(uint itemId, bool highQuality)
     {
         try
         {
@@ -265,23 +272,45 @@ public static class GameHelpers
                 return false;
             }
 
+            var actionItemId = highQuality ? itemId + 1_000_000u : itemId;
+
             // Check if the action is ready
-            var status = am->GetActionStatus(ActionType.Item, itemId);
+            var status = am->GetActionStatus(ActionType.Item, actionItemId);
             if (status != 0)
             {
-                Plugin.Log.Debug($"UseItem({itemId}): ActionStatus={status}, not ready");
+                Plugin.Log.Debug($"UseItem({itemId}, HQ={highQuality}): ActionStatus={status}, not ready");
                 return false;
             }
 
             // Use item with extraParam 65535 (required for item usage)
-            var result = am->UseAction(ActionType.Item, itemId, extraParam: 65535);
-            Plugin.Log.Information($"UseItem({itemId}): UseAction result={result}");
+            var result = am->UseAction(ActionType.Item, actionItemId, extraParam: 65535);
+            Plugin.Log.Information($"UseItem({itemId}, HQ={highQuality}): UseAction result={result}");
             return result;
         }
         catch (Exception ex)
         {
-            Plugin.Log.Error($"UseItem({itemId}) failed: {ex.Message}");
+            Plugin.Log.Error($"UseItem({itemId}, HQ={highQuality}) failed: {ex.Message}");
             return false;
+        }
+    }
+
+    public static unsafe int GetInventoryItemCount(uint itemId, bool highQuality)
+    {
+        try
+        {
+            var inventoryManager = InventoryManager.Instance();
+            if (inventoryManager == null)
+            {
+                Plugin.Log.Warning($"GetInventoryItemCount({itemId}, HQ={highQuality}): InventoryManager is null");
+                return 0;
+            }
+
+            return inventoryManager->GetInventoryItemCount(itemId, highQuality);
+        }
+        catch (Exception ex)
+        {
+            Plugin.Log.Error($"GetInventoryItemCount({itemId}, HQ={highQuality}) failed: {ex.Message}");
+            return 0;
         }
     }
 }

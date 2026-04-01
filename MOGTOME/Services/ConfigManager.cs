@@ -63,8 +63,10 @@ public class ConfigManager
         if (lastKnownConfig == null || 
             currentConfig.FoodItemId != lastKnownConfig.FoodItemId ||
             currentConfig.FoodItemName != lastKnownConfig.FoodItemName ||
+            currentConfig.FoodUseHighQuality != lastKnownConfig.FoodUseHighQuality ||
             currentConfig.PotionItemId != lastKnownConfig.PotionItemId ||
             currentConfig.PotionItemName != lastKnownConfig.PotionItemName ||
+            currentConfig.PotionUseHighQuality != lastKnownConfig.PotionUseHighQuality ||
             currentConfig.RepairThreshold != lastKnownConfig.RepairThreshold)
         {
             lastKnownConfig = currentConfig;
