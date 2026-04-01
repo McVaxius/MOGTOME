@@ -1210,8 +1210,8 @@ public class AutoDutyPathService
     }
 
     /// <summary>
-    /// Find the path index by searching AutoDuty paths folder for (1044)*.json files sorted by Date Modified.
-    /// This matches AutoDuty's UI sorting order and returns the correct index.
+    /// Legacy fallback: find the path index by sorting Praetorium files by modification date.
+    /// DictionaryPaths is preferred and should be attempted first.
     /// </summary>
     public int FindPathIndexByFileDate(string targetPathName)
     {
@@ -1227,70 +1227,10 @@ public class AutoDutyPathService
                 return -1;
             }
             
-            var pluginAssembly = autoDutyPlugin.GetType().Assembly;
-            
-            // Try to get the paths folder location
-            // Look for Configuration.PathsDirectory or similar field
-            var config = GetMemberValue(autoDutyPlugin.GetType(), autoDutyPlugin, "Configuration") 
-                      ?? GetMemberValue(autoDutyPlugin.GetType(), autoDutyPlugin, "config");
-            
-            string? pathsDirectory = null;
-            if (config != null)
-            {
-                var configType = config.GetType();
-                var pathsDirField = configType.GetField("PathsDirectory", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                                   ?? configType.GetField("PathsFolder", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                                   ?? configType.GetField("PathDirectory", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                
-                if (pathsDirField != null)
-                {
-                    pathsDirectory = pathsDirField.GetValue(config) as string;
-                    log.Information($"[AutoDutyPath] Found paths directory from config: {pathsDirectory}");
-                }
-            }
-            
-            // Fallback: Try to get from plugin directly
-            if (string.IsNullOrEmpty(pathsDirectory))
-            {
-                var pluginType = autoDutyPlugin.GetType();
-                var pathsDirField = pluginType.GetField("PathsDirectory", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                                   ?? pluginType.GetField("PathsFolder", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                
-                if (pathsDirField != null)
-                {
-                    pathsDirectory = pathsDirField.GetValue(autoDutyPlugin) as string;
-                    log.Information($"[AutoDutyPath] Found paths directory from plugin: {pathsDirectory}");
-                }
-            }
-            
-            // Fallback: Try common AutoDuty paths locations using Dalamud plugin interface
-            if (string.IsNullOrEmpty(pathsDirectory))
-            {
-                // Get our plugin's config directory and navigate to AutoDuty's paths
-                var ourConfigDir = PluginInterface.ConfigDirectory.FullName;
-                var possiblePaths = new[]
-                {
-                    Path.Combine(ourConfigDir, "..", "AutoDuty", "paths"),
-                    Path.Combine(ourConfigDir, "..", "..", "AutoDuty", "paths"),
-                    Path.Combine(ourConfigDir, "..", "..", "installed", "AutoDuty", "paths"),
-                    Path.Combine(ourConfigDir, "..", "..", "..", "installed", "AutoDuty", "paths"),
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "XIVLauncher", "pluginConfigs", "AutoDuty", "paths")
-                };
-                
-                foreach (var path in possiblePaths)
-                {
-                    if (Directory.Exists(path))
-                    {
-                        pathsDirectory = path;
-                        log.Information($"[AutoDutyPath] Found paths directory via Dalamud config: {pathsDirectory}");
-                        break;
-                    }
-                }
-            }
-            
+            var pathsDirectory = GetAutoDutyPathsFolder(autoDutyPlugin);
             if (string.IsNullOrEmpty(pathsDirectory) || !Directory.Exists(pathsDirectory))
             {
-                log.Error($"[AutoDutyPath] Could not find AutoDuty paths directory");
+                log.Error($"[AutoDutyPath] Could not find AutoDuty paths directory. Checked: {string.Join(" | ", GetAutoDutyPathsFolderCandidates(autoDutyPlugin))}");
                 return -1;
             }
             
@@ -2235,6 +2175,7 @@ public class AutoDutyPathService
                 log.Warning("[AutoDutyPath] Could not determine AutoDuty paths folder");
                 return Task.FromResult(false);
             }
+            log.Information($"[AutoDutyPath] Using AutoDuty paths folder: {autoDutyPathsFolder}");
 
             var bundledPathOptions = GetPraetoriumPathOptions();
             var bundledPathsFolder = GetBundledPathsFolder();
@@ -2243,6 +2184,7 @@ public class AutoDutyPathService
                 log.Warning($"[AutoDutyPath] Bundled path folder is missing. Checked: {string.Join(" | ", GetBundledPathsFolderCandidates())}");
                 return Task.FromResult(false);
             }
+            log.Information($"[AutoDutyPath] Using bundled Praetorium source folder: {bundledPathsFolder}");
 
             Directory.CreateDirectory(autoDutyPathsFolder);
             var installedCount = 0;
@@ -2405,27 +2347,106 @@ public class AutoDutyPathService
         return $"{author} {variant} ({formattedDate})";
     }
 
-    private string? GetAutoDutyPathsFolder()
+    private string? GetAutoDutyPathsFolder(object? autoDutyPlugin = null)
     {
         try
         {
-            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            var autoDutyPaths = Path.Combine(appData, "XIVLauncher", "pluginConfigs", "AutoDuty", "paths");
-
-            // Also check alternate location
-            if (!Directory.Exists(autoDutyPaths))
-            {
-                var altPath = Path.Combine(appData, "XIVLauncher", "pluginConfigs", "AutoDuty", "Paths");
-                if (Directory.Exists(altPath))
-                    return altPath;
-            }
-
-            return autoDutyPaths;
+            var candidates = GetAutoDutyPathsFolderCandidates(autoDutyPlugin);
+            return candidates.FirstOrDefault(Directory.Exists)
+                ?? candidates.FirstOrDefault();
         }
         catch (Exception ex)
         {
             log.Error($"[AutoDutyPath] GetAutoDutyPathsFolder failed: {ex.Message}");
             return null;
         }
+    }
+
+    private IReadOnlyList<string> GetAutoDutyPathsFolderCandidates(object? autoDutyPlugin = null)
+    {
+        var candidates = new List<string>();
+
+        void AddCandidate(string? candidate)
+        {
+            if (string.IsNullOrWhiteSpace(candidate))
+                return;
+
+            var normalized = Path.GetFullPath(candidate);
+            if (!candidates.Any(existing => existing.Equals(normalized, StringComparison.OrdinalIgnoreCase)))
+                candidates.Add(normalized);
+        }
+
+        autoDutyPlugin ??= FindDalamudPluginInstance("AutoDuty");
+        if (autoDutyPlugin != null)
+        {
+            var pluginInstance = GetMemberValue(autoDutyPlugin.GetType(), autoDutyPlugin, "Plugin")
+                ?? GetMemberValue(autoDutyPlugin.GetType(), autoDutyPlugin, "P")
+                ?? GetMemberValue(autoDutyPlugin.GetType(), autoDutyPlugin, "Instance")
+                ?? autoDutyPlugin;
+
+            AddCandidate(GetPathDirectoryMemberValue(pluginInstance));
+
+            var config = GetMemberValue(pluginInstance.GetType(), pluginInstance, "C")
+                ?? GetMemberValue(pluginInstance.GetType(), pluginInstance, "Config")
+                ?? GetMemberValue(pluginInstance.GetType(), pluginInstance, "Configuration")
+                ?? GetMemberValue(pluginInstance.GetType(), pluginInstance, "config");
+            if (config != null)
+                AddCandidate(GetPathDirectoryMemberValue(config));
+        }
+
+        var ourConfigDir = PluginInterface.ConfigDirectory.FullName;
+        AddCandidate(Path.Combine(ourConfigDir, "..", "AutoDuty", "paths"));
+        AddCandidate(Path.Combine(ourConfigDir, "..", "AutoDuty", "Paths"));
+        AddCandidate(Path.Combine(ourConfigDir, "..", "..", "AutoDuty", "paths"));
+        AddCandidate(Path.Combine(ourConfigDir, "..", "..", "AutoDuty", "Paths"));
+        AddCandidate(Path.Combine(ourConfigDir, "..", "..", "installed", "AutoDuty", "paths"));
+        AddCandidate(Path.Combine(ourConfigDir, "..", "..", "installed", "AutoDuty", "Paths"));
+        AddCandidate(Path.Combine(ourConfigDir, "..", "..", "..", "installed", "AutoDuty", "paths"));
+        AddCandidate(Path.Combine(ourConfigDir, "..", "..", "..", "installed", "AutoDuty", "Paths"));
+
+        var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        AddCandidate(Path.Combine(appData, "XIVLauncher", "pluginConfigs", "AutoDuty", "paths"));
+        AddCandidate(Path.Combine(appData, "XIVLauncher", "pluginConfigs", "AutoDuty", "Paths"));
+
+        return candidates;
+    }
+
+    private string? GetPathDirectoryMemberValue(object? instance)
+    {
+        if (instance == null)
+            return null;
+
+        var type = instance.GetType();
+        foreach (var memberName in new[] { "PathsDirectory", "PathsFolder", "PathDirectory" })
+        {
+            var property = type.GetProperty(memberName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            if (property != null)
+            {
+                var resolved = ResolveDirectoryPath(property.GetValue(instance));
+                if (!string.IsNullOrWhiteSpace(resolved))
+                    return resolved;
+            }
+
+            var field = type.GetField(memberName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            if (field != null)
+            {
+                var resolved = ResolveDirectoryPath(field.GetValue(instance));
+                if (!string.IsNullOrWhiteSpace(resolved))
+                    return resolved;
+            }
+        }
+
+        return null;
+    }
+
+    private static string? ResolveDirectoryPath(object? value)
+    {
+        return value switch
+        {
+            string stringPath when !string.IsNullOrWhiteSpace(stringPath) => stringPath,
+            DirectoryInfo directoryInfo => directoryInfo.FullName,
+            FileInfo fileInfo => fileInfo.Directory?.FullName,
+            _ => null,
+        };
     }
 }
