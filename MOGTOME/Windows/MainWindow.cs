@@ -138,6 +138,7 @@ public class MainWindow : Window, IDisposable
         {
             if (ImGui.Button("Start", new Vector2(80, 30)))
             {
+                plugin.ShowStartReminderToast();
                 _ = Task.Run(() => engine.Start());
             }
         }
@@ -194,6 +195,10 @@ public class MainWindow : Window, IDisposable
         if (ImGui.Button("Refresh Party State", new Vector2(150, 28)))
         {
             engine.RefreshPartyLeaderState();
+        }
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.SetTooltip("One-time same-world leader detection. Use only outside duty after the full party is visible.");
         }
 
         ImGui.Separator();
@@ -516,8 +521,8 @@ public class MainWindow : Window, IDisposable
         ImGui.Text($"Leader (runtime): {(state.IsPartyLeader ? "Yes" : "No")}");
         ImGui.Text($"Cross-World: {(config.IsCrossWorldParty ? "Yes" : "No")}");
         ImGui.TextDisabled(config.IsCrossWorldParty
-            ? "Source: manual cross-world setting"
-            : "Source: same-world auto-detection");
+            ? "Source: configured cross-world role"
+            : "Source: configured role. Refresh Party State only probes the current same-world party list once.");
         ImGui.Unindent();
         ImGui.Separator();
 

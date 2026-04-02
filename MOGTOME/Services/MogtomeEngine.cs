@@ -141,6 +141,7 @@ public class MogtomeEngine
 
         // Hook duty completed event
         Plugin.DutyStateService.DutyCompleted += OnDutyCompleted;
+        ApplyConfiguredPartyLeaderState(applyAutoQueuePolicy: false, reason: "engine init");
     }
 
     public void Dispose()
@@ -224,14 +225,14 @@ public class MogtomeEngine
             }
 
             var startingInsideDuty = condition[34];
-            if (!startingInsideDuty && EnforceMinimumPartySizeOutsideDuty("start request"))
+            if (!startingInsideDuty && EnforceMinimumPartySizeAtLeaderStart())
                 return;
 
             // 1. Send /ad stop FIRST to reset AutoDuty state for all characters
             log.Information("[Engine] Sending /ad stop to reset AutoDuty state");
             commandManager.ProcessCommand("/ad stop");
 
-            RefreshPartyLeaderState(applyAutoQueuePolicy: false);
+            log.Information($"[Engine] Using current party role at start: IsLeader={state.IsPartyLeader}, ConfiguredLeader={config.IsPartyLeader}, CrossWorld={config.IsCrossWorldParty}");
 
             // 2. Configure AutoDuty BEFORE setting path
             autoDutyIPC.ConfigureForMogtome(state.IsPartyLeader);
@@ -525,7 +526,6 @@ public class MogtomeEngine
 
             // Condition[26] = InCombat
             state.IsInCombat = condition[26];
-            RefreshPartyLeaderState();
 
             if (IsRepairFlowActive() && (HasQueueRegistrationCondition() || GameHelpers.IsAddonVisible("ContentsFinderConfirm")))
             {
@@ -541,13 +541,6 @@ public class MogtomeEngine
             }
 
             HandleQueueConditionTransitions(inDuty);
-
-            if (!inDuty &&
-                (CurrentState == EngineState.WaitingOutsideDuty || CurrentState == EngineState.Queueing) &&
-                EnforceMinimumPartySizeOutsideDuty(CurrentState == EngineState.Queueing ? "queueing" : "outside-duty requeue"))
-            {
-                return;
-            }
 
             switch (CurrentState)
             {
@@ -1599,80 +1592,118 @@ public class MogtomeEngine
         }
     }
 
-    private bool EnforceMinimumPartySizeOutsideDuty(string reason)
+    private bool EnforceMinimumPartySizeAtLeaderStart()
     {
-        if (config.TestingModeUnsynced || condition[34])
+        if (config.TestingModeUnsynced || condition[34] || config.IsCrossWorldParty || !config.IsPartyLeader)
             return false;
 
         var partyMemberCount = GetCurrentPartyMemberCount();
         if (partyMemberCount >= MinimumSyncedPartyMembers)
             return false;
 
-        var message = $"Need at least {MinimumSyncedPartyMembers} party members outside duty for synced MOGTOME. Current count: {partyMemberCount}. Enable Testing Mode: Unsynced to run with fewer.";
-        log.Warning($"[Engine] {reason}: {message} Party={GetPartyComposition()}");
+        var message = $"Need at least {MinimumSyncedPartyMembers} visible same-world party members before starting synced MOGTOME as leader. Current count: {partyMemberCount}. Cross-world parties and non-leaders are exempt.";
+        log.Warning($"[Engine] start gate: {message} Party={GetPartyComposition()}");
         Plugin.ChatGui.Print($"[MOGTOME] {message}");
         Stop();
         return true;
     }
 
-    public void RefreshPartyLeaderState(bool applyAutoQueuePolicy = true)
+    public void ApplyConfiguredPartyLeaderState(bool applyAutoQueuePolicy = true, string reason = "configured role")
     {
-        var previousLeaderState = state.IsPartyLeader;
-        DetectPartyLeader();
-
-        if (previousLeaderState == state.IsPartyLeader)
-            return;
-
-        log.Information($"[Engine] Party leader state changed: {previousLeaderState} -> {state.IsPartyLeader}");
-
-        if (applyAutoQueuePolicy && IsRunning)
-        {
-            dutyQueue.ApplyAutoQueuePolicyForCurrentRole("party role changed");
-        }
+        var source = config.IsCrossWorldParty
+            ? "configured cross-world role"
+            : "configured party role checkbox";
+        SetPartyLeaderState(config.IsPartyLeader, applyAutoQueuePolicy, reason, $"Source={source}");
     }
 
-    private void DetectPartyLeader()
+    public void RefreshPartyLeaderState(bool applyAutoQueuePolicy = true)
     {
+        if (condition[34] || state.IsInDuty)
+        {
+            var message = "Manual party refresh skipped inside duty. Use Refresh Party State only outside duty after the full party has zoned out and become visible.";
+            log.Warning($"[Engine] {message} Party={GetPartyComposition()}");
+            Plugin.ChatGui.Print($"[MOGTOME] {message}");
+            return;
+        }
+
+        if (config.IsCrossWorldParty)
+        {
+            log.Information($"[Engine] Manual party refresh requested in cross-world mode; keeping configured role. Party={GetPartyComposition()}");
+            ApplyConfiguredPartyLeaderState(applyAutoQueuePolicy, "manual refresh");
+            return;
+        }
+
+        if (!TryDetectSameWorldPartyLeader(out var isPartyLeader, out var details))
+        {
+            var message = $"Manual party refresh could not determine leader from the current same-world party list. Keeping {(state.IsPartyLeader ? "leader" : "non-leader")} role.";
+            log.Warning($"[Engine] {message} {details} Party={GetPartyComposition()}");
+            Plugin.ChatGui.Print($"[MOGTOME] {message}");
+            return;
+        }
+
+        SetPartyLeaderState(isPartyLeader, applyAutoQueuePolicy, "manual refresh", details);
+    }
+
+    private void SetPartyLeaderState(bool isPartyLeader, bool applyAutoQueuePolicy, string reason, string details)
+    {
+        var previousLeaderState = state.IsPartyLeader;
+        state.IsPartyLeader = isPartyLeader;
+
+        if (previousLeaderState == isPartyLeader)
+        {
+            log.Information($"[Engine] Party leader state unchanged ({reason}): IsLeader={isPartyLeader}. {details}");
+            return;
+        }
+
+        log.Information($"[Engine] Party leader state changed ({reason}): {previousLeaderState} -> {isPartyLeader}. {details}");
+
+        if (applyAutoQueuePolicy && IsRunning)
+            dutyQueue.ApplyAutoQueuePolicyForCurrentRole(reason);
+    }
+
+    private bool TryDetectSameWorldPartyLeader(out bool isPartyLeader, out string details)
+    {
+        isPartyLeader = state.IsPartyLeader;
+
         try
         {
-            if (config.IsCrossWorldParty)
-            {
-                state.IsPartyLeader = config.IsPartyLeader;
-                log.Information($"[Engine] Cross-world party: IsLeader={state.IsPartyLeader} (from config)");
-                return;
-            }
-
-            // Try to detect from party
             var party = Plugin.PartyList;
             if (party.Length <= 1)
             {
-                state.IsPartyLeader = true;
-                log.Information("[Engine] Solo or no party, treating as leader");
-                return;
+                details = $"Same-world detection requires at least 2 visible party members; visible count={party.Length}.";
+                return false;
             }
 
             var leaderIndex = (int)party.PartyLeaderIndex;
-            if (leaderIndex >= 0 && leaderIndex < party.Length)
+            if (leaderIndex < 0 || leaderIndex >= party.Length)
             {
-                var leader = party[leaderIndex];
-                if (leader != null)
-                {
-                    var localContentId = (long)Plugin.PlayerState.ContentId;
-                    var leaderContentId = (long)leader.ContentId;
-                    state.IsPartyLeader = leaderContentId == localContentId;
-                    log.Information($"[Engine] Party leader detection: IsLeader={state.IsPartyLeader}");
-                    return;
-                }
+                details = $"Same-world detection failed because PartyLeaderIndex={leaderIndex} is invalid for party length {party.Length}.";
+                return false;
             }
 
-            // Fallback to config
-            state.IsPartyLeader = config.IsPartyLeader;
-            log.Information($"[Engine] Fallback leader detection: IsLeader={state.IsPartyLeader}");
+            var leader = party[leaderIndex];
+            if (leader == null)
+            {
+                details = $"Same-world detection failed because party leader entry {leaderIndex} was null.";
+                return false;
+            }
+
+            var localContentId = (long)Plugin.PlayerState.ContentId;
+            var leaderContentId = (long)leader.ContentId;
+            if (localContentId == 0 || leaderContentId == 0)
+            {
+                details = $"Same-world detection failed because content IDs were not ready (local={localContentId}, leader={leaderContentId}).";
+                return false;
+            }
+
+            isPartyLeader = leaderContentId == localContentId;
+            details = $"Source=same-world manual detection, PartyLeaderIndex={leaderIndex}, LocalContentId={localContentId}, LeaderContentId={leaderContentId}, VisiblePartyMembers={party.Length}";
+            return true;
         }
         catch (Exception ex)
         {
-            state.IsPartyLeader = config.IsPartyLeader;
-            log.Warning($"[Engine] Leader detection failed, using config: {ex.Message}");
+            details = $"Same-world detection failed with exception: {ex.Message}";
+            return false;
         }
     }
 }

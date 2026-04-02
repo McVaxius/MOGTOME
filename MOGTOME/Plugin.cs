@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
 using Dalamud.Game.Command;
+using Dalamud.Game.Text.SeStringHandling;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Interface.Windowing;
@@ -18,6 +20,7 @@ public sealed class Plugin : IDalamudPlugin
 {
     public const string DiscordUrl = "https://discord.gg/VsXqydsvpu";
     public const string DiscordChannelHint = "Scroll down to \"The Dumpster Fire\" channel for plugin-specific issues and suggestions.";
+    public const string StartReminderToastMessage = "Check Party leader settings if the duty isn't starting";
 
     private sealed class ExternalExceptionLogState
     {
@@ -35,6 +38,7 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static IChatGui ChatGui { get; private set; } = null!;
     [PluginService] internal static IGameGui GameGui { get; private set; } = null!;
     [PluginService] internal static IPluginLog Log { get; private set; } = null!;
+    [PluginService] internal static IToastGui ToastGui { get; private set; } = null!;
     [PluginService] internal static ITargetManager TargetManager { get; private set; } = null!;
     [PluginService] internal static IPlayerState PlayerState { get; private set; } = null!;
     [PluginService] internal static IPartyList PartyList { get; private set; } = null!;
@@ -225,6 +229,7 @@ public sealed class Plugin : IDalamudPlugin
 
                 if (!Engine.IsRunning)
                 {
+                    ShowStartReminderToast();
                     _ = Task.Run(() => Engine.Start());
                     ChatGui.Print("[MOGTOME] Started");
                 }
@@ -310,6 +315,11 @@ public sealed class Plugin : IDalamudPlugin
         StatsWindow.IsOpen = true;
 
         ChatGui.Print("[MOGTOME] Queued random visible jumps for main/config/stats windows.");
+    }
+
+    public void ShowStartReminderToast()
+    {
+        ToastGui.ShowNormal(new SeString(new TextPayload(StartReminderToastMessage)));
     }
 
     private void OnFrameworkUpdate(IFramework fw)

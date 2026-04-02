@@ -469,7 +469,7 @@ public class ConfigWindow : Window, IDisposable
             config.IsPartyLeader = isLeader;
             changed = true;
         }
-        ImGui.TextDisabled("Auto-detected for same-world parties. Set manually for cross-world.");
+        ImGui.TextDisabled("Runtime role follows this saved setting. Use Refresh Party State outside duty for a one-time same-world detection.");
 
         var isCrossWorld = config.IsCrossWorldParty;
         if (ImGui.Checkbox("Cross-World Party", ref isCrossWorld))
@@ -479,17 +479,18 @@ public class ConfigWindow : Window, IDisposable
         }
         ImGui.TextDisabled("Enable if you're in a cross-world party.");
 
-        if (changed && plugin.Engine != null)
+        if (changed)
         {
-            plugin.Engine.RefreshPartyLeaderState();
+            plugin.State.IsPartyLeader = config.IsPartyLeader;
+            plugin.Engine?.ApplyConfiguredPartyLeaderState(reason: "party settings changed");
         }
 
         ImGui.Spacing();
         ImGui.TextColored(new Vector4(0.7f, 0.85f, 1.0f, 1.0f), "Runtime Party State:");
         ImGui.Text($"Leader right now: {(plugin.State.IsPartyLeader ? "Yes" : "No")}");
         ImGui.TextDisabled(config.IsCrossWorldParty
-            ? "Source: manual cross-world setting."
-            : "Source: same-world party auto-detection.");
+            ? "Source: configured cross-world role."
+            : "Source: configured role. Refresh Party State only probes the current same-world party list once.");
 
         if (plugin.Engine != null && ImGui.Button("Refresh Party State", new Vector2(170f, 28f)))
         {
@@ -497,7 +498,7 @@ public class ConfigWindow : Window, IDisposable
         }
         if (ImGui.IsItemHovered())
         {
-            ImGui.SetTooltip("Re-run party leader detection immediately and update the live runtime state.");
+            ImGui.SetTooltip("One-time same-world leader detection. Use only outside duty after the full party is visible.");
         }
 
         ImGui.Spacing();
@@ -505,7 +506,7 @@ public class ConfigWindow : Window, IDisposable
         ImGui.TextWrapped("- Leader: Queues duties, controls flow, and keeps Automaton AutoQueue on outside repair.");
         ImGui.TextWrapped("- Non-leader: Waits for queue, repairs independently, and keeps Automaton AutoQueue off.");
         ImGui.TextWrapped("- Repair: Leader turns AutoQueue off while repairing, then turns it back on when done.");
-        ImGui.TextWrapped("- Solo: Treated as leader automatically");
+        ImGui.TextWrapped("- Detection: Refresh Party State is manual-only and will not auto-promote solo or partial party data to leader.");
 
         return changed;
     }
