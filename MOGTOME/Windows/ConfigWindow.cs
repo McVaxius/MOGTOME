@@ -41,8 +41,8 @@ public class ConfigWindow : Window, IDisposable
         { "vnavmesh", "https://raw.githubusercontent.com/awgil/ffxiv_plugin_distribution/master/pluginmaster.json" },
         { "TextAdvance", "https://raw.githubusercontent.com/NightmareXIV/MyDalamudPlugins/main/pluginmaster.json" },
         { "SkipCutscene", "https://raw.githubusercontent.com/a08381/Dalamud.SkipCutscene/dist/repo.json" },
-        { "AutoDuty", "https://raw.githubusercontent.com/ffxivcode/DalamudPlugins/main/pluginmaster.json" },
-        { "SimpleTweaks", "" },
+        { "AutoDuty", "https://puni.sh/api/repository/erdelf" },
+        { "SimpleTweaks", "its in the main dalamud repo. what are you doing :D" },
         { "CustomResolution", "https://raw.githubusercontent.com/0x0ade/CustomResolution/main/pluginmaster.json" },
     };
 
@@ -298,15 +298,16 @@ public class ConfigWindow : Window, IDisposable
         ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Optional Plugins");
         ImGui.Separator();
 
-        DrawDepLineOptional("Krangler", depKrangler, "Recommended. Type Dhog in plugin search if you want appearance/nameplate chaos during runs.");
+        DrawDepLineOptional("Krangler", depKrangler, "Recommended. Appearance/nameplate randomizer.");
         DrawDepLineOptional("CustomResolution (1pp by 0x0ade)", depCustomRes);
         DrawDepLineOptional("ChillFrames", depChillframes);
         DrawDepLineOptional(
             "DPS (Dhog Potato System)",
             depDps,
-            "Experimental and not recommended. Type Dhog in plugin search if you still want the background render-off helper.",
+            "Experimental and not recommended. Low Spec Helper	.",
             "Experimental and not recommended.");
-        DrawDepLineOptional("TTSL (Thick Thighs Save Lives)", depTtsl, "Experimental and not available yet. When it exists, type Dhog in plugin search.");
+        DrawDepLineOptional("Thick Thighs Save Lives", depTtsl, "Experimental and not recommended. Remote HUD + Control.",
+            "Experimental and not recommended.");
 
         ImGui.Spacing();
         ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Conflicting Plugins");
