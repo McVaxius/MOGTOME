@@ -88,8 +88,12 @@ public class MogtomeEngine
     private DateTime queueRecoveryStopUntilUtc = DateTime.MinValue;
     private DateTime queueRecoveryResumeUtc = DateTime.MinValue;
     private const int QueueConditionIndex = 91;
+    private const int WaitingForDutyConditionIndex = 55;
+    private const int WaitingForDutyFinderConditionIndex = 59;
     private const float QueueRecoveryStopSeconds = 10.0f;
     private const float QueueRecoveryRepairGraceSeconds = 30.0f;
+    private const float QueueRegistrationWatchdogSeconds = 30.0f;
+    private DateTime queueRegistrationStartedUtc = DateTime.MinValue;
 
     public enum RequeueState
     {
@@ -399,6 +403,7 @@ public class MogtomeEngine
             rotationService.DisableRotation();
             dutyQueue.EnableAutoQueueAfterRepair();
             ResetRepairRecoveryWatchdog();
+            ResetQueueRegistrationWatchdog();
         }
         catch (Exception ex)
         {
@@ -518,7 +523,7 @@ public class MogtomeEngine
             // Condition[26] = InCombat
             state.IsInCombat = condition[26];
 
-            if (IsRepairFlowActive() && (condition[QueueConditionIndex] || GameHelpers.IsAddonVisible("ContentsFinderConfirm")))
+            if (IsRepairFlowActive() && (HasQueueRegistrationCondition() || GameHelpers.IsAddonVisible("ContentsFinderConfirm")))
             {
                 dutyQueue.CancelDutyPopForRepair();
             }
@@ -849,9 +854,7 @@ public class MogtomeEngine
         if (state.IsPartyLeader && !delayedRequeueInProgress)
         {
             var isPrae = dutyTracker.ShouldRunPraetorium();
-            CurrentState = EngineState.Queueing;
-            StatusMessage = $"Queueing: {dutyTracker.GetCurrentDutyName()}";
-            dutyQueue.TryQueue(isPrae);
+            StartQueueAttempt(isPrae, ignoreCooldown: false, "Queueing");
         }
         else if (!state.IsPartyLeader)
         {
@@ -913,19 +916,11 @@ public class MogtomeEngine
                 case RequeueState.WaitingToQueue:
                     if (elapsed >= 1.0)
                     {
-                        CurrentState = EngineState.Queueing;
-                        StatusMessage = $"Auto-queueing: {dutyTracker?.GetCurrentDutyName() ?? "Unknown"}";
-                        log.Information($"[Engine] Auto-queueing for next run: {dutyTracker?.GetCurrentDutyName() ?? "Unknown"}");
-                        try
-                        {
-                            dutyQueue?.TryQueue(isPrae);
-                        }
-                        catch (Exception ex)
-                        {
-                            log.Error($"[Engine] Queue failed: {ex.Message}");
-                        }
-                        requeueState = RequeueState.Queueing;
-                        requeueStartTime = DateTime.UtcNow;
+                        StartQueueAttempt(isPrae, ignoreCooldown: false, "Auto-queueing");
+                        requeueState = RequeueState.Complete;
+                        requeueInProgress = false;
+                        log.Information($"[Engine] Auto-queue command sent for next run: {dutyTracker?.GetCurrentDutyName() ?? "Unknown"}");
+                        return;
                     }
                     StatusMessage = $"Waiting to queue ({1.0 - elapsed:F0}s)";
                     break;
@@ -979,11 +974,38 @@ public class MogtomeEngine
         if (HandleRepairRecoveryWatchdog())
             return;
 
+        var dutyName = dutyTracker.GetCurrentDutyName();
+        if (HasQueueRegistrationCondition())
+        {
+            if (queueRegistrationStartedUtc != DateTime.MinValue)
+            {
+                var elapsed = (DateTime.UtcNow - queueRegistrationStartedUtc).TotalSeconds;
+                log.Information($"[Engine] Queue registration detected for {dutyName} after {elapsed:F1}s");
+                ResetQueueRegistrationWatchdog();
+            }
+
+            StatusMessage = $"Queueing: {dutyName} (registered)";
+            return;
+        }
+
+        if (queueRegistrationStartedUtc != DateTime.MinValue)
+        {
+            var elapsed = (DateTime.UtcNow - queueRegistrationStartedUtc).TotalSeconds;
+            if (elapsed >= QueueRegistrationWatchdogSeconds)
+            {
+                BeginQueueRecovery($"Queue registration did not start within {QueueRegistrationWatchdogSeconds:F0}s");
+                return;
+            }
+
+            StatusMessage = $"Queueing: {dutyName} (waiting for queue registration {Math.Ceiling(elapsed):F0}/{QueueRegistrationWatchdogSeconds:F0}s)";
+            return;
+        }
+
         // If we're now in duty, the state will change via OnEnteredDuty
         // Otherwise keep waiting
         if (!condition[34])
         {
-            StatusMessage = $"Queueing: {dutyTracker.GetCurrentDutyName()} (waiting...)";
+            StatusMessage = $"Queueing: {dutyName} (waiting...)";
         }
     }
 
@@ -1141,6 +1163,7 @@ public class MogtomeEngine
     private void EnterRepairMode(bool useNpcRepair, string statusMessage)
     {
         ResetRepairRecoveryWatchdog();
+        ResetQueueRegistrationWatchdog();
         CurrentState = EngineState.RepairingOutside;
         StatusMessage = statusMessage;
         outsideDutyTicks = 0;
@@ -1177,12 +1200,46 @@ public class MogtomeEngine
     private bool IsQueueRecoveryActive()
         => queueRecoveryStopUntilUtc != DateTime.MinValue;
 
+    private bool HasQueueRegistrationCondition()
+        => condition[QueueConditionIndex]
+           || condition[WaitingForDutyConditionIndex]
+           || condition[WaitingForDutyFinderConditionIndex];
+
+    private void ResetQueueRegistrationWatchdog()
+    {
+        queueRegistrationStartedUtc = DateTime.MinValue;
+    }
+
+    private void StartQueueAttempt(bool isPrae, bool ignoreCooldown, string statusPrefix)
+    {
+        var dutyName = dutyTracker.GetCurrentDutyName();
+        CurrentState = EngineState.Queueing;
+        StatusMessage = $"{statusPrefix}: {dutyName}";
+
+        try
+        {
+            if (ignoreCooldown)
+                dutyQueue.ForceQueue(isPrae);
+            else
+                dutyQueue.TryQueue(isPrae);
+
+            queueRegistrationStartedUtc = DateTime.UtcNow;
+            log.Information($"[Engine] {statusPrefix} command sent for {dutyName}; waiting up to {QueueRegistrationWatchdogSeconds:F0}s for queue registration");
+        }
+        catch (Exception ex)
+        {
+            ResetQueueRegistrationWatchdog();
+            log.Error($"[Engine] {statusPrefix} failed for {dutyName}: {ex.Message}");
+        }
+    }
+
     private void ResetQueueRecoveryState()
     {
         sawQueueConditionOutsideDuty = false;
         pendingQueueRecoveryAfterRepair = false;
         queueRecoveryStopUntilUtc = DateTime.MinValue;
         queueRecoveryResumeUtc = DateTime.MinValue;
+        ResetQueueRegistrationWatchdog();
     }
 
     private void BeginQueueRecovery(string reason)
@@ -1190,6 +1247,7 @@ public class MogtomeEngine
         var now = DateTime.UtcNow;
         sawQueueConditionOutsideDuty = false;
         pendingQueueRecoveryAfterRepair = false;
+        ResetQueueRegistrationWatchdog();
         queueRecoveryStopUntilUtc = now.AddSeconds(QueueRecoveryStopSeconds);
         queueRecoveryResumeUtc = DateTime.MinValue;
         CurrentState = EngineState.WaitingOutsideDuty;
@@ -1210,7 +1268,7 @@ public class MogtomeEngine
         if (IsQueueRecoveryActive())
             return;
 
-        if (condition[QueueConditionIndex])
+        if (HasQueueRegistrationCondition())
         {
             sawQueueConditionOutsideDuty = true;
             return;
@@ -1293,10 +1351,8 @@ public class MogtomeEngine
             {
                 var isPrae = dutyTracker.ShouldRunPraetorium();
                 var dutyName = dutyTracker.GetCurrentDutyName();
-                CurrentState = EngineState.Queueing;
-                StatusMessage = $"Repair recovery retry {repairRecoveryAttempts}: {dutyName}";
                 log.Warning($"[Engine] Repair recovery retry {repairRecoveryAttempts}: force-queueing {dutyName} after /ad stop");
-                dutyQueue.ForceQueue(isPrae);
+                StartQueueAttempt(isPrae, ignoreCooldown: true, $"Repair recovery retry {repairRecoveryAttempts}");
                 return true;
             }
 
