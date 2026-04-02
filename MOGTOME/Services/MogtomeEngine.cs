@@ -154,6 +154,7 @@ public class MogtomeEngine
         if (!IsRunning) return;
         dutyCompleted = true;
         dutyCompletedTime = DateTime.UtcNow;
+        DisableLeaderAutoQueueBeforeExitIfRepairNeeded($"Duty completed in territory {territoryId}");
         log.Information($"[Engine] Duty completed event in territory {territoryId} - will leave in {DutyExitDelaySeconds}s");
     }
 
@@ -1409,6 +1410,9 @@ public class MogtomeEngine
         var now = DateTime.UtcNow;
         // Throttle leave attempts to every 5 seconds
         if ((now - lastLeaveAttemptTime).TotalSeconds < 5.0) return;
+
+        DisableLeaderAutoQueueBeforeExitIfRepairNeeded("LeaveDuty");
+
         lastLeaveAttemptTime = now;
         leaveAttemptCount++;
 
@@ -1606,6 +1610,24 @@ public class MogtomeEngine
         Plugin.ChatGui.Print($"[MOGTOME] {message}");
         Stop();
         return true;
+    }
+
+    private void DisableLeaderAutoQueueBeforeExitIfRepairNeeded(string reason)
+    {
+        if (!state.IsPartyLeader)
+            return;
+
+        if (state.AutoQueueDisabledForRepair)
+        {
+            log.Information($"[Engine] AutoQueue is already disabled for repair before duty exit ({reason})");
+            return;
+        }
+
+        if (!repairService.NeedsRepair(forceRefresh: true))
+            return;
+
+        dutyQueue.DisableAutoQueueForRepair();
+        log.Warning($"[Engine] Leader repair detected before duty exit; AutoQueue disabled before leaving duty ({reason})");
     }
 
     public void ApplyConfiguredPartyLeaderState(bool applyAutoQueuePolicy = true, string reason = "configured role")

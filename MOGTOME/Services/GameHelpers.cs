@@ -25,12 +25,16 @@ public static class GameHelpers
     private static readonly HashSet<string> KnownInnTerritoryNames = new(StringComparer.OrdinalIgnoreCase)
     {
         "The Mizzenmast",
+        "Mizzenmast Inn",
         "The Roost",
         "The Hourglass",
         "The Forgotten Knight",
+        "Cloud Nine",
         "Bokairo Inn",
         "The Pendants",
+        "The Andron",
         "The Baldesion Annex",
+        "The For'ard Cabins",
     };
 
     /// <summary>

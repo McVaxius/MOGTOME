@@ -67,6 +67,7 @@ public sealed class Plugin : IDalamudPlugin
     public RotationService RotationService { get; private set; }
     public BossHandlerService BossHandlerService { get; private set; }
     public RepairService RepairService { get; private set; }
+    public InnEntryService InnEntryService { get; private set; }
     public FoodService FoodService { get; private set; }
     public DialogHandlerService DialogHandlerService { get; private set; }
     public StuckDetectionService StuckDetectionService { get; private set; }
@@ -111,6 +112,7 @@ public sealed class Plugin : IDalamudPlugin
         DutyTrackerService = new DutyTrackerService(Log, Configuration, State, RunHistoryService);
         DutyQueueService = new DutyQueueService(Log, Configuration, State, AutoDutyIPC, AutomatonIPC, CommandManager, Condition);
         RepairService = new RepairService(Log, Configuration, State, CommandManager, Condition);
+        InnEntryService = new InnEntryService(Log, VNavIPC);
         FoodService = new FoodService(Log, Configuration, State, Condition);
         BossHandlerService = new BossHandlerService(Log, Configuration, State, VNavIPC, CommandManager, Condition);
         StuckDetectionService = new StuckDetectionService(Log, Configuration, State, VNavIPC, Condition);
@@ -145,7 +147,7 @@ public sealed class Plugin : IDalamudPlugin
         });
         CommandManager.AddHandler(AliasCommandName, new CommandInfo(OnAliasCommand)
         {
-            HelpMessage = "MOGTOME: /mog [start|stop|config|status|debug|ws|j] or /mog to open UI."
+            HelpMessage = "MOGTOME: /mog [start|stop|inn|config|status|debug|ws|j] or /mog to open UI."
         });
 
         AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
@@ -187,6 +189,7 @@ public sealed class Plugin : IDalamudPlugin
         }
 
         RunHistoryService.Dispose();
+        InnEntryService.Cancel("plugin dispose", notifyUser: false);
 
         // Save current account configuration before disposing everything
         ConfigManager.SaveCurrentAccount();
@@ -240,18 +243,42 @@ public sealed class Plugin : IDalamudPlugin
                 break;
 
             case "stop":
+                var stoppedSomething = false;
+                if (InnEntryService.IsRunning)
+                {
+                    InnEntryService.Cancel("manual stop", notifyUser: false);
+                    stoppedSomething = true;
+                }
+
                 if (Engine == null)
                 {
-                    ChatGui.Print("[MOGTOME] Engine is still initializing.");
+                    ChatGui.Print(stoppedSomething
+                        ? "[MOGTOME] Stopped"
+                        : "[MOGTOME] Engine is still initializing.");
                     break;
                 }
 
-                Engine.Stop();
-                ChatGui.Print("[MOGTOME] Stopped");
+                if (Engine.IsRunning)
+                {
+                    Engine.Stop();
+                    stoppedSomething = true;
+                }
+
+                ChatGui.Print(stoppedSomething ? "[MOGTOME] Stopped" : "[MOGTOME] Already stopped");
                 break;
 
             case "config":
                 ConfigWindow.Toggle();
+                break;
+
+            case "inn":
+                if (Engine != null && Engine.IsRunning)
+                {
+                    ChatGui.Print("[MOGTOME] /mog inn is only available while the engine is stopped.");
+                    break;
+                }
+
+                InnEntryService.StartManualEntry();
                 break;
 
             case "status":
@@ -394,6 +421,8 @@ public sealed class Plugin : IDalamudPlugin
         {
             WarningTextWindow.ShowIfNeeded();
         }
+
+        InnEntryService.Update();
         
         // Only update engine if it's initialized
         if (Engine != null)

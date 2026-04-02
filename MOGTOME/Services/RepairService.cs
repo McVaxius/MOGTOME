@@ -40,7 +40,7 @@ public class RepairService
         log.Information($"[RepairService] Configuration updated - RepairThreshold: {config.RepairThreshold}%");
     }
 
-    public bool NeedsRepair()
+    public bool NeedsRepair(bool forceRefresh = false)
     {
         if (config.RepairThreshold < 0) return false;
 
@@ -48,7 +48,7 @@ public class RepairService
         {
             // Use Dalamud's condition check - only check periodically
             var now = DateTime.UtcNow;
-            if ((now - lastRepairCheck).TotalSeconds < RepairCheckCooldown) 
+            if (!forceRefresh && (now - lastRepairCheck).TotalSeconds < RepairCheckCooldown) 
             {
                 // Return cached result during cooldown
                 return state.NeedsRepair;
@@ -144,8 +144,8 @@ public class RepairService
                 return;
             }
 
-            log.Information($"[Repair] Repair completed outside inn territory {territoryName} ({territoryId}); sending /li inn via chat command");
-            GameHelpers.SendChatCommand("/li inn");
+            log.Information($"[Repair] Repair completed outside inn territory {territoryName} ({territoryId}); sending /mog inn via chat command");
+            GameHelpers.SendChatCommand("/mog inn");
         }
         catch (Exception ex)
         {

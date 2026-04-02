@@ -7,7 +7,7 @@ namespace MOGTOME.Windows;
 
 public sealed class WarningTextWindow : Window, IDisposable
 {
-    public const int CurrentWarningVersion = 2;
+    public const int CurrentWarningVersion = 3;
 
     private static readonly string[] WarningLines =
     [
@@ -17,17 +17,12 @@ public sealed class WarningTextWindow : Window, IDisposable
         "Also if you have RSR -> UI -> Simulate the effet of pressing abilities.",
         "Turn that feature off.",
         "also do not run dalamud from the same folder multiple times. it gets crashy when multiboxing",
-        "also do not run dalamud from the same folder multiple times. it gets crashy when multiboxing",
-        "also do not run dalamud from the same folder multiple times. it gets crashy when multiboxing",
-        "also do not run dalamud from the same folder multiple times. it gets crashy when multiboxing",
-        "also do not run dalamud from the same folder multiple times. it gets crashy when multiboxing",
-        "also do not run dalamud from the same folder multiple times. it gets crashy when multiboxing",
-        "AUTODUTY, RSR and navmesh sometimes will not like that and exit out.",
+        "AUTODUTY, RSR and navmesh sometimes WILL have a race condition and CTD without error.",
         "You will need to use multi install folders.",
+        "it will be the first thing i ask after what version is it",
         "im sorry for this. Did I forget to mention not to run dalamud from same folder multiple times? ok great.",
         "im sorry for this. Did I forget to mention not to run dalamud from same folder multiple times? ok great.",
         "im sorry for this. Did I forget to mention not to run dalamud from same folder multiple times? ok great.",
-        "there is no good way around it until i figure out a way to separate every instance of the game by account on the fly.",
         "im sorry for this. Did I forget to mention not to run dalamud from same folder multiple times? ok great.",
         "im sorry for this. Did I forget to mention not to run dalamud from same folder multiple times? ok great.",
         "im sorry for this. Did I forget to mention not to run dalamud from same folder multiple times? ok great.",
