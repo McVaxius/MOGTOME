@@ -26,6 +26,7 @@ public class RotationService
     {
         bossModIPC.DetectBossMod();
         state.WhichBossMod = bossModIPC.WhichBossMod;
+        bossModIPC.DisableKeyboardNoise();
 
         log.Information($"[Rotation] Initialized: BossMod={state.WhichBossMod}, using BossMod AI + RSR");
     }

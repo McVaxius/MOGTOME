@@ -77,6 +77,7 @@ public sealed class Plugin : IDalamudPlugin
     public MainWindow MainWindow { get; init; }
     public StatsWindow StatsWindow { get; init; }
     public ConflictPluginWarningWindow ConflictPluginWarningWindow { get; init; }
+    public WarningTextWindow WarningTextWindow { get; init; }
 
     private static readonly TimeSpan ExternalExceptionSuppressionWindow = TimeSpan.FromSeconds(10);
     private readonly object externalExceptionLogLock = new();
@@ -126,10 +127,12 @@ public sealed class Plugin : IDalamudPlugin
         MainWindow = new MainWindow(this);
         StatsWindow = new StatsWindow(this);
         ConflictPluginWarningWindow = new ConflictPluginWarningWindow(this);
+        WarningTextWindow = new WarningTextWindow(this);
         WindowSystem.AddWindow(ConfigWindow);
         WindowSystem.AddWindow(MainWindow);
         WindowSystem.AddWindow(StatsWindow);
         WindowSystem.AddWindow(ConflictPluginWarningWindow);
+        WindowSystem.AddWindow(WarningTextWindow);
 
         // Commands
         CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
@@ -189,6 +192,7 @@ public sealed class Plugin : IDalamudPlugin
         MainWindow.Dispose();
         StatsWindow.Dispose();
         ConflictPluginWarningWindow.Dispose();
+        WarningTextWindow.Dispose();
 
         YesAlreadyIPC.Dispose();
         VNavIPC.Dispose();
@@ -374,6 +378,11 @@ public sealed class Plugin : IDalamudPlugin
         if (ConflictPluginService.TryTakePendingWarning(out var conflictPopupMessage))
         {
             ConflictPluginWarningWindow.ShowWarning(conflictPopupMessage);
+        }
+
+        if (accountInitialized)
+        {
+            WarningTextWindow.ShowIfNeeded();
         }
         
         // Only update engine if it's initialized

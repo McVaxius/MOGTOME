@@ -27,7 +27,7 @@ public class ConfigWindow : Window, IDisposable
 
     // Dependency check cache
     private DateTime lastDepCheck = DateTime.MinValue;
-    private bool depRsr, depBmr, depVbm, depVnav, depTextAdv, depCutsceneSkip, depAutoDuty, depSimpleTweaks;
+    private bool depRsr, depBmr, depVbm, depVnav, depTextAdv, depCutsceneSkip, depAutoDuty, depSimpleTweaks, depLifestream;
     private bool depCustomRes, depChillframes, depKrangler, depDps, depTtsl;
     private bool depTwistOfFayteInstalled, depTwistOfFayteEnabled;
     private bool allDepsGreen = false;
@@ -39,6 +39,7 @@ public class ConfigWindow : Window, IDisposable
         { "BMR", "https://raw.githubusercontent.com/FFXIV-CombatReborn/CombatRebornRepo/main/pluginmaster.json" },
         { "VBM", "https://puni.sh/api/repository/veyn" },
         { "vnavmesh", "https://raw.githubusercontent.com/awgil/ffxiv_plugin_distribution/master/pluginmaster.json" },
+        { "Lifestream", "https://raw.githubusercontent.com/NightmareXIV/MyDalamudPlugins/main/pluginmaster.json" },
         { "TextAdvance", "https://raw.githubusercontent.com/NightmareXIV/MyDalamudPlugins/main/pluginmaster.json" },
         { "SkipCutscene", "https://raw.githubusercontent.com/a08381/Dalamud.SkipCutscene/dist/repo.json" },
         { "AutoDuty", "https://puni.sh/api/repository/erdelf" },
@@ -208,6 +209,7 @@ public class ConfigWindow : Window, IDisposable
             depCutsceneSkip = false;
             depAutoDuty = false;
             depSimpleTweaks = false;
+            depLifestream = false;
             depCustomRes = false;
             depChillframes = false;
             depKrangler = false;
@@ -233,10 +235,18 @@ public class ConfigWindow : Window, IDisposable
                     case "SkipCutscene": depCutsceneSkip = true; break;
                     case "AutoDuty": depAutoDuty = true; break;
                     case "SimpleTweaksPlugin": depSimpleTweaks = true; break;
+                    case "Lifestream": depLifestream = true; break;
                     case "ChillFrames": depChillframes = true; break;
                     case "Krangler": depKrangler = true; break;
                     case "DPS": depDps = true; break;
                     case "TTSL": depTtsl = true; break;
+                }
+
+                if (!depLifestream &&
+                    (p.Name.Contains("Lifestream", StringComparison.OrdinalIgnoreCase) ||
+                     p.InternalName.Contains("Lifestream", StringComparison.OrdinalIgnoreCase)))
+                {
+                    depLifestream = true;
                 }
                 
                 // Check for CustomResolution with random suffix
@@ -244,7 +254,7 @@ public class ConfigWindow : Window, IDisposable
             }
 
             var pathOk = plugin.AutoDutyPathService.PathExists(plugin.Configuration.PraetoriumPathFileName);
-            allDepsGreen = depRsr && (depBmr || depVbm) && !(depBmr && depVbm) && depVnav && depTextAdv && depCutsceneSkip && depAutoDuty && depSimpleTweaks && pathOk;
+            allDepsGreen = depRsr && (depBmr || depVbm) && !(depBmr && depVbm) && depVnav && depLifestream && depTextAdv && depCutsceneSkip && depAutoDuty && depSimpleTweaks && pathOk;
         }
         catch (Exception ex)
         {
@@ -281,6 +291,9 @@ public class ConfigWindow : Window, IDisposable
 
         // VNAV
         DrawDepLine("vnavmesh", depVnav, depVnav ? "Installed" : "NOT FOUND", "vnavmesh");
+
+        // Lifestream
+        DrawDepLine("Lifestream", depLifestream, depLifestream ? "Installed" : "NOT FOUND", "Lifestream");
 
         // TextAdvance
         DrawDepLine("TextAdvance", depTextAdv, depTextAdv ? "Installed" : "NOT FOUND", "TextAdvance");
@@ -466,10 +479,32 @@ public class ConfigWindow : Window, IDisposable
         }
         ImGui.TextDisabled("Enable if you're in a cross-world party.");
 
+        if (changed && plugin.Engine != null)
+        {
+            plugin.Engine.RefreshPartyLeaderState();
+        }
+
+        ImGui.Spacing();
+        ImGui.TextColored(new Vector4(0.7f, 0.85f, 1.0f, 1.0f), "Runtime Party State:");
+        ImGui.Text($"Leader right now: {(plugin.State.IsPartyLeader ? "Yes" : "No")}");
+        ImGui.TextDisabled(config.IsCrossWorldParty
+            ? "Source: manual cross-world setting."
+            : "Source: same-world party auto-detection.");
+
+        if (plugin.Engine != null && ImGui.Button("Refresh Party State", new Vector2(170f, 28f)))
+        {
+            plugin.Engine.RefreshPartyLeaderState();
+        }
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.SetTooltip("Re-run party leader detection immediately and update the live runtime state.");
+        }
+
         ImGui.Spacing();
         ImGui.TextColored(new Vector4(0.7f, 0.7f, 0.7f, 1.0f), "Party Behaviour:");
-        ImGui.TextWrapped("- Leader: Queues duties, initiates repair, controls flow");
-        ImGui.TextWrapped("- Non-leader: Waits for queue, repairs independently after 20s outside duty");
+        ImGui.TextWrapped("- Leader: Queues duties, controls flow, and keeps Automaton AutoQueue on outside repair.");
+        ImGui.TextWrapped("- Non-leader: Waits for queue, repairs independently, and keeps Automaton AutoQueue off.");
+        ImGui.TextWrapped("- Repair: Leader turns AutoQueue off while repairing, then turns it back on when done.");
         ImGui.TextWrapped("- Solo: Treated as leader automatically");
 
         return changed;

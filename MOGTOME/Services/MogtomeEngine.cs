@@ -26,6 +26,7 @@ public enum EngineState
 public class MogtomeEngine
 {
     private const string PhantomGaiusName = "Phantom Gaius";
+    private const int MinimumSyncedPartyMembers = 3;
 
     private readonly IPluginLog log;
     private readonly Configuration config;
@@ -222,12 +223,18 @@ public class MogtomeEngine
                 return;
             }
 
+            var startingInsideDuty = condition[34];
+            if (!startingInsideDuty && EnforceMinimumPartySizeOutsideDuty("start request"))
+                return;
+
             // 1. Send /ad stop FIRST to reset AutoDuty state for all characters
             log.Information("[Engine] Sending /ad stop to reset AutoDuty state");
             commandManager.ProcessCommand("/ad stop");
 
+            RefreshPartyLeaderState(applyAutoQueuePolicy: false);
+
             // 2. Configure AutoDuty BEFORE setting path
-            autoDutyIPC.ConfigureForMogtome(config.IsPartyLeader);
+            autoDutyIPC.ConfigureForMogtome(state.IsPartyLeader);
 
             // 3. THEN: Force path selection via reflection (after configuration)
             if (!condition[34]) // Only while not in duty
@@ -252,11 +259,8 @@ public class MogtomeEngine
             // 7. Pause YesAlready - we handle dialogs directly
             dialogHandler.Start();
 
-            // 8. Disable AutoQueue initially
-            automatonIPC.DisableAutoQueue();
-
-            // Detect party leader
-            DetectPartyLeader();
+            // 8. Apply the live AutoQueue policy for this character role
+            dutyQueue.ApplyAutoQueuePolicyAtStart();
 
             // Check potion availability
             state.PotionsAvailable = config.PotionItemId > 0 &&
@@ -271,7 +275,6 @@ public class MogtomeEngine
             // Testing mode: Unsync ON + LevelSync OFF (overpowered solo, fast clear)
             // Normal mode:  Unsync ON + LevelSync ON  (appropriate level with party to get rewards)
             autoDutyIPC.SetConfig("Unsynced", "true");
-            var startingInsideDuty = condition[34];
             
             if (config.TestingModeUnsynced)
             {
@@ -401,7 +404,7 @@ public class MogtomeEngine
             autoDutyIPC.StopDuty();
             dialogHandler.Stop();
             rotationService.DisableRotation();
-            dutyQueue.EnableAutoQueueAfterRepair();
+            dutyQueue.EnsureAutoQueueDisabledOnStop();
             ResetRepairRecoveryWatchdog();
             ResetQueueRegistrationWatchdog();
         }
@@ -522,6 +525,7 @@ public class MogtomeEngine
 
             // Condition[26] = InCombat
             state.IsInCombat = condition[26];
+            RefreshPartyLeaderState();
 
             if (IsRepairFlowActive() && (HasQueueRegistrationCondition() || GameHelpers.IsAddonVisible("ContentsFinderConfirm")))
             {
@@ -537,6 +541,13 @@ public class MogtomeEngine
             }
 
             HandleQueueConditionTransitions(inDuty);
+
+            if (!inDuty &&
+                (CurrentState == EngineState.WaitingOutsideDuty || CurrentState == EngineState.Queueing) &&
+                EnforceMinimumPartySizeOutsideDuty(CurrentState == EngineState.Queueing ? "queueing" : "outside-duty requeue"))
+            {
+                return;
+            }
 
             switch (CurrentState)
             {
@@ -1142,7 +1153,7 @@ public class MogtomeEngine
             return;
 
         repairService.ReturnToInnIfNeeded();
-        dutyQueue.EnableAutoQueueAfterRepair();
+        dutyQueue.RestoreAutoQueueAfterRepair();
         CurrentState = EngineState.WaitingOutsideDuty;
         outsideDutyTicks = 0;
         ArmRepairRecoveryWatchdog();
@@ -1561,6 +1572,62 @@ public class MogtomeEngine
         {
             log.Error($"[Engine] GetPartyComposition failed: {ex.Message}");
             return "Unknown";
+        }
+    }
+
+    private int GetCurrentPartyMemberCount()
+    {
+        try
+        {
+            var party = Plugin.PartyList;
+            var memberCount = 0;
+            for (var i = 0; i < party.Length; i++)
+            {
+                if (party[i] != null)
+                    memberCount++;
+            }
+
+            if (memberCount > 0)
+                return memberCount;
+
+            return Plugin.ObjectTable.LocalPlayer != null ? 1 : 0;
+        }
+        catch (Exception ex)
+        {
+            log.Error($"[Engine] GetCurrentPartyMemberCount failed: {ex.Message}");
+            return 0;
+        }
+    }
+
+    private bool EnforceMinimumPartySizeOutsideDuty(string reason)
+    {
+        if (config.TestingModeUnsynced || condition[34])
+            return false;
+
+        var partyMemberCount = GetCurrentPartyMemberCount();
+        if (partyMemberCount >= MinimumSyncedPartyMembers)
+            return false;
+
+        var message = $"Need at least {MinimumSyncedPartyMembers} party members outside duty for synced MOGTOME. Current count: {partyMemberCount}. Enable Testing Mode: Unsynced to run with fewer.";
+        log.Warning($"[Engine] {reason}: {message} Party={GetPartyComposition()}");
+        Plugin.ChatGui.Print($"[MOGTOME] {message}");
+        Stop();
+        return true;
+    }
+
+    public void RefreshPartyLeaderState(bool applyAutoQueuePolicy = true)
+    {
+        var previousLeaderState = state.IsPartyLeader;
+        DetectPartyLeader();
+
+        if (previousLeaderState == state.IsPartyLeader)
+            return;
+
+        log.Information($"[Engine] Party leader state changed: {previousLeaderState} -> {state.IsPartyLeader}");
+
+        if (applyAutoQueuePolicy && IsRunning)
+        {
+            dutyQueue.ApplyAutoQueuePolicyForCurrentRole("party role changed");
         }
     }
 

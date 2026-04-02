@@ -184,6 +184,18 @@ public class MainWindow : Window, IDisposable
             ImGui.SetTooltip("Obfuscate names with military/exercise words.\nUseful for screenshots.");
         }
 
+        ImGui.Spacing();
+        if (ImGui.Button("[WARNING TEXT]", new Vector2(140, 28)))
+        {
+            plugin.WarningTextWindow.Show(force: true);
+        }
+
+        ImGui.SameLine();
+        if (ImGui.Button("Refresh Party State", new Vector2(150, 28)))
+        {
+            engine.RefreshPartyLeaderState();
+        }
+
         ImGui.Separator();
 
         // Duty Info
@@ -501,8 +513,11 @@ public class MainWindow : Window, IDisposable
         // Party Info
         ImGui.Text("Party");
         ImGui.Indent();
-        ImGui.Text($"Leader: {(state.IsPartyLeader ? "Yes" : "No")}");
+        ImGui.Text($"Leader (runtime): {(state.IsPartyLeader ? "Yes" : "No")}");
         ImGui.Text($"Cross-World: {(config.IsCrossWorldParty ? "Yes" : "No")}");
+        ImGui.TextDisabled(config.IsCrossWorldParty
+            ? "Source: manual cross-world setting"
+            : "Source: same-world auto-detection");
         ImGui.Unindent();
         ImGui.Separator();
 

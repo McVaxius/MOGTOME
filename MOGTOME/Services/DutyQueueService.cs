@@ -70,14 +70,44 @@ public class DutyQueueService
         }
     }
 
-    public void EnableAutoQueueAfterRepair()
+    public void ApplyAutoQueuePolicyAtStart()
+        => ApplyAutoQueuePolicyForCurrentRole("startup");
+
+    public void ApplyAutoQueuePolicyForCurrentRole(string reason)
     {
         if (state.AutoQueueDisabledForRepair)
         {
-            automatonIPC.EnableAutoQueue();
-            state.AutoQueueDisabledForRepair = false;
-            log.Information("[DutyQueue] AutoQueue re-enabled after repair");
+            automatonIPC.DisableAutoQueue();
+            log.Information($"[DutyQueue] AutoQueue kept disabled while repair is active ({reason})");
+            return;
         }
+
+        if (state.IsPartyLeader)
+        {
+            automatonIPC.EnableAutoQueue();
+            log.Information($"[DutyQueue] AutoQueue enabled for leader ({reason})");
+        }
+        else
+        {
+            automatonIPC.DisableAutoQueue();
+            log.Information($"[DutyQueue] AutoQueue disabled for non-leader ({reason})");
+        }
+    }
+
+    public void RestoreAutoQueueAfterRepair()
+    {
+        if (!state.AutoQueueDisabledForRepair)
+            return;
+
+        state.AutoQueueDisabledForRepair = false;
+        ApplyAutoQueuePolicyForCurrentRole("repair complete");
+    }
+
+    public void EnsureAutoQueueDisabledOnStop()
+    {
+        state.AutoQueueDisabledForRepair = false;
+        automatonIPC.DisableAutoQueue();
+        log.Information("[DutyQueue] Ensured AutoQueue is disabled on stop");
     }
 
     /// <summary>

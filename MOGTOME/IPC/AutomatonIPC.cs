@@ -64,8 +64,11 @@ public class AutomatonIPC : IDisposable
 
     public void EnableAutoQueue()
     {
-        SetTweakState("AutoQueue", true);
-        log.Information("[Automaton] AutoQueue enabled");
+        if (!IsTweakEnabled("AutoQueue"))
+        {
+            SetTweakState("AutoQueue", true);
+            log.Information("[Automaton] AutoQueue enabled");
+        }
     }
 
     public void Dispose() { }

@@ -195,6 +195,34 @@ public static class GameHelpers
         }
     }
 
+    /// <summary>
+    /// Send a slash command exactly as if it were typed into chat.
+    /// Use this for commands that should bypass CommandManager plugin routing.
+    /// </summary>
+    public static unsafe void SendChatCommand(string command)
+    {
+        try
+        {
+            Plugin.Log.Debug($"[ChatCommandHelper] Sending chat command: {command}");
+
+            var uiModule = UIModule.Instance();
+            if (uiModule == null)
+            {
+                Plugin.Log.Error("UIModule is null, cannot send chat command");
+                return;
+            }
+
+            var bytes = Encoding.UTF8.GetBytes(command);
+            var utf8String = Utf8String.FromSequence(bytes);
+            uiModule->ProcessChatBoxEntry(utf8String, nint.Zero);
+            Plugin.Log.Debug($"[ChatCommandHelper] Sent via UIModule: {command}");
+        }
+        catch (Exception ex)
+        {
+            Plugin.Log.Error($"Chat command failed [{command}]: {ex.Message}");
+        }
+    }
+
     public static string GetTerritoryName(uint territoryId)
     {
         try

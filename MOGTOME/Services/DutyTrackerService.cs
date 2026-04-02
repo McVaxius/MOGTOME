@@ -6,6 +6,8 @@ namespace MOGTOME.Services;
 
 public class DutyTrackerService
 {
+    private const int DailyResetHourUtc = 15;
+
     private readonly IPluginLog log;
     private readonly Configuration config;
     private readonly DutyState state;
@@ -39,23 +41,22 @@ public class DutyTrackerService
     }
 
     /// <summary>
-    /// Calculate the next reset time (next 7 AM UTC that hasn't happened yet)
+    /// Calculate the next reset time (next 15:00 UTC that hasn't happened yet)
     /// </summary>
     private void CalculateNextResetTime()
     {
         var now = DateTime.UtcNow;
-        
-        // Find next 7 AM UTC (could be today or tomorrow)
-        var resetTime = new DateTime(now.Year, now.Month, now.Day, 7, 0, 0, DateTimeKind.Utc);
+
+        var resetTime = new DateTime(now.Year, now.Month, now.Day, DailyResetHourUtc, 0, 0, DateTimeKind.Utc);
         if (now >= resetTime)
         {
-            resetTime = resetTime.AddDays(1); // Tomorrow's 7 AM UTC
+            resetTime = resetTime.AddDays(1);
         }
-        
+
         state.NextResetTime = resetTime;
         // Note: ConfigManager.SaveCurrentAccount() will be called by the caller
         // We don't save here to avoid multiple saves during initialization
-        
+
         log.Information($"[DutyTracker] Next reset time set to: {resetTime:yyyy-MM-dd HH:mm UTC}");
     }
 

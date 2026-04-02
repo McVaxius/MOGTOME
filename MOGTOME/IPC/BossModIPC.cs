@@ -1,5 +1,6 @@
 using System;
 using Dalamud.Plugin.Services;
+using MOGTOME.Services;
 
 namespace MOGTOME.IPC;
 
@@ -9,6 +10,7 @@ public class BossModIPC : IDisposable
     private readonly ICommandManager commandManager;
 
     public string WhichBossMod { get; private set; } = "vbm";
+    public bool HasRotationSolver { get; private set; }
 
     public BossModIPC(IPluginLog log, ICommandManager commandManager)
     {
@@ -21,21 +23,31 @@ public class BossModIPC : IDisposable
         try
         {
             var installed = Plugin.PluginInterface.InstalledPlugins;
+            WhichBossMod = "vbm";
+            HasRotationSolver = false;
             foreach (var plugin in installed)
             {
+                if (plugin.IsLoaded &&
+                    (plugin.InternalName == "RotationSolver" || plugin.InternalName == "RotationSolverReborn"))
+                {
+                    HasRotationSolver = true;
+                }
+
                 if (plugin.IsLoaded && plugin.InternalName == "BossModReborn")
                 {
                     WhichBossMod = "bmr";
-                    log.Information("[BossMod] Detected BossModReborn (bmr)");
-                    return;
                 }
             }
-            WhichBossMod = "vbm";
-            log.Information("[BossMod] Using default VBM");
+
+            if (WhichBossMod == "bmr")
+                log.Information("[BossMod] Detected BossModReborn (bmr)");
+            else
+                log.Information("[BossMod] Using default VBM");
         }
         catch (Exception ex)
         {
             WhichBossMod = "vbm";
+            HasRotationSolver = false;
             log.Warning($"[BossMod] Detection failed, defaulting to vbm: {ex.Message}");
         }
     }
@@ -121,6 +133,23 @@ public class BossModIPC : IDisposable
         catch (Exception ex)
         {
             log.Debug($"[BossMod] DisableRSR failed (may not be installed): {ex.Message}");
+        }
+    }
+
+    public void DisableKeyboardNoise()
+    {
+        if (!HasRotationSolver)
+            return;
+
+        try
+        {
+            const string cmd = "/rotation Settings KeyBoardNoise false";
+            GameHelpers.SendCommand(cmd);
+            log.Information("[BossMod] Requested RSR KeyBoardNoise=false");
+        }
+        catch (Exception ex)
+        {
+            log.Error($"[BossMod] DisableKeyboardNoise failed: {ex.Message}");
         }
     }
 

@@ -115,6 +115,7 @@ public class Configuration
     public bool IsConfigWindowMovable { get; set; } = true;
     public bool StatsKrangleNames { get; set; } = false;
     public bool KrangleNames { get; set; } = false;
+    public int WarningPopupAcknowledgedVersion { get; set; } = 0;
 
     /// <summary>
     /// Save configuration to a JSON file (replaces Dalamud SQLite system)
