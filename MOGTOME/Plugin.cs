@@ -272,13 +272,17 @@ public sealed class Plugin : IDalamudPlugin
                 break;
 
             case "inn":
-                if (Engine != null && Engine.IsRunning)
+                if (Engine != null && Engine.IsRunning && Engine.CurrentState != EngineState.RepairingOutside)
                 {
-                    ChatGui.Print("[MOGTOME] /mog inn is only available while the engine is stopped.");
+                    ChatGui.Print("[MOGTOME] /mog inn is only available while the engine is stopped or actively repairing.");
                     break;
                 }
 
                 InnEntryService.StartManualEntry();
+                break;
+
+            case "inn auto":
+                InnEntryService.StartRepairReturnEntry();
                 break;
 
             case "status":

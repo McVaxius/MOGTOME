@@ -144,8 +144,8 @@ public class RepairService
                 return;
             }
 
-            log.Information($"[Repair] Repair completed outside inn territory {territoryName} ({territoryId}); sending /mog inn via chat command");
-            GameHelpers.SendChatCommand("/mog inn");
+            log.Information($"[Repair] Repair completed outside inn territory {territoryName} ({territoryId}); sending internal /mog inn auto command");
+            GameHelpers.SendChatCommand("/mog inn auto");
         }
         catch (Exception ex)
         {

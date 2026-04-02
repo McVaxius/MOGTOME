@@ -59,14 +59,25 @@ public class InnEntryService
 
     public void StartManualEntry()
     {
+        StartEntry("[MOGTOME] /mog inn requires a logged-in character.", "manual restart", allowRestart: true);
+    }
+
+    public void StartRepairReturnEntry()
+    {
+        StartEntry(string.Empty, "repair return restart", allowRestart: true);
+    }
+
+    private void StartEntry(string missingCharacterMessage, string restartReason, bool allowRestart)
+    {
         if (!Plugin.ClientState.IsLoggedIn || Plugin.ObjectTable.LocalPlayer == null)
         {
-            Plugin.ChatGui.Print("[MOGTOME] /mog inn requires a logged-in character.");
+            if (!string.IsNullOrWhiteSpace(missingCharacterMessage))
+                Plugin.ChatGui.Print(missingCharacterMessage);
             return;
         }
 
-        if (IsRunning)
-            Cancel("manual restart", notifyUser: false);
+        if (IsRunning && allowRestart)
+            Cancel(restartReason, notifyUser: false);
 
         if (GameHelpers.IsInnTerritory((ushort)Plugin.ClientState.TerritoryType))
         {
