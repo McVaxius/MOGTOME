@@ -299,15 +299,16 @@ public class ConfigWindow : Window, IDisposable
         ImGui.Separator();
 
         DrawDepLineOptional("Krangler", depKrangler, "Recommended. Appearance/nameplate randomizer.");
-        DrawDepLineOptional("CustomResolution (1pp by 0x0ade)", depCustomRes);
-        DrawDepLineOptional("ChillFrames", depChillframes);
+        DrawDepLineOptional("CustomResolution (1pp by 0x0ade)", depCustomRes, "Experimental and not recommended. Low Spec Helper.",
+		"Maybe Crashy with 2+ clients");
+        DrawDepLineOptional("ChillFrames", depChillframes, "Will cause some issues sometimes.");
         DrawDepLineOptional(
             "DPS (Dhog Potato System)",
             depDps,
             "Experimental and not recommended. Low Spec Helper.",
-            "Experimental and not recommended.");
+            "May have pathing issues.");
         DrawDepLineOptional("Thick Thighs Save Lives", depTtsl, "Experimental and not recommended. Remote HUD + Control.",
-            "Experimental and not recommended.");
+            "Very new plugin unknown issues.");
 
         ImGui.Spacing();
         ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Conflicting Plugins");
