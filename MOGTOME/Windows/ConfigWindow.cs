@@ -304,7 +304,7 @@ public class ConfigWindow : Window, IDisposable
         DrawDepLineOptional(
             "DPS (Dhog Potato System)",
             depDps,
-            "Experimental and not recommended. Low Spec Helper	.",
+            "Experimental and not recommended. Low Spec Helper.",
             "Experimental and not recommended.");
         DrawDepLineOptional("Thick Thighs Save Lives", depTtsl, "Experimental and not recommended. Remote HUD + Control.",
             "Experimental and not recommended.");

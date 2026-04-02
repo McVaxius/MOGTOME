@@ -165,6 +165,8 @@ public class MogtomeEngine
 
         try
         {
+            ClearStaleDutyStateIfNeeded();
+
             StatusMessage = "Checking conflicting plugins...";
             var conflictingPluginsReady = await conflictPluginService.EnsureTwistOfFayteDisabledAsync("MOGTOME start", showPopup: true);
             if (CurrentState != EngineState.Initializing)
@@ -265,6 +267,7 @@ public class MogtomeEngine
             // Testing mode: Unsync ON + LevelSync OFF (overpowered solo, fast clear)
             // Normal mode:  Unsync ON + LevelSync ON  (appropriate level with party to get rewards)
             autoDutyIPC.SetConfig("Unsynced", "true");
+            var startingInsideDuty = condition[34];
             
             if (config.TestingModeUnsynced)
             {
@@ -274,6 +277,15 @@ public class MogtomeEngine
             }
             else
             {
+                autoDutyIPC.SetConfig("LevelSync", "true");
+                GameHelpers.SetDutyFinderLevelSync(true);
+
+                if (startingInsideDuty)
+                {
+                    log.Information("[Engine] Start requested while already inside duty - skipping duty finder setup");
+                }
+                else
+                {
                 // Normal mode: Manually set duty finder options for Unsync+LevelSync
                 // AutoDuty IPC doesn't work for LevelSync, so we do it manually
                 log.Information("[Engine] Normal mode: Setting up duty finder for Unsync+LevelSync");
@@ -301,8 +313,7 @@ public class MogtomeEngine
                                 var uiModule = FFXIVClientStructs.FFXIV.Client.UI.UIModule.Instance();
                                 if (uiModule == null)
                                 {
-                                    log.Error("[Engine] UIModule is null, cannot send /dutyfinder command");
-                                    return;
+                                    throw new InvalidOperationException("UIModule is null, cannot send /dutyfinder command");
                                 }
 
                                 var bytes = System.Text.Encoding.UTF8.GetBytes("/dutyfinder");
@@ -313,54 +324,55 @@ public class MogtomeEngine
                         }
                         catch (Exception ex)
                         {
-                            log.Error($"[Engine] Failed to send /dutyfinder via UIModule: {ex.Message}");
-                            return;
+                            throw new InvalidOperationException($"Failed to send /dutyfinder via UIModule: {ex.Message}", ex);
                         }
                     }
                     
                     // Wait for it to appear
-                    await Task.Delay(1000);
-                    
-                    // Check if it's visible
-                    if (!GameHelpers.IsAddonVisible("ContentsFinder"))
+                    if (!await WaitForAddonVisibleAsync("ContentsFinder", TimeSpan.FromSeconds(5), TimeSpan.FromMilliseconds(200)))
                     {
-                        log.Warning("[Engine] ContentsFinder addon not visible after /dutyfinder - aborting setup");
-                        return;
+                        log.Warning("[Engine] ContentsFinder addon not visible after /dutyfinder - continuing without verified duty finder UI setup");
                     }
-                    
-                    log.Debug("[Engine] ContentsFinder addon is visible");
-                    
-                    // 2. Open Options
-                    log.Debug("[Engine] Step 2: Opening duty finder options");
-                    GameHelpers.FireAddonCallback("ContentsFinder", true, 15);
-                    await Task.Delay(2000);
-                    
-                    // 3. Set Unrestricted Party (Unsync)
-                    log.Debug("[Engine] Step 3: Setting Unrestricted Party (Unsync)");
-                    GameHelpers.FireAddonCallback("ContentsFinderSetting", true, 1, 1, 1);
-                    await Task.Delay(2000);
-                    
-                    // 4. Set Level Sync
-                    log.Debug("[Engine] Step 4: Setting Level Sync");
-                    GameHelpers.FireAddonCallback("ContentsFinderSetting", true, 1, 2, 1);
-                    await Task.Delay(2000);
-                    
-                    // 5. Confirm
-                    log.Debug("[Engine] Step 5: Confirming duty finder settings");
-                    GameHelpers.FireAddonCallback("ContentsFinderSetting", true, 0);
-                    await Task.Delay(2000);
-                    
-                    log.Information("[Engine] Duty finder setup complete: Unsync=ON, LevelSync=ON");
+                    else
+                    {
+                        log.Debug("[Engine] ContentsFinder addon is visible");
+                        
+                        // 2. Open Options
+                        log.Debug("[Engine] Step 2: Opening duty finder options");
+                        GameHelpers.FireAddonCallback("ContentsFinder", true, 15);
+                        await Task.Delay(2000);
+                        
+                        // 3. Set Unrestricted Party (Unsync)
+                        log.Debug("[Engine] Step 3: Setting Unrestricted Party (Unsync)");
+                        GameHelpers.FireAddonCallback("ContentsFinderSetting", true, 1, 1, 1);
+                        await Task.Delay(2000);
+                        
+                        // 4. Set Level Sync
+                        log.Debug("[Engine] Step 4: Setting Level Sync");
+                        GameHelpers.FireAddonCallback("ContentsFinderSetting", true, 1, 2, 1);
+                        await Task.Delay(2000);
+                        
+                        // 5. Confirm
+                        log.Debug("[Engine] Step 5: Confirming duty finder settings");
+                        GameHelpers.FireAddonCallback("ContentsFinderSetting", true, 0);
+                        await Task.Delay(2000);
+                        
+                        log.Information("[Engine] Duty finder setup complete: Unsync=ON, LevelSync=ON");
+                    }
                 }
                 catch (Exception ex)
                 {
                     log.Error($"[Engine] Failed to set up duty finder: {ex.Message}");
                     // Continue anyway - AutoDuty will still try to queue
                 }
-                
-                // Also set AutoDuty IPC for consistency
-                autoDutyIPC.SetConfig("LevelSync", "true");
-                GameHelpers.SetDutyFinderLevelSync(true);
+                }
+            }
+
+            if (startingInsideDuty)
+            {
+                StatusMessage = "Resuming inside duty...";
+                ResumeOrEnterCurrentDuty();
+                return;
             }
 
             CurrentState = EngineState.WaitingOutsideDuty;
@@ -396,6 +408,74 @@ public class MogtomeEngine
         CurrentState = EngineState.Idle;
         StatusMessage = "Idle";
         log.Information("[Engine] Stopped");
+    }
+
+    private void ClearStaleDutyStateIfNeeded()
+    {
+        if (condition[34])
+        {
+            if (state.DutyStartTerritory == 0 && clientState.TerritoryType > 0)
+            {
+                state.DutyStartTerritory = (ushort)clientState.TerritoryType;
+                log.Warning($"[Engine] DutyStartTerritory was empty while already inside duty - using current territory {state.DutyStartTerritory}");
+            }
+
+            return;
+        }
+
+        if (!state.IsInDuty && !state.HasEnteredDuty)
+            return;
+
+        log.Warning("[Engine] Clearing stale in-duty state before startup because the client is currently outside duty");
+        state.Reset();
+        dutyCompleted = false;
+        autoDutyStartedInDuty = false;
+        dutyEnteredUtc = DateTime.MinValue;
+        lastPraetoriumReadyWaitLogUtc = DateTime.MinValue;
+        lastRotationRefreshUtc = DateTime.MinValue;
+        ResetRepairRecoveryWatchdog();
+        ResetQueueRecoveryState();
+    }
+
+    private void ResumeOrEnterCurrentDuty()
+    {
+        dutyCompleted = false;
+        autoDutyStartedInDuty = false;
+        dutyEnteredUtc = DateTime.UtcNow;
+        lastPraetoriumReadyWaitLogUtc = DateTime.MinValue;
+        lastRotationRefreshUtc = DateTime.MinValue;
+        ResetRepairRecoveryWatchdog();
+        ResetQueueRecoveryState();
+        requeueInProgress = false;
+        requeueState = RequeueState.Idle;
+
+        if (!state.IsInDuty && !state.HasEnteredDuty)
+        {
+            log.Information("[Engine] Starting while already inside duty - entering fresh in-duty state");
+            OnEnteredDuty();
+            return;
+        }
+
+        state.IsInDuty = true;
+        state.IsInCombat = condition[26];
+        rotationService.ForceRotation();
+        CurrentState = EngineState.InDuty;
+        StatusMessage = $"In Duty - #{state.DutyCounter} ({dutyTracker.GetCurrentDutyName()})";
+        log.Information($"[Engine] Resuming current duty without re-counting start (HasEnteredDuty={state.HasEnteredDuty}, DutyCounter={state.DutyCounter})");
+    }
+
+    private static async Task<bool> WaitForAddonVisibleAsync(string addonName, TimeSpan timeout, TimeSpan pollInterval)
+    {
+        var deadline = DateTime.UtcNow + timeout;
+        while (DateTime.UtcNow < deadline)
+        {
+            if (GameHelpers.IsAddonVisible(addonName))
+                return true;
+
+            await Task.Delay(pollInterval);
+        }
+
+        return GameHelpers.IsAddonVisible(addonName);
     }
 
     public void Update()
