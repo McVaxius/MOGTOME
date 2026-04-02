@@ -13,6 +13,11 @@ public class DialogHandlerService
     private readonly YesAlreadyIPC yesAlreadyIPC;
     private readonly ICommandManager commandManager;
     private readonly IGameGui gameGui;
+    private static readonly IReadOnlyList<string> SealedAreaOfferPatterns =
+    [
+        "Move immediately to sealed area",
+        "Move immediately to the sealed area",
+    ];
     private static readonly IReadOnlyList<string> RaiseOfferPatterns =
     [
         "Would you like to be raised",
@@ -55,7 +60,7 @@ public class DialogHandlerService
 
         try
         {
-            TryAcceptRaiseOffer();
+            TryAcceptRecognizedYesNoPrompt();
             // Check for ContentFinderConfirm addon
             CheckAndConfirmDialog("ContentsFinderConfirm");
         }
@@ -65,7 +70,7 @@ public class DialogHandlerService
         }
     }
 
-    private unsafe void TryAcceptRaiseOffer()
+    private unsafe void TryAcceptRecognizedYesNoPrompt()
     {
         nint addonPtr = gameGui.GetAddonByName("SelectYesno", 1);
         if (addonPtr == 0)
@@ -91,7 +96,21 @@ public class DialogHandlerService
             return;
         }
 
-        foreach (var pattern in RaiseOfferPatterns)
+        if (TryAcceptPrompt(dialogText, now, RaiseOfferPatterns, "raise offer"))
+        {
+            return;
+        }
+
+        TryAcceptPrompt(dialogText, now, SealedAreaOfferPatterns, "sealed-area move");
+    }
+
+    private bool TryAcceptPrompt(
+        string dialogText,
+        DateTime now,
+        IReadOnlyList<string> patterns,
+        string promptKind)
+    {
+        foreach (var pattern in patterns)
         {
             if (!dialogText.Contains(pattern, StringComparison.OrdinalIgnoreCase))
                 continue;
@@ -100,15 +119,17 @@ public class DialogHandlerService
             {
                 lastHandledDialog = dialogText;
                 lastHandledDialogAt = now;
-                log.Information($"[DialogHandler] Accepted raise offer: {dialogText}");
+                log.Information($"[DialogHandler] Accepted {promptKind}: {dialogText}");
             }
             else
             {
-                log.Warning($"[DialogHandler] Raise offer detected but Yes click failed: {dialogText}");
+                log.Warning($"[DialogHandler] {promptKind} detected but Yes click failed: {dialogText}");
             }
 
-            return;
+            return true;
         }
+
+        return false;
     }
 
     private void CheckAndConfirmDialog(string addonName)
