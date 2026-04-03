@@ -233,6 +233,9 @@ public class MogtomeEngine
             log.Information("[Engine] Sending /ad stop to reset AutoDuty state");
             commandManager.ProcessCommand("/ad stop");
 
+            log.Information("[Engine] Sending /at enable as part of startup command prep");
+            GameHelpers.SendCommand("/at enable");
+
             log.Information($"[Engine] Using current party role at start: IsLeader={state.IsPartyLeader}, ConfiguredLeader={config.IsPartyLeader}, CrossWorld={config.IsCrossWorldParty}");
 
             // 2. Configure AutoDuty BEFORE setting path

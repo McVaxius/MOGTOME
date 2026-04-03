@@ -186,7 +186,7 @@ public class MainWindow : Window, IDisposable
         }
 
         ImGui.Spacing();
-        if (ImGui.Button("[WARNING TEXT]", new Vector2(140, 28)))
+        if (ImGui.Button("! HELP !", new Vector2(140, 28)))
         {
             plugin.WarningTextWindow.Show(force: true);
         }

@@ -11,15 +11,16 @@ public sealed class WarningTextWindow : Window, IDisposable
 
     private static readonly string[] WarningLines =
     [
+        "Good.  You can read this now!",
         "A few notes on MOGTOME version 0.0.0.x (not 1.x.x.x yet).",
         "its experimental and will explode occasionally.",
         "please provide logs so i can analyze the debris.",
-        "Also if you have RSR -> UI -> Simulate the effet of pressing abilities.",
+        "Also if you have RSR -> UI -> Simulate the effect of pressing abilities?",
         "Turn that feature off.",
-        "also do not run dalamud from the same folder multiple times. it gets crashy when multiboxing",
+        "Also .. do not run dalamud from the same folder multiple times. it gets crashy when multiboxing",
         "AUTODUTY, RSR and navmesh sometimes WILL have a race condition and CTD without error.",
         "You will need to use multi install folders.",
-        "it will be the first thing i ask after what version is it",
+        "It will be the first thing i ask after what version of MOGTOME is it.",
         "im sorry for this. Did I forget to mention not to run dalamud from same folder multiple times? ok great.",
         "im sorry for this. Did I forget to mention not to run dalamud from same folder multiple times? ok great.",
         "im sorry for this. Did I forget to mention not to run dalamud from same folder multiple times? ok great.",
