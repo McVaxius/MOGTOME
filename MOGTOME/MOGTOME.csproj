@@ -5,7 +5,7 @@
   <PropertyGroup>
     <TargetFramework>net10.0-windows</TargetFramework>
     <PlatformTarget>x64</PlatformTarget>
-    <Version>0.0.0.47</Version>
+    <Version>0.0.0.48</Version>
     <PackageProjectUrl>https://github.com/McVaxius/MOGTOME</PackageProjectUrl>
     <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
     <IsPackable>false</IsPackable>
@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.3" />
-    <None Include="images\**" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="images\icon.png" CopyToOutputDirectory="PreserveNewest" />
     <None Include="data\autoduty-paths\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

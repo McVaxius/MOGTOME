@@ -149,7 +149,7 @@ public class BossModIPC : IDisposable
             GameHelpers.SendCommand(cmd);
             GameHelpers.SendCommand(cmd2);
             GameHelpers.SendCommand(cmd3);
-            log.Information("[BossMod] Requested RSR KeyBoardNoise=false and preconfigure both bossmods");
+            log.Information("[MOGTOME][BossMod] Requested RSR KeyBoardNoise=false and preconfigure both bossmods");
         }
         catch (Exception ex)
         {
