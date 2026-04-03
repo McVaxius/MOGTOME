@@ -6,6 +6,10 @@
 
 [☕ Support development on Ko-fi](https://ko-fi.com/mcvaxius)
 
+[XA and I have created some Plugins and Guides here](https://aethertek.io/)
+the repo URL is now:
+```https://aethertek.io/x.json```
+
 ---
 
 **Management Of Grand Tome Operations & Management Engine**
