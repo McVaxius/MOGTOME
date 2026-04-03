@@ -7,27 +7,30 @@ namespace MOGTOME.Windows;
 
 public sealed class WarningTextWindow : Window, IDisposable
 {
-    public const int CurrentWarningVersion = 3;
+    public const int CurrentWarningVersion = 4;
 
     private static readonly string[] WarningLines =
     [
-        "Good.  You can read this now!",
+        "Sorry to make you read this.",
+        "-",
         "A few notes on MOGTOME version 0.0.0.x (not 1.x.x.x yet).",
-        "its experimental and will explode occasionally.",
-        "please provide logs so i can analyze the debris.",
-        "Also if you have RSR -> UI -> Simulate the effect of pressing abilities?",
-        "Turn that feature off.",
-        "Also .. do not run dalamud from the same folder multiple times. it gets crashy when multiboxing",
-        "AUTODUTY, RSR and navmesh sometimes WILL have a race condition and CTD without error.",
-        "You will need to use multi install folders.",
-        "It will be the first thing i ask after what version of MOGTOME is it.",
-        "im sorry for this. Did I forget to mention not to run dalamud from same folder multiple times? ok great.",
-        "im sorry for this. Did I forget to mention not to run dalamud from same folder multiple times? ok great.",
-        "im sorry for this. Did I forget to mention not to run dalamud from same folder multiple times? ok great.",
-        "im sorry for this. Did I forget to mention not to run dalamud from same folder multiple times? ok great.",
-        "im sorry for this. Did I forget to mention not to run dalamud from same folder multiple times? ok great.",
-        "im sorry for this. Did I forget to mention not to run dalamud from same folder multiple times? ok great.",
-        "im sorry for this. Did I forget to mention not to run dalamud from same folder multiple times? ok great.",
+        "its experimental and will break occasionally.",
+        "please provide logs so i can analyze !",
+        "-",
+        "Multiplayer guide, discord link and info:",
+		"https://aethertek.io/",
+        "-",
+        "There are 3 ways MOGTOME is currently crashing clients. (its not mogtome)",
+        "(1) If you have RSR -> UI -> Simulate the effect of pressing abilities? Turn that feature off.",
+        "-",
+        "(2) Do not run dalamud from the same folder multiple times. it gets crashy when multiboxing",
+        "AUTODUTY/RSR/navmesh sometimes WILL have race/deadlock and CTD with(out) error.",
+        "You will need to use multi install folders. to resolve this",
+        "It will be the first thing I ask after what version of MOGTOME is it.",
+        "-",
+        "(3) if you don't have very much RAM. you will have some issues with many clients",
+        "plan for 5GB free per client you want to run before loading any clients",
+        "see the multiplayer guide on https://aethertek.io/  for some tips and tricks",
     ];
 
     private readonly Plugin plugin;
