@@ -6,7 +6,7 @@
 
 [☕ Support development on Ko-fi](https://ko-fi.com/mcvaxius)
 
-[XA and I have created some Plugins and Guides here at -> aethretek.io](https://aethertek.io/)
+[XA and I have created some Plugins and Guides here at -> aethertek.io](https://aethertek.io/)
 ### Repo URL:
 ```
 https://aethertek.io/x.json
