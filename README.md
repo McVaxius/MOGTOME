@@ -8,7 +8,9 @@
 
 [XA and I have created some Plugins and Guides here](https://aethertek.io/)
 ### Repo URL:
-```https://aethertek.io/x.json```
+```
+https://aethertek.io/x.json
+```
 
 ---
 
