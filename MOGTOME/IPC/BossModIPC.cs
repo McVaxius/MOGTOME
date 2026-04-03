@@ -144,8 +144,12 @@ public class BossModIPC : IDisposable
         try
         {
             const string cmd = "/rotation Settings KeyBoardNoise false";
+            const string cmd2 = "/bmrai setpresetname AutoDuty Passive";
+            const string cmd3 = "/vbm ar set AutoDuty Passive";
             GameHelpers.SendCommand(cmd);
-            log.Information("[BossMod] Requested RSR KeyBoardNoise=false");
+            GameHelpers.SendCommand(cmd2);
+            GameHelpers.SendCommand(cmd3);
+            log.Information("[BossMod] Requested RSR KeyBoardNoise=false and preconfigure both bossmods");
         }
         catch (Exception ex)
         {
