@@ -7,17 +7,18 @@ namespace MOGTOME.Windows;
 
 public sealed class WarningTextWindow : Window, IDisposable
 {
-    public const int CurrentWarningVersion = 4;
+    public const int CurrentWarningVersion = 0;
 
     private static readonly string[] WarningLines =
     [
         "Sorry to make you read this.",
         "-",
         "A few notes on MOGTOME version 0.0.0.x (not 1.x.x.x yet).",
-        "its experimental and will break occasionally.",
+        "it's experimental and will break occasionally.",
         "please provide logs so i can analyze !",
         "-",
-        "Multiplayer guide, discord link and info:",
+        "Multiplayer guide, discord link and info at:",
+        "-",
 		"https://aethertek.io/",
         "-",
         "There are 3 ways MOGTOME is currently crashing clients. (its not mogtome)",
@@ -31,6 +32,22 @@ public sealed class WarningTextWindow : Window, IDisposable
         "(3) if you don't have very much RAM. you will have some issues with many clients",
         "plan for 5GB free per client you want to run before loading any clients",
         "see the multiplayer guide on https://aethertek.io/  for some tips and tricks",
+        "---------------------------------------------------------------------------------------------------",
+        "-",
+        "Now for some tips and tricks for MOGTOME.",
+        "-",
+        "1. If you are self repairing.  Set the % to max in AD . for some reason typing /ad repair for npc",
+		"repair will always go and try to repair, but for self repair it won't always do it.",
+        "-",
+		"2. Make an AD profile just for this purpose and pick it before you hit start.  MOGTOME changes some",
+		"settings so this is good idea to keep yoru leveling etc profiles safe", 
+        "-",
+		"3. Join the AutoParty discord -> https://discord.gg/KyfyAzG6", 
+        "-",
+        "4. When starting mogtome, make sure you start the non party leader first.  and you will have to",
+		"configure WHO the party leader is by clicking refresh status on the party leader.",
+        "I did this because its a seriously annoying logic puzzle to figure out who is actually the party leader.",
+		"I have some commented out and retired methods for it but it was unreliable.",
     ];
 
     private readonly Plugin plugin;

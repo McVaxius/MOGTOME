@@ -1143,6 +1143,8 @@ public class MogtomeEngine
     {
         outsideDutyTicks++;
         StatusMessage = "Repairing...";
+		log.Information("[MOGTOME][Repair] Requesting repair via AutoDuty in case self repair being cheeky.");
+		commandManager.ProcessCommand("/ad repair");
         if (outsideDutyTicks <= 5)
             return;
 
