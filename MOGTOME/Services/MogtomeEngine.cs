@@ -84,6 +84,10 @@ public class MogtomeEngine
     private int repairRecoveryAttempts = 0;
     private const float RepairRecoveryWatchdogSeconds = 120.0f;
     private const float RepairRecoveryStopDelaySeconds = 2.0f;
+    private DateTime lastRepairRequestUtc = DateTime.MinValue;
+    private int repairRequestAttempts = 0;
+    private bool activeRepairUsesNpc = false;
+    private const float RepairRequestRetrySeconds = 10.0f;
     private bool sawQueueConditionOutsideDuty = false;
     private bool pendingQueueRecoveryAfterRepair = false;
     private DateTime queueRecoveryStopUntilUtc = DateTime.MinValue;
@@ -410,6 +414,7 @@ public class MogtomeEngine
             dialogHandler.Stop();
             rotationService.DisableRotation();
             dutyQueue.EnsureAutoQueueDisabledOnStop();
+            ResetRepairRequestState();
             ResetRepairRecoveryWatchdog();
             ResetQueueRegistrationWatchdog();
         }
@@ -1150,7 +1155,9 @@ public class MogtomeEngine
 
         if (repairService.NeedsRepair())
             return;
+        }
 
+        ResetRepairRequestState();
         repairService.ReturnToInnIfNeeded();
         dutyQueue.RestoreAutoQueueAfterRepair();
         CurrentState = EngineState.WaitingOutsideDuty;
@@ -1172,21 +1179,15 @@ public class MogtomeEngine
 
     private void EnterRepairMode(bool useNpcRepair, string statusMessage)
     {
+        ResetRepairRequestState();
         ResetRepairRecoveryWatchdog();
         ResetQueueRegistrationWatchdog();
         CurrentState = EngineState.RepairingOutside;
         StatusMessage = statusMessage;
         outsideDutyTicks = 0;
         dutyQueue.DisableAutoQueueForRepair();
-
-        if (useNpcRepair)
-        {
-            repairService.TryNpcRepair();
-        }
-        else
-        {
-            repairService.TrySelfRepair();
-        }
+        activeRepairUsesNpc = useNpcRepair;
+        IssueRepairRequest("entered repair mode");
     }
 
     private void ArmRepairRecoveryWatchdog()
@@ -1202,6 +1203,49 @@ public class MogtomeEngine
         repairRecoveryWatchStartedUtc = DateTime.MinValue;
         repairRecoveryRetryReadyUtc = DateTime.MinValue;
         repairRecoveryAttempts = 0;
+    }
+
+    private void ResetRepairRequestState()
+    {
+        lastRepairRequestUtc = DateTime.MinValue;
+        repairRequestAttempts = 0;
+        activeRepairUsesNpc = false;
+    }
+
+    private void IssueRepairRequest(string reason)
+    {
+        repairRequestAttempts++;
+        lastRepairRequestUtc = DateTime.UtcNow;
+
+        if (repairRequestAttempts == 1)
+        {
+            log.Information($"[Engine] Sending AutoDuty repair request ({(activeRepairUsesNpc ? "npc" : "self")}) - {reason}");
+        }
+        else
+        {
+            log.Warning($"[Engine] Repair still needed; retrying AutoDuty repair request attempt {repairRequestAttempts} ({(activeRepairUsesNpc ? "npc" : "self")}) - {reason}");
+        }
+
+        if (activeRepairUsesNpc)
+            repairService.TryNpcRepair();
+        else
+            repairService.TrySelfRepair();
+    }
+
+    private void RetryRepairRequestIfNeeded()
+    {
+        if (lastRepairRequestUtc == DateTime.MinValue)
+        {
+            IssueRepairRequest("repair state had no active request timestamp");
+            return;
+        }
+
+        var elapsedSinceRequest = (DateTime.UtcNow - lastRepairRequestUtc).TotalSeconds;
+        if (elapsedSinceRequest < RepairRequestRetrySeconds)
+            return;
+
+        // AutoDuty repair can occasionally miss self-repair activation. Retry on a bounded cadence, never per-frame.
+        IssueRepairRequest($"repair still needed after {elapsedSinceRequest:F0}s");
     }
 
     private bool IsRepairFlowActive()
