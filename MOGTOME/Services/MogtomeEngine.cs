@@ -99,6 +99,9 @@ public class MogtomeEngine
     private const float QueueRecoveryRepairGraceSeconds = 30.0f;
     private const float QueueRegistrationWatchdogSeconds = 30.0f;
     private DateTime queueRegistrationStartedUtc = DateTime.MinValue;
+	
+	//RSR refresh counter
+	private int rsrcounter = 0;
 
     public enum RequeueState
     {
@@ -560,7 +563,12 @@ public class MogtomeEngine
                     UpdateQueueing();
                     break;
                 case EngineState.InDuty:
-                    UpdateInDuty();
+					rsrcounter++;
+					if (rsrcounter > 10)
+					{
+						UpdateInDuty();
+						rsrcounter = 0;
+					}
                     break;
                 case EngineState.RepairingOutside:
                     UpdateRepairing();
