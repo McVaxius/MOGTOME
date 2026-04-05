@@ -229,7 +229,7 @@ public class ConfigWindow : Window, IDisposable
                 {
                     case "RotationSolver": depRsr = true; break;
                     case "BossModReborn": depBmr = true; break;
-                    case "veyn.BossMod": depVbm = true; break;
+                    case "BossMod": depVbm = true; break;
                     case "vnavmesh": depVnav = true; break;
                     case "TextAdvance": depTextAdv = true; break;
                     case "SkipCutscene": depCutsceneSkip = true; break;
