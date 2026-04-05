@@ -152,7 +152,9 @@ public class BossModIPC : IDisposable
             const string cmd7 = "/rotation Settings AutoOffWhenDead False";
             const string cmd8 = "/rotation Settings AutoOffWhenDutyCompleted False";
             const string cmd9 = "/rotation Settings AutoOffAfterCombatTime 6942069";
-            const string cmd10 = "/rotation Auto";
+            const string cmd10 = "/rotation Settings ToggleAuto False";
+            const string cmd11 = "/rotation Settings ToggleManual False";
+            const string cmd12 = "/rotation Auto";
             GameHelpers.SendCommand(cmd);
             GameHelpers.SendCommand(cmd2);
             GameHelpers.SendCommand(cmd3);
@@ -163,6 +165,8 @@ public class BossModIPC : IDisposable
             GameHelpers.SendCommand(cmd8);
             GameHelpers.SendCommand(cmd9);
             GameHelpers.SendCommand(cmd10);
+            GameHelpers.SendCommand(cmd11);
+            GameHelpers.SendCommand(cmd12);
             log.Information("[MOGTOME][BossMod][RotationSolverReborn] Requested RSR and both bossmod shenanigans to calm down");
         }
         catch (Exception ex)
