@@ -286,7 +286,8 @@ public class ConfigWindow : Window, IDisposable
         }
         else
         {
-            DrawDepLine("BossMod (BMR or VBM)", false, "NOT FOUND - Need one", "BMR");
+            DrawDepLine("BossMod (BMR or VBM, pick one)", false, "NOT FOUND - Need one", "VBM");
+            DrawDepLine("BossModReborn (BMR or VBM, pick one)", false, "NOT FOUND - Need one", "BMR");
         }
 
         // VNAV
