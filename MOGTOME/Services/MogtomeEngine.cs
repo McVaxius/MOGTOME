@@ -1154,6 +1154,8 @@ public class MogtomeEngine
             return;
 
         if (repairService.NeedsRepair())
+        {
+            RetryRepairRequestIfNeeded();
             return;
         }
 
