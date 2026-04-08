@@ -254,10 +254,14 @@ public class MainWindow : Window, IDisposable
                 var autoDutyPlugin = plugin.AutoDutyPathService.FindDalamudPluginInstance("AutoDuty");
                 if (autoDutyPlugin != null)
                 {
+                    var selectedPathFileName = plugin.AutoDutyPathService.ResolvePraetoriumPathFileName(config.PraetoriumPathFileName);
+                    var selectedPathName = Path.GetFileNameWithoutExtension(selectedPathFileName) ?? selectedPathFileName;
+
                     // Test both methods and compare results
-                    var correctIndex = plugin.AutoDutyPathService.FindPathIndexFromDictionaryPaths(autoDutyPlugin, "(1044) The Praetorium - W2W 20250716 phecda");
-                    var fallbackIndex = plugin.AutoDutyPathService.FindPathIndexByName(autoDutyPlugin, "(1044) The Praetorium - W2W 20250716 phecda");
+                    var correctIndex = plugin.AutoDutyPathService.FindPathIndexFromDictionaryPaths(autoDutyPlugin, selectedPathName);
+                    var fallbackIndex = plugin.AutoDutyPathService.FindPathIndexByName(autoDutyPlugin, selectedPathName);
                     
+                    Plugin.Log.Information($"[TEST] Selected path target: {selectedPathFileName}");
                     Plugin.Log.Information($"[TEST] DictionaryPaths method result: {correctIndex}");
                     Plugin.Log.Information($"[TEST] PathSelectionsByPath method result: {fallbackIndex}");
                     
@@ -361,7 +365,9 @@ public class MainWindow : Window, IDisposable
                 if (autoDutyPlugin != null)
                 {
                     var actionsManager = AutoDutyPathService.GetMemberValue(autoDutyPlugin.GetType(), autoDutyPlugin, "actions");
-                    var actionsList = AutoDutyPathService.GetMemberValue(actionsManager?.GetType(), actionsManager, "actionsList");
+                    var actionsList = actionsManager == null
+                        ? null
+                        : AutoDutyPathService.GetMemberValue(actionsManager.GetType(), actionsManager, "actionsList");
                     plugin.AutoDutyPathService.LogActionsListTuples(actionsList);
                 }
             }
@@ -377,8 +383,10 @@ public class MainWindow : Window, IDisposable
                 if (autoDutyPlugin != null)
                 {
                     var configObj = AutoDutyPathService.GetMemberValue(autoDutyPlugin.GetType(), autoDutyPlugin, "Configuration");
-                    var pathSelections = AutoDutyPathService.GetMemberValue(configObj?.GetType(), configObj, "PathSelectionsByPath");
-                    plugin.AutoDutyPathService.LogPathSelections(pathSelections);
+                    var pathSelections = configObj == null
+                        ? null
+                        : AutoDutyPathService.GetMemberValue(configObj.GetType(), configObj, "PathSelectionsByPath");
+                    plugin.AutoDutyPathService.LogPathSelections(pathSelections, plugin.Configuration.PraetoriumPathFileName);
                 }
             }
             if (ImGui.IsItemHovered())
@@ -420,7 +428,7 @@ public class MainWindow : Window, IDisposable
                 var autoDutyPlugin = plugin.AutoDutyPathService.FindDalamudPluginInstance("AutoDuty");
                 if (autoDutyPlugin != null)
                 {
-                    plugin.AutoDutyPathService.LogConfigFields(autoDutyPlugin);
+                    plugin.AutoDutyPathService.LogConfigFields(autoDutyPlugin, plugin.Configuration.PraetoriumPathFileName);
                 }
             }
             if (ImGui.IsItemHovered())

@@ -27,10 +27,9 @@ public class AutoDutyPathService
     private static readonly BindingFlags AllFlags =
         BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
 
-    // Target values for path forcing
+    // Target values for duty forcing
     private const string TargetDutyName = "The Praetorium";
     private const int TargetTerritoryType = 1044;
-    private const string TargetPathName = "(1044) The Praetorium - W2W 20250716 phecda";
 
     // Last result for UI display
     public string LastForceResult { get; private set; } = "Not attempted";
@@ -947,7 +946,7 @@ public class AutoDutyPathService
     /// <summary>
     /// Simulate clicking on Praetorium in the AutoDuty UI
     /// </summary>
-    public void SimulateUIClick(object? autoDutyPlugin)
+    public void SimulateUIClick(object? autoDutyPlugin, string? configuredPathFileName = null)
     {
         try
         {
@@ -959,8 +958,11 @@ public class AutoDutyPathService
 
             var pluginType = autoDutyPlugin.GetType();
             var pluginAssembly = pluginType.Assembly;
+            var selectedPathFileName = ResolvePraetoriumPathFileName(configuredPathFileName);
+            var selectedPathName = Path.GetFileNameWithoutExtension(selectedPathFileName) ?? selectedPathFileName;
             
             log.Information("[SimulateClick] === SIMULATING PRAETORIUM CLICK ===");
+            log.Information($"[SimulateClick] Target configured path: {selectedPathName}");
             
             // Get MainTab type
             var mainTabType = pluginAssembly.GetType("AutoDuty.Windows.MainTab");
@@ -971,11 +973,11 @@ public class AutoDutyPathService
             }
             
             // Get the path index for Praetorium
-            var pathIndex = FindPathIndexFromDictionaryPaths(autoDutyPlugin, TargetPathName);
+            var pathIndex = FindPathIndexFromDictionaryPaths(autoDutyPlugin, selectedPathName);
             if (pathIndex < 0)
             {
                 log.Warning("[SimulateClick] Could not find Praetorium path index, using fallback");
-                pathIndex = FindPathIndexByName(autoDutyPlugin, TargetPathName);
+                pathIndex = FindPathIndexByName(autoDutyPlugin, selectedPathName);
             }
             
             if (pathIndex < 0)
@@ -1016,7 +1018,7 @@ public class AutoDutyPathService
                         else if (parameters[0].ParameterType == typeof(uint))
                             args = new object?[] { (uint)pathIndex };
                         else if (parameters[0].ParameterType == typeof(string))
-                            args = new object?[] { TargetPathName };
+                            args = new object?[] { selectedPathName };
                         else
                             continue; // Skip incompatible parameter types
                     }
@@ -1379,21 +1381,29 @@ public class AutoDutyPathService
     /// </summary>
     private bool IsTargetPath(string pathName, string targetPathName)
     {
-        // Remove .json extension if present for comparison
-        var cleanPathName = pathName.EndsWith(".json") ? pathName[..^5] : pathName;
-        var cleanTargetName = targetPathName.EndsWith(".json") ? targetPathName[..^5] : targetPathName;
-        
-        // Exact match
+        var cleanPathName = pathName.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ? pathName[..^5] : pathName;
+        var cleanTargetName = targetPathName.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ? targetPathName[..^5] : targetPathName;
+
         if (cleanPathName.Equals(cleanTargetName, StringComparison.OrdinalIgnoreCase))
             return true;
-            
-        // Check if it contains key identifiers
-        if (cleanPathName.Contains("Praetorium") && 
-            cleanPathName.Contains("W2W") && 
-            cleanPathName.Contains("phecda"))
+
+        if (cleanPathName.Contains(cleanTargetName, StringComparison.OrdinalIgnoreCase) ||
+            cleanTargetName.Contains(cleanPathName, StringComparison.OrdinalIgnoreCase))
             return true;
-            
+
         return false;
+    }
+
+    private static bool ConfigValueMatchesSelectedPath(
+        string valueStr,
+        string targetTerritory,
+        string selectedPathName,
+        string selectedPathFileName)
+    {
+        return valueStr.Contains(targetTerritory, StringComparison.Ordinal) ||
+               valueStr.Contains(selectedPathName, StringComparison.OrdinalIgnoreCase) ||
+               valueStr.Contains(selectedPathFileName, StringComparison.OrdinalIgnoreCase) ||
+               valueStr.Contains(TargetDutyName, StringComparison.OrdinalIgnoreCase);
     }
 
     // --- Path Data Exploration Helper ---
@@ -1656,7 +1666,7 @@ public class AutoDutyPathService
     /// <summary>
     /// Find actual config field names for path selection.
     /// </summary>
-    public void LogConfigFields(object? autoDutyPlugin)
+    public void LogConfigFields(object? autoDutyPlugin, string? configuredPathFileName = null)
     {
         try
         {
@@ -1676,7 +1686,10 @@ public class AutoDutyPathService
             }
 
             var configType = config.GetType();
+            var selectedPathFileName = ResolvePraetoriumPathFileName(configuredPathFileName);
+            var selectedPathName = Path.GetFileNameWithoutExtension(selectedPathFileName) ?? selectedPathFileName;
             log.Information("[AutoDutyPath] === CONFIG FIELD NAMES ===");
+            log.Information($"[AutoDutyPath] Configured Praetorium path: {selectedPathFileName}");
 
             // Look for path-related field names
             var pathKeywords = new[] { "path", "territory", "duty", "selected", "current", "mode" };
@@ -1714,8 +1727,7 @@ public class AutoDutyPathService
             // Also look for any fields that might contain our target values
             log.Information("[AutoDutyPath] === SEARCHING FOR TARGET VALUES ===");
             
-            var targetTerritory = "1044";
-            var targetPath = "(1044) The Praetorium - W2W 20250716 phecda";
+            var targetTerritory = TargetTerritoryType.ToString();
             
             foreach (var member in allMembers.Where(m => m.MemberType == MemberTypes.Field || m.MemberType == MemberTypes.Property))
             {
@@ -1734,13 +1746,14 @@ public class AutoDutyPathService
                     if (value != null)
                     {
                         var valueStr = value.ToString();
-                        if (valueStr.Contains(targetTerritory) || valueStr.Contains("Praetorium") || valueStr.Contains("phecda"))
+                        if (!string.IsNullOrEmpty(valueStr) &&
+                            ConfigValueMatchesSelectedPath(valueStr, targetTerritory, selectedPathName, selectedPathFileName))
                         {
                             log.Information($"[AutoDutyPath] *** CONFIG MATCH: {member.Name} = {value}");
                         }
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // Skip errors for this search
                 }
@@ -1770,13 +1783,14 @@ public class AutoDutyPathService
                     if (value != null)
                     {
                         var valueStr = value.ToString();
-                        if (valueStr.Contains(targetTerritory) || valueStr.Contains("Praetorium") || valueStr.Contains("phecda"))
+                        if (!string.IsNullOrEmpty(valueStr) &&
+                            ConfigValueMatchesSelectedPath(valueStr, targetTerritory, selectedPathName, selectedPathFileName))
                         {
                             log.Information($"[AutoDutyPath] *** PLUGIN MATCH: {member.Name} = {value}");
                         }
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // Skip errors for this search
                 }
@@ -1865,7 +1879,7 @@ public class AutoDutyPathService
     /// <summary>
     /// Log the PathSelectionsByPath dictionary to find territory → path mappings.
     /// </summary>
-    public void LogPathSelections(object? pathSelections)
+    public void LogPathSelections(object? pathSelections, string? configuredPathFileName = null)
     {
         try
         {
@@ -1876,7 +1890,10 @@ public class AutoDutyPathService
             }
 
             var dictType = pathSelections.GetType();
+            var selectedPathFileName = ResolvePraetoriumPathFileName(configuredPathFileName);
+            var selectedPathName = Path.GetFileNameWithoutExtension(selectedPathFileName) ?? selectedPathFileName;
             log.Information($"[AutoDutyPath] === PathSelectionsByPath ({dictType.FullName}) ===");
+            log.Information($"[AutoDutyPath] Selected Praetorium path for comparison: {selectedPathFileName}");
 
             // Check if it's a dictionary
             if (!dictType.IsGenericType || dictType.GetGenericTypeDefinition() != typeof(System.Collections.Generic.Dictionary<,>))
@@ -1945,7 +1962,7 @@ public class AutoDutyPathService
                                 log.Information($"[AutoDutyPath]   [{pathIndex}] {pathName}");
                                 
                                 // Check if this is our target path
-                                if (pathName.Contains("Praetorium") && pathName.Contains("W2W") && pathName.Contains("phecda"))
+                                if (IsTargetPath(pathName, selectedPathName))
                                 {
                                     log.Information($"[AutoDutyPath] *** FOUND TARGET PATH! ***");
                                     log.Information($"[AutoDutyPath] Target: {pathName}");
@@ -2059,8 +2076,13 @@ public class AutoDutyPathService
 
     // --- Reflection Helpers (from Reflections.md) ---
 
-    public static object? GetMemberValue(Type type, object? instance, string memberName)
+    public static object? GetMemberValue(Type? type, object? instance, string memberName)
     {
+        if (type == null)
+        {
+            return null;
+        }
+
         var field = type.GetField(memberName, AllFlags);
         if (field != null)
         {

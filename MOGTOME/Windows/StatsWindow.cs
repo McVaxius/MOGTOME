@@ -22,7 +22,6 @@ public class StatsWindow : Window, IDisposable
 
     private MainTab currentMainTab = MainTab.Summary;
     private DetailedSubTab currentDetailedTab = DetailedSubTab.JobPerformance;
-    private bool isVisible = false;
     private DateTime lastRefresh = DateTime.MinValue;
     private const int REFRESH_INTERVAL_SECONDS = 10;
 
