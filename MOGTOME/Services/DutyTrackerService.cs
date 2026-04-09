@@ -5,8 +5,8 @@ using MOGTOME.Models;
 namespace MOGTOME.Services;
 
 public class DutyTrackerService
-{
-    private const int DailyResetHourUtc = 15;
+{	//DAILY RESET TIME MF!!!!!
+    private const int DailyResetHourUtc = 7;
 
     private readonly IPluginLog log;
     private readonly Configuration config;
