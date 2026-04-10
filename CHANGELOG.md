@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Excluded unsynced testing/debug runs from summary and detailed statistics unless `Show debug runs` is enabled
 - Recomputed JSON summary stats from the same filtered run set used by the stats UI to prevent hidden runs from leaking back in
 - Repaired party-size persistence so grouped runs keep their stored party count even after leaving duty
+- Rebound duty tracking and run history to the active account configuration after login, fixing duty counters being incremented on a temporary pre-login config.
+- Reloaded run history after account selection instead of only during pre-login database migration, so persisted SQLite records hydrate the current session.
+- Persisted duty counters and recalculated JSON stats immediately when runs are counted/recorded to reduce data loss if the client exits around duty completion.
 
 ### Changed
 - Added SQLite backfill for missing `IsDebugRun` metadata and missing party sizes on existing run records

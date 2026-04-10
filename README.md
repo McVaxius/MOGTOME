@@ -32,6 +32,7 @@ MOGTOME automates farming of The Praetorium (99 runs) and The Porta Decumana (un
 - ✅ **Food Management**: Auto-consume food when buff expires
 - ✅ **Combat Integration**: BossMod or Rotation Solver Reborn support
 - ✅ **Filtered Statistics**: Unsynced testing runs stay out of stats unless you explicitly opt in
+- ✅ **Persistent Run Counters**: Duty counters and summary stats save against the active account after login and duty completion
 - ✅ **Stuck Detection**: Auto-recovery from stuck states
 - ✅ **Boss Mechanics**: Tank mitigation, potion usage, limit breaks
 - ✅ **Per-Character Configuration**: Separate settings for each character

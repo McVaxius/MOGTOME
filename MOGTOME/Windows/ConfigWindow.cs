@@ -191,6 +191,7 @@ public class ConfigWindow : Window, IDisposable
         if (changed)
         {
             plugin.ConfigManager.SaveCurrentAccount();
+            plugin.ConfigManager.NotifyConfigurationChanged(force: true);
         }
 
         FinalizePendingWindowPlacement();

@@ -14,7 +14,7 @@ namespace MOGTOME.Services;
 public class RunHistoryService : IDisposable
 {
     private readonly IPluginLog log;
-    private readonly Configuration config;
+    private Configuration config;
     private readonly DutyState state;
     private readonly IPlayerState playerState;
     private readonly ConfigManager configManager;
@@ -43,6 +43,12 @@ public class RunHistoryService : IDisposable
         
         // Note: Database operations moved to Plugin.OnFrameworkUpdate after initialization
         // Constructor is now clean - no database operations here
+    }
+
+    public void UpdateConfiguration(Configuration newConfig)
+    {
+        config = newConfig;
+        log.Information($"[RunHistory] Active account configuration applied: detailedTracking={config.EnableDetailedTracking}, showDebugRuns={config.ShowDebugRuns}");
     }
 
     public void Dispose()
@@ -399,6 +405,9 @@ public class RunHistoryService : IDisposable
                 
                 // Maintain history size limit
                 MaintainHistorySize();
+
+                UpdateJsonStatsFromRecords(runHistory.ToList());
+                configManager.SaveCurrentAccount();
                 
                 // Validate ContentId before database operations
                 var contentId = playerState.ContentId;

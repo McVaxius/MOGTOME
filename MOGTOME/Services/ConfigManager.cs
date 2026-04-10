@@ -24,7 +24,6 @@ public class ConfigManager
     private string currentAccountId = "";
     private const string ConfigFolder = "MOGTOME";
     private bool hasLoggedNoAccount = false;
-    private Configuration? lastKnownConfig;
     
     public event Action<Configuration>? ConfigurationChanged;
     
@@ -55,24 +54,16 @@ public class ConfigManager
     /// <summary>
     /// Notify subscribers when configuration changes
     /// </summary>
-    public void NotifyConfigurationChanged()
+    public void NotifyConfigurationChanged(bool force = false)
     {
         var currentConfig = GetActiveConfig();
-        
-        // Only notify if config actually changed
-        if (lastKnownConfig == null || 
-            currentConfig.FoodItemId != lastKnownConfig.FoodItemId ||
-            currentConfig.FoodItemName != lastKnownConfig.FoodItemName ||
-            currentConfig.FoodUseHighQuality != lastKnownConfig.FoodUseHighQuality ||
-            currentConfig.PotionItemId != lastKnownConfig.PotionItemId ||
-            currentConfig.PotionItemName != lastKnownConfig.PotionItemName ||
-            currentConfig.PotionUseHighQuality != lastKnownConfig.PotionUseHighQuality ||
-            currentConfig.RepairThreshold != lastKnownConfig.RepairThreshold)
-        {
-            lastKnownConfig = currentConfig;
-            ConfigurationChanged?.Invoke(currentConfig);
-            log.Debug("[ConfigManager] Configuration changed, notifying subscribers");
-        }
+
+        // Account-scoped configuration is mutable in-place, so reference or narrow-field
+        // comparisons miss important switches such as account selection and duty counters.
+        ConfigurationChanged?.Invoke(currentConfig);
+        log.Debug(force
+            ? "[ConfigManager] Configuration notification forced for active account"
+            : "[ConfigManager] Configuration notification sent for active account");
     }
     
     /// <summary>

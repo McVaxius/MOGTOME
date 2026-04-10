@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
-using System.Threading.Tasks;
+using System.Threading;
 using Dalamud.Plugin.Services;
 using Microsoft.Data.Sqlite;
 using MOGTOME.Models;
@@ -15,8 +15,13 @@ namespace MOGTOME.Repositories;
 /// </summary>
 public class SqliteRunRecordRepository : IRunRecordRepository
 {
+    private const int ConnectionOpenAttempts = 3;
+    private const int ConnectionRetryDelayMs = 100;
+    private const int BusyTimeoutMs = 5000;
+
     private readonly IPluginLog log;
     private readonly string databaseFolder;
+    private readonly object sqliteLock = new();
     
     public SqliteRunRecordRepository(IPluginLog log, string databaseFolder)
     {
@@ -26,7 +31,52 @@ public class SqliteRunRecordRepository : IRunRecordRepository
     
     private string GetDatabasePath(string accountId)
     {
+        if (string.IsNullOrWhiteSpace(accountId))
+            throw new ArgumentException("Account id is required for run-history SQLite storage.", nameof(accountId));
+
         return Path.Combine(databaseFolder, $"{accountId}.sqlite");
+    }
+
+    private SqliteConnection OpenConnection(string dbPath)
+    {
+        EnsureDatabaseDirectory(dbPath);
+
+        for (var attempt = 1; attempt <= ConnectionOpenAttempts; attempt++)
+        {
+            var connection = new SqliteConnection($"Data Source={dbPath};");
+            try
+            {
+                connection.Open();
+                ApplyBusyTimeout(connection);
+                return connection;
+            }
+            catch
+            {
+                connection.Dispose();
+                if (attempt >= ConnectionOpenAttempts)
+                    throw;
+
+                Thread.Sleep(ConnectionRetryDelayMs * attempt);
+            }
+        }
+
+        throw new InvalidOperationException($"Failed to open SQLite database: {dbPath}");
+    }
+
+    private static void EnsureDatabaseDirectory(string dbPath)
+    {
+        var directory = Path.GetDirectoryName(dbPath);
+        if (string.IsNullOrWhiteSpace(directory))
+            throw new InvalidOperationException($"Invalid database path: {dbPath}");
+
+        Directory.CreateDirectory(directory);
+    }
+
+    private static void ApplyBusyTimeout(SqliteConnection connection)
+    {
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = $"PRAGMA busy_timeout={BusyTimeoutMs}";
+        cmd.ExecuteNonQuery();
     }
     
     private void InitializeDatabase(SqliteConnection connection)
@@ -52,11 +102,6 @@ public class SqliteRunRecordRepository : IRunRecordRepository
             PRAGMA user_version = 1;
         ";
         cmd.ExecuteNonQuery();
-        
-        // Enable WAL mode for performance
-        cmd.CommandText = "PRAGMA journal_mode=WAL";
-        cmd.ExecuteNonQuery();
-
         EnsureColumnExists(connection, "RunRecords", "IsDebugRun", "INTEGER NOT NULL DEFAULT 0");
         RepairStoredPartySizes(connection);
     }
@@ -94,7 +139,7 @@ public class SqliteRunRecordRepository : IRunRecordRepository
             var rowId = reader.GetInt64(0);
             var storedPartySize = reader.GetInt32(1);
             var partyMembersJson = reader.GetString(2);
-            var partyMembers = JsonSerializer.Deserialize<List<string>>(partyMembersJson) ?? new List<string>();
+            var partyMembers = DeserializePartyMembers(partyMembersJson);
             var repairedPartySize = storedPartySize > 0 ? storedPartySize : partyMembers.Count;
 
             if (repairedPartySize > 0)
@@ -122,52 +167,48 @@ public class SqliteRunRecordRepository : IRunRecordRepository
     {
         try
         {
-            var dbPath = GetDatabasePath(accountId);
-            var directory = Path.GetDirectoryName(dbPath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            lock (sqliteLock)
             {
-                Directory.CreateDirectory(directory);
-            }
-            
-            var records = new List<RunRecord>();
-            using var connection = new SqliteConnection($"Data Source={dbPath};");
-            connection.Open();
-            
-            InitializeDatabase(connection);
-            
-            using var cmd = connection.CreateCommand();
-            cmd.CommandText = @"
-                SELECT ContentId, Timestamp, TerritoryId, CompletionTime, MogtomesEarned,
-                       IsPraetorium, WasSuccessful, PartySize, PartyMembers, IsDebugRun
-                FROM RunRecords
-                ORDER BY Timestamp DESC
-                LIMIT 1000
-            ";
-            
-            using var reader = cmd.ExecuteReader();
-            while (reader.Read())
-            {
-                var partyMembers = JsonSerializer.Deserialize<List<string>>(reader.GetString(8)) ?? new List<string>();
-                var storedPartySize = reader.GetInt32(7);
+                var dbPath = GetDatabasePath(accountId);
+                var records = new List<RunRecord>();
+                using var connection = OpenConnection(dbPath);
 
-                var record = new RunRecord
+                InitializeDatabase(connection);
+
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = @"
+                    SELECT ContentId, Timestamp, TerritoryId, CompletionTime, MogtomesEarned,
+                           IsPraetorium, WasSuccessful, PartySize, PartyMembers, IsDebugRun
+                    FROM RunRecords
+                    ORDER BY Timestamp DESC
+                    LIMIT 1000
+                ";
+
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
                 {
-                    ContentId = (ulong)reader.GetInt64(0),
-                    Timestamp = DateTime.Parse(reader.GetString(1)),
-                    TerritoryId = (ushort)reader.GetInt32(2),
-                    CompletionTime = (float)reader.GetDouble(3),
-                    MogtomesEarned = reader.GetInt32(4),
-                    IsPraetorium = reader.GetBoolean(5),
-                    WasSuccessful = reader.GetBoolean(6),
-                    PartySize = (byte)Math.Clamp(storedPartySize > 0 ? storedPartySize : partyMembers.Count, 0, byte.MaxValue),
-                    PartyMembers = partyMembers,
-                    IsDebugRun = reader.GetBoolean(9)
-                };
-                records.Add(record);
+                    var partyMembers = DeserializePartyMembers(reader.GetString(8));
+                    var storedPartySize = reader.GetInt32(7);
+
+                    var record = new RunRecord
+                    {
+                        ContentId = (ulong)reader.GetInt64(0),
+                        Timestamp = DateTime.Parse(reader.GetString(1)),
+                        TerritoryId = (ushort)reader.GetInt32(2),
+                        CompletionTime = (float)reader.GetDouble(3),
+                        MogtomesEarned = reader.GetInt32(4),
+                        IsPraetorium = reader.GetBoolean(5),
+                        WasSuccessful = reader.GetBoolean(6),
+                        PartySize = (byte)Math.Clamp(storedPartySize > 0 ? storedPartySize : partyMembers.Count, 0, byte.MaxValue),
+                        PartyMembers = partyMembers,
+                        IsDebugRun = reader.GetBoolean(9)
+                    };
+                    records.Add(record);
+                }
+
+                log.Debug($"[SqliteRepository] Loaded {records.Count} run records for account {accountId}");
+                return records;
             }
-            
-            log.Debug($"[SqliteRepository] Loaded {records.Count} run records for account {accountId}");
-            return records;
         }
         catch (Exception ex)
         {
@@ -180,37 +221,33 @@ public class SqliteRunRecordRepository : IRunRecordRepository
     {
         try
         {
-            var dbPath = GetDatabasePath(accountId);
-            var directory = Path.GetDirectoryName(dbPath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            lock (sqliteLock)
             {
-                Directory.CreateDirectory(directory);
+                var dbPath = GetDatabasePath(accountId);
+                using var connection = OpenConnection(dbPath);
+
+                InitializeDatabase(connection);
+
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = @"
+                    INSERT INTO RunRecords (ContentId, Timestamp, TerritoryId, CompletionTime, MogtomesEarned, IsPraetorium, WasSuccessful, PartySize, PartyMembers, IsDebugRun)
+                    VALUES (@ContentId, @Timestamp, @TerritoryId, @CompletionTime, @MogtomesEarned, @IsPraetorium, @WasSuccessful, @PartySize, @PartyMembers, @IsDebugRun)
+                ";
+
+                cmd.Parameters.AddWithValue("@ContentId", record.ContentId);
+                cmd.Parameters.AddWithValue("@Timestamp", record.Timestamp.ToUniversalTime().ToString("O"));
+                cmd.Parameters.AddWithValue("@TerritoryId", record.TerritoryId);
+                cmd.Parameters.AddWithValue("@CompletionTime", record.CompletionTime);
+                cmd.Parameters.AddWithValue("@MogtomesEarned", record.MogtomesEarned);
+                cmd.Parameters.AddWithValue("@IsPraetorium", record.IsPraetorium);
+                cmd.Parameters.AddWithValue("@WasSuccessful", record.WasSuccessful);
+                cmd.Parameters.AddWithValue("@PartySize", record.PartySize);
+                cmd.Parameters.AddWithValue("@PartyMembers", JsonSerializer.Serialize(record.PartyMembers ?? []));
+                cmd.Parameters.AddWithValue("@IsDebugRun", record.IsDebugRun);
+
+                cmd.ExecuteNonQuery();
+                log.Debug($"[SqliteRepository] Added run record for account {accountId}");
             }
-            
-            using var connection = new SqliteConnection($"Data Source={dbPath};");
-            connection.Open();
-            
-            InitializeDatabase(connection);
-            
-            using var cmd = connection.CreateCommand();
-            cmd.CommandText = @"
-                INSERT INTO RunRecords (ContentId, Timestamp, TerritoryId, CompletionTime, MogtomesEarned, IsPraetorium, WasSuccessful, PartySize, PartyMembers, IsDebugRun)
-                VALUES (@ContentId, @Timestamp, @TerritoryId, @CompletionTime, @MogtomesEarned, @IsPraetorium, @WasSuccessful, @PartySize, @PartyMembers, @IsDebugRun)
-            ";
-            
-            cmd.Parameters.AddWithValue("@ContentId", record.ContentId);
-            cmd.Parameters.AddWithValue("@Timestamp", record.Timestamp.ToUniversalTime().ToString("O"));
-            cmd.Parameters.AddWithValue("@TerritoryId", record.TerritoryId);
-            cmd.Parameters.AddWithValue("@CompletionTime", record.CompletionTime);
-            cmd.Parameters.AddWithValue("@MogtomesEarned", record.MogtomesEarned);
-            cmd.Parameters.AddWithValue("@IsPraetorium", record.IsPraetorium);
-            cmd.Parameters.AddWithValue("@WasSuccessful", record.WasSuccessful);
-            cmd.Parameters.AddWithValue("@PartySize", record.PartySize);
-            cmd.Parameters.AddWithValue("@PartyMembers", JsonSerializer.Serialize(record.PartyMembers));
-            cmd.Parameters.AddWithValue("@IsDebugRun", record.IsDebugRun);
-            
-            cmd.ExecuteNonQuery();
-            log.Debug($"[SqliteRepository] Added run record for account {accountId}");
         }
         catch (Exception ex)
         {
@@ -223,23 +260,19 @@ public class SqliteRunRecordRepository : IRunRecordRepository
     {
         try
         {
-            var dbPath = GetDatabasePath(accountId);
-            var directory = Path.GetDirectoryName(dbPath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            lock (sqliteLock)
             {
-                Directory.CreateDirectory(directory);
+                var dbPath = GetDatabasePath(accountId);
+                using var connection = OpenConnection(dbPath);
+
+                InitializeDatabase(connection);
+
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = "DELETE FROM RunRecords";
+                cmd.ExecuteNonQuery();
+
+                log.Information($"[SqliteRepository] Cleared all run records for account {accountId}");
             }
-            
-            using var connection = new SqliteConnection($"Data Source={dbPath};");
-            connection.Open();
-            
-            InitializeDatabase(connection);
-            
-            using var cmd = connection.CreateCommand();
-            cmd.CommandText = "DELETE FROM RunRecords";
-            cmd.ExecuteNonQuery();
-            
-            log.Information($"[SqliteRepository] Cleared all run records for account {accountId}");
         }
         catch (Exception ex)
         {
@@ -252,38 +285,47 @@ public class SqliteRunRecordRepository : IRunRecordRepository
     {
         try
         {
-            // Test health by checking if we can create a temporary connection
-            var testDbPath = Path.Combine(databaseFolder, "health_check.sqlite");
-            var directory = Path.GetDirectoryName(testDbPath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            lock (sqliteLock)
             {
-                Directory.CreateDirectory(directory);
+                var testDbPath = Path.Combine(databaseFolder, "health_check.sqlite");
+                using var connection = OpenConnection(testDbPath);
+
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = "SELECT 1";
+                cmd.ExecuteScalar();
+
+                connection.Close();
+                try
+                {
+                    File.Delete(testDbPath);
+                }
+                catch (Exception ex)
+                {
+                    log.Warning(ex, "[SqliteRepository] Failed to delete health check database");
+                }
+
+                return true;
             }
-            
-            using var connection = new SqliteConnection($"Data Source={testDbPath};");
-            connection.Open();
-            
-            using var cmd = connection.CreateCommand();
-            cmd.CommandText = "SELECT 1";
-            cmd.ExecuteScalar();
-            
-            // Clean up test database
-            connection.Close();
-            try
-            {
-                File.Delete(testDbPath);
-            }
-            catch (Exception ex)
-            {
-                log.Warning(ex, "[SqliteRepository] Failed to delete health check database");
-            }
-            
-            return true;
         }
         catch (Exception ex)
         {
             log.Warning(ex, "[SqliteRepository] Repository health check failed");
             return false;
+        }
+    }
+
+    private static List<string> DeserializePartyMembers(string partyMembersJson)
+    {
+        if (string.IsNullOrWhiteSpace(partyMembersJson))
+            return [];
+
+        try
+        {
+            return JsonSerializer.Deserialize<List<string>>(partyMembersJson) ?? [];
+        }
+        catch
+        {
+            return [];
         }
     }
 }

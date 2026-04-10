@@ -9,25 +9,32 @@ public class DutyTrackerService
     private const int DailyResetHourUtc = 7;
 
     private readonly IPluginLog log;
-    private readonly Configuration config;
+    private Configuration config;
     private readonly DutyState state;
+    private readonly ConfigManager configManager;
     private readonly RunHistoryService runHistoryService;
 
-    public DutyTrackerService(IPluginLog log, Configuration config, DutyState state, RunHistoryService runHistoryService)
+    public DutyTrackerService(IPluginLog log, Configuration config, DutyState state, ConfigManager configManager, RunHistoryService runHistoryService)
     {
         this.log = log;
         this.config = config;
         this.state = state;
+        this.configManager = configManager;
         this.runHistoryService = runHistoryService;
 
+        UpdateConfiguration(config);
+    }
+
+    public void UpdateConfiguration(Configuration newConfig)
+    {
+        config = newConfig;
         state.DutyCounter = config.DutyCounter;
         state.CalculateTimeouts(2.0f);
-        
-        // Initialize next reset time if not set
+
         if (state.NextResetTime == null)
-        {
             CalculateNextResetTime();
-        }
+
+        log.Information($"[DutyTracker] Active account configuration applied: Prae counter={state.DutyCounter}, threshold={config.PraetoriumThreshold}, maxRuns={config.MaxRuns}");
     }
 
     /// <summary>
@@ -41,7 +48,7 @@ public class DutyTrackerService
     }
 
     /// <summary>
-    /// Calculate the next reset time (next 15:00 UTC that hasn't happened yet)
+    /// Calculate the next reset time (next 07:00 UTC that hasn't happened yet)
     /// </summary>
     private void CalculateNextResetTime()
     {
@@ -69,6 +76,7 @@ public class DutyTrackerService
         {
             state.DutyCounter++;
             config.DutyCounter = state.DutyCounter;
+            SaveCurrentAccount("Praetorium duty start");
         }
         
         // Track daily Decumana runs
@@ -82,9 +90,6 @@ public class DutyTrackerService
         state.MaxContentTime = 0;
         state.TimeInDuty = 0;
         state.StuckTickCount = 0;
-
-        // Note: ConfigManager.SaveCurrentAccount() will be called by the engine
-        // We don't save here to avoid multiple saves during duty start
 
         log.Information($"[DutyTracker] {(isPrae ? "Praetorium" : "Decumana")} started -> Prae counter: {state.DutyCounter}, Daily Decu: {state.DecumanaCounter}");
     }
@@ -157,6 +162,7 @@ public class DutyTrackerService
             try
             {
                 runHistoryService.RecordRun();
+                SaveCurrentAccount("duty completion");
                 log.Debug($"[DutyTracker] Successfully called RecordRun() with completion time {state.LastCompletionDuration:F0}s");
             }
             catch (Exception ex)
@@ -233,9 +239,7 @@ public class DutyTrackerService
             
             // Calculate next reset time
             CalculateNextResetTime();
-            
-            // Note: ConfigManager.SaveCurrentAccount() will be called by the caller
-            // We don't save here to avoid multiple saves during reset
+            SaveCurrentAccount("daily reset");
             
             log.Information($"[DutyTracker] Daily reset! Prae: {oldPrae}→0, Decu: {oldDecu}→0 (Max: {config.MaxDailyDecuRuns}, All-time: {config.AllTimeMaxDailyDecu})");
             return true;
@@ -286,5 +290,18 @@ public class DutyTrackerService
         var localTime = localResetTime.ToString("yyyy-MM-dd HH:mm");
 
         return (countdown, localTime);
+    }
+
+    private void SaveCurrentAccount(string reason)
+    {
+        try
+        {
+            configManager.SaveCurrentAccount();
+            log.Debug($"[DutyTracker] Saved active account after {reason}");
+        }
+        catch (Exception ex)
+        {
+            log.Error(ex, $"[DutyTracker] Failed to save active account after {reason}");
+        }
     }
 }

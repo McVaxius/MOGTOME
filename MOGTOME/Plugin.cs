@@ -109,7 +109,7 @@ public sealed class Plugin : IDalamudPlugin
         AutoDutyIPC = new AutoDutyIPC(Log, CommandManager, RunHistoryService, RotationService);
 
         // Initialize Services (needs RotationService)
-        DutyTrackerService = new DutyTrackerService(Log, Configuration, State, RunHistoryService);
+        DutyTrackerService = new DutyTrackerService(Log, Configuration, State, ConfigManager, RunHistoryService);
         DutyQueueService = new DutyQueueService(Log, Configuration, State, AutoDutyIPC, AutomatonIPC, CommandManager, Condition);
         RepairService = new RepairService(Log, Configuration, State, CommandManager, Condition);
         InnEntryService = new InnEntryService(Log, VNavIPC);
@@ -455,9 +455,15 @@ public sealed class Plugin : IDalamudPlugin
                 }
             }
             
-            // Reload run history after migration
-            RunHistoryService.LoadRunHistoryFromDatabase();
-            Log.Information("[Plugin] Run history reloaded after migration");
+            if (accountInitialized)
+            {
+                RunHistoryService.LoadRunHistoryFromDatabase();
+                Log.Information("[Plugin] Run history reloaded after migration");
+            }
+            else
+            {
+                Log.Debug("[Plugin] Deferring run history reload until account selection completes");
+            }
         }
         catch (Exception ex)
         {
@@ -648,7 +654,10 @@ public sealed class Plugin : IDalamudPlugin
             if (ConfigManager.EnsureAccountSelected(contentId, charName, worldName))
             {
                 accountInitialized = true;
-                ConfigManager.NotifyConfigurationChanged(); // Notify services of new config
+                ApplyActiveAccountConfiguration();
+                if (databaseInitialized)
+                    RunHistoryService.LoadRunHistoryFromDatabase();
+
                 Log.Information($"[Plugin] Account selection completed and configuration notified for {charName}@{worldName}");
             }
         }
@@ -662,6 +671,14 @@ public sealed class Plugin : IDalamudPlugin
     private bool databaseInitialized = false;
     private bool wasLoggedIn = false;
     private int loginDetectionDelay = 0;
+
+    private void ApplyActiveAccountConfiguration()
+    {
+        var activeConfig = Configuration;
+        DutyTrackerService.UpdateConfiguration(activeConfig);
+        RunHistoryService.UpdateConfiguration(activeConfig);
+        ConfigManager.NotifyConfigurationChanged(force: true);
+    }
 
     private void ToggleConfigUi() => ConfigWindow.Toggle();
     private void ToggleMainUi() => MainWindow.Toggle();
