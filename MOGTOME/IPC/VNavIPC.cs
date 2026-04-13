@@ -22,12 +22,12 @@ public class VNavIPC : IDisposable
         {
             var cmd = string.Format(CultureInfo.InvariantCulture,
                 "/vnav moveto {0:F2} {1:F2} {2:F2}", position.X, position.Y, position.Z);
-            log.Debug($"[VNav] {cmd}");
+            log.Debug($"[MOGTOME][VNav] {cmd}");
             return commandManager.ProcessCommand(cmd);
         }
         catch (Exception ex)
         {
-            log.Error($"[VNav] MoveTo failed: {ex.Message}");
+            log.Error($"[MOGTOME][VNav] MoveTo failed: {ex.Message}");
             return false;
         }
     }
@@ -40,7 +40,7 @@ public class VNavIPC : IDisposable
         }
         catch (Exception ex)
         {
-            log.Error($"[VNav] Stop failed: {ex.Message}");
+            log.Error($"[MOGTOME][VNav] Stop failed: {ex.Message}");
             return false;
         }
     }
@@ -49,12 +49,12 @@ public class VNavIPC : IDisposable
     {
         try
         {
-            log.Information("[VNav] Rebuilding navmesh");
+            log.Information("[MOGTOME][VNav] Rebuilding navmesh");
             return commandManager.ProcessCommand("/vnav rebuild");
         }
         catch (Exception ex)
         {
-            log.Error($"[VNav] Rebuild failed: {ex.Message}");
+            log.Error($"[MOGTOME][VNav] Rebuild failed: {ex.Message}");
             return false;
         }
     }

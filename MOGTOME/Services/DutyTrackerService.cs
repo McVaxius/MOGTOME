@@ -34,7 +34,7 @@ public class DutyTrackerService
         if (state.NextResetTime == null)
             CalculateNextResetTime();
 
-        log.Information($"[DutyTracker] Active account configuration applied: Prae counter={state.DutyCounter}, threshold={config.PraetoriumThreshold}, maxRuns={config.MaxRuns}");
+        log.Information($"[MOGTOME][DutyTracker] Active account configuration applied: Prae counter={state.DutyCounter}, threshold={config.PraetoriumThreshold}, maxRuns={config.MaxRuns}");
     }
 
     /// <summary>
@@ -44,7 +44,7 @@ public class DutyTrackerService
     public void SyncCounters()
     {
         state.DutyCounter = config.DutyCounter;
-        log.Information($"[DutyTracker] Synced counters: {state.DutyCounter}");
+        log.Information($"[MOGTOME][DutyTracker] Synced counters: {state.DutyCounter}");
     }
 
     /// <summary>
@@ -64,7 +64,7 @@ public class DutyTrackerService
         // Note: ConfigManager.SaveCurrentAccount() will be called by the caller
         // We don't save here to avoid multiple saves during initialization
 
-        log.Information($"[DutyTracker] Next reset time set to: {resetTime:yyyy-MM-dd HH:mm UTC}");
+        log.Information($"[MOGTOME][DutyTracker] Next reset time set to: {resetTime:yyyy-MM-dd HH:mm UTC}");
     }
 
     public void OnDutyStarted()
@@ -91,7 +91,7 @@ public class DutyTrackerService
         state.TimeInDuty = 0;
         state.StuckTickCount = 0;
 
-        log.Information($"[DutyTracker] {(isPrae ? "Praetorium" : "Decumana")} started -> Prae counter: {state.DutyCounter}, Daily Decu: {state.DecumanaCounter}");
+        log.Information($"[MOGTOME][DutyTracker] {(isPrae ? "Praetorium" : "Decumana")} started -> Prae counter: {state.DutyCounter}, Daily Decu: {state.DecumanaCounter}");
     }
 
     /// <summary>
@@ -101,7 +101,7 @@ public class DutyTrackerService
     public void OnDutyCompleted()
     {
         var now = DateTime.UtcNow;
-        log.Information($"[DutyTracker] OnDutyCompleted called - DutyStartTime: {state.DutyStartTime}, CurrentTime: {now}");
+        log.Information($"[MOGTOME][DutyTracker] OnDutyCompleted called - DutyStartTime: {state.DutyStartTime}, CurrentTime: {now}");
         
         if (state.DutyStartTime.HasValue)
         {
@@ -109,10 +109,10 @@ public class DutyTrackerService
             var timeLimit = isPrae ? DutyState.PraetoriumTimeLimit : DutyState.DecumanaTimeLimit;
             var rawDuration = (float)(now - state.DutyStartTime.Value).TotalSeconds;
 
-            log.Debug($"[DutyTracker] Duty parameters - CurrentTerritory: {state.CurrentTerritory}, DutyStartTerritory: {state.DutyStartTerritory}, IsPrae: {isPrae}, TimeLimit: {timeLimit:F0}s, RawDuration: {rawDuration:F0}s");
+            log.Debug($"[MOGTOME][DutyTracker] Duty parameters - CurrentTerritory: {state.CurrentTerritory}, DutyStartTerritory: {state.DutyStartTerritory}, IsPrae: {isPrae}, TimeLimit: {timeLimit:F0}s, RawDuration: {rawDuration:F0}s");
 
             var remainingTime = GameHelpers.GetDutyRemainingTime();
-            log.Information($"[DutyTracker] Remaining time check - API returned: {remainingTime:F0}s");
+            log.Information($"[MOGTOME][DutyTracker] Remaining time check - API returned: {remainingTime:F0}s");
             
             float actualDuration;
             string timingMethod;
@@ -123,13 +123,13 @@ public class DutyTrackerService
                 state.RemainingTimeAtCompletion = remainingTime;
                 timingMethod = "API_METHOD";
                 
-                log.Information($"[DutyTracker] [{timingMethod}] Duty completed: {timeLimit:F0}s - {remainingTime:F0}s = {actualDuration:F0}s");
-                log.Debug($"[DutyTracker] [{timingMethod}] TimeLimit: {timeLimit:F0}s, Remaining: {remainingTime:F0}s, Calculated: {actualDuration:F0}s");
+                log.Information($"[MOGTOME][DutyTracker] [{timingMethod}] Duty completed: {timeLimit:F0}s - {remainingTime:F0}s = {actualDuration:F0}s");
+                log.Debug($"[MOGTOME][DutyTracker] [{timingMethod}] TimeLimit: {timeLimit:F0}s, Remaining: {remainingTime:F0}s, Calculated: {actualDuration:F0}s");
                 
                 // Validate the calculated time
                 if (actualDuration < 0 || actualDuration > timeLimit)
                 {
-                    log.Warning($"[DutyTracker] [{timingMethod}] Invalid calculated duration {actualDuration:F0}s, falling back to raw duration");
+                    log.Warning($"[MOGTOME][DutyTracker] [{timingMethod}] Invalid calculated duration {actualDuration:F0}s, falling back to raw duration");
                     actualDuration = rawDuration;
                     timingMethod = "API_FALLBACK";
                 }
@@ -140,14 +140,14 @@ public class DutyTrackerService
                 state.RemainingTimeAtCompletion = 0;
                 timingMethod = "FALLBACK_METHOD";
                 
-                log.Information($"[DutyTracker] [{timingMethod}] Duty completed: {actualDuration:F0}s (remaining time unavailable)");
-                log.Debug($"[DutyTracker] [{timingMethod}] RawDuration: {rawDuration:F0}s, Reason: API returned {remainingTime:F0}s");
+                log.Information($"[MOGTOME][DutyTracker] [{timingMethod}] Duty completed: {actualDuration:F0}s (remaining time unavailable)");
+                log.Debug($"[MOGTOME][DutyTracker] [{timingMethod}] RawDuration: {rawDuration:F0}s, Reason: API returned {remainingTime:F0}s");
             }
 
             // Final validation
             if (actualDuration <= 0 || actualDuration > 7200) // 2 hours max sanity check
             {
-                log.Error($"[DutyTracker] [{timingMethod}] Invalid final duration {actualDuration:F0}s, using fallback");
+                log.Error($"[MOGTOME][DutyTracker] [{timingMethod}] Invalid final duration {actualDuration:F0}s, using fallback");
                 actualDuration = Math.Max(rawDuration, 1); // Ensure at least 1 second
                 timingMethod = "FINAL_FALLBACK";
             }
@@ -155,24 +155,24 @@ public class DutyTrackerService
             state.LastCompletionDuration = actualDuration;
             state.LastCompletionTime = now;
 
-            log.Information($"[DutyTracker] [{timingMethod}] FINAL: Duty completed in {state.LastCompletionDuration:F0}s -> counter: {state.DutyCounter}");
-            log.Debug($"[DutyTracker] [{timingMethod}] Summary - TimeLimit: {timeLimit:F0}s, CurrentTerritory: {state.CurrentTerritory}, DutyStartTerritory: {state.DutyStartTerritory}, IsPrae: {isPrae}, Remaining: {remainingTime:F0}s, Actual: {actualDuration:F0}s");
+            log.Information($"[MOGTOME][DutyTracker] [{timingMethod}] FINAL: Duty completed in {state.LastCompletionDuration:F0}s -> counter: {state.DutyCounter}");
+            log.Debug($"[MOGTOME][DutyTracker] [{timingMethod}] Summary - TimeLimit: {timeLimit:F0}s, CurrentTerritory: {state.CurrentTerritory}, DutyStartTerritory: {state.DutyStartTerritory}, IsPrae: {isPrae}, Remaining: {remainingTime:F0}s, Actual: {actualDuration:F0}s");
             
             // Now that we have the correct completion time, record the run
             try
             {
                 runHistoryService.RecordRun();
                 SaveCurrentAccount("duty completion");
-                log.Debug($"[DutyTracker] Successfully called RecordRun() with completion time {state.LastCompletionDuration:F0}s");
+                log.Debug($"[MOGTOME][DutyTracker] Successfully called RecordRun() with completion time {state.LastCompletionDuration:F0}s");
             }
             catch (Exception ex)
             {
-                log.Error(ex, "[DutyTracker] Failed to call RecordRun() after time calculation");
+                log.Error(ex, "[MOGTOME][DutyTracker] Failed to call RecordRun() after time calculation");
             }
         }
         else
         {
-            log.Warning("[DutyTracker] DutyStartTime is null, cannot calculate completion time");
+            log.Warning("[MOGTOME][DutyTracker] DutyStartTime is null, cannot calculate completion time");
             state.LastCompletionDuration = 0;
             state.LastCompletionTime = now;
         }
@@ -223,7 +223,7 @@ public class DutyTrackerService
             if (state.DecumanaCounter > config.AllTimeMaxDailyDecu)
             {
                 config.AllTimeMaxDailyDecu = state.DecumanaCounter;
-                log.Information($"[DutyTracker] NEW ALL-TIME RECORD: {config.AllTimeMaxDailyDecu} Decumana runs in one day!");
+                log.Information($"[MOGTOME][DutyTracker] NEW ALL-TIME RECORD: {config.AllTimeMaxDailyDecu} Decumana runs in one day!");
             }
             
             state.DutyCounter = 0;
@@ -241,7 +241,7 @@ public class DutyTrackerService
             CalculateNextResetTime();
             SaveCurrentAccount("daily reset");
             
-            log.Information($"[DutyTracker] Daily reset! Prae: {oldPrae}→0, Decu: {oldDecu}→0 (Max: {config.MaxDailyDecuRuns}, All-time: {config.AllTimeMaxDailyDecu})");
+            log.Information($"[MOGTOME][DutyTracker] Daily reset! Prae: {oldPrae}→0, Decu: {oldDecu}→0 (Max: {config.MaxDailyDecuRuns}, All-time: {config.AllTimeMaxDailyDecu})");
             return true;
         }
         
@@ -297,11 +297,11 @@ public class DutyTrackerService
         try
         {
             configManager.SaveCurrentAccount();
-            log.Debug($"[DutyTracker] Saved active account after {reason}");
+            log.Debug($"[MOGTOME][DutyTracker] Saved active account after {reason}");
         }
         catch (Exception ex)
         {
-            log.Error(ex, $"[DutyTracker] Failed to save active account after {reason}");
+            log.Error(ex, $"[MOGTOME][DutyTracker] Failed to save active account after {reason}");
         }
     }
 }

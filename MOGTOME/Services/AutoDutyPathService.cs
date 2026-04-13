@@ -130,7 +130,7 @@ public class AutoDutyPathService
             await Task.Delay(pollInterval);
         }
 
-        log.Warning($"[AutoDutyPath] AutoDuty readiness wait timed out after {timeout.TotalSeconds:F0}s: {lastStatus}");
+        log.Warning($"[MOGTOME][AutoDutyPath] AutoDuty readiness wait timed out after {timeout.TotalSeconds:F0}s: {lastStatus}");
         return false;
     }
 
@@ -146,8 +146,8 @@ public class AutoDutyPathService
             var selectedPathFileName = ResolvePraetoriumPathFileName(configuredPathFileName);
             var selectedPathName = Path.GetFileNameWithoutExtension(selectedPathFileName) ?? selectedPathFileName;
 
-            log.Information("[AutoDutyPath] === FORCE PATH SELECTION START ===");
-            log.Information($"[AutoDutyPath] Selected Praetorium path: {selectedPathFileName}");
+            log.Information("[MOGTOME][AutoDutyPath] === FORCE PATH SELECTION START ===");
+            log.Information($"[MOGTOME][AutoDutyPath] Selected Praetorium path: {selectedPathFileName}");
 
             // Step 1: Find AutoDuty plugin using Reflections.md pattern
             var autoDutyPlugin = FindDalamudPluginInstance("AutoDuty");
@@ -155,13 +155,13 @@ public class AutoDutyPathService
             if (autoDutyPlugin == null)
             {
                 LastForceResult = "FAILED: AutoDuty plugin not found or not loaded";
-                log.Error($"[AutoDutyPath] {LastForceResult}");
+                log.Error($"[MOGTOME][AutoDutyPath] {LastForceResult}");
                 return false;
             }
             
             var pluginType = autoDutyPlugin.GetType();
             var pluginAssembly = pluginType.Assembly;
-            log.Information($"[AutoDutyPath] Found AutoDuty: Type={pluginType.FullName}, Assembly={pluginAssembly.GetName().Name}");
+            log.Information($"[MOGTOME][AutoDutyPath] Found AutoDuty: Type={pluginType.FullName}, Assembly={pluginAssembly.GetName().Name}");
 
             // Step 2: Get the static plugin instance (AutoDuty uses 'Plugin' static singleton pattern)
             var pluginInstance = GetMemberValue(pluginType, autoDutyPlugin, "Plugin")
@@ -169,7 +169,7 @@ public class AutoDutyPathService
                 ?? GetMemberValue(pluginType, autoDutyPlugin, "Instance")
                 ?? autoDutyPlugin;
             
-            log.Information($"[AutoDutyPath] Plugin instance type: {pluginInstance.GetType().FullName}");
+            log.Information($"[MOGTOME][AutoDutyPath] Plugin instance type: {pluginInstance.GetType().FullName}");
 
             // Step 3: Get the Configuration object
             var config = GetMemberValue(pluginInstance.GetType(), pluginInstance, "C")
@@ -179,7 +179,7 @@ public class AutoDutyPathService
 
             if (config != null)
             {
-                log.Information($"[AutoDutyPath] Found config: Type={config.GetType().FullName}");
+                log.Information($"[MOGTOME][AutoDutyPath] Found config: Type={config.GetType().FullName}");
                 
                 // Step 3a: Set Mode to Looping (typically an enum or int)
                 var modeSet = TrySetModeValue(config, "AutoDutyModeEnum", "Looping")
@@ -188,9 +188,9 @@ public class AutoDutyPathService
                     || TrySetModeValue(config, "Mode", "Looping")
                     || TrySetModeValue(config, "SelectedMode", "Looping")
                     || TrySetModeValue(config, "CurrentMode", "Looping");
-                log.Information($"[AutoDutyPath] Set Mode=Looping: {modeSet}");
+                log.Information($"[MOGTOME][AutoDutyPath] Set Mode=Looping: {modeSet}");
                 if (!modeSet)
-                    log.Warning("[AutoDutyPath] Failed to set AutoDuty mode to Looping.");
+                    log.Warning("[MOGTOME][AutoDutyPath] Failed to set AutoDuty mode to Looping.");
 
                 // Step 3b: Set DutyMode to Regular
                 var dutyModeSet = TrySetModeValue(config, "DutyModeEnum", "Regular")
@@ -198,13 +198,13 @@ public class AutoDutyPathService
                     || TrySetModeValue(config, "dutyMode", "Regular")
                     || TrySetModeValue(config, "DutyMode", "Regular")
                     || TrySetModeValue(config, "SelectedDutyMode", "Regular");
-                log.Information($"[AutoDutyPath] Set DutyMode=Regular: {dutyModeSet}");
+                log.Information($"[MOGTOME][AutoDutyPath] Set DutyMode=Regular: {dutyModeSet}");
                 if (!dutyModeSet)
-                    log.Warning("[AutoDutyPath] Failed to set DutyMode=Regular. AutoDuty defaults to Support, so queue behavior may be wrong.");
+                    log.Warning("[MOGTOME][AutoDutyPath] Failed to set DutyMode=Regular. AutoDuty defaults to Support, so queue behavior may be wrong.");
             }
             else
             {
-                log.Warning("[AutoDutyPath] Could not find config object - will try plugin-level members");
+                log.Warning("[MOGTOME][AutoDutyPath] Could not find config object - will try plugin-level members");
             }
 
             // Step 4: Try to set path-related properties directly on plugin instance
@@ -213,7 +213,7 @@ public class AutoDutyPathService
 
             // Try setting currentTerritoryType (exact field name from log)
             var territorySet = SetMemberValue(instanceType, pluginInstance, "currentTerritoryType", (uint)TargetTerritoryType);
-            log.Information($"[AutoDutyPath] Set currentTerritoryType={TargetTerritoryType}: {territorySet}");
+            log.Information($"[MOGTOME][AutoDutyPath] Set currentTerritoryType={TargetTerritoryType}: {territorySet}");
 
             // Try setting currentPath by finding the target path index using the FILE DATE method
             var pathIndex = FindPathIndexFromDictionaryPaths(pluginInstance, selectedPathName);
@@ -221,7 +221,7 @@ public class AutoDutyPathService
             if (pathIndex >= 0)
             {
                 pathSet = SetMemberValue(instanceType, pluginInstance, "currentPath", pathIndex);
-                log.Information($"[AutoDutyPath] Set currentPath={pathIndex} for '{selectedPathName}' (DICTIONARY PATHS METHOD): {pathSet}");
+                log.Information($"[MOGTOME][AutoDutyPath] Set currentPath={pathIndex} for '{selectedPathName}' (DICTIONARY PATHS METHOD): {pathSet}");
                 if (pathSet)
                 {
                     LastForceResult = $"OK: Territory={TargetTerritoryType}, Path={pathIndex} ({selectedPathName}) [DictionaryPaths]";
@@ -229,13 +229,13 @@ public class AutoDutyPathService
             }
             else
             {
-                log.Warning($"[AutoDutyPath] Could not find path index for '{selectedPathName}' using DictionaryPaths; trying file date fallback");
+                log.Warning($"[MOGTOME][AutoDutyPath] Could not find path index for '{selectedPathName}' using DictionaryPaths; trying file date fallback");
                 
                 var fallbackIndex = FindPathIndexByFileDate(selectedPathFileName);
                 if (fallbackIndex >= 0)
                 {
                     pathSet = SetMemberValue(instanceType, pluginInstance, "currentPath", fallbackIndex);
-                    log.Information($"[AutoDutyPath] Set currentPath={fallbackIndex} (FILE DATE FALLBACK) for '{selectedPathName}': {pathSet}");
+                    log.Information($"[MOGTOME][AutoDutyPath] Set currentPath={fallbackIndex} (FILE DATE FALLBACK) for '{selectedPathName}': {pathSet}");
                     if (pathSet)
                     {
                         LastForceResult = $"OK: Territory={TargetTerritoryType}, Path={fallbackIndex} ({selectedPathName}) [FileDateFallback]";
@@ -243,12 +243,12 @@ public class AutoDutyPathService
                 }
                 else
                 {
-                    log.Information("[AutoDutyPath] Trying final fallback method (PathSelectionsByPath)...");
+                    log.Information("[MOGTOME][AutoDutyPath] Trying final fallback method (PathSelectionsByPath)...");
                     fallbackIndex = FindPathIndexByName(pluginInstance, selectedPathName);
                     if (fallbackIndex >= 0)
                     {
                         pathSet = SetMemberValue(instanceType, pluginInstance, "currentPath", fallbackIndex);
-                        log.Information($"[AutoDutyPath] Set currentPath={fallbackIndex} (PATHSELECTIONS FALLBACK) for '{selectedPathName}': {pathSet}");
+                        log.Information($"[MOGTOME][AutoDutyPath] Set currentPath={fallbackIndex} (PATHSELECTIONS FALLBACK) for '{selectedPathName}': {pathSet}");
                         if (pathSet)
                         {
                             LastForceResult = $"OK: Territory={TargetTerritoryType}, Path={fallbackIndex} ({selectedPathName}) [PathSelectionsFallback]";
@@ -265,7 +265,7 @@ public class AutoDutyPathService
             // CRITICAL: Do NOT call StartNavigation() - it uses Svc.ClientState.TerritoryType (real game territory, not our field)
             // CRITICAL: Do NOT call ClientState_TerritoryChanged() - it's for zone transitions
             // Instead: Get Content → Set CurrentTerritoryContent → Set pathFile → Call LoadPath()
-            log.Information("[AutoDutyPath] === CONTENT & PATH SETUP (direct approach) ===");
+            log.Information("[MOGTOME][AutoDutyPath] === CONTENT & PATH SETUP (direct approach) ===");
             
             object? territoryContent = null;
             try
@@ -274,11 +274,11 @@ public class AutoDutyPathService
                 var contentHelperType = pluginAssembly.GetType("AutoDuty.Helpers.ContentHelper");
                 if (contentHelperType == null)
                 {
-                    log.Error("[AutoDutyPath] ContentHelper type not found in assembly");
+                    log.Error("[MOGTOME][AutoDutyPath] ContentHelper type not found in assembly");
                 }
                 else
                 {
-                    log.Information($"[AutoDutyPath] Found ContentHelper type: {contentHelperType.FullName}");
+                    log.Information($"[MOGTOME][AutoDutyPath] Found ContentHelper type: {contentHelperType.FullName}");
                     
                     // Try as property first (correct), then as field (fallback), then backing field
                     var dictProp = contentHelperType.GetProperty("DictionaryContent", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
@@ -287,7 +287,7 @@ public class AutoDutyPathService
                     if (dictProp != null)
                     {
                         dictObj = dictProp.GetValue(null);
-                        log.Information($"[AutoDutyPath] Got DictionaryContent via GetProperty: {dictObj?.GetType().Name ?? "null"}");
+                        log.Information($"[MOGTOME][AutoDutyPath] Got DictionaryContent via GetProperty: {dictObj?.GetType().Name ?? "null"}");
                     }
                     else
                     {
@@ -296,7 +296,7 @@ public class AutoDutyPathService
                         if (dictField != null)
                         {
                             dictObj = dictField.GetValue(null);
-                            log.Information($"[AutoDutyPath] Got DictionaryContent via GetField: {dictObj?.GetType().Name ?? "null"}");
+                            log.Information($"[MOGTOME][AutoDutyPath] Got DictionaryContent via GetField: {dictObj?.GetType().Name ?? "null"}");
                         }
                         else
                         {
@@ -305,11 +305,11 @@ public class AutoDutyPathService
                             if (backingField != null)
                             {
                                 dictObj = backingField.GetValue(null);
-                                log.Information($"[AutoDutyPath] Got DictionaryContent via backing field: {dictObj?.GetType().Name ?? "null"}");
+                                log.Information($"[MOGTOME][AutoDutyPath] Got DictionaryContent via backing field: {dictObj?.GetType().Name ?? "null"}");
                             }
                             else
                             {
-                                log.Error("[AutoDutyPath] DictionaryContent not found as property, field, or backing field!");
+                                log.Error("[MOGTOME][AutoDutyPath] DictionaryContent not found as property, field, or backing field!");
                             }
                         }
                     }
@@ -319,29 +319,29 @@ public class AutoDutyPathService
                         var dictAsIDictionary = dictObj as IDictionary;
                         if (dictAsIDictionary != null)
                         {
-                            log.Information($"[AutoDutyPath] DictionaryContent has {dictAsIDictionary.Count} entries");
+                            log.Information($"[MOGTOME][AutoDutyPath] DictionaryContent has {dictAsIDictionary.Count} entries");
                             
                             // Look up territory 1044
                             if (dictAsIDictionary.Contains((uint)TargetTerritoryType))
                             {
                                 territoryContent = dictAsIDictionary[(uint)TargetTerritoryType];
-                                log.Information($"[AutoDutyPath] Found Content for territory {TargetTerritoryType}: {territoryContent?.GetType().Name}");
+                                log.Information($"[MOGTOME][AutoDutyPath] Found Content for territory {TargetTerritoryType}: {territoryContent?.GetType().Name}");
                             }
                             else
                             {
-                                log.Error($"[AutoDutyPath] Territory {TargetTerritoryType} NOT in DictionaryContent! Available keys sample:");
+                                log.Error($"[MOGTOME][AutoDutyPath] Territory {TargetTerritoryType} NOT in DictionaryContent! Available keys sample:");
                                 int count = 0;
                                 foreach (var key in dictAsIDictionary.Keys)
                                 {
                                     if (count < 10) log.Information($"[AutoDutyPath]   Key: {key}");
                                     count++;
                                 }
-                                log.Information($"[AutoDutyPath]   ... ({dictAsIDictionary.Count} total entries)");
+                                log.Information($"[MOGTOME][AutoDutyPath]   ... ({dictAsIDictionary.Count} total entries)");
                             }
                         }
                         else
                         {
-                            log.Error($"[AutoDutyPath] DictionaryContent is not IDictionary, actual type: {dictObj.GetType().FullName}");
+                            log.Error($"[MOGTOME][AutoDutyPath] DictionaryContent is not IDictionary, actual type: {dictObj.GetType().FullName}");
                         }
                     }
                 }
@@ -358,12 +358,12 @@ public class AutoDutyPathService
                         if (ctcField != null)
                         {
                             ctcField.SetValue(pluginInstance, territoryContent);
-                            log.Information("[AutoDutyPath] Set currentTerritoryContent (private field) directly");
+                            log.Information("[MOGTOME][AutoDutyPath] Set currentTerritoryContent (private field) directly");
                         }
                         else
                         {
                             ctcBackingField.SetValue(pluginInstance, territoryContent);
-                            log.Information("[AutoDutyPath] Set <CurrentTerritoryContent>k__BackingField directly");
+                            log.Information("[MOGTOME][AutoDutyPath] Set <CurrentTerritoryContent>k__BackingField directly");
                         }
                     }
                     else
@@ -373,7 +373,7 @@ public class AutoDutyPathService
                         if (ctcField != null)
                         {
                             ctcField.SetValue(pluginInstance, territoryContent);
-                            log.Information("[AutoDutyPath] Set currentTerritoryContent (private field) directly");
+                            log.Information("[MOGTOME][AutoDutyPath] Set currentTerritoryContent (private field) directly");
                         }
                         else
                         {
@@ -382,11 +382,11 @@ public class AutoDutyPathService
                             if (ctcProp != null && ctcProp.CanWrite)
                             {
                                 ctcProp.SetValue(pluginInstance, territoryContent);
-                                log.Information("[AutoDutyPath] Set CurrentTerritoryContent via property setter");
+                                log.Information("[MOGTOME][AutoDutyPath] Set CurrentTerritoryContent via property setter");
                             }
                             else
                             {
-                                log.Error("[AutoDutyPath] Could not find any way to set CurrentTerritoryContent!");
+                                log.Error("[MOGTOME][AutoDutyPath] Could not find any way to set CurrentTerritoryContent!");
                             }
                         }
                     }
@@ -406,7 +406,7 @@ public class AutoDutyPathService
                         if (pathSelectionsField != null)
                         {
                             pathSelectionsObj = pathSelectionsField.GetValue(config);
-                            log.Information($"[AutoDutyPath] Got PathSelectionsByPath via field");
+                            log.Information($"[MOGTOME][AutoDutyPath] Got PathSelectionsByPath via field");
                         }
                         else
                         {
@@ -414,17 +414,17 @@ public class AutoDutyPathService
                             if (pathSelectionsProp != null)
                             {
                                 pathSelectionsObj = pathSelectionsProp.GetValue(config);
-                                log.Information($"[AutoDutyPath] Got PathSelectionsByPath via property");
+                                log.Information($"[MOGTOME][AutoDutyPath] Got PathSelectionsByPath via property");
                             }
                             else
                             {
-                                log.Error("[AutoDutyPath] PathSelectionsByPath not found as field or property");
+                                log.Error("[MOGTOME][AutoDutyPath] PathSelectionsByPath not found as field or property");
                             }
                         }
                         
                         if (pathSelectionsObj is IDictionary pathSelectionsDict)
                         {
-                            log.Information($"[AutoDutyPath] Got PathSelectionsByPath: {pathSelectionsDict.Count} entries");
+                            log.Information($"[MOGTOME][AutoDutyPath] Got PathSelectionsByPath: {pathSelectionsDict.Count} entries");
                             
                             // Get JobWithRole enum type and its "All" value
                             var jobWithRoleType = pluginAssembly.GetType("AutoDuty.Data.Enums+JobWithRole");
@@ -443,7 +443,7 @@ public class AutoDutyPathService
                             
                             if (jobWithRoleType != null)
                             {
-                                log.Information($"[AutoDutyPath] Found JobWithRole type: {jobWithRoleType.FullName}");
+                                log.Information($"[MOGTOME][AutoDutyPath] Found JobWithRole type: {jobWithRoleType.FullName}");
                                 
                                 // Get "All" enum value
                                 object? jobWithRoleAll = null;
@@ -455,7 +455,7 @@ public class AutoDutyPathService
                                     // Fallback: set all bits
                                     jobWithRoleAll = Enum.ToObject(jobWithRoleType, unchecked((long)-1));
                                 }
-                                log.Information($"[AutoDutyPath] JobWithRole.All = {jobWithRoleAll}");
+                                log.Information($"[MOGTOME][AutoDutyPath] JobWithRole.All = {jobWithRoleAll}");
                                 
                                 // Get or create the inner dictionary for territory 1044
                                 // Structure: Dictionary<uint, Dictionary<string, JobWithRole>>
@@ -466,13 +466,13 @@ public class AutoDutyPathService
                                 if (pathSelectionsDict.Contains((uint)TargetTerritoryType))
                                 {
                                     innerDict = pathSelectionsDict[(uint)TargetTerritoryType] as IDictionary;
-                                    log.Information($"[AutoDutyPath] Existing PathSelections for {TargetTerritoryType}: {innerDict?.Count ?? 0} entries");
+                                    log.Information($"[MOGTOME][AutoDutyPath] Existing PathSelections for {TargetTerritoryType}: {innerDict?.Count ?? 0} entries");
                                     
                                     // Log existing entries
                                     if (innerDict != null)
                                     {
                                         foreach (DictionaryEntry entry in innerDict)
-                                            log.Information($"[AutoDutyPath]   {entry.Key} => {entry.Value}");
+                                            log.Information($"[MOGTOME][AutoDutyPath]   {entry.Key} => {entry.Value}");
                                     }
                                 }
                                 else
@@ -481,7 +481,7 @@ public class AutoDutyPathService
                                     if (innerDict != null)
                                     {
                                         pathSelectionsDict[(uint)TargetTerritoryType] = innerDict;
-                                        log.Information($"[AutoDutyPath] Created new PathSelections entry for {TargetTerritoryType}");
+                                        log.Information($"[MOGTOME][AutoDutyPath] Created new PathSelections entry for {TargetTerritoryType}");
                                     }
                                 }
                                 
@@ -497,34 +497,34 @@ public class AutoDutyPathService
                                     
                                     // Set the selected W2W path to ALL jobs
                                     innerDict[selectedPathFileName] = jobWithRoleAll;
-                                    log.Information($"[AutoDutyPath] Set PathSelectionsByPath[{TargetTerritoryType}][{selectedPathFileName}] = All jobs");
+                                    log.Information($"[MOGTOME][AutoDutyPath] Set PathSelectionsByPath[{TargetTerritoryType}][{selectedPathFileName}] = All jobs");
                                     
                                     // Call Config.Save() to persist
                                     var saveMethod = configType.GetMethod("Save", AllFlags);
                                     if (saveMethod != null && saveMethod.GetParameters().Length == 0)
                                     {
                                         saveMethod.Invoke(config, null);
-                                        log.Information("[AutoDutyPath] Called Config.Save() to persist path selection");
+                                        log.Information("[MOGTOME][AutoDutyPath] Called Config.Save() to persist path selection");
                                     }
                                     else
                                     {
-                                        log.Warning("[AutoDutyPath] Config.Save() method not found");
+                                        log.Warning("[MOGTOME][AutoDutyPath] Config.Save() method not found");
                                     }
                                 }
                             }
                             else
                             {
-                                log.Error("[AutoDutyPath] JobWithRole enum type not found in assembly");
+                                log.Error("[MOGTOME][AutoDutyPath] JobWithRole enum type not found in assembly");
                             }
                         }
                         else
                         {
-                            log.Error($"[AutoDutyPath] PathSelectionsByPath not found or not IDictionary: {pathSelectionsObj?.GetType().FullName ?? "null"}");
+                            log.Error($"[MOGTOME][AutoDutyPath] PathSelectionsByPath not found or not IDictionary: {pathSelectionsObj?.GetType().FullName ?? "null"}");
                         }
                     }
                     catch (Exception ex)
                     {
-                        log.Warning($"[AutoDutyPath] PathSelectionsByPath setup failed: {ex.Message}");
+                        log.Warning($"[MOGTOME][AutoDutyPath] PathSelectionsByPath setup failed: {ex.Message}");
                     }
                     
                     // Step 5d: Set MainTab.DutySelected and MainListClicked for UI
@@ -540,7 +540,7 @@ public class AutoDutyPathService
                                 if (dictPathsObj != null && dictPathsObj.Contains((uint)TargetTerritoryType))
                                 {
                                     var pathContainer = dictPathsObj[(uint)TargetTerritoryType];
-                                    log.Information($"[AutoDutyPath] Found ContentPathContainer for territory {TargetTerritoryType}");
+                                    log.Information($"[MOGTOME][AutoDutyPath] Found ContentPathContainer for territory {TargetTerritoryType}");
                                     
                                     // Set MainTab.DutySelected (static field)
                                     var mainTabType = pluginAssembly.GetType("AutoDuty.Windows.MainTab");
@@ -550,7 +550,7 @@ public class AutoDutyPathService
                                         if (dutySelectedField != null)
                                         {
                                             dutySelectedField.SetValue(null, pathContainer);
-                                            log.Information("[AutoDutyPath] Set MainTab.DutySelected");
+                                            log.Information("[MOGTOME][AutoDutyPath] Set MainTab.DutySelected");
                                         }
                                     }
                                 }
@@ -559,11 +559,11 @@ public class AutoDutyPathService
                         
                         // Set MainListClicked = true on plugin instance (triggers UI update)
                         var mlcSet = SetMemberValue(instanceType, pluginInstance, "MainListClicked", true);
-                        log.Information($"[AutoDutyPath] Set MainListClicked=true: {mlcSet}");
+                        log.Information($"[MOGTOME][AutoDutyPath] Set MainListClicked=true: {mlcSet}");
                     }
                     catch (Exception ex)
                     {
-                        log.Information($"[AutoDutyPath] UI setup failed (non-critical): {ex.Message}");
+                        log.Information($"[MOGTOME][AutoDutyPath] UI setup failed (non-critical): {ex.Message}");
                     }
                     
                     // Step 5e: DO NOT call LoadPath() - it uses Svc.ClientState.TerritoryType
@@ -572,7 +572,7 @@ public class AutoDutyPathService
                 }
                 else
                 {
-                    log.Error("[AutoDutyPath] Could not get Content for territory - cannot set CurrentTerritoryContent");
+                    log.Error("[MOGTOME][AutoDutyPath] Could not get Content for territory - cannot set CurrentTerritoryContent");
                 }
                 
                 // Step 5f: Verify final state
@@ -581,25 +581,25 @@ public class AutoDutyPathService
                 var finalPathFile = GetMemberValue(instanceType, pluginInstance, "pathFile") ?? GetMemberValue(instanceType, pluginInstance, "PathFile");
                 var finalActions = GetMemberValue(instanceType, pluginInstance, "Actions");
                 
-                log.Information($"[AutoDutyPath] === VERIFICATION ===");
-                log.Information($"[AutoDutyPath] CurrentTerritoryContent: {finalContent?.ToString() ?? "null"}");
-                log.Information($"[AutoDutyPath] currentPath: {finalPath}");
-                log.Information($"[AutoDutyPath] pathFile: {finalPathFile}");
-                log.Information($"[AutoDutyPath] Actions: {finalActions?.GetType().Name} (Count={((finalActions as System.Collections.IList)?.Count ?? -1)})");
+                log.Information($"[MOGTOME][AutoDutyPath] === VERIFICATION ===");
+                log.Information($"[MOGTOME][AutoDutyPath] CurrentTerritoryContent: {finalContent?.ToString() ?? "null"}");
+                log.Information($"[MOGTOME][AutoDutyPath] currentPath: {finalPath}");
+                log.Information($"[MOGTOME][AutoDutyPath] pathFile: {finalPathFile}");
+                log.Information($"[MOGTOME][AutoDutyPath] Actions: {finalActions?.GetType().Name} (Count={((finalActions as System.Collections.IList)?.Count ?? -1)})");
             }
             catch (Exception ex)
             {
-                log.Warning($"[AutoDutyPath] Content/path setup failed: {ex.Message}\n{ex.StackTrace}");
+                log.Warning($"[MOGTOME][AutoDutyPath] Content/path setup failed: {ex.Message}\n{ex.StackTrace}");
             }
 
-            LastForceResult = $"OK: Reflection completed (territory={territorySet}, path={pathSet}, content={territoryContent != null})";
-            log.Information($"[AutoDutyPath] === FORCE PATH SELECTION COMPLETE: {LastForceResult} ===");
+            LastForceResult = $"[MOGTOME]OK: Reflection completed (territory={territorySet}, path={pathSet}, content={territoryContent != null})";
+            log.Information($"[MOGTOME][AutoDutyPath] === FORCE PATH SELECTION COMPLETE: {LastForceResult} ===");
             return true;
         }
         catch (Exception ex)
         {
-            LastForceResult = $"EXCEPTION: {ex.Message}";
-            log.Error($"[AutoDutyPath] ForcePathSelection failed: {ex}");
+            LastForceResult = $"[MOGTOME]EXCEPTION: {ex.Message}";
+            log.Error($"[MOGTOME][AutoDutyPath] ForcePathSelection failed: {ex}");
             return false;
         }
     }
@@ -619,7 +619,7 @@ public class AutoDutyPathService
                 
                 if (pluginInstance == null)
                 {
-                    log.Warning("[AutoDutyPath] Cannot log structure - AutoDuty not found");
+                    log.Warning("[MOGTOME][AutoDutyPath] Cannot log structure - AutoDuty not found");
                     return;
                 }
             }
@@ -627,7 +627,7 @@ public class AutoDutyPathService
             var instanceType = pluginInstance.GetType();
 
             // Log fields
-            log.Information("[AutoDutyPath] === AutoDuty Plugin Structure ===");
+            log.Information("[MOGTOME][AutoDutyPath] === AutoDuty Plugin Structure ===");
             foreach (var field in instanceType.GetFields(AllFlags).OrderBy(f => f.Name))
             {
                 try
@@ -635,11 +635,11 @@ public class AutoDutyPathService
                     var val = field.GetValue(field.IsStatic ? null : pluginInstance);
                     var valStr = val?.ToString() ?? "null";
                     if (valStr.Length > 100) valStr = valStr[..100] + "...";
-                    log.Information($"[AutoDutyPath]   Field: {field.Name} ({field.FieldType.Name}) = {valStr}");
+                    log.Information($"[MOGTOME][AutoDutyPath]   Field: {field.Name} ({field.FieldType.Name}) = {valStr}");
                 }
                 catch
                 {
-                    log.Information($"[AutoDutyPath]   Field: {field.Name} ({field.FieldType.Name}) = <error reading>");
+                    log.Information($"[MOGTOME][AutoDutyPath]   Field: {field.Name} ({field.FieldType.Name}) = <error reading>");
                 }
             }
 
@@ -653,11 +653,11 @@ public class AutoDutyPathService
                     var val = prop.GetValue(getter.IsStatic ? null : pluginInstance);
                     var valStr = val?.ToString() ?? "null";
                     if (valStr.Length > 100) valStr = valStr[..100] + "...";
-                    log.Information($"[AutoDutyPath]   Prop: {prop.Name} ({prop.PropertyType.Name}) = {valStr}");
+                    log.Information($"[MOGTOME][AutoDutyPath]   Prop: {prop.Name} ({prop.PropertyType.Name}) = {valStr}");
                 }
                 catch
                 {
-                    log.Information($"[AutoDutyPath]   Prop: {prop.Name} ({prop.PropertyType.Name}) = <error reading>");
+                    log.Information($"[MOGTOME][AutoDutyPath]   Prop: {prop.Name} ({prop.PropertyType.Name}) = <error reading>");
                 }
             }
 
@@ -665,7 +665,7 @@ public class AutoDutyPathService
             if (config != null)
             {
                 var configType = config.GetType();
-                log.Information($"[AutoDutyPath] === AutoDuty Config Structure ({configType.FullName}) ===");
+                log.Information($"[MOGTOME][AutoDutyPath] === AutoDuty Config Structure ({configType.FullName}) ===");
                 foreach (var field in configType.GetFields(AllFlags).OrderBy(f => f.Name))
                 {
                     try
@@ -673,11 +673,11 @@ public class AutoDutyPathService
                         var val = field.GetValue(field.IsStatic ? null : config);
                         var valStr = val?.ToString() ?? "null";
                         if (valStr.Length > 100) valStr = valStr[..100] + "...";
-                        log.Information($"[AutoDutyPath]   CField: {field.Name} ({field.FieldType.Name}) = {valStr}");
+                        log.Information($"[MOGTOME][AutoDutyPath]   CField: {field.Name} ({field.FieldType.Name}) = {valStr}");
                     }
                     catch
                     {
-                        log.Information($"[AutoDutyPath]   CField: {field.Name} ({field.FieldType.Name}) = <error reading>");
+                        log.Information($"[MOGTOME][AutoDutyPath]   CField: {field.Name} ({field.FieldType.Name}) = <error reading>");
                     }
                 }
                 foreach (var prop in configType.GetProperties(AllFlags).OrderBy(p => p.Name))
@@ -689,18 +689,18 @@ public class AutoDutyPathService
                         var val = prop.GetValue(getter.IsStatic ? null : config);
                         var valStr = val?.ToString() ?? "null";
                         if (valStr.Length > 100) valStr = valStr[..100] + "...";
-                        log.Information($"[AutoDutyPath]   CProp: {prop.Name} ({prop.PropertyType.Name}) = {valStr}");
+                        log.Information($"[MOGTOME][AutoDutyPath]   CProp: {prop.Name} ({prop.PropertyType.Name}) = {valStr}");
                     }
                     catch
                     {
-                        log.Information($"[AutoDutyPath]   CProp: {prop.Name} ({prop.PropertyType.Name}) = <error reading>");
+                        log.Information($"[MOGTOME][AutoDutyPath]   CProp: {prop.Name} ({prop.PropertyType.Name}) = <error reading>");
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            log.Error($"[AutoDutyPath] LogAutoDutyStructure failed: {ex.Message}");
+            log.Error($"[MOGTOME][AutoDutyPath] LogAutoDutyStructure failed: {ex.Message}");
         }
     }
 
@@ -765,7 +765,7 @@ public class AutoDutyPathService
         }
         catch (Exception ex)
         {
-            log.Error($"[AutoDutyPath] FindDalamudPluginInstance failed: {ex.Message}");
+            log.Error($"[MOGTOME][AutoDutyPath] FindDalamudPluginInstance failed: {ex.Message}");
             return null;
         }
     }
@@ -781,28 +781,28 @@ public class AutoDutyPathService
         {
             if (autoDutyPlugin == null)
             {
-                log.Warning("[ExploreUI] autoDutyPlugin is null");
+                log.Warning("[MOGTOME][ExploreUI] autoDutyPlugin is null");
                 return;
             }
 
             var pluginType = autoDutyPlugin.GetType();
             var pluginAssembly = pluginType.Assembly;
             
-            log.Information("[ExploreUI] === EXPLORING AUTODUTY UI STRUCTURE ===");
+            log.Information("[MOGTOME][ExploreUI] === EXPLORING AUTODUTY UI STRUCTURE ===");
             
             // Get MainTab type
             var mainTabType = pluginAssembly.GetType("AutoDuty.Windows.MainTab");
             if (mainTabType == null)
             {
-                log.Error("[ExploreUI] MainTab type not found in assembly");
+                log.Error("[MOGTOME][ExploreUI] MainTab type not found in assembly");
                 return;
             }
             
-            log.Information($"[ExploreUI] Found MainTab: {mainTabType.FullName}");
+            log.Information($"[MOGTOME][ExploreUI] Found MainTab: {mainTabType.FullName}");
             
             // Explore all methods
             var allMethods = mainTabType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
-            log.Information($"[ExploreUI] Total methods found: {allMethods.Length}");
+            log.Information($"[MOGTOME][ExploreUI] Total methods found: {allMethods.Length}");
             
             // Find click-related methods
             var clickMethods = allMethods.Where(m => 
@@ -812,11 +812,11 @@ public class AutoDutyPathService
                 m.Name.Contains("OnList") ||
                 m.Name.Contains("ListClick")).ToList();
             
-            log.Information($"[ExploreUI] Click/Select methods ({clickMethods.Count}):");
+            log.Information($"[MOGTOME][ExploreUI] Click/Select methods ({clickMethods.Count}):");
             foreach (var method in clickMethods)
             {
                 var paramsStr = string.Join(", ", method.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
-                log.Information($"[ExploreUI]   {method.Name}({paramsStr})");
+                log.Information($"[MOGTOME][ExploreUI]   {method.Name}({paramsStr})");
             }
             
             // Find list-related methods
@@ -824,11 +824,11 @@ public class AutoDutyPathService
                 m.Name.Contains("List") && 
                 (m.Name.Contains("Selected") || m.Name.Contains("Index") || m.Name.Contains("Current"))).ToList();
             
-            log.Information($"[ExploreUI] List selection methods ({listMethods.Count}):");
+            log.Information($"[MOGTOME][ExploreUI] List selection methods ({listMethods.Count}):");
             foreach (var method in listMethods)
             {
                 var paramsStr = string.Join(", ", method.GetParameters().Select(p => $"{p.ParameterType.Name} {p.Name}"));
-                log.Information($"[ExploreUI]   {method.Name}({paramsStr})");
+                log.Information($"[MOGTOME][ExploreUI]   {method.Name}({paramsStr})");
             }
             
             // Explore all fields/properties
@@ -842,10 +842,10 @@ public class AutoDutyPathService
                 f.Name.Contains("Current") ||
                 f.Name.Contains("List")).ToList();
             
-            log.Information($"[ExploreUI] Selection-related fields ({selectionFields.Count}):");
+            log.Information($"[MOGTOME][ExploreUI] Selection-related fields ({selectionFields.Count}):");
             foreach (var field in selectionFields)
             {
-                log.Information($"[ExploreUI]   {field.FieldType.Name} {field.Name}");
+                log.Information($"[MOGTOME][ExploreUI]   {field.FieldType.Name} {field.Name}");
             }
             
             // Find selection-related properties
@@ -855,47 +855,47 @@ public class AutoDutyPathService
                 p.Name.Contains("Current") ||
                 p.Name.Contains("List")).ToList();
             
-            log.Information($"[ExploreUI] Selection-related properties ({selectionProps.Count}):");
+            log.Information($"[MOGTOME][ExploreUI] Selection-related properties ({selectionProps.Count}):");
             foreach (var prop in selectionProps)
             {
-                log.Information($"[ExploreUI]   {prop.PropertyType.Name} {prop.Name}");
+                log.Information($"[MOGTOME][ExploreUI]   {prop.PropertyType.Name} {prop.Name}");
             }
             
             // NEW: Look for MainTab instance access patterns
-            log.Information("[ExploreUI] === MainTab INSTANCE ACCESS ===");
+            log.Information("[MOGTOME][ExploreUI] === MainTab INSTANCE ACCESS ===");
             
             // Check for static MainTab fields/properties
             var staticMainTabFields = mainTabType.GetFields(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
                 .Where(f => f.Name.Contains("Instance") || f.Name.Contains("Current") || f.Name == "Instance" || f.Name == "Current").ToList();
             
-            log.Information($"[ExploreUI] Static MainTab access fields ({staticMainTabFields.Count}):");
+            log.Information($"[MOGTOME][ExploreUI] Static MainTab access fields ({staticMainTabFields.Count}):");
             foreach (var field in staticMainTabFields)
             {
                 try
                 {
                     var value = field.GetValue(null);
-                    log.Information($"[ExploreUI]   {field.FieldType.Name} {field.Name} = {value?.GetType().Name ?? "null"}");
+                    log.Information($"[MOGTOME][ExploreUI]   {field.FieldType.Name} {field.Name} = {value?.GetType().Name ?? "null"}");
                 }
                 catch (Exception ex)
                 {
-                    log.Information($"[ExploreUI]   {field.FieldType.Name} {field.Name} = ERROR: {ex.Message}");
+                    log.Information($"[MOGTOME][ExploreUI]   {field.FieldType.Name} {field.Name} = ERROR: {ex.Message}");
                 }
             }
             
             var staticMainTabProps = mainTabType.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
                 .Where(p => p.Name.Contains("Instance") || p.Name.Contains("Current") || p.Name == "Instance" || p.Name == "Current").ToList();
             
-            log.Information($"[ExploreUI] Static MainTab access properties ({staticMainTabProps.Count}):");
+            log.Information($"[MOGTOME][ExploreUI] Static MainTab access properties ({staticMainTabProps.Count}):");
             foreach (var prop in staticMainTabProps)
             {
                 try
                 {
                     var value = prop.GetValue(null);
-                    log.Information($"[ExploreUI]   {prop.PropertyType.Name} {prop.Name} = {value?.GetType().Name ?? "null"}");
+                    log.Information($"[MOGTOME][ExploreUI]   {prop.PropertyType.Name} {prop.Name} = {value?.GetType().Name ?? "null"}");
                 }
                 catch (Exception ex)
                 {
-                    log.Information($"[ExploreUI]   {prop.PropertyType.Name} {prop.Name} = ERROR: {ex.Message}");
+                    log.Information($"[MOGTOME][ExploreUI]   {prop.PropertyType.Name} {prop.Name} = ERROR: {ex.Message}");
                 }
             }
             
@@ -904,42 +904,42 @@ public class AutoDutyPathService
             var pluginMainTabFields = autoDutyPluginType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                 .Where(f => f.FieldType == mainTabType || f.FieldType.Name.Contains("MainTab") || f.Name.Contains("MainTab")).ToList();
             
-            log.Information($"[ExploreUI] Plugin MainTab reference fields ({pluginMainTabFields.Count}):");
+            log.Information($"[MOGTOME][ExploreUI] Plugin MainTab reference fields ({pluginMainTabFields.Count}):");
             foreach (var field in pluginMainTabFields)
             {
                 try
                 {
                     var value = field.GetValue(autoDutyPlugin);
-                    log.Information($"[ExploreUI]   {field.FieldType.Name} {field.Name} = {value?.GetType().Name ?? "null"}");
+                    log.Information($"[MOGTOME][ExploreUI]   {field.FieldType.Name} {field.Name} = {value?.GetType().Name ?? "null"}");
                 }
                 catch (Exception ex)
                 {
-                    log.Information($"[ExploreUI]   {field.FieldType.Name} {field.Name} = ERROR: {ex.Message}");
+                    log.Information($"[MOGTOME][ExploreUI]   {field.FieldType.Name} {field.Name} = ERROR: {ex.Message}");
                 }
             }
             
             var pluginMainTabProps = autoDutyPluginType.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                 .Where(p => p.PropertyType == mainTabType || p.PropertyType.Name.Contains("MainTab") || p.Name.Contains("MainTab")).ToList();
             
-            log.Information($"[ExploreUI] Plugin MainTab reference properties ({pluginMainTabProps.Count}):");
+            log.Information($"[MOGTOME][ExploreUI] Plugin MainTab reference properties ({pluginMainTabProps.Count}):");
             foreach (var prop in pluginMainTabProps)
             {
                 try
                 {
                     var value = prop.GetValue(autoDutyPlugin);
-                    log.Information($"[ExploreUI]   {prop.PropertyType.Name} {prop.Name} = {value?.GetType().Name ?? "null"}");
+                    log.Information($"[MOGTOME][ExploreUI]   {prop.PropertyType.Name} {prop.Name} = {value?.GetType().Name ?? "null"}");
                 }
                 catch (Exception ex)
                 {
-                    log.Information($"[ExploreUI]   {prop.PropertyType.Name} {prop.Name} = ERROR: {ex.Message}");
+                    log.Information($"[MOGTOME][ExploreUI]   {prop.PropertyType.Name} {prop.Name} = ERROR: {ex.Message}");
                 }
             }
             
-            log.Information("[ExploreUI] === UI EXPLORATION COMPLETE ===");
+            log.Information("[MOGTOME][ExploreUI] === UI EXPLORATION COMPLETE ===");
         }
         catch (Exception ex)
         {
-            log.Error($"[ExploreUI] Exploration failed: {ex.Message}");
+            log.Error($"[MOGTOME][ExploreUI] Exploration failed: {ex.Message}");
         }
     }
 
@@ -952,7 +952,7 @@ public class AutoDutyPathService
         {
             if (autoDutyPlugin == null)
             {
-                log.Warning("[SimulateClick] autoDutyPlugin is null");
+                log.Warning("[MOGTOME][SimulateClick] autoDutyPlugin is null");
                 return;
             }
 
@@ -961,14 +961,14 @@ public class AutoDutyPathService
             var selectedPathFileName = ResolvePraetoriumPathFileName(configuredPathFileName);
             var selectedPathName = Path.GetFileNameWithoutExtension(selectedPathFileName) ?? selectedPathFileName;
             
-            log.Information("[SimulateClick] === SIMULATING PRAETORIUM CLICK ===");
-            log.Information($"[SimulateClick] Target configured path: {selectedPathName}");
+            log.Information("[MOGTOME][SimulateClick] === SIMULATING PRAETORIUM CLICK ===");
+            log.Information($"[MOGTOME][SimulateClick] Target configured path: {selectedPathName}");
             
             // Get MainTab type
             var mainTabType = pluginAssembly.GetType("AutoDuty.Windows.MainTab");
             if (mainTabType == null)
             {
-                log.Error("[SimulateClick] MainTab type not found");
+                log.Error("[MOGTOME][SimulateClick] MainTab type not found");
                 return;
             }
             
@@ -976,17 +976,17 @@ public class AutoDutyPathService
             var pathIndex = FindPathIndexFromDictionaryPaths(autoDutyPlugin, selectedPathName);
             if (pathIndex < 0)
             {
-                log.Warning("[SimulateClick] Could not find Praetorium path index, using fallback");
+                log.Warning("[MOGTOME][SimulateClick] Could not find Praetorium path index, using fallback");
                 pathIndex = FindPathIndexByName(autoDutyPlugin, selectedPathName);
             }
             
             if (pathIndex < 0)
             {
-                log.Error("[SimulateClick] Could not determine path index");
+                log.Error("[MOGTOME][SimulateClick] Could not determine path index");
                 return;
             }
             
-            log.Information($"[SimulateClick] Using path index: {pathIndex}");
+            log.Information($"[MOGTOME][SimulateClick] Using path index: {pathIndex}");
             
             // Try different approaches to simulate the click
             
@@ -998,7 +998,7 @@ public class AutoDutyPathService
                 m.Name.Contains("DutyList") ||
                 m.Name.Contains("OnList")).ToList();
             
-            log.Information($"[SimulateClick] Testing {clickMethods.Count} click methods...");
+            log.Information($"[MOGTOME][SimulateClick] Testing {clickMethods.Count} click methods...");
             
             foreach (var method in clickMethods)
             {
@@ -1031,12 +1031,12 @@ public class AutoDutyPathService
                     object? target = method.IsStatic ? null : autoDutyPlugin;
                     
                     method.Invoke(target, args);
-                    log.Information($"[SimulateClick] ✓ Called: {method.Name}({string.Join(", ", args)})");
+                    log.Information($"[MOGTOME][SimulateClick] ✓ Called: {method.Name}({string.Join(", ", args)})");
                     break; // Success, stop trying other methods
                 }
                 catch (Exception ex)
                 {
-                    log.Debug($"[SimulateClick] ✗ Failed: {method.Name} - {ex.Message}");
+                    log.Debug($"[MOGTOME][SimulateClick] ✗ Failed: {method.Name} - {ex.Message}");
                 }
             }
             
@@ -1045,7 +1045,7 @@ public class AutoDutyPathService
             var selectionFields = allFields.Where(f => 
                 f.Name.Contains("Selected") && f.Name.Contains("Index")).ToList();
             
-            log.Information($"[SimulateClick] Testing {selectionFields.Count} selection fields...");
+            log.Information($"[MOGTOME][SimulateClick] Testing {selectionFields.Count} selection fields...");
             
             foreach (var field in selectionFields)
             {
@@ -1060,11 +1060,11 @@ public class AutoDutyPathService
                     else
                         continue;
                         
-                    log.Information($"[SimulateClick] ✓ Set field: {field.Name} = {pathIndex}");
+                    log.Information($"[[MOGTOME]SimulateClick] ✓ Set field: {field.Name} = {pathIndex}");
                 }
                 catch (Exception ex)
                 {
-                    log.Debug($"[SimulateClick] ✗ Failed to set {field.Name}: {ex.Message}");
+                    log.Debug($"[MOGTOME][SimulateClick] ✗ Failed to set {field.Name}: {ex.Message}");
                 }
             }
             
@@ -1075,7 +1075,7 @@ public class AutoDutyPathService
                 m.Name.Contains("Draw") || 
                 m.Name.Contains("Render")).Take(5).ToList();
             
-            log.Information($"[SimulateClick] Testing {refreshMethods.Count} refresh methods...");
+            log.Information($"[MOGTOME][SimulateClick] Testing {refreshMethods.Count} refresh methods...");
             
             foreach (var method in refreshMethods)
             {
@@ -1085,21 +1085,21 @@ public class AutoDutyPathService
                     {
                         object? target = method.IsStatic ? null : autoDutyPlugin;
                         method.Invoke(target, new object?[] { });
-                        log.Information($"[SimulateClick] ✓ Called refresh: {method.Name}");
+                        log.Information($"[MOGTOME][SimulateClick] ✓ Called refresh: {method.Name}");
                         break;
                     }
                 }
                 catch (Exception ex)
                 {
-                    log.Debug($"[SimulateClick] ✗ Failed refresh {method.Name}: {ex.Message}");
+                    log.Debug($"[MOGTOME][SimulateClick] ✗ Failed refresh {method.Name}: {ex.Message}");
                 }
             }
             
-            log.Information("[SimulateClick] === CLICK SIMULATION COMPLETE ===");
+            log.Information("[MOGTOME][SimulateClick] === CLICK SIMULATION COMPLETE ===");
         }
         catch (Exception ex)
         {
-            log.Error($"[SimulateClick] Click simulation failed: {ex.Message}");
+            log.Error($"[MOGTOME][SimulateClick] Click simulation failed: {ex.Message}");
         }
     }
     public int FindPathIndexFromDictionaryPaths(object? autoDutyPlugin, string targetPathName)
@@ -1108,7 +1108,7 @@ public class AutoDutyPathService
         {
             if (autoDutyPlugin == null)
             {
-                log.Warning("[AutoDutyPath] autoDutyPlugin is null in FindPathIndexFromDictionaryPaths");
+                log.Warning("[MOGTOME][AutoDutyPath] autoDutyPlugin is null in FindPathIndexFromDictionaryPaths");
                 return -1;
             }
 
@@ -1119,7 +1119,7 @@ public class AutoDutyPathService
             var contentPathsManagerType = pluginAssembly.GetType("AutoDuty.Managers.ContentPathsManager");
             if (contentPathsManagerType == null)
             {
-                log.Warning("[AutoDutyPath] ContentPathsManager type not found in assembly");
+                log.Warning("[MOGTOME][AutoDutyPath] ContentPathsManager type not found in assembly");
                 return -1;
             }
 
@@ -1127,14 +1127,14 @@ public class AutoDutyPathService
             var dictPathsField = contentPathsManagerType.GetField("DictionaryPaths", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
             if (dictPathsField == null)
             {
-                log.Warning("[AutoDutyPath] DictionaryPaths field not found in ContentPathsManager");
+                log.Warning("[MOGTOME][AutoDutyPath] DictionaryPaths field not found in ContentPathsManager");
                 return -1;
             }
 
             var dictPathsObj = dictPathsField.GetValue(null) as IDictionary;
             if (dictPathsObj == null)
             {
-                log.Warning("[AutoDutyPath] DictionaryPaths is null or not a dictionary");
+                log.Warning("[MOGTOME][AutoDutyPath] DictionaryPaths is null or not a dictionary");
                 return -1;
             }
 
@@ -1142,14 +1142,14 @@ public class AutoDutyPathService
             var targetTerritory = (uint)1044;
             if (!dictPathsObj.Contains(targetTerritory))
             {
-                log.Warning($"[AutoDutyPath] Territory {targetTerritory} not found in DictionaryPaths");
+                log.Warning($"[MOGTOME][AutoDutyPath] Territory {targetTerritory} not found in DictionaryPaths");
                 return -1;
             }
 
             var pathContainer = dictPathsObj[targetTerritory];
             if (pathContainer == null)
             {
-                log.Warning($"[AutoDutyPath] Path container for territory {targetTerritory} is null");
+                log.Warning($"[MOGTOME][AutoDutyPath] Path container for territory {targetTerritory} is null");
                 return -1;
             }
 
@@ -1159,7 +1159,7 @@ public class AutoDutyPathService
             var pathsProperty = containerType.GetProperty("Paths", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
             if (pathsField == null && pathsProperty == null)
             {
-                log.Warning("[AutoDutyPath] Paths field/property not found in path container");
+                log.Warning("[MOGTOME][AutoDutyPath] Paths field/property not found in path container");
                 return -1;
             }
 
@@ -1168,12 +1168,12 @@ public class AutoDutyPathService
                 pathsField?.GetValue(pathContainer) as System.Collections.IList;
             if (pathsList == null)
             {
-                log.Warning("[AutoDutyPath] Paths list is null or not an IList");
+                log.Warning("[MOGTOME][AutoDutyPath] Paths list is null or not an IList");
                 return -1;
             }
 
             // Search through the Paths list to find our target path
-            log.Information($"[AutoDutyPath] Searching through {pathsList.Count} paths for '{targetPathName}'");
+            log.Information($"[MOGTOME][AutoDutyPath] Searching through {pathsList.Count} paths for '{targetPathName}'");
             
             for (int i = 0; i < pathsList.Count; i++)
             {
@@ -1189,11 +1189,11 @@ public class AutoDutyPathService
                         var pathName = nameProp.GetValue(pathObj)?.ToString();
                         if (!string.IsNullOrEmpty(pathName))
                         {
-                            log.Information($"[AutoDutyPath] Path[{i}]: {pathName}");
+                            log.Information($"[MOGTOME][AutoDutyPath] Path[{i}]: {pathName}");
                             
                             if (IsTargetPath(pathName, targetPathName))
                             {
-                                log.Information($"[AutoDutyPath] *** FOUND TARGET PATH at index {i}: {pathName} ***");
+                                log.Information($"[MOGTOME][AutoDutyPath] *** FOUND TARGET PATH at index {i}: {pathName} ***");
                                 return i;
                             }
                         }
@@ -1201,12 +1201,12 @@ public class AutoDutyPathService
                 }
             }
 
-            log.Warning($"[AutoDutyPath] Target path '{targetPathName}' not found in {pathsList.Count} paths");
+            log.Warning($"[MOGTOME][AutoDutyPath] Target path '{targetPathName}' not found in {pathsList.Count} paths");
             return -1;
         }
         catch (Exception ex)
         {
-            log.Error($"[AutoDutyPath] FindPathIndexFromDictionaryPaths failed: {ex.Message}");
+            log.Error($"[MOGTOME][AutoDutyPath] FindPathIndexFromDictionaryPaths failed: {ex.Message}");
             return -1;
         }
     }
@@ -1219,7 +1219,7 @@ public class AutoDutyPathService
     {
         try
         {
-            log.Information($"[AutoDutyPath] Finding path index by file date for: {targetPathName}");
+            log.Information($"[MOGTOME][AutoDutyPath] Finding path index by file date for: {targetPathName}");
             
             // Get AutoDuty plugin to find paths folder
             var autoDutyPlugin = FindDalamudPluginInstance("AutoDuty");
@@ -1232,7 +1232,7 @@ public class AutoDutyPathService
             var pathsDirectory = GetAutoDutyPathsFolder(autoDutyPlugin);
             if (string.IsNullOrEmpty(pathsDirectory) || !Directory.Exists(pathsDirectory))
             {
-                log.Error($"[AutoDutyPath] Could not find AutoDuty paths directory. Checked: {string.Join(" | ", GetAutoDutyPathsFolderCandidates(autoDutyPlugin))}");
+                log.Error($"[MOGTOME][AutoDutyPath] Could not find AutoDuty paths directory. Checked: {string.Join(" | ", GetAutoDutyPathsFolderCandidates(autoDutyPlugin))}");
                 return -1;
             }
             
@@ -1241,11 +1241,11 @@ public class AutoDutyPathService
                 .Where(file => File.Exists(file))
                 .ToList();
             
-            log.Information($"[AutoDutyPath] Found {praetoriumFiles.Count()} Praetorium files in {pathsDirectory}");
+            log.Information($"[MOGTOME][AutoDutyPath] Found {praetoriumFiles.Count()} Praetorium files in {pathsDirectory}");
             
             if (praetoriumFiles.Count == 0)
             {
-                log.Warning("[AutoDutyPath] No (1044)*.json files found in paths directory");
+                log.Warning("[MOGTOME][AutoDutyPath] No (1044)*.json files found in paths directory");
                 return -1;
             }
             
@@ -1254,12 +1254,12 @@ public class AutoDutyPathService
                 .OrderBy(file => File.GetLastWriteTime(file))
                 .ToList();
             
-            log.Information("[AutoDutyPath] Praetorium files sorted by Date Modified:");
+            log.Information("[MOGTOME][AutoDutyPath] Praetorium files sorted by Date Modified:");
             for (int i = 0; i < sortedFiles.Count; i++)
             {
                 var fileName = Path.GetFileName(sortedFiles[i]);
                 var date = File.GetLastWriteTime(sortedFiles[i]);
-                log.Information($"[AutoDutyPath]   Index {i}: {fileName} (Modified: {date:yyyy-MM-dd HH:mm:ss})");
+                log.Information($"[MOGTOME][AutoDutyPath]   Index {i}: {fileName} (Modified: {date:yyyy-MM-dd HH:mm:ss})");
             }
             
             // Find the target file index
@@ -1270,18 +1270,18 @@ public class AutoDutyPathService
             
             if (targetIndex >= 0)
             {
-                log.Information($"[AutoDutyPath] Found target file at index {targetIndex}: {Path.GetFileName(sortedFiles[targetIndex])}");
+                log.Information($"[MOGTOME][AutoDutyPath] Found target file at index {targetIndex}: {Path.GetFileName(sortedFiles[targetIndex])}");
                 return targetIndex;
             }
             else
             {
-                log.Warning($"[AutoDutyPath] Target file '{targetPathName}' not found in sorted list");
+                log.Warning($"[MOGTOME][AutoDutyPath] Target file '{targetPathName}' not found in sorted list");
                 return -1;
             }
         }
         catch (Exception ex)
         {
-            log.Error($"[AutoDutyPath] FindPathIndexByFileDate failed: {ex.Message}");
+            log.Error($"[MOGTOME][AutoDutyPath] FindPathIndexByFileDate failed: {ex.Message}");
             return -1;
         }
     }
@@ -1297,7 +1297,7 @@ public class AutoDutyPathService
         {
             if (autoDutyPlugin == null)
             {
-                log.Warning("[AutoDutyPath] autoDutyPlugin is null in FindPathIndexByName");
+                log.Warning("[MOGTOME][AutoDutyPath] autoDutyPlugin is null in FindPathIndexByName");
                 return -1;
             }
 
@@ -1307,7 +1307,7 @@ public class AutoDutyPathService
             var config = GetMemberValue(pluginType, autoDutyPlugin, "Configuration");
             if (config == null)
             {
-                log.Warning("[AutoDutyPath] Could not get Configuration in FindPathIndexByName");
+                log.Warning("[MOGTOME][AutoDutyPath] Could not get Configuration in FindPathIndexByName");
                 return -1;
             }
 
@@ -1315,7 +1315,7 @@ public class AutoDutyPathService
             var pathSelections = GetMemberValue(config.GetType(), config, "PathSelectionsByPath");
             if (pathSelections == null)
             {
-                log.Warning("[AutoDutyPath] Could not get PathSelectionsByPath in FindPathIndexByName");
+                log.Warning("[MOGTOME][AutoDutyPath] Could not get PathSelectionsByPath in FindPathIndexByName");
                 return -1;
             }
 
@@ -1325,7 +1325,7 @@ public class AutoDutyPathService
             var indexerProp = dictType.GetProperty("Item");
             if (indexerProp == null)
             {
-                log.Warning("[AutoDutyPath] Could not get indexer for PathSelectionsByPath");
+                log.Warning("[MOGTOME][AutoDutyPath] Could not get indexer for PathSelectionsByPath");
                 return -1;
             }
 
@@ -1335,7 +1335,7 @@ public class AutoDutyPathService
             
             if (praetoriumPaths == null)
             {
-                log.Warning($"[AutoDutyPath] No paths found for territory {targetTerritory}");
+                log.Warning($"[MOGTOME][AutoDutyPath] No paths found for territory {targetTerritory}");
                 return -1;
             }
 
@@ -1346,7 +1346,7 @@ public class AutoDutyPathService
             
             if (innerKeys == null)
             {
-                log.Warning("[AutoDutyPath] Could not get inner keys from Praetorium paths");
+                log.Warning("[MOGTOME][AutoDutyPath] Could not get inner keys from Praetorium paths");
                 return -1;
             }
 
@@ -1359,19 +1359,19 @@ public class AutoDutyPathService
                     // Check if this matches our target (flexible matching)
                     if (IsTargetPath(pathName, targetPathName))
                     {
-                        log.Information($"[AutoDutyPath] Found target path at index {pathIndex}: {pathName}");
+                        log.Information($"[MOGTOME][AutoDutyPath] Found target path at index {pathIndex}: {pathName}");
                         return pathIndex;
                     }
                     pathIndex++;
                 }
             }
 
-            log.Warning($"[AutoDutyPath] Target path '{targetPathName}' not found in {pathIndex} available paths");
+            log.Warning($"[MOGTOME][AutoDutyPath] Target path '{targetPathName}' not found in {pathIndex} available paths");
             return -1;
         }
         catch (Exception ex)
         {
-            log.Error($"[AutoDutyPath] FindPathIndexByName failed: {ex.Message}");
+            log.Error($"[MOGTOME][AutoDutyPath] FindPathIndexByName failed: {ex.Message}");
             return -1;
         }
     }
@@ -1417,11 +1417,11 @@ public class AutoDutyPathService
         {
             if (autoDutyPlugin == null)
             {
-                log.Warning("[AutoDutyPath] autoDutyPlugin is null");
+                log.Warning("[MOGTOME][AutoDutyPath] autoDutyPlugin is null");
                 return;
             }
 
-            log.Information("[AutoDutyPath] === Exploring Path Data Locations ===");
+            log.Information("[MOGTOME][AutoDutyPath] === Exploring Path Data Locations ===");
 
             var pluginType = autoDutyPlugin.GetType();
 
@@ -1429,7 +1429,7 @@ public class AutoDutyPathService
             var config = GetMemberValue(pluginType, autoDutyPlugin, "Configuration");
             if (config != null)
             {
-                log.Information("[AutoDutyPath] Exploring Configuration object...");
+                log.Information("[MOGTOME][AutoDutyPath] Exploring Configuration object...");
                 var configType = config.GetType();
                 
                 // Look for path-related fields/properties
@@ -1457,11 +1457,11 @@ public class AutoDutyPathService
                         {
                             continue; // Skip methods, events, etc.
                         }
-                        log.Information($"[AutoDutyPath] Config.{member.Name}: {value}");
+                        log.Information($"[MOGTOME][AutoDutyPath] Config.{member.Name}: {value}");
                     }
                     catch (Exception ex)
                     {
-                        log.Warning($"[AutoDutyPath] Could not access Config.{member.Name}: {ex.Message}");
+                        log.Warning($"[MOGTOME][AutoDutyPath] Could not access Config.{member.Name}: {ex.Message}");
                     }
                 }
             }
@@ -1470,7 +1470,7 @@ public class AutoDutyPathService
             var mainWindow = GetMemberValue(pluginType, autoDutyPlugin, "MainWindow");
             if (mainWindow != null)
             {
-                log.Information("[AutoDutyPath] Exploring MainWindow object...");
+                log.Information("[MOGTOME][AutoDutyPath] Exploring MainWindow object...");
                 var mwType = mainWindow.GetType();
                 
                 var pathMembers = mwType.GetMembers(AllFlags)
@@ -1497,17 +1497,17 @@ public class AutoDutyPathService
                         {
                             continue; // Skip methods, events, etc.
                         }
-                        log.Information($"[AutoDutyPath] MainWindow.{member.Name}: {value}");
+                        log.Information($"[MOGTOME][AutoDutyPath] MainWindow.{member.Name}: {value}");
                     }
                     catch (Exception ex)
                     {
-                        log.Warning($"[AutoDutyPath] Could not access MainWindow.{member.Name}: {ex.Message}");
+                        log.Warning($"[MOGTOME][AutoDutyPath] Could not access MainWindow.{member.Name}: {ex.Message}");
                     }
                 }
             }
 
             // 3. Check plugin-level path-related members
-            log.Information("[AutoDutyPath] Exploring plugin-level members...");
+            log.Information("[MOGTOME][AutoDutyPath] Exploring plugin-level members...");
             var pluginPathMembers = pluginType.GetMembers(AllFlags)
                 .Where(m => m.Name.Contains("Path", StringComparison.OrdinalIgnoreCase) ||
                            m.Name.Contains("Duty", StringComparison.OrdinalIgnoreCase) ||
@@ -1531,19 +1531,19 @@ public class AutoDutyPathService
                     {
                         continue; // Skip methods, events, etc.
                     }
-                    log.Information($"[AutoDutyPath] Plugin.{member.Name}: {value}");
+                    log.Information($"[MOGTOME][AutoDutyPath] Plugin.{member.Name}: {value}");
                 }
                 catch (Exception ex)
                 {
-                    log.Warning($"[AutoDutyPath] Could not access Plugin.{member.Name}: {ex.Message}");
+                    log.Warning($"[MOGTOME][AutoDutyPath] Could not access Plugin.{member.Name}: {ex.Message}");
                 }
             }
 
-            log.Information("[AutoDutyPath] === Path Data Exploration Complete ===");
+            log.Information("[MOGTOME][AutoDutyPath] === Path Data Exploration Complete ===");
         }
         catch (Exception ex)
         {
-            log.Error($"[AutoDutyPath] ExplorePathData failed: {ex.Message}");
+            log.Error($"[MOGTOME][AutoDutyPath] ExplorePathData failed: {ex.Message}");
         }
     }
 
@@ -1558,21 +1558,21 @@ public class AutoDutyPathService
         {
             if (autoDutyPlugin == null)
             {
-                log.Warning("[AutoDutyPath] autoDutyPlugin is null in LogCurrentSelection");
+                log.Warning("[MOGTOME][AutoDutyPath] autoDutyPlugin is null in LogCurrentSelection");
                 return;
             }
 
             var pluginType = autoDutyPlugin.GetType();
-            log.Information("[AutoDutyPath] === CURRENT AUTO DUTY SELECTION ===");
+            log.Information("[MOGTOME][AutoDutyPath] === CURRENT AUTO DUTY SELECTION ===");
 
             // Check plugin-level values
             var currentTerritoryType = GetMemberValue(pluginType, autoDutyPlugin, "currentTerritoryType");
             var currentPath = GetMemberValue(pluginType, autoDutyPlugin, "currentPath");
             var pathFile = GetMemberValue(pluginType, autoDutyPlugin, "pathFile");
             
-            log.Information($"[AutoDutyPath] Plugin currentTerritoryType: {currentTerritoryType}");
-            log.Information($"[AutoDutyPath] Plugin currentPath: {currentPath}");
-            log.Information($"[AutoDutyPath] Plugin pathFile: {pathFile}");
+            log.Information($"[MOGTOME][AutoDutyPath] Plugin currentTerritoryType: {currentTerritoryType}");
+            log.Information($"[MOGTOME][AutoDutyPath] Plugin currentPath: {currentPath}");
+            log.Information($"[MOGTOME][AutoDutyPath] Plugin pathFile: {pathFile}");
 
             // Check config-level values
             var config = GetMemberValue(pluginType, autoDutyPlugin, "Configuration");
@@ -1584,9 +1584,9 @@ public class AutoDutyPathService
                 var selectedTerritoryType = GetMemberValue(configType, config, "SelectedPathTerritoryType");
                 var selectedMode = GetMemberValue(configType, config, "SelectedMode");
                 
-                log.Information($"[AutoDutyPath] Config SelectedPathName: {selectedPathName}");
-                log.Information($"[AutoDutyPath] Config SelectedPathTerritoryType: {selectedTerritoryType}");
-                log.Information($"[AutoDutyPath] Config SelectedMode: {selectedMode}");
+                log.Information($"[MOGTOME][AutoDutyPath] Config SelectedPathName: {selectedPathName}");
+                log.Information($"[MOGTOME][AutoDutyPath] Config SelectedPathTerritoryType: {selectedTerritoryType}");
+                log.Information($"[MOGTOME][AutoDutyPath] Config SelectedMode: {selectedMode}");
 
                 // Try to get the actual path file that would be loaded
                 if (currentTerritoryType != null && currentPath != null)
@@ -1617,7 +1617,7 @@ public class AutoDutyPathService
                                         if (index == pathIndex)
                                         {
                                             var pathName = key?.ToString();
-                                            log.Information($"[AutoDutyPath] *** CURRENT PATH AT INDEX {pathIndex}: {pathName} ***");
+                                            log.Information($"[MOGTOME][AutoDutyPath] *** CURRENT PATH AT INDEX {pathIndex}: {pathName} ***");
                                             break;
                                         }
                                         index++;
@@ -1638,7 +1638,7 @@ public class AutoDutyPathService
                 if (countProp != null)
                 {
                     var count = countProp.GetValue(actions);
-                    log.Information($"[AutoDutyPath] Actions list count: {count}");
+                    log.Information($"[MOGTOME][AutoDutyPath] Actions list count: {count}");
                     
                     if (count is int actionCount && actionCount > 0)
                     {
@@ -1647,17 +1647,17 @@ public class AutoDutyPathService
                         if (indexerProp != null)
                         {
                             var firstAction = indexerProp.GetValue(actions, new object[] { 0 });
-                            log.Information($"[AutoDutyPath] First action: {firstAction}");
+                            log.Information($"[MOGTOME][AutoDutyPath] First action: {firstAction}");
                         }
                     }
                 }
             }
 
-            log.Information("[AutoDutyPath] === CURRENT SELECTION COMPLETE ===");
+            log.Information("[MOGTOME][AutoDutyPath] === CURRENT SELECTION COMPLETE ===");
         }
         catch (Exception ex)
         {
-            log.Error($"[AutoDutyPath] LogCurrentSelection failed: {ex.Message}");
+            log.Error($"[MOGTOME][AutoDutyPath] LogCurrentSelection failed: {ex.Message}");
         }
     }
 
@@ -1672,7 +1672,7 @@ public class AutoDutyPathService
         {
             if (autoDutyPlugin == null)
             {
-                log.Warning("[AutoDutyPath] autoDutyPlugin is null in LogConfigFields");
+                log.Warning("[MOGTOME][AutoDutyPath] autoDutyPlugin is null in LogConfigFields");
                 return;
             }
 
@@ -1681,15 +1681,15 @@ public class AutoDutyPathService
             
             if (config == null)
             {
-                log.Warning("[AutoDutyPath] Configuration not found in LogConfigFields");
+                log.Warning("[MOGTOME][AutoDutyPath] Configuration not found in LogConfigFields");
                 return;
             }
 
             var configType = config.GetType();
             var selectedPathFileName = ResolvePraetoriumPathFileName(configuredPathFileName);
             var selectedPathName = Path.GetFileNameWithoutExtension(selectedPathFileName) ?? selectedPathFileName;
-            log.Information("[AutoDutyPath] === CONFIG FIELD NAMES ===");
-            log.Information($"[AutoDutyPath] Configured Praetorium path: {selectedPathFileName}");
+            log.Information("[MOGTOME][AutoDutyPath] === CONFIG FIELD NAMES ===");
+            log.Information($"[MOGTOME][AutoDutyPath] Configured Praetorium path: {selectedPathFileName}");
 
             // Look for path-related field names
             var pathKeywords = new[] { "path", "territory", "duty", "selected", "current", "mode" };
@@ -1700,7 +1700,7 @@ public class AutoDutyPathService
                 .OrderBy(m => m.Name)
                 .ToArray();
 
-            log.Information($"[AutoDutyPath] Found {pathMembers.Length} path-related fields:");
+            log.Information($"[MOGTOME][AutoDutyPath] Found {pathMembers.Length} path-related fields:");
 
             foreach (var member in pathMembers)
             {
@@ -1716,16 +1716,16 @@ public class AutoDutyPathService
                         value = ((PropertyInfo)member).GetValue(config);
                     }
                     
-                    log.Information($"[AutoDutyPath]   {member.Name} ({member.MemberType}): {value}");
+                    log.Information($"[MOGTOME][AutoDutyPath]   {member.Name} ({member.MemberType}): {value}");
                 }
                 catch (Exception ex)
                 {
-                    log.Information($"[AutoDutyPath]   {member.Name} ({member.MemberType}): ERROR - {ex.Message}");
+                    log.Information($"[MOGTOME][AutoDutyPath]   {member.Name} ({member.MemberType}): ERROR - {ex.Message}");
                 }
             }
 
             // Also look for any fields that might contain our target values
-            log.Information("[AutoDutyPath] === SEARCHING FOR TARGET VALUES ===");
+            log.Information("[MOGTOME][AutoDutyPath] === SEARCHING FOR TARGET VALUES ===");
             
             var targetTerritory = TargetTerritoryType.ToString();
             
@@ -1749,7 +1749,7 @@ public class AutoDutyPathService
                         if (!string.IsNullOrEmpty(valueStr) &&
                             ConfigValueMatchesSelectedPath(valueStr, targetTerritory, selectedPathName, selectedPathFileName))
                         {
-                            log.Information($"[AutoDutyPath] *** CONFIG MATCH: {member.Name} = {value}");
+                            log.Information($"[MOGTOME][AutoDutyPath] *** CONFIG MATCH: {member.Name} = {value}");
                         }
                     }
                 }
@@ -1760,7 +1760,7 @@ public class AutoDutyPathService
             }
 
             // Now search plugin-level fields for path selection
-            log.Information("[AutoDutyPath] === SEARCHING PLUGIN LEVEL ===");
+            log.Information("[MOGTOME][AutoDutyPath] === SEARCHING PLUGIN LEVEL ===");
             
             var pluginMembers = pluginType.GetMembers(AllFlags)
                 .Where(m => m.MemberType == MemberTypes.Field || m.MemberType == MemberTypes.Property)
@@ -1786,7 +1786,7 @@ public class AutoDutyPathService
                         if (!string.IsNullOrEmpty(valueStr) &&
                             ConfigValueMatchesSelectedPath(valueStr, targetTerritory, selectedPathName, selectedPathFileName))
                         {
-                            log.Information($"[AutoDutyPath] *** PLUGIN MATCH: {member.Name} = {value}");
+                            log.Information($"[MOGTOME][AutoDutyPath] *** PLUGIN MATCH: {member.Name} = {value}");
                         }
                     }
                 }
@@ -1796,11 +1796,11 @@ public class AutoDutyPathService
                 }
             }
 
-            log.Information("[AutoDutyPath] === CONFIG FIELDS COMPLETE ===");
+            log.Information("[MOGTOME][AutoDutyPath] === CONFIG FIELDS COMPLETE ===");
         }
         catch (Exception ex)
         {
-            log.Error($"[AutoDutyPath] LogConfigFields failed: {ex.Message}");
+            log.Error($"[MOGTOME][AutoDutyPath] LogConfigFields failed: {ex.Message}");
         }
     }
 
@@ -1815,12 +1815,12 @@ public class AutoDutyPathService
         {
             if (autoDutyPlugin == null)
             {
-                log.Warning("[AutoDutyPath] autoDutyPlugin is null in LogAutoDutyMethods");
+                log.Warning("[MOGTOME][AutoDutyPath] autoDutyPlugin is null in LogAutoDutyMethods");
                 return;
             }
 
             var pluginType = autoDutyPlugin.GetType();
-            log.Information("[AutoDutyPath] === AUTODUTY METHODS ===");
+            log.Information("[MOGTOME][AutoDutyPath] === AUTODUTY METHODS ===");
 
             // Look for common method names
             var methodNames = new[] { 
@@ -1840,7 +1840,7 @@ public class AutoDutyPathService
                 {
                     var parameters = method.GetParameters();
                     var paramStr = string.Join(", ", parameters.Select(p => $"{p.ParameterType.Name} {p.Name}"));
-                    log.Information($"[AutoDutyPath] Method: {method.Name}({paramStr}) -> {method.ReturnType.Name}");
+                    log.Information($"[MOGTOME][AutoDutyPath] Method: {method.Name}({paramStr}) -> {method.ReturnType.Name}");
                 }
             }
 
@@ -1849,7 +1849,7 @@ public class AutoDutyPathService
             if (config != null)
             {
                 var configType = config.GetType();
-                log.Information("[AutoDutyPath] === CONFIG METHODS ===");
+                log.Information("[MOGTOME][AutoDutyPath] === CONFIG METHODS ===");
                 
                 foreach (var methodName in methodNames)
                 {
@@ -1861,16 +1861,16 @@ public class AutoDutyPathService
                     {
                         var parameters = method.GetParameters();
                         var paramStr = string.Join(", ", parameters.Select(p => $"{p.ParameterType.Name} {p.Name}"));
-                        log.Information($"[AutoDutyPath] Config Method: {method.Name}({paramStr}) -> {method.ReturnType.Name}");
+                        log.Information($"[MOGTOME][AutoDutyPath] Config Method: {method.Name}({paramStr}) -> {method.ReturnType.Name}");
                     }
                 }
             }
 
-            log.Information("[AutoDutyPath] === METHODS COMPLETE ===");
+            log.Information("[MOGTOME][AutoDutyPath] === METHODS COMPLETE ===");
         }
         catch (Exception ex)
         {
-            log.Error($"[AutoDutyPath] LogAutoDutyMethods failed: {ex.Message}");
+            log.Error($"[MOGTOME][AutoDutyPath] LogAutoDutyMethods failed: {ex.Message}");
         }
     }
 
@@ -1885,20 +1885,20 @@ public class AutoDutyPathService
         {
             if (pathSelections == null)
             {
-                log.Warning("[AutoDutyPath] PathSelectionsByPath is null");
+                log.Warning("[MOGTOME][AutoDutyPath] PathSelectionsByPath is null");
                 return;
             }
 
             var dictType = pathSelections.GetType();
             var selectedPathFileName = ResolvePraetoriumPathFileName(configuredPathFileName);
             var selectedPathName = Path.GetFileNameWithoutExtension(selectedPathFileName) ?? selectedPathFileName;
-            log.Information($"[AutoDutyPath] === PathSelectionsByPath ({dictType.FullName}) ===");
-            log.Information($"[AutoDutyPath] Selected Praetorium path for comparison: {selectedPathFileName}");
+            log.Information($"[MOGTOME][AutoDutyPath] === PathSelectionsByPath ({dictType.FullName}) ===");
+            log.Information($"[MOGTOME][AutoDutyPath] Selected Praetorium path for comparison: {selectedPathFileName}");
 
             // Check if it's a dictionary
             if (!dictType.IsGenericType || dictType.GetGenericTypeDefinition() != typeof(System.Collections.Generic.Dictionary<,>))
             {
-                log.Warning("[AutoDutyPath] PathSelectionsByPath is not a Dictionary");
+                log.Warning("[MOGTOME][AutoDutyPath] PathSelectionsByPath is not a Dictionary");
                 return;
             }
 
@@ -1908,7 +1908,7 @@ public class AutoDutyPathService
             
             if (keysProp == null || valuesProp == null)
             {
-                log.Warning("[AutoDutyPath] Could not get Keys/Values properties from PathSelectionsByPath");
+                log.Warning("[MOGTOME][AutoDutyPath] Could not get Keys/Values properties from PathSelectionsByPath");
                 return;
             }
 
@@ -1917,17 +1917,17 @@ public class AutoDutyPathService
 
             if (keys == null || values == null)
             {
-                log.Warning("[AutoDutyPath] Keys or Values collection is null");
+                log.Warning("[MOGTOME][AutoDutyPath] Keys or Values collection is null");
                 return;
             }
 
-            log.Information($"[AutoDutyPath] Total territories: {keys.Count}");
+            log.Information($"[MOGTOME][AutoDutyPath] Total territories: {keys.Count}");
 
             // Get indexer to access individual entries
             var indexerProp = dictType.GetProperty("Item");
             if (indexerProp == null)
             {
-                log.Warning("[AutoDutyPath] Could not get indexer property from PathSelectionsByPath");
+                log.Warning("[MOGTOME][AutoDutyPath] Could not get indexer property from PathSelectionsByPath");
                 return;
             }
 
@@ -1937,8 +1937,8 @@ public class AutoDutyPathService
 
             if (praetoriumPaths != null)
             {
-                log.Information($"[AutoDutyPath] *** FOUND PRAETORIUM (1044) PATHS ***");
-                log.Information($"[AutoDutyPath] Praetorium paths: {praetoriumPaths}");
+                log.Information($"[MOGTOME][AutoDutyPath] *** FOUND PRAETORIUM (1044) PATHS ***");
+                log.Information($"[MOGTOME][AutoDutyPath] Praetorium paths: {praetoriumPaths}");
                 
                 // Try to explore the inner dictionary
                 var innerDictType = praetoriumPaths.GetType();
@@ -1949,24 +1949,24 @@ public class AutoDutyPathService
                     
                     if (innerKeys != null)
                     {
-                        log.Information($"[AutoDutyPath] Praetorium path count: {innerKeys.Count}");
+                        log.Information($"[MOGTOME][AutoDutyPath] Praetorium path count: {innerKeys.Count}");
                         
                         // Log all available paths for research first
-                        log.Information($"[AutoDutyPath] Available Praetorium paths:");
+                        log.Information($"[MOGTOME][AutoDutyPath] Available Praetorium paths:");
                         var pathIndex = 0;
                         foreach (var key in innerKeys)
                         {
                             var pathName = key?.ToString();
                             if (!string.IsNullOrEmpty(pathName))
                             {
-                                log.Information($"[AutoDutyPath]   [{pathIndex}] {pathName}");
+                                log.Information($"[MOGTOME][AutoDutyPath]   [{pathIndex}] {pathName}");
                                 
                                 // Check if this is our target path
                                 if (IsTargetPath(pathName, selectedPathName))
                                 {
-                                    log.Information($"[AutoDutyPath] *** FOUND TARGET PATH! ***");
-                                    log.Information($"[AutoDutyPath] Target: {pathName}");
-                                    log.Information($"[AutoDutyPath] Index: {pathIndex}");
+                                    log.Information($"[MOGTOME][AutoDutyPath] *** FOUND TARGET PATH! ***");
+                                    log.Information($"[MOGTOME][AutoDutyPath] Target: {pathName}");
+                                    log.Information($"[MOGTOME][AutoDutyPath] Index: {pathIndex}");
                                     
                                     // Try to get the JobWithRole value
                                     try
@@ -1975,12 +1975,12 @@ public class AutoDutyPathService
                                         if (innerIndexerProp != null)
                                         {
                                             var jobWithRole = innerIndexerProp.GetValue(praetoriumPaths, new object[] { pathName });
-                                            log.Information($"[AutoDutyPath] JobWithRole: {jobWithRole}");
+                                            log.Information($"[MOGTOME][AutoDutyPath] JobWithRole: {jobWithRole}");
                                         }
                                     }
                                     catch (Exception ex)
                                     {
-                                        log.Warning($"[AutoDutyPath] Could not get JobWithRole for target path: {ex.Message}");
+                                        log.Warning($"[MOGTOME][AutoDutyPath] Could not get JobWithRole for target path: {ex.Message}");
                                     }
                                 }
                                 pathIndex++;
@@ -1991,14 +1991,14 @@ public class AutoDutyPathService
             }
             else
             {
-                log.Warning($"[AutoDutyPath] No paths found for territory {targetTerritory}");
+                log.Warning($"[MOGTOME][AutoDutyPath] No paths found for territory {targetTerritory}");
             }
 
-            log.Information($"[AutoDutyPath] === PathSelectionsByPath Complete ===");
+            log.Information($"[MOGTOME][AutoDutyPath] === PathSelectionsByPath Complete ===");
         }
         catch (Exception ex)
         {
-            log.Error($"[AutoDutyPath] LogPathSelections failed: {ex.Message}");
+            log.Error($"[MOGTOME][AutoDutyPath] LogPathSelections failed: {ex.Message}");
         }
     }
 
@@ -2013,29 +2013,29 @@ public class AutoDutyPathService
         {
             if (actionsList == null)
             {
-                log.Warning("[AutoDutyPath] actionsList is null");
+                log.Warning("[MOGTOME][AutoDutyPath] actionsList is null");
                 return;
             }
 
             var listType = actionsList.GetType();
-            log.Information($"[AutoDutyPath] === actionsList Tuples ({listType.FullName}) ===");
+            log.Information($"[MOGTOME][AutoDutyPath] === actionsList Tuples ({listType.FullName}) ===");
 
             // Get the Count property
             var countProp = listType.GetProperty("Count");
             if (countProp == null)
             {
-                log.Warning("[AutoDutyPath] Could not get Count property from actionsList");
+                log.Warning("[MOGTOME][AutoDutyPath] Could not get Count property from actionsList");
                 return;
             }
 
             var count = (int)countProp.GetValue(actionsList)!;
-            log.Information($"[AutoDutyPath] Total tuples: {count}");
+            log.Information($"[MOGTOME][AutoDutyPath] Total tuples: {count}");
 
             // Get the indexer property to access individual tuples
             var indexerProp = listType.GetProperty("Item");
             if (indexerProp == null)
             {
-                log.Warning("[AutoDutyPath] Could not get indexer property from actionsList");
+                log.Warning("[MOGTOME][AutoDutyPath] Could not get indexer property from actionsList");
                 return;
             }
 
@@ -2048,7 +2048,7 @@ public class AutoDutyPathService
                     if (tuple != null)
                     {
                         var tupleType = tuple.GetType();
-                        log.Information($"[AutoDutyPath] Tuple[{i}]: {tupleType.FullName} = {tuple}");
+                        log.Information($"[MOGTOME][AutoDutyPath] Tuple[{i}]: {tupleType.FullName} = {tuple}");
                         
                         // Try to access tuple fields
                         var fields = tupleType.GetFields();
@@ -2056,21 +2056,21 @@ public class AutoDutyPathService
                         {
                             var field = fields[j];
                             var value = field.GetValue(tuple);
-                            log.Information($"[AutoDutyPath]   Field[{j}] {field.Name}: {value}");
+                            log.Information($"[MOGTOME][AutoDutyPath]   Field[{j}] {field.Name}: {value}");
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    log.Error($"[AutoDutyPath] Error accessing tuple[{i}]: {ex.Message}");
+                    log.Error($"[MOGTOME][AutoDutyPath] Error accessing tuple[{i}]: {ex.Message}");
                 }
             }
 
-            log.Information($"[AutoDutyPath] === actionsList Tuples Complete ===");
+            log.Information($"[MOGTOME][AutoDutyPath] === actionsList Tuples Complete ===");
         }
         catch (Exception ex)
         {
-            log.Error($"[AutoDutyPath] LogActionsListTuples failed: {ex.Message}");
+            log.Error($"[MOGTOME][AutoDutyPath] LogActionsListTuples failed: {ex.Message}");
         }
     }
 
@@ -2161,7 +2161,7 @@ public class AutoDutyPathService
                 // Parse enum value by name
                 var enumVal = Enum.Parse(memberType, valueName, ignoreCase: true);
                 setter(enumVal);
-                log.Debug($"[AutoDutyPath] Set enum {memberType.Name}.{valueName} successfully");
+                log.Debug($"[MOGTOME][AutoDutyPath] Set enum {memberType.Name}.{valueName} successfully");
                 return true;
             }
             else if (memberType == typeof(string))
@@ -2181,7 +2181,7 @@ public class AutoDutyPathService
         }
         catch (Exception ex)
         {
-            log.Debug($"[AutoDutyPath] TrySetEnumOrString failed for {memberType.Name}.{valueName}: {ex.Message}");
+            log.Debug($"[MOGTOME][AutoDutyPath] TrySetEnumOrString failed for {memberType.Name}.{valueName}: {ex.Message}");
         }
 
         return false;
@@ -2194,19 +2194,19 @@ public class AutoDutyPathService
             var autoDutyPathsFolder = GetAutoDutyPathsFolder();
             if (string.IsNullOrEmpty(autoDutyPathsFolder))
             {
-                log.Warning("[AutoDutyPath] Could not determine AutoDuty paths folder");
+                log.Warning("[MOGTOME][AutoDutyPath] Could not determine AutoDuty paths folder");
                 return Task.FromResult(false);
             }
-            log.Information($"[AutoDutyPath] Using AutoDuty paths folder: {autoDutyPathsFolder}");
+            log.Information($"[MOGTOME][AutoDutyPath] Using AutoDuty paths folder: {autoDutyPathsFolder}");
 
             var bundledPathOptions = GetPraetoriumPathOptions();
             var bundledPathsFolder = GetBundledPathsFolder();
             if (string.IsNullOrEmpty(bundledPathsFolder) || !Directory.Exists(bundledPathsFolder))
             {
-                log.Warning($"[AutoDutyPath] Bundled path folder is missing. Checked: {string.Join(" | ", GetBundledPathsFolderCandidates())}");
+                log.Warning($"[MOGTOME][AutoDutyPath] Bundled path folder is missing. Checked: {string.Join(" | ", GetBundledPathsFolderCandidates())}");
                 return Task.FromResult(false);
             }
-            log.Information($"[AutoDutyPath] Using bundled Praetorium source folder: {bundledPathsFolder}");
+            log.Information($"[MOGTOME][AutoDutyPath] Using bundled Praetorium source folder: {bundledPathsFolder}");
 
             Directory.CreateDirectory(autoDutyPathsFolder);
             var installedCount = 0;
@@ -2216,7 +2216,7 @@ public class AutoDutyPathService
                 var sourcePath = Path.Combine(bundledPathsFolder, option.FileName);
                 if (!File.Exists(sourcePath))
                 {
-                    log.Warning($"[AutoDutyPath] Bundled path missing from plugin data folder: {sourcePath}");
+                    log.Warning($"[MOGTOME][AutoDutyPath] Bundled path missing from plugin data folder: {sourcePath}");
                     continue;
                 }
 
@@ -2229,11 +2229,11 @@ public class AutoDutyPathService
                 {
                     File.Copy(sourcePath, targetPath, overwrite: true);
                     File.SetLastWriteTimeUtc(targetPath, File.GetLastWriteTimeUtc(sourcePath));
-                    log.Information($"[AutoDutyPath] Installed bundled path: {option.FileName}");
+                    log.Information($"[MOGTOME][AutoDutyPath] Installed bundled path: {option.FileName}");
                 }
                 else
                 {
-                    log.Debug($"[AutoDutyPath] Bundled path already current: {option.FileName}");
+                    log.Debug($"[MOGTOME][AutoDutyPath] Bundled path already current: {option.FileName}");
                 }
 
                 installedCount++;
@@ -2241,7 +2241,7 @@ public class AutoDutyPathService
 
             if (installedCount == 0)
             {
-                log.Warning("[AutoDutyPath] No bundled Praetorium paths were installed");
+                log.Warning("[MOGTOME][AutoDutyPath] No bundled Praetorium paths were installed");
                 return Task.FromResult(false);
             }
 
@@ -2249,7 +2249,7 @@ public class AutoDutyPathService
         }
         catch (Exception ex)
         {
-            log.Error($"[AutoDutyPath] EnsurePathExists failed: {ex.Message}");
+            log.Error($"[MOGTOME][AutoDutyPath] EnsurePathExists failed: {ex.Message}");
             return Task.FromResult(false);
         }
     }
@@ -2284,7 +2284,7 @@ public class AutoDutyPathService
         }
         catch (Exception ex)
         {
-            log.Error($"[AutoDutyPath] GetBundledPathsFolder failed: {ex.Message}");
+            log.Error($"[MOGTOME][AutoDutyPath] GetBundledPathsFolder failed: {ex.Message}");
             return null;
         }
     }
@@ -2327,20 +2327,20 @@ public class AutoDutyPathService
 
                 if (options.Count > 0)
                 {
-                    log.Information($"[AutoDutyPath] Loaded {options.Count} bundled Praetorium path option(s) from {bundledPathsFolder}");
+                    log.Information($"[MOGTOME][AutoDutyPath] Loaded {options.Count} bundled Praetorium path option(s) from {bundledPathsFolder}");
                     return options;
                 }
 
-                log.Warning($"[AutoDutyPath] No bundled Praetorium JSON files were found in {bundledPathsFolder}");
+                log.Warning($"[MOGTOME][AutoDutyPath] No bundled Praetorium JSON files were found in {bundledPathsFolder}");
             }
             else
             {
-                log.Warning($"[AutoDutyPath] Bundled Praetorium path folder could not be resolved. Checked: {string.Join(" | ", GetBundledPathsFolderCandidates())}");
+                log.Warning($"[MOGTOME][AutoDutyPath] Bundled Praetorium path folder could not be resolved. Checked: {string.Join(" | ", GetBundledPathsFolderCandidates())}");
             }
         }
         catch (Exception ex)
         {
-            log.Error($"[AutoDutyPath] Failed to load bundled Praetorium paths: {ex.Message}");
+            log.Error($"[MOGTOME][AutoDutyPath] Failed to load bundled Praetorium paths: {ex.Message}");
         }
 
         return
@@ -2379,7 +2379,7 @@ public class AutoDutyPathService
         }
         catch (Exception ex)
         {
-            log.Error($"[AutoDutyPath] GetAutoDutyPathsFolder failed: {ex.Message}");
+            log.Error($"[MOGTOME][AutoDutyPath] GetAutoDutyPathsFolder failed: {ex.Message}");
             return null;
         }
     }

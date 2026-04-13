@@ -62,8 +62,8 @@ public class ConfigManager
         // comparisons miss important switches such as account selection and duty counters.
         ConfigurationChanged?.Invoke(currentConfig);
         log.Debug(force
-            ? "[ConfigManager] Configuration notification forced for active account"
-            : "[ConfigManager] Configuration notification sent for active account");
+            ? "[MOGTOME][ConfigManager] Configuration notification forced for active account"
+            : "[MOGTOME][ConfigManager] Configuration notification sent for active account");
     }
     
     /// <summary>
@@ -75,7 +75,7 @@ public class ConfigManager
         {
             if (!hasLoggedNoAccount)
             {
-                log.Warning("[ConfigManager] No current account available - ContentId may not be ready yet (suppressing further warnings)");
+                log.Warning("[MOGTOME][ConfigManager] No current account available - ContentId may not be ready yet (suppressing further warnings)");
                 hasLoggedNoAccount = true;
             }
             // Return a temporary configuration that won't be saved
@@ -125,7 +125,7 @@ public class ConfigManager
             // Handle case where ContentId is 0 (shouldn't happen with delayed login, but guard anyway)
             if (contentId == 0)
             {
-                log.Warning("[ConfigManager] ContentId is 0, cannot select account - using fallback");
+                log.Warning("[MOGTOME][ConfigManager] ContentId is 0, cannot select account - using fallback");
                 // Create fallback account with timestamp
                 var fallbackId = $"fallback_{DateTime.UtcNow:yyyyMMddHHmmss}";
                 if (!accounts.ContainsKey(fallbackId))
@@ -133,7 +133,7 @@ public class ConfigManager
                     accounts[fallbackId] = CreateAccountForContentId(0);
                 }
                 CurrentAccountId = fallbackId;
-                log.Warning($"[ConfigManager] Using fallback account: {fallbackId}");
+                log.Warning($"[MOGTOME][ConfigManager] Using fallback account: {fallbackId}");
                 return true;
             }
             
@@ -160,7 +160,7 @@ public class ConfigManager
             account.SetCharacter(character);
             account.LastUsed = DateTime.UtcNow;
             
-            log.Information($"[ConfigManager] Selected account: {accountId}, character: {charName}@{worldName}");
+            log.Information($"[MOGTOME][ConfigManager] Selected account: {accountId}, character: {charName}@{worldName}");
             
             hasLoggedNoAccount = false;
             SaveCurrentAccount();
@@ -168,7 +168,7 @@ public class ConfigManager
         }
         catch (Exception ex)
         {
-            log.Error($"[ConfigManager] Error in EnsureAccountSelected: {ex.Message}");
+            log.Error($"[MOGTOME][ConfigManager] Error in EnsureAccountSelected: {ex.Message}");
             return false;
         }
     }
@@ -183,14 +183,14 @@ public class ConfigManager
             var accountId = CurrentAccountId;
             if (string.IsNullOrEmpty(accountId))
             {
-                log.Warning("[ConfigManager] Cannot save - no account selected");
+                log.Warning("[MOGTOME][ConfigManager] Cannot save - no account selected");
                 return;
             }
 
             // Prevent saving temporary or invalid accounts
             if (accountId == "temporary" || accountId == "default")
             {
-                log.Debug($"[ConfigManager] Skipping save for temporary account: {accountId}");
+                log.Debug($"[MOGTOME][ConfigManager] Skipping save for temporary account: {accountId}");
                 return;
             }
 
@@ -199,11 +199,11 @@ public class ConfigManager
             var filePath = Path.Combine(GetConfigFolderPath(), fileName);
             
             config.SaveToFile(filePath);
-            log.Debug($"[ConfigManager] Saved account {accountId} to: {filePath}");
+            log.Debug($"[MOGTOME][ConfigManager] Saved account {accountId} to: {filePath}");
         }
         catch (Exception ex)
         {
-            log.Error($"[ConfigManager] Failed to save current account: {ex.Message}");
+            log.Error($"[MOGTOME][ConfigManager] Failed to save current account: {ex.Message}");
             throw;
         }
     }
@@ -219,12 +219,12 @@ public class ConfigManager
             var filePath = Path.Combine(GetConfigFolderPath(), fileName);
             
             var config = Configuration.LoadFromFile(filePath);
-            log.Debug($"[ConfigManager] Loaded account {accountId} from: {filePath}");
+            log.Debug($"[MOGTOME][ConfigManager] Loaded account {accountId} from: {filePath}");
             return config;
         }
         catch (Exception ex)
         {
-            log.Error($"[ConfigManager] Failed to load account {accountId}: {ex.Message}");
+            log.Error($"[MOGTOME][ConfigManager] Failed to load account {accountId}: {ex.Message}");
             return new Configuration();
         }
     }
@@ -249,11 +249,11 @@ public class ConfigManager
             
             if (!File.Exists(sharedConfigPath))
             {
-                log.Debug("[ConfigManager] No shared config to migrate");
+                log.Debug("[MOGTOME][ConfigManager] No shared config to migrate");
                 return;
             }
 
-            log.Information("[ConfigManager] Starting migration from shared config to per-account format");
+            log.Information("[MOGTOME][ConfigManager] Starting migration from shared config to per-account format");
 
             // Load existing shared config
             var sharedConfig = Configuration.LoadFromFile(sharedConfigPath);
@@ -270,8 +270,8 @@ public class ConfigManager
                 var backupPath = sharedConfigPath + $".backup_{DateTime.Now:yyyyMMdd_HHmmss}";
                 File.Move(sharedConfigPath, backupPath);
                 
-                log.Information($"[ConfigManager] Migrated shared config to account {accountId}");
-                log.Information($"[ConfigManager] Shared config backed up to: {backupPath}");
+                log.Information($"[MOGTOME][ConfigManager] Migrated shared config to account {accountId}");
+                log.Information($"[MOGTOME][ConfigManager] Shared config backed up to: {backupPath}");
                 
                 // Update current account to use migrated config
                 if (accounts.ContainsKey(accountId))
@@ -281,12 +281,12 @@ public class ConfigManager
             }
             else
             {
-                log.Warning("[ConfigManager] Cannot migrate - no current account ID available");
+                log.Warning("[MOGTOME][ConfigManager] Cannot migrate - no current account ID available");
             }
         }
         catch (Exception ex)
         {
-            log.Error($"[ConfigManager] Migration failed: {ex.Message}");
+            log.Error($"[MOGTOME][ConfigManager] Migration failed: {ex.Message}");
         }
     }
     
@@ -309,7 +309,7 @@ public class ConfigManager
             Settings = existingConfig // Use loaded config or new if none exists
         };
         
-        log.Information($"[ConfigManager] Created account for content ID: {contentId} (loaded existing: {existingConfig != null})");
+        log.Information($"[MOGTOME][ConfigManager] Created account for content ID: {contentId} (loaded existing: {existingConfig != null})");
         return account;
     }
     
@@ -323,7 +323,7 @@ public class ConfigManager
             var configPath = GetConfigFolderPath();
             if (!Directory.Exists(configPath))
             {
-                log.Information("[ConfigManager] Config folder does not exist, starting fresh");
+                log.Information("[MOGTOME][ConfigManager] Config folder does not exist, starting fresh");
                 return;
             }
             
@@ -351,24 +351,24 @@ public class ConfigManager
                         
                         accounts[accountId] = account;
                         loadedCount++;
-                        log.Debug($"[ConfigManager] Loaded account: {accountId}");
+                        log.Debug($"[MOGTOME][ConfigManager] Loaded account: {accountId}");
                     }
                     else
                     {
-                        log.Warning($"[ConfigManager] Invalid account ID in filename: {fileName}");
+                        log.Warning($"[MOGTOME][ConfigManager] Invalid account ID in filename: {fileName}");
                     }
                 }
                 catch (Exception ex)
                 {
-                    log.Error($"[ConfigManager] Failed to load account from {file}: {ex.Message}");
+                    log.Error($"[MOGTOME][ConfigManager] Failed to load account from {file}: {ex.Message}");
                 }
             }
             
-            log.Information($"[ConfigManager] Loaded {loadedCount} account configurations from per-account JSON files");
+            log.Information($"[MOGTOME][ConfigManager] Loaded {loadedCount} account configurations from per-account JSON files");
         }
         catch (Exception ex)
         {
-            log.Error($"[ConfigManager] Error loading accounts: {ex.Message}");
+            log.Error($"[MOGTOME][ConfigManager] Error loading accounts: {ex.Message}");
         }
     }
     
@@ -389,7 +389,7 @@ public class ConfigManager
         if (!Directory.Exists(configPath))
         {
             Directory.CreateDirectory(configPath);
-            log.Information($"[ConfigManager] Created config folder: {configPath}");
+            log.Information($"[MOGTOME][ConfigManager] Created config folder: {configPath}");
         }
     }
     

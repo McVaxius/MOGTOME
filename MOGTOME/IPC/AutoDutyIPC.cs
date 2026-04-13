@@ -24,11 +24,11 @@ public class AutoDutyIPC : IDisposable
         try
         {
             setConfig = Plugin.PluginInterface.GetIpcSubscriber<string, string, object>("AutoDuty.SetConfig");
-            log.Information("[AutoDuty] IPC subscribers initialized");
+            log.Information("[MOGTOME][AutoDuty] IPC subscribers initialized");
         }
         catch (Exception ex)
         {
-            log.Warning($"[AutoDuty] IPC init failed (plugin may not be loaded): {ex.Message}");
+            log.Warning($"[MOGTOME][AutoDuty] IPC init failed (plugin may not be loaded): {ex.Message}");
         }
     }
 
@@ -37,11 +37,11 @@ public class AutoDutyIPC : IDisposable
         try
         {
             setConfig?.InvokeAction(key, value);
-            log.Debug($"[AutoDuty] SetConfig: {key} = {value}");
+            log.Debug($"[MOGTOME][AutoDuty] SetConfig: {key} = {value}");
         }
         catch (Exception ex)
         {
-            log.Warning($"[AutoDuty] SetConfig failed for {key}: {ex.Message}");
+            log.Warning($"[MOGTOME][AutoDuty] SetConfig failed for {key}: {ex.Message}");
         }
     }
 
@@ -61,7 +61,7 @@ public class AutoDutyIPC : IDisposable
         SetConfig("EnableTerminationActions", "false");
         SetConfig("Unsynced", "true");
         // LevelSync is set by the engine based on TestingModeUnsynced config
-        log.Information($"[AutoDuty] Configured for MOGTOME (leader={isLeader}) - Unsync=ON, BossMod/RSR auto-manage=OFF");
+        log.Information($"[MOGTOME][AutoDuty] Configured for MOGTOME (leader={isLeader}) - Unsync=ON, BossMod/RSR auto-manage=OFF");
     }
 
     public void SetUsingAlternativeRotation(bool useAlternative)
@@ -75,11 +75,11 @@ public class AutoDutyIPC : IDisposable
         {
             SetConfig("AutoDutyModeEnum", "Looping");
             SetConfig("DutyModeEnum", "Regular");
-            log.Information("[AutoDuty] Prepared AutoDuty Looping/Regular mode for Praetorium path selection");
+            log.Information("[MOGTOME][AutoDuty] Prepared AutoDuty Looping/Regular mode for Praetorium path selection");
         }
         catch (Exception ex)
         {
-            log.Warning($"[AutoDuty] SetPraetoriumPath failed: {ex.Message}");
+            log.Warning($"[MOGTOME][AutoDuty] SetPraetoriumPath failed: {ex.Message}");
         }
     }
 
@@ -88,12 +88,12 @@ public class AutoDutyIPC : IDisposable
         try
         {
             var cmd = $"/ad queue {dutyName}";
-            log.Information($"[AutoDuty] Queueing: {cmd}");
+            log.Information($"[MOGTOME][AutoDuty] Queueing: {cmd}");
             commandManager.ProcessCommand(cmd);
         }
         catch (Exception ex)
         {
-            log.Error($"[AutoDuty] Queue failed: {ex.Message}");
+            log.Error($"[MOGTOME][AutoDuty] Queue failed: {ex.Message}");
         }
     }
 
@@ -101,18 +101,18 @@ public class AutoDutyIPC : IDisposable
     {
         try
         {
-            log.Information("[AutoDuty] Starting via /ad start");
+            log.Information("[MOGTOME][AutoDuty] Starting via /ad start");
             
             // Capture party snapshot before starting AutoDuty
             // This ensures we have the full party composition before anyone leaves
             try
             {
                 runHistoryService.CapturePartySnapshot();
-                log.Information("[AutoDuty] Party snapshot captured before /ad start");
+                log.Information("[MOGTOME][AutoDuty] Party snapshot captured before /ad start");
             }
             catch (Exception ex)
             {
-                log.Error(ex, "[AutoDuty] Failed to capture party snapshot before /ad start");
+                log.Error(ex, "[MOGTOME][AutoDuty] Failed to capture party snapshot before /ad start");
             }
             
             commandManager.ProcessCommand("/ad start");
@@ -121,16 +121,16 @@ public class AutoDutyIPC : IDisposable
             try
             {
                 rotationService.ForceRotation();
-                log.Information("[AutoDuty] BossMod AI + RSR refreshed after /ad start");
+                log.Information("[MOGTOME][AutoDuty] BossMod AI + RSR refreshed after /ad start");
             }
             catch (Exception ex)
             {
-                log.Error(ex, "[AutoDuty] Failed to refresh BossMod AI + RSR after /ad start");
+                log.Error(ex, "[MOGTOME][AutoDuty] Failed to refresh BossMod AI + RSR after /ad start");
             }
         }
         catch (Exception ex)
         {
-            log.Error($"[AutoDuty] Start failed: {ex.Message}");
+            log.Error($"[MOGTOME][AutoDuty] Start failed: {ex.Message}");
         }
     }
 
@@ -138,12 +138,12 @@ public class AutoDutyIPC : IDisposable
     {
         try
         {
-            log.Information("[AutoDuty] Stopping via /ad stop");
+            log.Information("[MOGTOME][AutoDuty] Stopping via /ad stop");
             commandManager.ProcessCommand("/ad stop");
         }
         catch (Exception ex)
         {
-            log.Error($"[AutoDuty] Stop failed: {ex.Message}");
+            log.Error($"[MOGTOME][AutoDuty] Stop failed: {ex.Message}");
         }
     }
 

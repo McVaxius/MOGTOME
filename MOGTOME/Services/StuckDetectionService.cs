@@ -78,7 +78,7 @@ public class StuckDetectionService
         // Condition[26] = InCombat
         if (condition[26]) return;
 
-        log.Information($"[StuckDetection] Stuck detected ({state.StuckTickCount} ticks), attempting recovery");
+        log.Information($"[MOGTOME][StuckDetection] Stuck detected ({state.StuckTickCount} ticks), attempting recovery");
         state.StuckTickCount = 0;
 
         try
@@ -87,7 +87,7 @@ public class StuckDetectionService
         }
         catch (Exception ex)
         {
-            log.Error($"[StuckDetection] Recovery failed: {ex.Message}");
+            log.Error($"[MOGTOME][StuckDetection] Recovery failed: {ex.Message}");
         }
     }
 
@@ -121,11 +121,11 @@ public class StuckDetectionService
         }
         catch (Exception ex)
         {
-            log.Warning($"[StuckDetection] vnav rebuild before bailout leave failed: {ex.Message}");
+            log.Warning($"[MOGTOME][StuckDetection] vnav rebuild before bailout leave failed: {ex.Message}");
         }
 
-        log.Information($"[StuckDetection] Leave duty attempt #{leaveAttemptCount} - REASON: {leaveReason}");
-        log.Information("[StuckDetection] Opening duty panel for bailout leave");
+        log.Information($"[MOGTOME][StuckDetection] Leave duty attempt #{leaveAttemptCount} - REASON: {leaveReason}");
+        log.Information("[MOGTOME][StuckDetection] Opening duty panel for bailout leave");
         GameHelpers.SendCommand("/dutyfinder");
 
         Task.Delay(500).ContinueWith(_ =>
@@ -136,7 +136,7 @@ public class StuckDetectionService
             }
             catch (Exception ex)
             {
-                log.Error($"[StuckDetection] ContinueWith exception in TryClickLeaveDutyButton: {ex.Message}");
+                log.Error($"[MOGTOME][StuckDetection] ContinueWith exception in TryClickLeaveDutyButton: {ex.Message}");
             }
         }, TaskContinuationOptions.OnlyOnRanToCompletion);
 
@@ -146,12 +146,12 @@ public class StuckDetectionService
             {
                 if (GameHelpers.ClickYesIfVisible())
                 {
-                    log.Information("[StuckDetection] Successfully clicked Yes on bailout leave confirmation");
+                    log.Information("[MOGTOME][StuckDetection] Successfully clicked Yes on bailout leave confirmation");
                 }
             }
             catch (Exception ex)
             {
-                log.Error($"[StuckDetection] ContinueWith exception in ClickYesIfVisible: {ex.Message}");
+                log.Error($"[MOGTOME][StuckDetection] ContinueWith exception in ClickYesIfVisible: {ex.Message}");
             }
         }, TaskContinuationOptions.OnlyOnRanToCompletion);
     }
@@ -160,7 +160,7 @@ public class StuckDetectionService
     {
         try
         {
-            log.Information("[StuckDetection] Opening ContentsFinderMenu with callback");
+            log.Information("[MOGTOME][StuckDetection] Opening ContentsFinderMenu with callback");
             GameHelpers.FireAddonCallback("ContentsFinderMenu", true, 0);
 
             Task.Delay(500).ContinueWith(_ =>
@@ -171,13 +171,13 @@ public class StuckDetectionService
                 }
                 catch (Exception ex)
                 {
-                    log.Error($"[StuckDetection] ContinueWith exception in TryClickLeaveButton: {ex.Message}");
+                    log.Error($"[MOGTOME][StuckDetection] ContinueWith exception in TryClickLeaveButton: {ex.Message}");
                 }
             }, TaskContinuationOptions.OnlyOnRanToCompletion);
         }
         catch (Exception ex)
         {
-            log.Error($"[StuckDetection] Error trying to leave duty during bailout: {ex.Message}");
+            log.Error($"[MOGTOME][StuckDetection] Error trying to leave duty during bailout: {ex.Message}");
         }
     }
 
@@ -185,7 +185,7 @@ public class StuckDetectionService
     {
         try
         {
-            log.Information("[StuckDetection] Clicking Leave button on ContentsFinderMenu");
+            log.Information("[MOGTOME][StuckDetection] Clicking Leave button on ContentsFinderMenu");
             GameHelpers.FireAddonCallback("ContentsFinderMenu", true, 43);
 
             Task.Delay(500).ContinueWith(_ =>
@@ -196,13 +196,13 @@ public class StuckDetectionService
                 }
                 catch (Exception ex)
                 {
-                    log.Error($"[StuckDetection] ContinueWith exception in HandleLeaveConfirmation: {ex.Message}");
+                    log.Error($"[MOGTOME][StuckDetection] ContinueWith exception in HandleLeaveConfirmation: {ex.Message}");
                 }
             }, TaskContinuationOptions.OnlyOnRanToCompletion);
         }
         catch (Exception ex)
         {
-            log.Error($"[StuckDetection] Error clicking Leave button during bailout: {ex.Message}");
+            log.Error($"[MOGTOME][StuckDetection] Error clicking Leave button during bailout: {ex.Message}");
         }
     }
 
@@ -212,12 +212,12 @@ public class StuckDetectionService
         {
             if (GameHelpers.ClickYesIfVisible())
             {
-                log.Information("[StuckDetection] Clicked Yes on bailout leave confirmation dialog");
+                log.Information("[MOGTOME][StuckDetection] Clicked Yes on bailout leave confirmation dialog");
             }
         }
         catch (Exception ex)
         {
-            log.Error($"[StuckDetection] Error handling bailout leave confirmation: {ex.Message}");
+            log.Error($"[MOGTOME][StuckDetection] Error handling bailout leave confirmation: {ex.Message}");
         }
     }
 }

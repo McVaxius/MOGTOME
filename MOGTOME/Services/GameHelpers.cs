@@ -61,12 +61,12 @@ public static class GameHelpers
             atkValues[1].Int = 0;
 
             addon->FireCallback(2, atkValues);
-            Plugin.Log.Information("[YES/NO] Clicked Yes on SelectYesno dialog");
+            Plugin.Log.Information("[MOGTOME][YES/NO] Clicked Yes on SelectYesno dialog");
             return true;
         }
         catch (Exception ex)
         {
-            Plugin.Log.Error($"[YES/NO] ClickYesIfVisible failed: {ex.Message}");
+            Plugin.Log.Error($"[MOGTOME][YES/NO] ClickYesIfVisible failed: {ex.Message}");
             return false;
         }
     }
@@ -83,7 +83,7 @@ public static class GameHelpers
             var addon = RaptureAtkUnitManager.Instance()->GetAddonByName(addonName);
             if (addon == null || !addon->IsVisible)
             {
-                Plugin.Log.Warning($"[Callback] Addon '{addonName}' not found or not visible");
+                Plugin.Log.Warning($"[MOGTOME][Callback] Addon '{addonName}' not found or not visible");
                 return;
             }
 
@@ -104,11 +104,11 @@ public static class GameHelpers
                 addon->FireCallback((uint)atkValues.Length, ptr, updateState);
             }
             
-            Plugin.Log.Information($"[Callback] Fired callback on '{addonName}' with args: {string.Join(", ", args)}");
+            Plugin.Log.Information($"[MOGTOME][Callback] Fired callback on '{addonName}' with args: {string.Join(", ", args)}");
         }
         catch (Exception ex)
         {
-            Plugin.Log.Error($"[Callback] Failed to fire callback on '{addonName}': {ex.Message}");
+            Plugin.Log.Error($"[MOGTOME][Callback] Failed to fire callback on '{addonName}': {ex.Message}");
         }
     }
 
@@ -136,31 +136,31 @@ public static class GameHelpers
     {
         try
         {
-            Plugin.Log.Information($"[INTERACT] Starting interaction with {obj.Name.TextValue} (Address: {obj.Address:X})");
+            Plugin.Log.Information($"[MOGTOME][INTERACT] Starting interaction with {obj.Name.TextValue} (Address: {obj.Address:X})");
 
             Plugin.TargetManager.Target = obj;
 
             var ts = TargetSystem.Instance();
             if (ts == null)
             {
-                Plugin.Log.Error("[INTERACT] TargetSystem.Instance() is null");
+                Plugin.Log.Error("[MOGTOME][INTERACT] TargetSystem.Instance() is null");
                 return false;
             }
 
             var gameObject = (GameObject*)obj.Address;
             if (gameObject == null)
             {
-                Plugin.Log.Error("[INTERACT] GameObject pointer is null");
+                Plugin.Log.Error("[MOGTOME][INTERACT] GameObject pointer is null");
                 return false;
             }
 
             ts->InteractWithObject(gameObject, true);
-            Plugin.Log.Information($"[INTERACT] Successfully interacted with {obj.Name.TextValue}");
+            Plugin.Log.Information($"[MOGTOME][INTERACT] Successfully interacted with {obj.Name.TextValue}");
             return true;
         }
         catch (Exception ex)
         {
-            Plugin.Log.Error($"[INTERACT] Failed to interact with {obj.Name.TextValue}: {ex.Message}");
+            Plugin.Log.Error($"[MOGTOME][INTERACT] Failed to interact with {obj.Name.TextValue}: {ex.Message}");
             return false;
         }
     }
@@ -173,29 +173,29 @@ public static class GameHelpers
     {
         try
         {
-            Plugin.Log.Debug($"[CommandHelper] Sending command: {command}");
+            Plugin.Log.Debug($"[MOGTOME][CommandHelper] Sending command: {command}");
             
             if (Plugin.CommandManager.ProcessCommand(command))
             {
-                Plugin.Log.Debug($"[CommandHelper] CommandManager processed: {command}");
+                Plugin.Log.Debug($"[MOGTOME][CommandHelper] CommandManager processed: {command}");
                 return;
             }
 
             var uiModule = FFXIVClientStructs.FFXIV.Client.UI.UIModule.Instance();
             if (uiModule == null)
             {
-                Plugin.Log.Error("UIModule is null, cannot send command");
+                Plugin.Log.Error("[MOGTOME]UIModule is null, cannot send command");
                 return;
             }
 
             var bytes = Encoding.UTF8.GetBytes(command);
             var utf8String = Utf8String.FromSequence(bytes);
             uiModule->ProcessChatBoxEntry(utf8String, nint.Zero);
-            Plugin.Log.Debug($"[CommandHelper] Sent via UIModule: {command}");
+            Plugin.Log.Debug($"[MOGTOME][CommandHelper] Sent via UIModule: {command}");
         }
         catch (Exception ex)
         {
-            Plugin.Log.Error($"Command failed [{command}]: {ex.Message}");
+            Plugin.Log.Error($"[MOGTOME]Command failed [{command}]: {ex.Message}");
         }
     }
 
@@ -207,23 +207,23 @@ public static class GameHelpers
     {
         try
         {
-            Plugin.Log.Debug($"[ChatCommandHelper] Sending chat command: {command}");
+            Plugin.Log.Debug($"[MOGTOME][ChatCommandHelper] Sending chat command: {command}");
 
             var uiModule = UIModule.Instance();
             if (uiModule == null)
             {
-                Plugin.Log.Error("UIModule is null, cannot send chat command");
+                Plugin.Log.Error("[MOGTOME]UIModule is null, cannot send chat command");
                 return;
             }
 
             var bytes = Encoding.UTF8.GetBytes(command);
             var utf8String = Utf8String.FromSequence(bytes);
             uiModule->ProcessChatBoxEntry(utf8String, nint.Zero);
-            Plugin.Log.Debug($"[ChatCommandHelper] Sent via UIModule: {command}");
+            Plugin.Log.Debug($"[MOGTOME][ChatCommandHelper] Sent via UIModule: {command}");
         }
         catch (Exception ex)
         {
-            Plugin.Log.Error($"Chat command failed [{command}]: {ex.Message}");
+            Plugin.Log.Error($"[MOGTOME]Chat command failed [{command}]: {ex.Message}");
         }
     }
 
@@ -241,7 +241,7 @@ public static class GameHelpers
         }
         catch (Exception ex)
         {
-            Plugin.Log.Debug(ex, "[GameHelpers] Failed to resolve territory name for {TerritoryId}", territoryId);
+            Plugin.Log.Debug(ex, "[MOGTOME][GameHelpers] Failed to resolve territory name for {TerritoryId}", territoryId);
         }
 
         return $"Territory {territoryId}";
@@ -278,7 +278,7 @@ public static class GameHelpers
         }
         catch (Exception ex)
         {
-            Plugin.Log.Error($"GetDutyRemainingTime failed: {ex.Message}");
+            Plugin.Log.Error($"[MOGTOME]GetDutyRemainingTime failed: {ex.Message}");
             return 0f;
         }
     }
@@ -298,11 +298,11 @@ public static class GameHelpers
             // AgentContentsFinder doesn't expose LevelSync as a named field in current FFXIVClientStructs.
             // Relying on AutoDuty IPC SetConfig("LevelSync", value) as primary mechanism.
             // If that doesn't work, we'll need to find the byte offset in the agent for direct manipulation.
-            Plugin.Log.Information($"[GameHelpers] SetDutyFinderLevelSync={enable} (via AutoDuty IPC, no direct agent access available)");
+            Plugin.Log.Information($"[MOGTOME][GameHelpers] SetDutyFinderLevelSync={enable} (via AutoDuty IPC, no direct agent access available)");
         }
         catch (Exception ex)
         {
-            Plugin.Log.Warning($"[GameHelpers] SetDutyFinderLevelSync failed: {ex.Message}");
+            Plugin.Log.Warning($"[MOGTOME][GameHelpers] SetDutyFinderLevelSync failed: {ex.Message}");
         }
     }
 
@@ -325,14 +325,14 @@ public static class GameHelpers
             var player = Plugin.ObjectTable.LocalPlayer;
             if (player == null)
             {
-                Plugin.Log.Warning($"UseItem({itemId}): LocalPlayer is null");
+                Plugin.Log.Warning($"[MOGTOME]UseItem({itemId}): LocalPlayer is null");
                 return false;
             }
 
             // Check if player is casting
             if (player.IsCasting)
             {
-                Plugin.Log.Debug($"UseItem({itemId}): Player is casting, skipping");
+                Plugin.Log.Debug($"[MOGTOME]UseItem({itemId}): Player is casting, skipping");
                 return false;
             }
 
@@ -342,14 +342,14 @@ public static class GameHelpers
                 Plugin.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.Occupied33] ||
                 Plugin.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.Occupied39])
             {
-                Plugin.Log.Debug($"UseItem({itemId}): Player is occupied, skipping");
+                Plugin.Log.Debug($"[MOGTOME]UseItem({itemId}): Player is occupied, skipping");
                 return false;
             }
 
             var am = ActionManager.Instance();
             if (am == null)
             {
-                Plugin.Log.Warning($"UseItem({itemId}): ActionManager is null");
+                Plugin.Log.Warning($"[MOGTOME]UseItem({itemId}): ActionManager is null");
                 return false;
             }
 
@@ -359,18 +359,18 @@ public static class GameHelpers
             var status = am->GetActionStatus(ActionType.Item, actionItemId);
             if (status != 0)
             {
-                Plugin.Log.Debug($"UseItem({itemId}, HQ={highQuality}): ActionStatus={status}, not ready");
+                Plugin.Log.Debug($"[MOGTOME]UseItem({itemId}, HQ={highQuality}): ActionStatus={status}, not ready");
                 return false;
             }
 
             // Use item with extraParam 65535 (required for item usage)
             var result = am->UseAction(ActionType.Item, actionItemId, extraParam: 65535);
-            Plugin.Log.Information($"UseItem({itemId}, HQ={highQuality}): UseAction result={result}");
+            Plugin.Log.Information($"[MOGTOME]UseItem({itemId}, HQ={highQuality}): UseAction result={result}");
             return result;
         }
         catch (Exception ex)
         {
-            Plugin.Log.Error($"UseItem({itemId}, HQ={highQuality}) failed: {ex.Message}");
+            Plugin.Log.Error($"[MOGTOME]UseItem({itemId}, HQ={highQuality}) failed: {ex.Message}");
             return false;
         }
     }
@@ -382,7 +382,7 @@ public static class GameHelpers
             var inventoryManager = InventoryManager.Instance();
             if (inventoryManager == null)
             {
-                Plugin.Log.Warning($"GetInventoryItemCount({itemId}, HQ={highQuality}): InventoryManager is null");
+                Plugin.Log.Warning($"[MOGTOME]GetInventoryItemCount({itemId}, HQ={highQuality}): InventoryManager is null");
                 return 0;
             }
 
@@ -390,7 +390,7 @@ public static class GameHelpers
         }
         catch (Exception ex)
         {
-            Plugin.Log.Error($"GetInventoryItemCount({itemId}, HQ={highQuality}) failed: {ex.Message}");
+            Plugin.Log.Error($"[MOGTOME]GetInventoryItemCount({itemId}, HQ={highQuality}) failed: {ex.Message}");
             return 0;
         }
     }

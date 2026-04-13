@@ -55,8 +55,8 @@ public class DutyQueueService
 
         var dutyName = isPraetorium ? "The Praetorium" : "The Porta Decumana";
         log.Information(ignoreCooldown
-            ? $"[DutyQueue] Force-queueing via AutoDuty: {dutyName}"
-            : $"[DutyQueue] Queueing via AutoDuty: {dutyName}");
+            ? $"[MOGTOME][DutyQueue] Force-queueing via AutoDuty: {dutyName}"
+            : $"[MOGTOME][DutyQueue] Queueing via AutoDuty: {dutyName}");
         autoDutyIPC.QueueDuty(dutyName);
     }
 
@@ -66,7 +66,7 @@ public class DutyQueueService
         {
             automatonIPC.DisableAutoQueue();
             state.AutoQueueDisabledForRepair = true;
-            log.Information("[DutyQueue] AutoQueue disabled for repair");
+            log.Information("[MOGTOME][DutyQueue] AutoQueue disabled for repair");
         }
     }
 
@@ -78,19 +78,19 @@ public class DutyQueueService
         if (state.AutoQueueDisabledForRepair)
         {
             automatonIPC.DisableAutoQueue();
-            log.Information($"[DutyQueue] AutoQueue kept disabled while repair is active ({reason})");
+            log.Information($"[MOGTOME][DutyQueue] AutoQueue kept disabled while repair is active ({reason})");
             return;
         }
 
         if (state.IsPartyLeader)
         {
             automatonIPC.EnableAutoQueue();
-            log.Information($"[DutyQueue] AutoQueue enabled for leader ({reason})");
+            log.Information($"[MOGTOME][DutyQueue] AutoQueue enabled for leader ({reason})");
         }
         else
         {
             automatonIPC.DisableAutoQueue();
-            log.Information($"[DutyQueue] AutoQueue disabled for non-leader ({reason})");
+            log.Information($"[MOGTOME][DutyQueue] AutoQueue disabled for non-leader ({reason})");
         }
     }
 
@@ -107,7 +107,7 @@ public class DutyQueueService
     {
         state.AutoQueueDisabledForRepair = false;
         automatonIPC.DisableAutoQueue();
-        log.Information("[DutyQueue] Ensured AutoQueue is disabled on stop");
+        log.Information("[MOGTOME][DutyQueue] Ensured AutoQueue is disabled on stop");
     }
 
     /// <summary>
@@ -130,7 +130,7 @@ public class DutyQueueService
             if ((now - lastCommenceClickTime).TotalSeconds > 2) // Rate limit to prevent spam
             {
                 lastCommenceClickTime = now;
-                log.Information("[DutyQueue] Clicking Commence on ContentsFinderConfirm (non-leader)");
+                log.Information("[MOGTOME][DutyQueue] Clicking Commence on ContentsFinderConfirm (non-leader)");
                 
                 // Fire commence callback - typically callback index 8 = Commence button
                 GameHelpers.FireAddonCallback("ContentsFinderConfirm", true, 8);
@@ -148,7 +148,7 @@ public class DutyQueueService
             return false;
 
         lastDeclineClickTime = now;
-        log.Warning("[DutyQueue] Declining ContentsFinderConfirm while repair is active");
+        log.Warning("[MOGTOME][DutyQueue] Declining ContentsFinderConfirm while repair is active");
         GameHelpers.FireAddonCallback("ContentsFinderConfirm", true, -2);
         return true;
     }

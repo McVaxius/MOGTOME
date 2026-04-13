@@ -45,7 +45,7 @@ public class DatabaseService
         // Initialize repository
         this.repository = new SqliteRunRecordRepository(log, databaseFolder);
         
-        log.Information($"[DatabaseService] Initialized with SQLite database folder: {databaseFolder}");
+        log.Information($"[MOGTOME][DatabaseService] Initialized with SQLite database folder: {databaseFolder}");
     }
 
     /// <summary>
@@ -68,32 +68,32 @@ public class DatabaseService
                 
                 if (version < DATABASE_VERSION)
                 {
-                    log.Information($"[DatabaseService] Resetting database for account {accountId} (version {version} -> {DATABASE_VERSION})");
+                    log.Information($"[MOGTOME][DatabaseService] Resetting database for account {accountId} (version {version} -> {DATABASE_VERSION})");
                     connection.Close();
                     File.Delete(dbPath);
                 }
                 else
                 {
-                    log.Debug($"[DatabaseService] Database version {version} is current for account {accountId}");
+                    log.Debug($"[MOGTOME][DatabaseService] Database version {version} is current for account {accountId}");
                 }
             }
             catch (Exception ex)
             {
-                log.Warning(ex, $"[DatabaseService] Error checking database version for {accountId}, resetting");
+                log.Warning(ex, $"[MOGTOME][DatabaseService] Error checking database version for {accountId}, resetting");
                 try
                 {
                     File.Delete(dbPath);
-                    log.Information($"[DatabaseService] Successfully reset database for account {accountId}");
+                    log.Information($"[MOGTOME][DatabaseService] Successfully reset database for account {accountId}");
                 }
                 catch (Exception deleteEx)
                 {
-                    log.Error(deleteEx, $"[DatabaseService] Failed to delete database file for account {accountId}");
+                    log.Error(deleteEx, $"[MOGTOME][DatabaseService] Failed to delete database file for account {accountId}");
                 }
             }
         }
         else
         {
-            log.Debug($"[DatabaseService] No existing database for account {accountId}, will create new");
+            log.Debug($"[MOGTOME][DatabaseService] No existing database for account {accountId}, will create new");
         }
     }
 
@@ -118,12 +118,12 @@ public class DatabaseService
                 }
                 
                 // Perform any heavy initialization here
-                log.Information("[DatabaseService] Database service initialization completed");
+                log.Information("[MOGTOME][DatabaseService] Database service initialization completed");
                 isInitialized = true;
             }
             catch (Exception ex)
             {
-                log.Error(ex, "[DatabaseService] Failed to initialize database service");
+                log.Error(ex, "[MOGTOME][DatabaseService] Failed to initialize database service");
                 throw;
             }
         }
@@ -154,7 +154,7 @@ public class DatabaseService
         }
         catch (Exception ex)
         {
-            log.Error(ex, $"[DatabaseService] Failed to load run records for account {accountId}");
+            log.Error(ex, $"[MOGTOME][DatabaseService] Failed to load run records for account {accountId}");
             return new List<RunRecord>();
         }
     }
@@ -175,7 +175,7 @@ public class DatabaseService
         }
         catch (Exception ex)
         {
-            log.Error(ex, $"[DatabaseService] Database operation failed, using fallback storage for account {accountId}");
+            log.Error(ex, $"[MOGTOME][DatabaseService] Database operation failed, using fallback storage for account {accountId}");
             
             // Store in fallback storage
             lock (fallbackStorage)
@@ -187,7 +187,7 @@ public class DatabaseService
                 fallbackStorage[accountId].Add(record);
             }
             
-            log.Information($"[DatabaseService] Stored run record in fallback storage for account {accountId}");
+            log.Information($"[MOGTOME][DatabaseService] Stored run record in fallback storage for account {accountId}");
         }
     }
     
@@ -206,7 +206,7 @@ public class DatabaseService
                 if (fallbackStorage.TryGetValue(accountId, out var fallbackRecords))
                 {
                     records.AddRange(fallbackRecords);
-                    log.Information($"[DatabaseService] Loaded {fallbackRecords.Count} records from fallback storage for account {accountId}");
+                    log.Information($"[MOGTOME][DatabaseService] Loaded {fallbackRecords.Count} records from fallback storage for account {accountId}");
                 }
             }
             
@@ -214,7 +214,7 @@ public class DatabaseService
         }
         catch (Exception ex)
         {
-            log.Error(ex, $"[DatabaseService] Database load failed, using fallback storage for account {accountId}");
+            log.Error(ex, $"[MOGTOME][DatabaseService] Database load failed, using fallback storage for account {accountId}");
             
             // Return only fallback storage
             lock (fallbackStorage)
@@ -239,7 +239,7 @@ public class DatabaseService
         }
         catch (Exception ex)
         {
-            log.Error(ex, $"[DatabaseService] Failed to add run record for account {accountId}");
+            log.Error(ex, $"[MOGTOME][DatabaseService] Failed to add run record for account {accountId}");
             throw;
         }
     }
@@ -261,7 +261,7 @@ public class DatabaseService
         }
         catch (Exception ex)
         {
-            log.Error(ex, $"[DatabaseService] Failed to clear run records for account {accountId}");
+            log.Error(ex, $"[MOGTOME][DatabaseService] Failed to clear run records for account {accountId}");
             throw;
         }
     }
@@ -274,7 +274,7 @@ public class DatabaseService
         // Ensure service is initialized before proceeding
         if (!isInitialized)
         {
-            log.Warning($"[DatabaseService] Migration called before initialization for account {accountId}");
+            log.Warning($"[MOGTOME][DatabaseService] Migration called before initialization for account {accountId}");
             return; // Skip migration, will be called after initialization
         }
 
@@ -284,11 +284,11 @@ public class DatabaseService
             
             if (!File.Exists(jsonPath))
             {
-                log.Debug($"[DatabaseService] No JSON file to migrate for account {accountId}");
+                log.Debug($"[MOGTOME][DatabaseService] No JSON file to migrate for account {accountId}");
                 return;
             }
 
-            log.Information($"[DatabaseService] Starting JSON to SQLite migration for account {accountId}");
+            log.Information($"[MOGTOME][DatabaseService] Starting JSON to SQLite migration for account {accountId}");
 
             // Load existing JSON data
             var json = File.ReadAllText(jsonPath);
@@ -296,7 +296,7 @@ public class DatabaseService
 
             if (records.Count == 0)
             {
-                log.Debug($"[DatabaseService] No records to migrate for account {accountId}");
+                log.Debug($"[MOGTOME][DatabaseService] No records to migrate for account {accountId}");
                 return;
             }
 
@@ -312,7 +312,7 @@ public class DatabaseService
                 }
                 catch (Exception ex)
                 {
-                    log.Error(ex, $"[DatabaseService] Failed to migrate record for account {accountId}");
+                    log.Error(ex, $"[MOGTOME][DatabaseService] Failed to migrate record for account {accountId}");
                 }
             }
 
@@ -320,12 +320,12 @@ public class DatabaseService
             var backupPath = jsonPath + $".migrated_{DateTime.Now:yyyyMMdd_HHmmss}";
             File.Move(jsonPath, backupPath);
 
-            log.Information($"[DatabaseService] Migration complete: {inserted}/{records.Count} records migrated for account {accountId}");
-            log.Information($"[DatabaseService] JSON file backed up to: {backupPath}");
+            log.Information($"[MOGTOME][DatabaseService] Migration complete: {inserted}/{records.Count} records migrated for account {accountId}");
+            log.Information($"[MOGTOME][DatabaseService] JSON file backed up to: {backupPath}");
         }
         catch (Exception ex)
         {
-            log.Error(ex, $"[DatabaseService] Migration failed for account {accountId}");
+            log.Error(ex, $"[MOGTOME][DatabaseService] Migration failed for account {accountId}");
         }
     }
 }

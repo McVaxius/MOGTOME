@@ -162,18 +162,18 @@ public class MogtomeEngine
         dutyCompleted = true;
         dutyCompletedTime = DateTime.UtcNow;
         DisableLeaderAutoQueueBeforeExitIfRepairNeeded($"Duty completed in territory {territoryId}");
-        log.Information($"[Engine] Duty completed event in territory {territoryId} - will leave in {DutyExitDelaySeconds}s");
+        log.Information($"[MOGTOME][Engine] Duty completed event in territory {territoryId} - will leave in {DutyExitDelaySeconds}s");
     }
 
     public async void Start()
     {
         if (IsRunning)
         {
-            log.Warning("[Engine] Already running");
+            log.Warning("[MOGTOME][Engine] Already running");
             return;
         }
 
-        log.Information("[Engine] Starting MOGTOME engine");
+        log.Information("[MOGTOME][Engine] Starting MOGTOME engine");
         CurrentState = EngineState.Initializing;
         StatusMessage = "Initializing...";
 
@@ -185,47 +185,47 @@ public class MogtomeEngine
             var conflictingPluginsReady = await conflictPluginService.EnsureTwistOfFayteDisabledAsync("MOGTOME start", showPopup: true);
             if (CurrentState != EngineState.Initializing)
             {
-                log.Warning("[Engine] Start aborted while resolving conflicting plugins");
+                log.Warning("[MOGTOME][Engine] Start aborted while resolving conflicting plugins");
                 return;
             }
 
             if (!conflictingPluginsReady)
             {
-                log.Warning("[Engine] Twist of Fayte warning path reported a soft failure, but startup will continue");
+                log.Warning("[MOGTOME][Engine] Twist of Fayte warning path reported a soft failure, but startup will continue");
             }
 
-            log.Information("[Engine] Waiting for AutoDuty to finish profile initialization");
+            log.Information("[MOGTOME][Engine] Waiting for AutoDuty to finish profile initialization");
             var autoDutyReady = await autoDutyPath.WaitForAutoDutyInitializationAsync(TimeSpan.FromSeconds(20), TimeSpan.FromMilliseconds(500));
             if (CurrentState != EngineState.Initializing)
             {
-                log.Warning("[Engine] Start aborted while waiting for AutoDuty readiness");
+                log.Warning("[MOGTOME][Engine] Start aborted while waiting for AutoDuty readiness");
                 return;
             }
 
             if (!autoDutyReady)
             {
                 const string startupFailure = "AutoDuty is still initializing or faulted; retry MOGTOME after login settles";
-                log.Warning($"[Engine] {startupFailure}");
+                log.Warning($"[MOGTOME][Engine] {startupFailure}");
                 Plugin.ChatGui.Print($"[MOGTOME] {startupFailure}");
                 CurrentState = EngineState.Idle;
                 StatusMessage = "Idle";
                 return;
             }
 
-            log.Information("[Engine] AutoDuty readiness gate passed");
+            log.Information("[MOGTOME][Engine] AutoDuty readiness gate passed");
 
             StatusMessage = "Installing bundled AutoDuty paths...";
             var bundledPathsReady = await autoDutyPath.EnsurePathExists();
             if (CurrentState != EngineState.Initializing)
             {
-                log.Warning("[Engine] Start aborted while installing bundled AutoDuty paths");
+                log.Warning("[MOGTOME][Engine] Start aborted while installing bundled AutoDuty paths");
                 return;
             }
 
             if (!bundledPathsReady)
             {
                 const string pathFailure = "Bundled Praetorium paths could not be installed into AutoDuty.";
-                log.Warning($"[Engine] {pathFailure}");
+                log.Warning($"[MOGTOME][Engine] {pathFailure}");
                 Plugin.ChatGui.Print($"[MOGTOME] {pathFailure}");
                 CurrentState = EngineState.Idle;
                 StatusMessage = "Idle";
@@ -237,13 +237,13 @@ public class MogtomeEngine
                 return;
 
             // 1. Send /ad stop FIRST to reset AutoDuty state for all characters
-            log.Information("[Engine] Sending /ad stop to reset AutoDuty state");
+            log.Information("[MOGTOME][Engine] Sending /ad stop to reset AutoDuty state");
             commandManager.ProcessCommand("/ad stop");
 
-            log.Information("[Engine] Sending /at enable as part of startup command prep");
+            log.Information("[MOGTOME][Engine] Sending /at enable as part of startup command prep");
             GameHelpers.SendCommand("/at enable");
 
-            log.Information($"[Engine] Using current party role at start: IsLeader={state.IsPartyLeader}, ConfiguredLeader={config.IsPartyLeader}, CrossWorld={config.IsCrossWorldParty}");
+            log.Information($"[MOGTOME][Engine] Using current party role at start: IsLeader={state.IsPartyLeader}, ConfiguredLeader={config.IsPartyLeader}, CrossWorld={config.IsCrossWorldParty}");
 
             // 2. Configure AutoDuty BEFORE setting path
             autoDutyIPC.ConfigureForMogtome(state.IsPartyLeader);
@@ -251,12 +251,12 @@ public class MogtomeEngine
             // 3. THEN: Force path selection via reflection (after configuration)
             if (!condition[34]) // Only while not in duty
             {
-                log.Information("[Engine] Forcing AutoDuty path selection via reflection (post-config)");
+                log.Information("[MOGTOME][Engine] Forcing AutoDuty path selection via reflection (post-config)");
                 autoDutyPath.ForcePathSelection(config.PraetoriumPathFileName);
             }
 
             // 5. Check for repair needs before starting
-            log.Information("[Engine] Checking repair status before start");
+            log.Information("[MOGTOME][Engine] Checking repair status before start");
             if (repairService.NeedsRepair())
             {
                 log.Information("[Engine] Repair needed - repairing before start");
@@ -292,7 +292,7 @@ public class MogtomeEngine
             {
                 autoDutyIPC.SetConfig("LevelSync", "false");
                 GameHelpers.SetDutyFinderLevelSync(false);
-                log.Information("[Engine] Testing mode: Unsync=ON, LevelSync=OFF");
+                log.Information("[MOGTOME][Engine] Testing mode: Unsync=ON, LevelSync=OFF");
             }
             else
             {
@@ -301,28 +301,28 @@ public class MogtomeEngine
 
                 if (startingInsideDuty)
                 {
-                    log.Information("[Engine] Start requested while already inside duty - skipping duty finder setup");
+                    log.Information("[MOGTOME][Engine] Start requested while already inside duty - skipping duty finder setup");
                 }
                 else
                 {
                 // Normal mode: Manually set duty finder options for Unsync+LevelSync
                 // AutoDuty IPC doesn't work for LevelSync, so we do it manually
-                log.Information("[Engine] Normal mode: Setting up duty finder for Unsync+LevelSync");
+                log.Information("[MOGTOME][Engine] Normal mode: Setting up duty finder for Unsync+LevelSync");
                 
                 try
                 {
                     // 1. Open Duty Finder - use CommandHelper pattern
-                    log.Debug("[Engine] Step 1: Opening duty finder");
+                    log.Debug("[MOGTOME][Engine] Step 1: Opening duty finder");
                     
                     // Try CommandManager first (for plugin commands)
                     var commandProcessed = commandManager.ProcessCommand("/dutyfinder");
                     if (commandProcessed)
                     {
-                        log.Debug("[Engine] /dutyfinder command processed by CommandManager");
+                        log.Debug("[MOGTOME][Engine] /dutyfinder command processed by CommandManager");
                     }
                     else
                     {
-                        log.Debug("[Engine] /dutyfinder not handled by CommandManager, trying UIModule fallback");
+                        log.Debug("[MOGTOME][Engine] /dutyfinder not handled by CommandManager, trying UIModule fallback");
                         
                         // Fallback: Send through UIModule for native FF14 commands
                         try
@@ -338,7 +338,7 @@ public class MogtomeEngine
                                 var bytes = System.Text.Encoding.UTF8.GetBytes("/dutyfinder");
                                 var utf8String = FFXIVClientStructs.FFXIV.Client.System.String.Utf8String.FromSequence(bytes);
                                 uiModule->ProcessChatBoxEntry(utf8String, nint.Zero);
-                                log.Debug("[Engine] /dutyfinder sent via UIModule successfully");
+                                log.Debug("[MOGTOME][Engine] /dutyfinder sent via UIModule successfully");
                             }
                         }
                         catch (Exception ex)
@@ -350,38 +350,38 @@ public class MogtomeEngine
                     // Wait for it to appear
                     if (!await WaitForAddonVisibleAsync("ContentsFinder", TimeSpan.FromSeconds(5), TimeSpan.FromMilliseconds(200)))
                     {
-                        log.Warning("[Engine] ContentsFinder addon not visible after /dutyfinder - continuing without verified duty finder UI setup");
+                        log.Warning("[MOGTOME][Engine] ContentsFinder addon not visible after /dutyfinder - continuing without verified duty finder UI setup");
                     }
                     else
                     {
-                        log.Debug("[Engine] ContentsFinder addon is visible");
+                        log.Debug("[MOGTOME][Engine] ContentsFinder addon is visible");
                         
                         // 2. Open Options
-                        log.Debug("[Engine] Step 2: Opening duty finder options");
+                        log.Debug("[MOGTOME][Engine] Step 2: Opening duty finder options");
                         GameHelpers.FireAddonCallback("ContentsFinder", true, 15);
                         await Task.Delay(2000);
                         
                         // 3. Set Unrestricted Party (Unsync)
-                        log.Debug("[Engine] Step 3: Setting Unrestricted Party (Unsync)");
+                        log.Debug("[MOGTOME][Engine] Step 3: Setting Unrestricted Party (Unsync)");
                         GameHelpers.FireAddonCallback("ContentsFinderSetting", true, 1, 1, 1);
                         await Task.Delay(2000);
                         
                         // 4. Set Level Sync
-                        log.Debug("[Engine] Step 4: Setting Level Sync");
+                        log.Debug("[MOGTOME][Engine] Step 4: Setting Level Sync");
                         GameHelpers.FireAddonCallback("ContentsFinderSetting", true, 1, 2, 1);
                         await Task.Delay(2000);
                         
                         // 5. Confirm
-                        log.Debug("[Engine] Step 5: Confirming duty finder settings");
+                        log.Debug("[MOGTOME][Engine] Step 5: Confirming duty finder settings");
                         GameHelpers.FireAddonCallback("ContentsFinderSetting", true, 0);
                         await Task.Delay(2000);
                         
-                        log.Information("[Engine] Duty finder setup complete: Unsync=ON, LevelSync=ON");
+                        log.Information("[MOGTOME][Engine] Duty finder setup complete: Unsync=ON, LevelSync=ON");
                     }
                 }
                 catch (Exception ex)
                 {
-                    log.Error($"[Engine] Failed to set up duty finder: {ex.Message}");
+                    log.Error($"[MOGTOME][Engine] Failed to set up duty finder: {ex.Message}");
                     // Continue anyway - AutoDuty will still try to queue
                 }
                 }
@@ -396,18 +396,18 @@ public class MogtomeEngine
 
             CurrentState = EngineState.WaitingOutsideDuty;
             StatusMessage = $"Running - Duty #{state.DutyCounter + 1}";
-            log.Information($"[Engine] Initialized. Leader={state.IsPartyLeader}, Counter={state.DutyCounter}");
+            log.Information($"[MOGTOME][Engine] Initialized. Leader={state.IsPartyLeader}, Counter={state.DutyCounter}");
         }
         catch (Exception ex)
         {
-            log.Error($"[Engine] Initialization failed: {ex.Message}");
+            log.Error($"[MOGTOME][Engine] Initialization failed: {ex.Message}");
             Stop();
         }
     }
 
     public void Stop()
     {
-        log.Information("[Engine] Stopping MOGTOME engine");
+        log.Information("[MOGTOME][Engine] Stopping MOGTOME engine");
         CurrentState = EngineState.Stopping;
         StatusMessage = "Stopping...";
 
@@ -423,12 +423,12 @@ public class MogtomeEngine
         }
         catch (Exception ex)
         {
-            log.Error($"[Engine] Error during stop: {ex.Message}");
+            log.Error($"[MOGTOME][Engine] Error during stop: {ex.Message}");
         }
 
         CurrentState = EngineState.Idle;
         StatusMessage = "Idle";
-        log.Information("[Engine] Stopped");
+        log.Information("[MOGTOME][Engine] Stopped");
     }
 
     private void ClearStaleDutyStateIfNeeded()
@@ -438,7 +438,7 @@ public class MogtomeEngine
             if (state.DutyStartTerritory == 0 && clientState.TerritoryType > 0)
             {
                 state.DutyStartTerritory = (ushort)clientState.TerritoryType;
-                log.Warning($"[Engine] DutyStartTerritory was empty while already inside duty - using current territory {state.DutyStartTerritory}");
+                log.Warning($"[MOGTOME][Engine] DutyStartTerritory was empty while already inside duty - using current territory {state.DutyStartTerritory}");
             }
 
             return;
@@ -447,7 +447,7 @@ public class MogtomeEngine
         if (!state.IsInDuty && !state.HasEnteredDuty)
             return;
 
-        log.Warning("[Engine] Clearing stale in-duty state before startup because the client is currently outside duty");
+        log.Warning("[MOGTOME][Engine] Clearing stale in-duty state before startup because the client is currently outside duty");
         state.Reset();
         dutyCompleted = false;
         autoDutyStartedInDuty = false;
@@ -472,7 +472,7 @@ public class MogtomeEngine
 
         if (!state.IsInDuty && !state.HasEnteredDuty)
         {
-            log.Information("[Engine] Starting while already inside duty - entering fresh in-duty state");
+            log.Information("[MOGTOME][Engine] Starting while already inside duty - entering fresh in-duty state");
             OnEnteredDuty();
             return;
         }
@@ -482,7 +482,7 @@ public class MogtomeEngine
         rotationService.ForceRotation();
         CurrentState = EngineState.InDuty;
         StatusMessage = $"In Duty - #{state.DutyCounter} ({dutyTracker.GetCurrentDutyName()})";
-        log.Information($"[Engine] Resuming current duty without re-counting start (HasEnteredDuty={state.HasEnteredDuty}, DutyCounter={state.DutyCounter})");
+        log.Information($"[MOGTOME][Engine] Resuming current duty without re-counting start (HasEnteredDuty={state.HasEnteredDuty}, DutyCounter={state.DutyCounter})");
     }
 
     private static async Task<bool> WaitForAddonVisibleAsync(string addonName, TimeSpan timeout, TimeSpan pollInterval)
@@ -577,7 +577,7 @@ public class MogtomeEngine
         }
         catch (Exception ex)
         {
-            log.Error($"[Engine] Update error: {ex.Message}");
+            log.Error($"[MOGTOME][Engine] Update error: {ex.Message}");
         }
     }
 
@@ -600,7 +600,7 @@ public class MogtomeEngine
         
         CurrentState = EngineState.InDuty;
         StatusMessage = $"In Duty - #{state.DutyCounter} ({dutyTracker.GetCurrentDutyName()})";
-        log.Information($"[Engine] Entered duty #{state.DutyCounter}");
+        log.Information($"[MOGTOME][Engine] Entered duty #{state.DutyCounter}");
 
         // Always count instances fired up (even unsynced)
         var isPrae = state.DutyStartTerritory == DutyState.PraetoriumTerritoryId;
@@ -625,14 +625,14 @@ public class MogtomeEngine
             var mostRecentRun = runHistoryService.RunHistory.LastOrDefault();
             if (mostRecentRun != null)
             {
-                log.Debug($"[Engine] Stats validation - CompletionTime: {mostRecentRun.CompletionTime:F1}s, BailoutTimeout: {config.BailoutTimeout}s, Valid: {mostRecentRun.CompletionTime > 0 && mostRecentRun.CompletionTime < config.BailoutTimeout}");
+                log.Debug($"[MOGTOME][Engine] Stats validation - CompletionTime: {mostRecentRun.CompletionTime:F1}s, BailoutTimeout: {config.BailoutTimeout}s, Valid: {mostRecentRun.CompletionTime > 0 && mostRecentRun.CompletionTime < config.BailoutTimeout}");
                 
                 if (mostRecentRun.CompletionTime > 0 && mostRecentRun.CompletionTime < config.BailoutTimeout)
                 {
                     var partyComp = string.Join(", ", mostRecentRun.PartyMembers);
                     var dateStr = mostRecentRun.Timestamp.ToString("yyyy-MM-dd HH:mm UTC");
 
-                    log.Debug($"[Engine] Updating stats - Run: {mostRecentRun.CompletionTime:F1}s, Party: [{partyComp}], Date: {dateStr}, Territory: {mostRecentRun.TerritoryId}, IsPrae: {mostRecentRun.IsPraetorium}");
+                    log.Debug($"[MOGTOME][Engine] Updating stats - Run: {mostRecentRun.CompletionTime:F1}s, Party: [{partyComp}], Date: {dateStr}, Territory: {mostRecentRun.TerritoryId}, IsPrae: {mostRecentRun.IsPraetorium}");
 
                     // Update global stats (kept for compatibility)
                     if (mostRecentRun.CompletionTime < config.BestTimeEver)
@@ -641,7 +641,7 @@ public class MogtomeEngine
                         config.BestTimeEver = mostRecentRun.CompletionTime;
                         config.BestTimeDate = dateStr;
                         config.BestTimeParty = partyComp;
-                        log.Information($"[Engine] NEW BEST TIME: {oldBest:F1}s → {mostRecentRun.CompletionTime:F1}s by {partyComp}");
+                        log.Information($"[MOGTOME][Engine] NEW BEST TIME: {oldBest:F1}s → {mostRecentRun.CompletionTime:F1}s by {partyComp}");
                     }
 
                     if (mostRecentRun.CompletionTime > config.LongestRunEver)
@@ -650,32 +650,32 @@ public class MogtomeEngine
                         config.LongestRunEver = mostRecentRun.CompletionTime;
                         config.LongestRunDate = dateStr;
                         config.LongestRunParty = partyComp;
-                        log.Information($"[Engine] NEW LONGEST RUN: {oldLongest:F1}s → {mostRecentRun.CompletionTime:F1}s by {partyComp}");
+                        log.Information($"[MOGTOME][Engine] NEW LONGEST RUN: {oldLongest:F1}s → {mostRecentRun.CompletionTime:F1}s by {partyComp}");
                     }
 
                     // Update duty-specific stats
                     UpdateDutyStatsFromRun(mostRecentRun, partyComp, dateStr);
 
-                    log.Information($"[Engine] Stats updated successfully - Method: VALID_RUN_CHECK");
+                    log.Information($"[MOGTOME][Engine] Stats updated successfully - Method: VALID_RUN_CHECK");
                 }
                 else
                 {
-                    log.Warning($"[Engine] Skipping stats update - INVALID_COMPLETION_TIME: {mostRecentRun.CompletionTime:F1}s (Valid range: >0 && <{config.BailoutTimeout}s)");
-                    log.Debug($"[Engine] Run details - Timestamp: {mostRecentRun.Timestamp}, Territory: {mostRecentRun.TerritoryId}, WasSuccessful: {mostRecentRun.WasSuccessful}, IsPraetorium: {mostRecentRun.IsPraetorium}");
+                    log.Warning($"[MOGTOME][Engine] Skipping stats update - INVALID_COMPLETION_TIME: {mostRecentRun.CompletionTime:F1}s (Valid range: >0 && <{config.BailoutTimeout}s)");
+                    log.Debug($"[MOGTOME][Engine] Run details - Timestamp: {mostRecentRun.Timestamp}, Territory: {mostRecentRun.TerritoryId}, WasSuccessful: {mostRecentRun.WasSuccessful}, IsPraetorium: {mostRecentRun.IsPraetorium}");
                 }
             }
             else
             {
-                log.Warning("[Engine] Skipping stats update - NO_RECENT_RUN_FOUND");
+                log.Warning("[MOGTOME][Engine] Skipping stats update - NO_RECENT_RUN_FOUND");
             }
         }
         else if (config.TestingModeUnsynced && !config.ShowDebugRuns)
         {
-            log.Information("[Engine] Unsynced run - skipping stats tracking (TestingModeUnsynced=true, ShowDebugRuns=false)");
+            log.Information("[MOGTOME][Engine] Unsynced run - skipping stats tracking (TestingModeUnsynced=true, ShowDebugRuns=false)");
         }
         else
         {
-            log.Warning("[Engine] Skipping stats update - NO_RUN_HISTORY (count: 0)");
+            log.Warning("[MOGTOME][Engine] Skipping stats update - NO_RUN_HISTORY (count: 0)");
         }
         state.IsInDuty = false;
         outsideDutyTicks = 0;
@@ -690,18 +690,18 @@ public class MogtomeEngine
         
         CurrentState = EngineState.WaitingOutsideDuty;
         StatusMessage = $"Outside Duty - Next: #{state.DutyCounter + 1}";
-        log.Information($"[Engine] Left duty. Next: #{state.DutyCounter + 1}");
+        log.Information($"[MOGTOME][Engine] Left duty. Next: #{state.DutyCounter + 1}");
 
         // Save configuration after leaving duty (stats updates, counter changes, etc.)
         try
         {
             // This needs to be called via the plugin since we don't have direct access to ConfigManager here
             // The plugin will handle the actual save
-            log.Debug("[Engine] Configuration save requested after leaving duty");
+            log.Debug("[MOGTOME][Engine] Configuration save requested after leaving duty");
         }
         catch (Exception ex)
         {
-            log.Error($"[Engine] Failed to save configuration after leaving duty: {ex.Message}");
+            log.Error($"[MOGTOME][Engine] Failed to save configuration after leaving duty: {ex.Message}");
         }
 
         // Check if we should continue running
@@ -709,7 +709,7 @@ public class MogtomeEngine
         {
             if (state.IsPartyLeader)
             {
-                log.Information($"[Engine] Starting leader requeue sequence - {state.DutyCounter}/{config.MaxRuns} completed");
+                log.Information($"[MOGTOME][Engine] Starting leader requeue sequence - {state.DutyCounter}/{config.MaxRuns} completed");
                 
                 // Start requeue state machine with 10s delay to prevent crashes
                 requeueState = RequeueState.WaitingAfterLeave;
@@ -718,13 +718,13 @@ public class MogtomeEngine
             }
             else
             {
-                log.Information($"[Engine] Non-leader ready for next duty - {state.DutyCounter}/{config.MaxRuns} completed");
+                log.Information($"[MOGTOME][Engine] Non-leader ready for next duty - {state.DutyCounter}/{config.MaxRuns} completed");
                 // Non-leader continues running, will "/ad start" when entering next duty
             }
         }
         else
         {
-            log.Information($"[Engine] Run limit reached - stopping");
+            log.Information($"[MOGTOME][Engine] Run limit reached - stopping");
             Stop();
         }
     }
@@ -834,7 +834,7 @@ public class MogtomeEngine
             }
         }
 
-        log.Information($"[Engine] Updated {(isPrae ? "Praetorium" : "Decumana")} stats: {state.LastCompletionDuration:F0}s");
+        log.Information($"[MOGTOME][Engine] Updated {(isPrae ? "Praetorium" : "Decumana")} stats: {state.LastCompletionDuration:F0}s");
     }
 
     private void UpdateOutsideDuty()
@@ -910,14 +910,14 @@ public class MogtomeEngine
                 case RequeueState.WaitingToStop:
                     if (elapsed >= 2.0)
                     {
-                        log.Information("[Engine] Stopping AutoDuty from previous duty");
+                        log.Information("[MOGTOME][Engine] Stopping AutoDuty from previous duty");
                         try
                         {
                             autoDutyIPC?.StopDuty();
                         }
                         catch (Exception ex)
                         {
-                            log.Error($"[Engine] AutoDuty stop failed: {ex.Message}");
+                            log.Error($"[MOGTOME][Engine] AutoDuty stop failed: {ex.Message}");
                         }
                         requeueState = RequeueState.StoppingAutoDuty;
                         requeueStartTime = DateTime.UtcNow;
@@ -940,7 +940,7 @@ public class MogtomeEngine
                         StartQueueAttempt(isPrae, ignoreCooldown: false, "Auto-queueing");
                         requeueState = RequeueState.Complete;
                         requeueInProgress = false;
-                        log.Information($"[Engine] Auto-queue command sent for next run: {dutyTracker?.GetCurrentDutyName() ?? "Unknown"}");
+                        log.Information($"[MOGTOME][Engine] Auto-queue command sent for next run: {dutyTracker?.GetCurrentDutyName() ?? "Unknown"}");
                         return;
                     }
                     StatusMessage = $"Waiting to queue ({1.0 - elapsed:F0}s)";
@@ -954,7 +954,7 @@ public class MogtomeEngine
                         {
                             requeueState = RequeueState.Complete;
                             requeueInProgress = false;
-                            log.Information("[Engine] Requeue completed successfully");
+                            log.Information("[MOGTOME][Engine] Requeue completed successfully");
                         }
                         else
                         {
@@ -964,11 +964,11 @@ public class MogtomeEngine
                             {
                                 requeueState = RequeueState.Failed;
                                 requeueInProgress = false;
-                                log.Error("[Engine] Requeue failed after max attempts");
+                                log.Error("[MOGTOME][Engine] Requeue failed after max attempts");
                             }
                             else
                             {
-                                log.Warning($"[Engine] Requeue attempt {requeueAttempts} failed, retrying in {RequeueRetryInterval}s");
+                                log.Warning($"[MOGTOME][Engine] Requeue attempt {requeueAttempts} failed, retrying in {RequeueRetryInterval}s");
                                 requeueState = RequeueState.WaitingToStop;
                                 requeueStartTime = DateTime.UtcNow.AddSeconds(RequeueRetryInterval - 3.0); // Account for 2s wait
                             }
@@ -980,7 +980,7 @@ public class MogtomeEngine
         }
         catch (Exception ex)
         {
-            log.Error($"[Engine] Requeue state machine error: {ex.Message}");
+            log.Error($"[MOGTOME][Engine] Requeue state machine error: {ex.Message}");
             // Reset to safe state on error
             requeueInProgress = false;
             requeueState = RequeueState.Idle;
@@ -1001,7 +1001,7 @@ public class MogtomeEngine
             if (queueRegistrationStartedUtc != DateTime.MinValue)
             {
                 var elapsed = (DateTime.UtcNow - queueRegistrationStartedUtc).TotalSeconds;
-                log.Information($"[Engine] Queue registration detected for {dutyName} after {elapsed:F1}s");
+                log.Information($"[MOGTOME][Engine] Queue registration detected for {dutyName} after {elapsed:F1}s");
                 ResetQueueRegistrationWatchdog();
             }
 
@@ -1041,7 +1041,7 @@ public class MogtomeEngine
                 return;
 
             autoDutyStartedInDuty = true;
-            log.Information("[Engine] Starting AutoDuty inside duty");
+            log.Information("[MOGTOME][Engine] Starting AutoDuty inside duty");
             autoDutyIPC.StartDuty();
         }
 
@@ -1051,7 +1051,7 @@ public class MogtomeEngine
             // Cutscene protection: don't leave during cutscenes
             if (condition[ConditionFlag.OccupiedInCutSceneEvent] || condition[ConditionFlag.WatchingCutscene])
             {
-                log.Information("[Engine] Delaying leave - in cutscene");
+                log.Information("[MOGTOME][Engine] Delaying leave - in cutscene");
                 return;
             }
 
@@ -1097,7 +1097,7 @@ public class MogtomeEngine
             if ((now - lastPraetoriumReadyWaitLogUtc).TotalSeconds >= 5.0)
             {
                 lastPraetoriumReadyWaitLogUtc = now;
-                log.Information($"[Engine] Praetorium duty entered but timer is still at {remainingTime:F0}s; waiting before starting AutoDuty");
+                log.Information($"[MOGTOME][Engine] Praetorium duty entered but timer is still at {remainingTime:F0}s; waiting before starting AutoDuty");
             }
             return false;
         }
@@ -1108,7 +1108,7 @@ public class MogtomeEngine
             if ((now - lastPraetoriumReadyWaitLogUtc).TotalSeconds >= 5.0)
             {
                 lastPraetoriumReadyWaitLogUtc = now;
-                log.Information($"[Engine] Praetorium duty timer not visible yet; waiting {PraetoriumDutyReadyFallbackSeconds - secondsSinceEnter:F0}s more before fallback start");
+                log.Information($"[MOGTOME][Engine] Praetorium duty timer not visible yet; waiting {PraetoriumDutyReadyFallbackSeconds - secondsSinceEnter:F0}s more before fallback start");
             }
             return false;
         }
@@ -1116,7 +1116,7 @@ public class MogtomeEngine
         if ((now - lastPraetoriumReadyWaitLogUtc).TotalSeconds >= 5.0)
         {
             lastPraetoriumReadyWaitLogUtc = now;
-            log.Warning("[Engine] Praetorium duty timer never appeared; allowing AutoDuty start after fallback wait");
+            log.Warning("[MOGTOME][Engine] Praetorium duty timer never appeared; allowing AutoDuty start after fallback wait");
         }
 
         return true;
@@ -1146,7 +1146,7 @@ public class MogtomeEngine
 
         lastRotationRefreshUtc = now;
         rotationService.EnableRotation();
-        log.Debug("[Engine] Refreshed BossMod AI + RSR inside duty ({Mode}, target={Target}, hp={Hp})",
+        log.Debug("[MOGTOME][Engine] Refreshed BossMod AI + RSR inside duty ({Mode}, target={Target}, hp={Hp})",
             aggressiveRefresh ? "aggressive" : "normal",
             targetName.Length > 0 ? targetName : "none",
             currentTarget?.CurrentHp ?? 0);
@@ -1205,7 +1205,7 @@ public class MogtomeEngine
         repairRecoveryWatchStartedUtc = DateTime.UtcNow;
         repairRecoveryRetryReadyUtc = DateTime.MinValue;
         repairRecoveryAttempts = 0;
-        log.Information($"[Engine] Repair flow complete; if still outside duty after {RepairRecoveryWatchdogSeconds:F0}s, MOGTOME will /ad stop and retry");
+        log.Information($"[MOGTOME][Engine] Repair flow complete; if still outside duty after {RepairRecoveryWatchdogSeconds:F0}s, MOGTOME will /ad stop and retry");
     }
 
     private void ResetRepairRecoveryWatchdog()
@@ -1229,11 +1229,11 @@ public class MogtomeEngine
 
         if (repairRequestAttempts == 1)
         {
-            log.Information($"[Engine] Sending AutoDuty repair request ({(activeRepairUsesNpc ? "npc" : "self")}) - {reason}");
+            log.Information($"[MOGTOME][Engine] Sending AutoDuty repair request ({(activeRepairUsesNpc ? "npc" : "self")}) - {reason}");
         }
         else
         {
-            log.Warning($"[Engine] Repair still needed; retrying AutoDuty repair request attempt {repairRequestAttempts} ({(activeRepairUsesNpc ? "npc" : "self")}) - {reason}");
+            log.Warning($"[MOGTOME][Engine] Repair still needed; retrying AutoDuty repair request attempt {repairRequestAttempts} ({(activeRepairUsesNpc ? "npc" : "self")}) - {reason}");
         }
 
         if (activeRepairUsesNpc)
@@ -1288,12 +1288,12 @@ public class MogtomeEngine
                 dutyQueue.TryQueue(isPrae);
 
             queueRegistrationStartedUtc = DateTime.UtcNow;
-            log.Information($"[Engine] {statusPrefix} command sent for {dutyName}; waiting up to {QueueRegistrationWatchdogSeconds:F0}s for queue registration");
+            log.Information($"[MOGTOME][Engine] {statusPrefix} command sent for {dutyName}; waiting up to {QueueRegistrationWatchdogSeconds:F0}s for queue registration");
         }
         catch (Exception ex)
         {
             ResetQueueRegistrationWatchdog();
-            log.Error($"[Engine] {statusPrefix} failed for {dutyName}: {ex.Message}");
+            log.Error($"[MOGTOME][Engine] {statusPrefix} failed for {dutyName}: {ex.Message}");
         }
     }
 
@@ -1317,7 +1317,7 @@ public class MogtomeEngine
         CurrentState = EngineState.WaitingOutsideDuty;
         outsideDutyTicks = 0;
         StatusMessage = $"Queue recovery: waiting after /ad stop ({QueueRecoveryStopSeconds:F0}s)";
-        log.Warning($"[Engine] {reason}; sending /ad stop, waiting {QueueRecoveryStopSeconds:F0}s, then holding {QueueRecoveryRepairGraceSeconds:F0}s for repairs");
+        log.Warning($"[MOGTOME][Engine] {reason}; sending /ad stop, waiting {QueueRecoveryStopSeconds:F0}s, then holding {QueueRecoveryRepairGraceSeconds:F0}s for repairs");
         autoDutyIPC.StopDuty();
     }
 
@@ -1345,7 +1345,7 @@ public class MogtomeEngine
         if (IsRepairFlowActive())
         {
             pendingQueueRecoveryAfterRepair = true;
-            log.Warning("[Engine] Queue condition ended while repair is active; deferring queue recovery until repair completes");
+            log.Warning("[MOGTOME][Engine] Queue condition ended while repair is active; deferring queue recovery until repair completes");
             return;
         }
 
@@ -1374,7 +1374,7 @@ public class MogtomeEngine
         if (queueRecoveryResumeUtc == DateTime.MinValue)
         {
             queueRecoveryResumeUtc = now.AddSeconds(QueueRecoveryRepairGraceSeconds);
-            log.Information($"[Engine] Queue recovery: allowing {QueueRecoveryRepairGraceSeconds:F0}s for repairs before resuming duty entry");
+            log.Information($"[MOGTOME][Engine] Queue recovery: allowing {QueueRecoveryRepairGraceSeconds:F0}s for repairs before resuming duty entry");
         }
 
         var repairRemaining = (queueRecoveryResumeUtc - now).TotalSeconds;
@@ -1389,7 +1389,7 @@ public class MogtomeEngine
         CurrentState = EngineState.WaitingOutsideDuty;
         outsideDutyTicks = 0;
         StatusMessage = "Queue recovery: resuming duty entry";
-        log.Information("[Engine] Queue recovery wait complete; resuming duty entry attempts");
+        log.Information("[MOGTOME][Engine] Queue recovery wait complete; resuming duty entry attempts");
         return false;
     }
 
@@ -1415,7 +1415,7 @@ public class MogtomeEngine
             {
                 var isPrae = dutyTracker.ShouldRunPraetorium();
                 var dutyName = dutyTracker.GetCurrentDutyName();
-                log.Warning($"[Engine] Repair recovery retry {repairRecoveryAttempts}: force-queueing {dutyName} after /ad stop");
+                log.Warning($"[MOGTOME][Engine] Repair recovery retry {repairRecoveryAttempts}: force-queueing {dutyName} after /ad stop");
                 StartQueueAttempt(isPrae, ignoreCooldown: true, $"Repair recovery retry {repairRecoveryAttempts}");
                 return true;
             }
@@ -1432,14 +1432,14 @@ public class MogtomeEngine
         if (state.IsPartyLeader)
         {
             var dutyName = dutyTracker.GetCurrentDutyName();
-            log.Warning($"[Engine] Still outside duty {elapsed:F0}s after repair; sending /ad stop and retrying {dutyName} (attempt {repairRecoveryAttempts})");
+            log.Warning($"[MOGTOME][Engine] Still outside duty {elapsed:F0}s after repair; sending /ad stop and retrying {dutyName} (attempt {repairRecoveryAttempts})");
             autoDutyIPC.StopDuty();
             repairRecoveryRetryReadyUtc = now.AddSeconds(RepairRecoveryStopDelaySeconds);
             StatusMessage = $"Repair recovery: restarting {dutyName}";
             return true;
         }
 
-        log.Warning($"[Engine] Still outside duty {elapsed:F0}s after repair; sending /ad stop and waiting for leader retry (attempt {repairRecoveryAttempts})");
+        log.Warning($"[MOGTOME][Engine] Still outside duty {elapsed:F0}s after repair; sending /ad stop and waiting for leader retry (attempt {repairRecoveryAttempts})");
         autoDutyIPC.StopDuty();
         repairRecoveryWatchStartedUtc = now;
         StatusMessage = "Repair recovery: waiting for leader";
@@ -1448,7 +1448,7 @@ public class MogtomeEngine
 
     private void HandleQuit()
     {
-        log.Information($"[Engine] Quit condition reached: {state.DutyCounter} runs completed");
+        log.Information($"[MOGTOME][Engine] Quit condition reached: {state.DutyCounter} runs completed");
         Stop();
 
         if (!string.IsNullOrEmpty(config.QuitCommand))
@@ -1459,7 +1459,7 @@ public class MogtomeEngine
             }
             catch (Exception ex)
             {
-                log.Error($"[Engine] Quit command failed: {ex.Message}");
+                log.Error($"[MOGTOME][Engine] Quit command failed: {ex.Message}");
             }
         }
     }
@@ -1478,8 +1478,8 @@ public class MogtomeEngine
         var elapsed = (DateTime.Now - dutyCompletedTime).TotalSeconds;
         var leaveReason = $"Exit after duty ends - {elapsed:F0}s elapsed (configured: {DutyExitDelaySeconds}s)";
         
-        log.Information($"[Engine] Leave duty attempt #{leaveAttemptCount} - REASON: {leaveReason}");
-        log.Information($"[Engine] Opening duty panel to leave");
+        log.Information($"[MOGTOME][Engine] Leave duty attempt #{leaveAttemptCount} - REASON: {leaveReason}");
+        log.Information($"[MOGTOME][Engine] Opening duty panel to leave");
 
         // Open duty panel to access Leave Duty button
         GameHelpers.SendCommand("/dutyfinder");
@@ -1492,7 +1492,7 @@ public class MogtomeEngine
             }
             catch (Exception ex)
             {
-                log.Error($"[Engine] ContinueWith exception in TryClickLeaveDutyButton: {ex.Message}");
+                log.Error($"[MOGTOME][Engine] ContinueWith exception in TryClickLeaveDutyButton: {ex.Message}");
             }
         }, System.Threading.Tasks.TaskContinuationOptions.OnlyOnRanToCompletion);
 
@@ -1502,12 +1502,12 @@ public class MogtomeEngine
             {
                 if (GameHelpers.ClickYesIfVisible())
                 {
-                    log.Information("[Engine] Successfully clicked Yes on leave duty confirmation");
+                    log.Information("[MOGTOME][Engine] Successfully clicked Yes on leave duty confirmation");
                 }
             }
             catch (Exception ex)
             {
-                log.Error($"[Engine] ContinueWith exception in ClickYesIfVisible: {ex.Message}");
+                log.Error($"[MOGTOME][Engine] ContinueWith exception in ClickYesIfVisible: {ex.Message}");
             }
         }, System.Threading.Tasks.TaskContinuationOptions.OnlyOnRanToCompletion);
 
@@ -1519,7 +1519,7 @@ public class MogtomeEngine
         try
         {
             // Use xa docs callback pattern: Open ContentsFinderMenu directly, then click Leave button (node 43)
-            log.Information("[Engine] Opening ContentsFinderMenu with callback");
+            log.Information("[MOGTOME][Engine] Opening ContentsFinderMenu with callback");
             
             // Try direct callback to open ContentsFinderMenu (pattern from Character true 12)
             try
@@ -1529,7 +1529,7 @@ public class MogtomeEngine
             }
             catch (Exception ex)
             {
-                log.Error($"[Engine] ContentsFinderMenu callback failed: {ex.Message}");
+                log.Error($"[MOGTOME][Engine] ContentsFinderMenu callback failed: {ex.Message}");
             }
             
             // Wait a moment for the menu to open, then click Leave button
@@ -1540,13 +1540,13 @@ public class MogtomeEngine
                 }
                 catch (Exception ex)
                 {
-                    log.Error($"[Engine] ContinueWith exception in TryClickLeaveButton: {ex.Message}");
+                    log.Error($"[MOGTOME][Engine] ContinueWith exception in TryClickLeaveButton: {ex.Message}");
                 }
             }, System.Threading.Tasks.TaskContinuationOptions.OnlyOnRanToCompletion);
         }
         catch (Exception ex)
         {
-            log.Error($"[Engine] Error trying to leave duty: {ex.Message}");
+            log.Error($"[MOGTOME][Engine] Error trying to leave duty: {ex.Message}");
         }
     }
 
@@ -1555,7 +1555,7 @@ public class MogtomeEngine
         try
         {
             // Click Leave button using xa docs pattern: ClickAddonButton("ContentsFinderMenu", 43)
-            log.Information("[Engine] Clicking Leave button on ContentsFinderMenu");
+            log.Information("[MOGTOME][Engine] Clicking Leave button on ContentsFinderMenu");
             GameHelpers.FireAddonCallback("ContentsFinderMenu", true, 43);
             
             // Handle the confirmation dialog
@@ -1566,13 +1566,13 @@ public class MogtomeEngine
                 }
                 catch (Exception ex)
                 {
-                    log.Error($"[Engine] ContinueWith exception in HandleLeaveConfirmation: {ex.Message}");
+                    log.Error($"[MOGTOME][Engine] ContinueWith exception in HandleLeaveConfirmation: {ex.Message}");
                 }
             }, System.Threading.Tasks.TaskContinuationOptions.OnlyOnRanToCompletion);
         }
         catch (Exception ex)
         {
-            log.Error($"[Engine] Error clicking Leave button: {ex.Message}");
+            log.Error($"[MOGTOME][Engine] Error clicking Leave button: {ex.Message}");
         }
     }
 
@@ -1581,12 +1581,12 @@ public class MogtomeEngine
         try
         {
             // Click Yes on SelectYesno confirmation dialog
-            log.Information("[Engine] Clicking Yes on leave confirmation dialog");
+            log.Information("[MOGTOME][Engine] Clicking Yes on leave confirmation dialog");
             GameHelpers.ClickYesIfVisible();
         }
         catch (Exception ex)
         {
-            log.Error($"[Engine] Error handling leave confirmation: {ex.Message}");
+            log.Error($"[MOGTOME][Engine] Error handling leave confirmation: {ex.Message}");
         }
     }
 
@@ -1626,7 +1626,7 @@ public class MogtomeEngine
         }
         catch (Exception ex)
         {
-            log.Error($"[Engine] GetPartyComposition failed: {ex.Message}");
+            log.Error($"[MOGTOME][Engine] GetPartyComposition failed: {ex.Message}");
             return "Unknown";
         }
     }
@@ -1650,7 +1650,7 @@ public class MogtomeEngine
         }
         catch (Exception ex)
         {
-            log.Error($"[Engine] GetCurrentPartyMemberCount failed: {ex.Message}");
+            log.Error($"[MOGTOME][Engine] GetCurrentPartyMemberCount failed: {ex.Message}");
             return 0;
         }
     }
@@ -1665,7 +1665,7 @@ public class MogtomeEngine
             return false;
 
         var message = $"Need at least {MinimumSyncedPartyMembers} visible same-world party members before starting synced MOGTOME as leader. Current count: {partyMemberCount}. Cross-world parties and non-leaders are exempt.";
-        log.Warning($"[Engine] start gate: {message} Party={GetPartyComposition()}");
+        log.Warning($"[MOGTOME][Engine] start gate: {message} Party={GetPartyComposition()}");
         Plugin.ChatGui.Print($"[MOGTOME] {message}");
         Stop();
         return true;
@@ -1678,7 +1678,7 @@ public class MogtomeEngine
 
         if (state.AutoQueueDisabledForRepair)
         {
-            log.Information($"[Engine] AutoQueue is already disabled for repair before duty exit ({reason})");
+            log.Information($"[MOGTOME][Engine] AutoQueue is already disabled for repair before duty exit ({reason})");
             return;
         }
 
@@ -1686,7 +1686,7 @@ public class MogtomeEngine
             return;
 
         dutyQueue.DisableAutoQueueForRepair();
-        log.Warning($"[Engine] Leader repair detected before duty exit; AutoQueue disabled before leaving duty ({reason})");
+        log.Warning($"[MOGTOME][Engine] Leader repair detected before duty exit; AutoQueue disabled before leaving duty ({reason})");
     }
 
     public void ApplyConfiguredPartyLeaderState(bool applyAutoQueuePolicy = true, string reason = "configured role")
@@ -1702,14 +1702,14 @@ public class MogtomeEngine
         if (condition[34] || state.IsInDuty)
         {
             var message = "Manual party refresh skipped inside duty. Use Refresh Party State only outside duty after the full party has zoned out and become visible.";
-            log.Warning($"[Engine] {message} Party={GetPartyComposition()}");
+            log.Warning($"[MOGTOME][Engine] {message} Party={GetPartyComposition()}");
             Plugin.ChatGui.Print($"[MOGTOME] {message}");
             return;
         }
 
         if (config.IsCrossWorldParty)
         {
-            log.Information($"[Engine] Manual party refresh requested in cross-world mode; keeping configured role. Party={GetPartyComposition()}");
+            log.Information($"[MOGTOME][Engine] Manual party refresh requested in cross-world mode; keeping configured role. Party={GetPartyComposition()}");
             ApplyConfiguredPartyLeaderState(applyAutoQueuePolicy, "manual refresh");
             return;
         }
@@ -1717,7 +1717,7 @@ public class MogtomeEngine
         if (!TryDetectSameWorldPartyLeader(out var isPartyLeader, out var details))
         {
             var message = $"Manual party refresh could not determine leader from the current same-world party list. Keeping {(state.IsPartyLeader ? "leader" : "non-leader")} role.";
-            log.Warning($"[Engine] {message} {details} Party={GetPartyComposition()}");
+            log.Warning($"[MOGTOME][Engine] {message} {details} Party={GetPartyComposition()}");
             Plugin.ChatGui.Print($"[MOGTOME] {message}");
             return;
         }
@@ -1732,11 +1732,11 @@ public class MogtomeEngine
 
         if (previousLeaderState == isPartyLeader)
         {
-            log.Information($"[Engine] Party leader state unchanged ({reason}): IsLeader={isPartyLeader}. {details}");
+            log.Information($"[MOGTOME][Engine] Party leader state unchanged ({reason}): IsLeader={isPartyLeader}. {details}");
             return;
         }
 
-        log.Information($"[Engine] Party leader state changed ({reason}): {previousLeaderState} -> {isPartyLeader}. {details}");
+        log.Information($"[MOGTOME][Engine] Party leader state changed ({reason}): {previousLeaderState} -> {isPartyLeader}. {details}");
 
         if (applyAutoQueuePolicy && IsRunning)
             dutyQueue.ApplyAutoQueuePolicyForCurrentRole(reason);

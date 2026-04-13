@@ -28,7 +28,7 @@ public class RotationService
         state.WhichBossMod = bossModIPC.WhichBossMod;
         bossModIPC.DisableKeyboardNoise();
 
-        log.Information($"[Rotation] Initialized: BossMod={state.WhichBossMod}, using BossMod AI + RSR");
+        log.Information($"[MOGTOME][Rotation] Initialized: BossMod={state.WhichBossMod}, using BossMod AI + RSR");
     }
 
     public void ForceRotation()
@@ -46,6 +46,6 @@ public class RotationService
     public void DisableRotation()
     {
         // Do not disable RSR or BossMod AI - let them continue running
-        log.Debug("[Rotation] DisableRotation called - no action taken (BossMod AI/RSR left enabled)");
+        log.Debug("[MOGTOME][Rotation] DisableRotation called - no action taken (BossMod AI/RSR left enabled)");
     }
 }

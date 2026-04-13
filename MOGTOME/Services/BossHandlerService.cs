@@ -43,13 +43,13 @@ public class BossHandlerService
     public void SubscribeToConfigChanges(ConfigManager configManager)
     {
         configManager.ConfigurationChanged += OnConfigurationChanged;
-        log.Debug("[BossHandler] Subscribed to configuration changes");
+        log.Debug("[MOGTOME][BossHandler] Subscribed to configuration changes");
     }
 
     private void OnConfigurationChanged(Configuration newConfig)
     {
         this.config = newConfig;
-        log.Information($"[BossHandler] Configuration updated - PotionItemId: {config.PotionItemId}, PotionName: '{config.PotionItemName}', HQ={config.PotionUseHighQuality}");
+        log.Information($"[MOGTOME][BossHandler] Configuration updated - PotionItemId: {config.PotionItemId}, PotionName: '{config.PotionItemName}', HQ={config.PotionUseHighQuality}");
     }
 
     public void Update()
@@ -80,7 +80,7 @@ public class BossHandlerService
         }
         catch (Exception ex)
         {
-            log.Error($"[BossHandler] Update failed: {ex.Message}");
+            log.Error($"[MOGTOME][BossHandler] Update failed: {ex.Message}");
         }
     }
 
@@ -166,7 +166,7 @@ public class BossHandlerService
         {
             lastPotionAvailability = state.PotionsAvailable;
             var qualityLabel = config.PotionUseHighQuality ? "HQ" : "NQ";
-            log.Information($"[BossHandler] {qualityLabel} potion availability changed for {config.PotionItemName}: count={availableCount}");
+            log.Information($"[MOGTOME][BossHandler] {qualityLabel} potion availability changed for {config.PotionItemName}: count={availableCount}");
         }
 
         if (!state.PotionsAvailable) return;
@@ -193,23 +193,23 @@ public class BossHandlerService
         try
         {
             var qualityLabel = config.PotionUseHighQuality ? "HQ" : "NQ";
-            log.Information($"[BossHandler] Using potion: {config.PotionItemName} [{qualityLabel}] on {targetName}");
+            log.Information($"[MOGTOME][BossHandler] Using potion: {config.PotionItemName} [{qualityLabel}] on {targetName}");
 
             var result = GameHelpers.UseItem((uint)config.PotionItemId, config.PotionUseHighQuality);
             if (result)
             {
-                log.Information($"[BossHandler] Successfully used {config.PotionItemName} [{qualityLabel}] on {targetName}");
+                log.Information($"[MOGTOME][BossHandler] Successfully used {config.PotionItemName} [{qualityLabel}] on {targetName}");
             }
             else
             {
-                log.Warning($"[BossHandler] Failed to use {config.PotionItemName} [{qualityLabel}] - UseItem returned false");
+                log.Warning($"[MOGTOME][BossHandler] Failed to use {config.PotionItemName} [{qualityLabel}] - UseItem returned false");
             }
             
             lastPotionUse = now;
         }
         catch (Exception ex)
         {
-            log.Error($"[BossHandler] Potion use failed: {ex.Message}");
+            log.Error($"[MOGTOME][BossHandler] Potion use failed: {ex.Message}");
         }
     }
 }

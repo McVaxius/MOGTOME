@@ -31,13 +31,13 @@ public class RepairService
     public void SubscribeToConfigChanges(ConfigManager configManager)
     {
         configManager.ConfigurationChanged += OnConfigurationChanged;
-        log.Debug("[RepairService] Subscribed to configuration changes");
+        log.Debug("[MOGTOME][RepairService] Subscribed to configuration changes");
     }
 
     private void OnConfigurationChanged(Configuration newConfig)
     {
         this.config = newConfig;
-        log.Information($"[RepairService] Configuration updated - RepairThreshold: {config.RepairThreshold}%");
+        log.Information($"[MOGTOME][RepairService] Configuration updated - RepairThreshold: {config.RepairThreshold}%");
     }
 
     public bool NeedsRepair(bool forceRefresh = false)
@@ -63,14 +63,14 @@ public class RepairService
             
             if (needsRepair)
             {
-                log.Debug($"[Repair] Equipment needs repair (threshold: {config.RepairThreshold}%)");
+                log.Debug($"[MOGTOME][Repair] Equipment needs repair (threshold: {config.RepairThreshold}%)");
             }
             
             return needsRepair;
         }
         catch (Exception ex)
         {
-            log.Error($"[Repair] NeedsRepair check failed: {ex.Message}");
+            log.Error($"[MOGTOME][Repair] NeedsRepair check failed: {ex.Message}");
             return false;
         }
     }
@@ -101,7 +101,7 @@ public class RepairService
         }
         catch (Exception ex)
         {
-            Plugin.Log.Error($"[Repair] CheckEquipmentDurability failed: {ex.Message}");
+            Plugin.Log.Error($"[MOGTOME][Repair] CheckEquipmentDurability failed: {ex.Message}");
             return false;
         }
     }
@@ -110,12 +110,12 @@ public class RepairService
     {
         try
         {
-            log.Information("[Repair] Requesting repair via AutoDuty");
+            log.Information("[MOGTOME][Repair] Requesting repair via AutoDuty");
             commandManager.ProcessCommand("/ad repair");
         }
         catch (Exception ex)
         {
-            log.Error($"[Repair] Self-repair failed: {ex.Message}");
+            log.Error($"[MOGTOME][Repair] Self-repair failed: {ex.Message}");
         }
     }
 
@@ -123,12 +123,12 @@ public class RepairService
     {
         try
         {
-            log.Information("[Repair] Attempting NPC repair via AutoDuty");
+            log.Information("[MOGTOME][Repair] Attempting NPC repair via AutoDuty");
             commandManager.ProcessCommand("/ad repair");
         }
         catch (Exception ex)
         {
-            log.Error($"[Repair] NPC repair failed: {ex.Message}");
+            log.Error($"[MOGTOME][Repair] NPC repair failed: {ex.Message}");
         }
     }
 
@@ -140,16 +140,16 @@ public class RepairService
             var territoryName = GameHelpers.GetTerritoryName(territoryId);
             if (GameHelpers.IsInnTerritory(territoryId))
             {
-                log.Information($"[Repair] Repair completed while already in inn territory {territoryName} ({territoryId})");
+                log.Information($"[MOGTOME][Repair] Repair completed while already in inn territory {territoryName} ({territoryId})");
                 return;
             }
 
-            log.Information($"[Repair] Repair completed outside inn territory {territoryName} ({territoryId}); sending internal /mog inn auto command");
+            log.Information($"[MOGTOME][Repair] Repair completed outside inn territory {territoryName} ({territoryId}); sending internal /mog inn auto command");
             GameHelpers.SendChatCommand("/mog inn auto");
         }
         catch (Exception ex)
         {
-            log.Error($"[Repair] ReturnToInnIfNeeded failed: {ex.Message}");
+            log.Error($"[MOGTOME][Repair] ReturnToInnIfNeeded failed: {ex.Message}");
         }
     }
 

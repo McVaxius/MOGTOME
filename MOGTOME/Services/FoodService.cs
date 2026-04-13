@@ -32,13 +32,13 @@ public class FoodService
     public void SubscribeToConfigChanges(ConfigManager configManager)
     {
         configManager.ConfigurationChanged += OnConfigurationChanged;
-        log.Debug("[FoodService] Subscribed to configuration changes");
+        log.Debug("[MOGTOME][FoodService] Subscribed to configuration changes");
     }
 
     private void OnConfigurationChanged(Configuration newConfig)
     {
         this.config = newConfig; // Update stored config
-        log.Information($"[Food] Configuration updated - FoodItemId: {config.FoodItemId}, FoodName: '{config.FoodItemName}', HQ={config.FoodUseHighQuality}");
+        log.Information($"[MOGTOME][Food] Configuration updated - FoodItemId: {config.FoodItemId}, FoodName: '{config.FoodItemName}', HQ={config.FoodUseHighQuality}");
     }
 
     public void Update()
@@ -92,12 +92,12 @@ public class FoodService
             {
                 lastFoodAvailability = state.FoodAvailable;
                 var qualityLabel = config.FoodUseHighQuality ? "HQ" : "NQ";
-                log.Information($"[Food] {qualityLabel} availability changed for {config.FoodItemName}: count={availableCount}");
+                log.Information($"[MOGTOME][Food] {qualityLabel} availability changed for {config.FoodItemName}: count={availableCount}");
             }
 
             if (!state.FoodAvailable)
             {
-                log.Warning($"[Food] No {(config.FoodUseHighQuality ? "HQ" : "NQ")} {config.FoodItemName} found");
+                log.Warning($"[MOGTOME][Food] No {(config.FoodUseHighQuality ? "HQ" : "NQ")} {config.FoodItemName} found");
                 return;
             }
 
@@ -118,7 +118,7 @@ public class FoodService
         }
         catch (Exception ex)
         {
-            log.Error($"[Food] Update failed: {ex.Message}");
+            log.Error($"[MOGTOME][Food] Update failed: {ex.Message}");
         }
     }
 
@@ -127,20 +127,20 @@ public class FoodService
         try
         {
             var qualityLabel = config.FoodUseHighQuality ? "HQ" : "NQ";
-            log.Information($"[Food] Consuming: {config.FoodItemName} [{qualityLabel}] (ID: {config.FoodItemId})");
+            log.Information($"[MOGTOME][Food] Consuming: {config.FoodItemName} [{qualityLabel}] (ID: {config.FoodItemId})");
             var result = GameHelpers.UseItem((uint)config.FoodItemId, config.FoodUseHighQuality);
             if (result)
             {
-                log.Information($"[Food] Successfully ate {config.FoodItemName} [{qualityLabel}]");
+                log.Information($"[MOGTOME][Food] Successfully ate {config.FoodItemName} [{qualityLabel}]");
             }
             else
             {
-                log.Warning($"[Food] Failed to eat {config.FoodItemName} [{qualityLabel}] - UseItem returned false");
+                log.Warning($"[MOGTOME][Food] Failed to eat {config.FoodItemName} [{qualityLabel}] - UseItem returned false");
             }
         }
         catch (Exception ex)
         {
-            log.Error($"[Food] ConsumeFood failed: {ex.Message}");
+            log.Error($"[MOGTOME][Food] ConsumeFood failed: {ex.Message}");
         }
     }
 }

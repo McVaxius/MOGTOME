@@ -43,13 +43,13 @@ public class DialogHandlerService
     public void Start()
     {
         yesAlreadyIPC.Pause();
-        log.Information("[DialogHandler] Started - YesAlready paused");
+        log.Information("[MOGTOME][DialogHandler] Started - YesAlready paused");
     }
 
     public void Stop()
     {
         yesAlreadyIPC.Unpause();
-        log.Information("[DialogHandler] Stopped - YesAlready unpaused");
+        log.Information("[MOGTOME][DialogHandler] Stopped - YesAlready unpaused");
     }
 
     public void Update()
@@ -66,7 +66,7 @@ public class DialogHandlerService
         }
         catch (Exception ex)
         {
-            log.Error($"[DialogHandler] Update failed: {ex.Message}");
+            log.Error($"[MOGTOME][DialogHandler] Update failed: {ex.Message}");
         }
     }
 
@@ -119,11 +119,11 @@ public class DialogHandlerService
             {
                 lastHandledDialog = dialogText;
                 lastHandledDialogAt = now;
-                log.Information($"[DialogHandler] Accepted {promptKind}: {dialogText}");
+                log.Information($"[MOGTOME][DialogHandler] Accepted {promptKind}: {dialogText}");
             }
             else
             {
-                log.Warning($"[DialogHandler] {promptKind} detected but Yes click failed: {dialogText}");
+                log.Warning($"[MOGTOME][DialogHandler] {promptKind} detected but Yes click failed: {dialogText}");
             }
 
             return true;
@@ -141,11 +141,11 @@ public class DialogHandlerService
 
             // Confirm the dialog via callback
             commandManager.ProcessCommand($"/callback {addonName} true 0");
-            log.Debug($"[DialogHandler] Confirmed dialog: {addonName}");
+            log.Debug($"[MOGTOME][DialogHandler] Confirmed dialog: {addonName}");
         }
         catch (Exception ex)
         {
-            log.Debug($"[DialogHandler] Dialog check failed for {addonName}: {ex.Message}");
+            log.Debug($"[MOGTOME][DialogHandler] Dialog check failed for {addonName}: {ex.Message}");
         }
     }
 }

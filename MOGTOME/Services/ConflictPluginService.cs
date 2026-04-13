@@ -44,7 +44,7 @@ public sealed class ConflictPluginService
         }
         catch (Exception ex)
         {
-            log.Warning($"[Conflict] Failed to inspect installed plugins: {ex.Message}");
+            log.Warning($"[MOGTOME][Conflict] Failed to inspect installed plugins: {ex.Message}");
         }
 
         return (false, false);
@@ -69,12 +69,12 @@ public sealed class ConflictPluginService
 
         if (shouldSendDisable)
         {
-            log.Warning($"[Conflict] {TwistOfFayteDisplayName} is enabled during {triggerSource}; sending {TwistOfFayteDisableCommand}");
+            log.Warning($"[MOGTOME][Conflict] {TwistOfFayteDisplayName} is enabled during {triggerSource}; sending {TwistOfFayteDisableCommand}");
             commandManager.ProcessCommand(TwistOfFayteDisableCommand);
         }
         else
         {
-            log.Warning($"[Conflict] {TwistOfFayteDisplayName} is still enabled during {triggerSource}; waiting for recent disable attempt");
+            log.Warning($"[MOGTOME][Conflict] {TwistOfFayteDisplayName} is still enabled during {triggerSource}; waiting for recent disable attempt");
         }
 
         var unloaded = await WaitForTwistOfFayteUnloadAsync().ConfigureAwait(false);
@@ -82,7 +82,7 @@ public sealed class ConflictPluginService
         {
             var successMessage = $"{TwistOfFayteDisplayName} was enabled and has been auto-disabled for MOGTOME.";
             Plugin.ChatGui.Print($"[MOGTOME] {successMessage}");
-            log.Information($"[Conflict] {successMessage}");
+            log.Information($"[MOGTOME][Conflict] {successMessage}");
 
             if (showPopup)
             {
@@ -95,7 +95,7 @@ public sealed class ConflictPluginService
 
         var failureMessage = $"{TwistOfFayteDisplayName} is still enabled. MOGTOME will keep running, but you should disable it with {TwistOfFayteDisableCommand}.";
         Plugin.ChatGui.Print($"[MOGTOME] {failureMessage}");
-        log.Warning($"[Conflict] {failureMessage}");
+        log.Warning($"[MOGTOME][Conflict] {failureMessage}");
 
         if (showPopup)
         {

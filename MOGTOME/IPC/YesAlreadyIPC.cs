@@ -29,11 +29,11 @@ public class YesAlreadyIPC : IDisposable
             var stopRequests = Plugin.PluginInterface.GetOrCreateData<HashSet<string>>(StopRequestsKey, () => []);
             stopRequests.Add(LockName);
             isPaused = true;
-            log.Information("[YesAlready] Paused (added MOGTOME to StopRequests)");
+            log.Information("[MOGTOME][YesAlready] Paused (added MOGTOME to StopRequests)");
         }
         catch (Exception ex)
         {
-            log.Warning($"[YesAlready] Failed to pause: {ex.Message}");
+            log.Warning($"[MOGTOME][YesAlready] Failed to pause: {ex.Message}");
         }
     }
 
@@ -46,11 +46,11 @@ public class YesAlreadyIPC : IDisposable
             var stopRequests = Plugin.PluginInterface.GetOrCreateData<HashSet<string>>(StopRequestsKey, () => []);
             stopRequests.Remove(LockName);
             isPaused = false;
-            log.Information("[YesAlready] Unpaused (removed MOGTOME from StopRequests)");
+            log.Information("[MOGTOME][YesAlready] Unpaused (removed MOGTOME from StopRequests)");
         }
         catch (Exception ex)
         {
-            log.Warning($"[YesAlready] Failed to unpause: {ex.Message}");
+            log.Warning($"[MOGTOME][YesAlready] Failed to unpause: {ex.Message}");
         }
     }
 
@@ -63,11 +63,11 @@ public class YesAlreadyIPC : IDisposable
                 var stopRequests = Plugin.PluginInterface.GetOrCreateData<HashSet<string>>(StopRequestsKey, () => []);
                 stopRequests.Remove(LockName);
                 isPaused = false;
-                log.Information("[YesAlready] Unpaused on dispose");
+                log.Information("[MOGTOME][YesAlready] Unpaused on dispose");
             }
             catch (Exception ex)
             {
-                log.Warning($"[YesAlready] Failed to unpause on dispose: {ex.Message}");
+                log.Warning($"[MOGTOME][YesAlready] Failed to unpause on dispose: {ex.Message}");
             }
         }
     }

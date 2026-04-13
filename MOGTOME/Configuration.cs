@@ -127,11 +127,11 @@ public class Configuration
         {
             var json = JsonSerializer.Serialize(this, GetJsonOptions());
             File.WriteAllText(filePath, json);
-            Plugin.Log.Debug($"[Configuration] Saved to file: {filePath}");
+            Plugin.Log.Debug($"[MOGTOME][Configuration] Saved to file: {filePath}");
         }
         catch (Exception ex)
         {
-            Plugin.Log.Error($"[Configuration] Failed to save to file {filePath}: {ex.Message}");
+            Plugin.Log.Error($"[MOGTOME][Configuration] Failed to save to file {filePath}: {ex.Message}");
             throw;
         }
     }
@@ -146,7 +146,7 @@ public class Configuration
         {
             if (!File.Exists(filePath))
             {
-                Plugin.Log.Debug($"[Configuration] File not found, creating new: {filePath}");
+                Plugin.Log.Debug($"[MOGTOME][Configuration] File not found, creating new: {filePath}");
                 return new Configuration();
             }
 
@@ -155,16 +155,16 @@ public class Configuration
             
             if (config == null)
             {
-                Plugin.Log.Warning($"[Configuration] Failed to deserialize config from {filePath}, creating new");
+                Plugin.Log.Warning($"[MOGTOME][Configuration] Failed to deserialize config from {filePath}, creating new");
                 return new Configuration();
             }
 
-            Plugin.Log.Debug($"[Configuration] Loaded from file: {filePath}");
+            Plugin.Log.Debug($"[MOGTOME][Configuration] Loaded from file: {filePath}");
             return config;
         }
         catch (Exception ex)
         {
-            Plugin.Log.Error($"[Configuration] Failed to load from file {filePath}: {ex.Message}");
+            Plugin.Log.Error($"[MOGTOME][Configuration] Failed to load from file {filePath}: {ex.Message}");
             return new Configuration();
         }
     }
@@ -188,7 +188,7 @@ public class Configuration
     [Obsolete("Use SaveToFile with per-account file path instead")]
     public void Save()
     {
-        Plugin.Log.Warning("[Configuration] Legacy Save() called - this should use SaveToFile with per-account path");
+        Plugin.Log.Warning("[MOGTOME][Configuration] Legacy Save() called - this should use SaveToFile with per-account path");
         // Don't call Plugin.PluginInterface.SavePluginConfig(this) anymore
     }
 }

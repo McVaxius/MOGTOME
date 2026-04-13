@@ -82,7 +82,7 @@ public class InnEntryService
         if (GameHelpers.IsInnTerritory((ushort)Plugin.ClientState.TerritoryType))
         {
             var territoryName = GameHelpers.GetTerritoryName((ushort)Plugin.ClientState.TerritoryType);
-            log.Information($"[Inn] /mog inn skipped because the player is already inside inn territory {territoryName}");
+            log.Information($"[MOGTOME][Inn] /mog inn skipped because the player is already inside inn territory {territoryName}");
             Plugin.ChatGui.Print($"[MOGTOME] Already inside inn territory: {territoryName}.");
             return;
         }
@@ -90,7 +90,7 @@ public class InnEntryService
         var npc = FindNearbyInnNpc();
         if (npc == null)
         {
-            log.Information($"[Inn] /mog inn found no innkeeper within {SearchRadiusYalms:F0}y; treating as no-op success");
+            log.Information($"[MOGTOME][Inn] /mog inn found no innkeeper within {SearchRadiusYalms:F0}y; treating as no-op success");
             Plugin.ChatGui.Print($"[MOGTOME] No innkeeper found within {SearchRadiusYalms:F0}y. /mog inn did nothing.");
             return;
         }
@@ -107,14 +107,14 @@ public class InnEntryService
         {
             state = InnEntryState.WaitingForMenu;
             StatusMessage = $"Interacting with innkeeper {targetNpcName}";
-            log.Information($"[Inn] /mog inn found {targetNpcName} at {distance:F1}y; interacting immediately");
+            log.Information($"[MOGTOME][Inn] /mog inn found {targetNpcName} at {distance:F1}y; interacting immediately");
             TryInteract(npc);
             return;
         }
 
         state = InnEntryState.MovingToNpc;
         StatusMessage = $"Moving to innkeeper {targetNpcName}";
-        log.Information($"[Inn] /mog inn found {targetNpcName} at {distance:F1}y; moving into interaction range");
+        log.Information($"[MOGTOME][Inn] /mog inn found {targetNpcName} at {distance:F1}y; moving into interaction range");
         SendMoveCommand(npc, initial: true);
     }
 
@@ -162,7 +162,7 @@ public class InnEntryService
             return;
 
         vNavIPC.Stop();
-        log.Warning($"[Inn] /mog inn cancelled: {reason}");
+        log.Warning($"[MOGTOME][Inn] /mog inn cancelled: {reason}");
         state = InnEntryState.Idle;
         StatusMessage = "Idle";
         targetNpcName = string.Empty;
@@ -243,7 +243,7 @@ public class InnEntryService
         if (DateTime.UtcNow - stateStartedAtUtc < ZoneWaitTimeout)
             return;
 
-        log.Warning($"[Inn] Zone transition did not start after selecting the inn option for {targetNpcName}; retrying interaction");
+        log.Warning($"[MOGTOME][Inn] Zone transition did not start after selecting the inn option for {targetNpcName}; retrying interaction");
         TransitionTo(InnEntryState.WaitingForMenu, $"Retrying {targetNpcName}");
     }
 
@@ -262,7 +262,7 @@ public class InnEntryService
 
         if (GameHelpers.IsAddonVisible("SelectString"))
         {
-            log.Information($"[Inn] Selecting the first SelectString option for {targetNpcName}");
+            log.Information($"[MOGTOME][Inn] Selecting the first SelectString option for {targetNpcName}");
             GameHelpers.FireAddonCallback("SelectString", true, 0);
             lastMenuClickUtc = now;
             return true;
@@ -270,7 +270,7 @@ public class InnEntryService
 
         if (GameHelpers.IsAddonVisible("SelectIconString"))
         {
-            log.Information($"[Inn] Selecting the first SelectIconString option for {targetNpcName}");
+            log.Information($"[MOGTOME][Inn] Selecting the first SelectIconString option for {targetNpcName}");
             GameHelpers.FireAddonCallback("SelectIconString", true, 0);
             lastMenuClickUtc = now;
             return true;
@@ -278,7 +278,7 @@ public class InnEntryService
 
         if (GameHelpers.ClickYesIfVisible())
         {
-            log.Information($"[Inn] Confirmed SelectYesno while entering the inn through {targetNpcName}");
+            log.Information($"[MOGTOME][Inn] Confirmed SelectYesno while entering the inn through {targetNpcName}");
             lastMenuClickUtc = now;
             return true;
         }
@@ -291,21 +291,21 @@ public class InnEntryService
         lastInteractUtc = DateTime.UtcNow;
         Plugin.TargetManager.Target = npc;
         if (GameHelpers.InteractWithObject(npc))
-            log.Information($"[Inn] Interacting with innkeeper {targetNpcName}");
+            log.Information($"[MOGTOME][Inn] Interacting with innkeeper {targetNpcName}");
     }
 
     private void SendMoveCommand(IGameObject npc, bool initial)
     {
         lastMoveCommandUtc = DateTime.UtcNow;
         var action = initial ? "starting movement" : "refreshing movement";
-        log.Information($"[Inn] {action} toward {targetNpcName} at {DistanceToLocalPlayer(npc):F1}y");
+        log.Information($"[MOGTOME][Inn] {action} toward {targetNpcName} at {DistanceToLocalPlayer(npc):F1}y");
         vNavIPC.MoveTo(npc.Position);
     }
 
     private void Complete(string message)
     {
         vNavIPC.Stop();
-        log.Information($"[Inn] {message}");
+        log.Information($"[MOGTOME][Inn] {message}");
         Plugin.ChatGui.Print($"[MOGTOME] {message}");
         state = InnEntryState.Idle;
         StatusMessage = "Idle";
@@ -315,7 +315,7 @@ public class InnEntryService
     private void Fail(string message)
     {
         vNavIPC.Stop();
-        log.Warning($"[Inn] {message}");
+        log.Warning($"[MOGTOME][Inn] {message}");
         Plugin.ChatGui.Print($"[MOGTOME] {message}");
         state = InnEntryState.Idle;
         StatusMessage = "Idle";

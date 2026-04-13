@@ -48,7 +48,7 @@ public class RunHistoryService : IDisposable
     public void UpdateConfiguration(Configuration newConfig)
     {
         config = newConfig;
-        log.Information($"[RunHistory] Active account configuration applied: detailedTracking={config.EnableDetailedTracking}, showDebugRuns={config.ShowDebugRuns}");
+        log.Information($"[MOGTOME][RunHistory] Active account configuration applied: detailedTracking={config.EnableDetailedTracking}, showDebugRuns={config.ShowDebugRuns}");
     }
 
     public void Dispose()
@@ -67,11 +67,11 @@ public class RunHistoryService : IDisposable
         try
         {
             if (!pendingWorker.Wait(TimeSpan.FromSeconds(2)))
-                log.Warning("[RunHistory] Timed out waiting for pending run-history saves during dispose");
+                log.Warning("[MOGTOME][RunHistory] Timed out waiting for pending run-history saves during dispose");
         }
         catch (Exception ex)
         {
-            log.Warning(ex, "[RunHistory] Failed while waiting for pending run-history saves during dispose");
+            log.Warning(ex, "[MOGTOME][RunHistory] Failed while waiting for pending run-history saves during dispose");
         }
     }
 
@@ -86,7 +86,7 @@ public class RunHistoryService : IDisposable
             var localPlayer = Plugin.ObjectTable.LocalPlayer;
             var partyList = Plugin.PartyList;
             
-            log.Information($"[RunHistory] Capturing party snapshot: PartyList.Length={partyList.Length}, LocalPlayer={localPlayer?.Name}");
+            log.Information($"[MOGTOME][RunHistory] Capturing party snapshot: PartyList.Length={partyList.Length}, LocalPlayer={localPlayer?.Name}");
             
             // Clear previous snapshot
             storedPartySnapshot.Clear();
@@ -97,24 +97,24 @@ public class RunHistoryService : IDisposable
             for (int i = 0; i < partyList.Length; i++)
             {
                 var member = partyList[i];
-                log.Information($"[RunHistory] Snapshot processing PartyList[{i}]: {member?.Name}");
+                log.Information($"[MOGTOME][RunHistory] Snapshot processing PartyList[{i}]: {member?.Name}");
                 
                 if (member == null)
                 {
-                    log.Information($"[RunHistory] Snapshot skipping PartyList[{i}] - member is NULL");
+                    log.Information($"[MOGTOME][RunHistory] Snapshot skipping PartyList[{i}] - member is NULL");
                     continue;
                 }
                 
                 if (string.IsNullOrEmpty(member.Name.ToString()))
                 {
-                    log.Information($"[RunHistory] Snapshot skipping PartyList[{i}] - member.Name is empty/null");
+                    log.Information($"[MOGTOME][RunHistory] Snapshot skipping PartyList[{i}] - member.Name is empty/null");
                     continue;
                 }
                 
                 // Check ClassJob validity
                 if (!member.ClassJob.IsValid)
                 {
-                    log.Information($"[RunHistory] Snapshot skipping PartyList[{i}] - ClassJob is invalid");
+                    log.Information($"[MOGTOME][RunHistory] Snapshot skipping PartyList[{i}] - ClassJob is invalid");
                     continue;
                 }
                 
@@ -123,7 +123,7 @@ public class RunHistoryService : IDisposable
                 var formatted = $"{member.Name} - {job} - {level}";
                 
                 storedPartySnapshot.Add(formatted);
-                log.Information($"[RunHistory] SNAPSHOT CAPTURED PartyList[{i}]: {formatted}");
+                log.Information($"[MOGTOME][RunHistory] SNAPSHOT CAPTURED PartyList[{i}]: {formatted}");
             }
             
             // Add local player if solo with full format
@@ -133,15 +133,15 @@ public class RunHistoryService : IDisposable
                 var level = localPlayer.Level.ToString();
                 var formatted = $"{localPlayer.Name} - {job} - {level}";
                 storedPartySnapshot.Add(formatted);
-                log.Information($"[RunHistory] SNAPSHOT CAPTURED solo player: {formatted}");
+                log.Information($"[MOGTOME][RunHistory] SNAPSHOT CAPTURED solo player: {formatted}");
             }
             
             hasPartySnapshot = storedPartySnapshot.Count > 0;
-            log.Information($"[RunHistory] Party snapshot captured: {storedPartySnapshot.Count} members, hasSnapshot={hasPartySnapshot}");
+            log.Information($"[MOGTOME][RunHistory] Party snapshot captured: {storedPartySnapshot.Count} members, hasSnapshot={hasPartySnapshot}");
         }
         catch (Exception ex)
         {
-            log.Error(ex, "[RunHistory] Failed to capture party snapshot");
+            log.Error(ex, "[MOGTOME][RunHistory] Failed to capture party snapshot");
         }
     }
 
@@ -153,7 +153,7 @@ public class RunHistoryService : IDisposable
         storedPartySnapshot.Clear();
         hasPartySnapshot = false;
         snapshotTimestamp = DateTime.MinValue;
-        log.Debug("[RunHistory] Party snapshot cleared");
+        log.Debug("[MOGTOME][RunHistory] Party snapshot cleared");
     }
 
     /// <summary>
@@ -172,7 +172,7 @@ public class RunHistoryService : IDisposable
             var contentId = playerState.ContentId;
             if (contentId == 0 && !bypassValidation)
             {
-                log.Warning("[RunHistory] Skipping run history loading - ContentId not available yet (player not logged in)");
+                log.Warning("[MOGTOME][RunHistory] Skipping run history loading - ContentId not available yet (player not logged in)");
                 return;
             }
             
@@ -186,7 +186,7 @@ public class RunHistoryService : IDisposable
             }
             
             var visibleRunCount = GetVisibleRuns(records).Count;
-            log.Information($"[RunHistory] Loaded {records.Count} run records from database for account {accountId} ({visibleRunCount} visible in stats)");
+            log.Information($"[MOGTOME][RunHistory] Loaded {records.Count} run records from database for account {accountId} ({visibleRunCount} visible in stats)");
             
             // Update JSON configuration stats from database records
             UpdateJsonStatsFromRecords(records);
@@ -194,11 +194,11 @@ public class RunHistoryService : IDisposable
             // Save configuration to persist JSON updates
             configManager.SaveCurrentAccount();
             
-            log.Debug($"[RunHistory] Updated JSON stats from {records.Count} database records");
+            log.Debug($"[MOGTOME][RunHistory] Updated JSON stats from {records.Count} database records");
         }
         catch (Exception ex)
         {
-            log.Error(ex, "[RunHistory] Failed to load run history from database");
+            log.Error(ex, "[MOGTOME][RunHistory] Failed to load run history from database");
         }
     }
 
@@ -283,11 +283,11 @@ public class RunHistoryService : IDisposable
             // Daily stats (reset tracking)
             UpdateDailyStats(visibleRecords);
             
-            log.Debug($"[RunHistory] Updated JSON stats: {visibleRecords.Count} visible total, {config.TotalPraes} Prae, {config.TotalDecus} Decu");
+            log.Debug($"[MOGTOME][RunHistory] Updated JSON stats: {visibleRecords.Count} visible total, {config.TotalPraes} Prae, {config.TotalDecus} Decu");
         }
         catch (Exception ex)
         {
-            log.Error(ex, "[RunHistory] Failed to update JSON stats from records");
+            log.Error(ex, "[MOGTOME][RunHistory] Failed to update JSON stats from records");
         }
     }
 
@@ -377,11 +377,11 @@ public class RunHistoryService : IDisposable
                 config.AllTimeMaxDailyDecu = config.DailyDecuRuns;
             }
             
-            log.Debug($"[RunHistory] Updated daily stats: {config.DailyDecuRuns} Decu runs today");
+            log.Debug($"[MOGTOME][RunHistory] Updated daily stats: {config.DailyDecuRuns} Decu runs today");
         }
         catch (Exception ex)
         {
-            log.Error(ex, "[RunHistory] Failed to update daily stats");
+            log.Error(ex, "[MOGTOME][RunHistory] Failed to update daily stats");
         }
     }
 
@@ -413,7 +413,7 @@ public class RunHistoryService : IDisposable
                 var contentId = playerState.ContentId;
                 if (contentId == 0)
                 {
-                    log.Warning("[RunHistory] Skipping run recording - ContentId not available yet (player not logged in)");
+                    log.Warning("[MOGTOME][RunHistory] Skipping run recording - ContentId not available yet (player not logged in)");
                     return;
                 }
                 
@@ -421,11 +421,11 @@ public class RunHistoryService : IDisposable
                 var accountId = contentId.ToString();
                 QueueRunSave(accountId, runRecord);
                 
-                log.Debug($"[RunHistory] Recorded run: {runRecord.PlayerName} ({GetJobName(runRecord.JobId)}) - {runRecord.CompletionTime:F1}s");
+                log.Debug($"[MOGTOME][RunHistory] Recorded run: {runRecord.PlayerName} ({GetJobName(runRecord.JobId)}) - {runRecord.CompletionTime:F1}s");
             }
             catch (Exception ex)
             {
-                log.Error(ex, "[RunHistory] Failed to record run");
+                log.Error(ex, "[MOGTOME][RunHistory] Failed to record run");
                 // Don't rethrow - we don't want to break the duty completion flow
             }
         }
@@ -438,7 +438,7 @@ public class RunHistoryService : IDisposable
     {
         if (isDisposing)
         {
-            log.Warning("[RunHistory] Skipping queued run save during dispose for account {AccountId}", accountId);
+            log.Warning("[MOGTOME][RunHistory] Skipping queued run save during dispose for account {AccountId}", accountId);
             return;
         }
 
@@ -476,7 +476,7 @@ public class RunHistoryService : IDisposable
             }
             catch (Exception ex)
             {
-                log.Error(ex, "[RunHistory] Background save failed for account {AccountId}", pendingSave.AccountId);
+                log.Error(ex, "[MOGTOME][RunHistory] Background save failed for account {AccountId}", pendingSave.AccountId);
             }
         }
     }
@@ -491,23 +491,23 @@ public class RunHistoryService : IDisposable
             try
             {
                 databaseService.AddRunRecord(accountId, runRecord);
-                log.Debug($"[RunHistory] Save successful on attempt {attempt} for account {accountId}");
+                log.Debug($"[MOGTOME][RunHistory] Save successful on attempt {attempt} for account {accountId}");
                 return;
             }
             catch (Exception ex) when (attempt < maxRetries && IsDatabaseConflict(ex))
             {
-                log.Warning($"[RunHistory] Save attempt {attempt} failed (database conflict), retrying in {retryDelayMs}ms...: {ex.Message}");
+                log.Warning($"[MOGTOME][RunHistory] Save attempt {attempt} failed (database conflict), retrying in {retryDelayMs}ms...: {ex.Message}");
                 await Task.Delay(retryDelayMs).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                log.Error(ex, $"[RunHistory] Save failed on attempt {attempt} for account {accountId}");
+                log.Error(ex, $"[MOGTOME][RunHistory] Save failed on attempt {attempt} for account {accountId}");
                 if (attempt < maxRetries)
                     await Task.Delay(retryDelayMs).ConfigureAwait(false);
             }
         }
 
-        log.Warning("[RunHistory] All direct save attempts failed for account {AccountId}; moving run record into fallback storage", accountId);
+        log.Warning("[MOGTOME][RunHistory] All direct save attempts failed for account {AccountId}; moving run record into fallback storage", accountId);
         databaseService.AddRunRecordWithFallback(accountId, runRecord);
     }
 
@@ -537,7 +537,7 @@ public class RunHistoryService : IDisposable
             var contentId = playerState.ContentId;
             if (contentId == 0)
             {
-                log.Warning("[RunHistory] Skipping run history clearing - ContentId not available yet (player not logged in)");
+                log.Warning("[MOGTOME][RunHistory] Skipping run history clearing - ContentId not available yet (player not logged in)");
                 return;
             }
             
@@ -545,11 +545,11 @@ public class RunHistoryService : IDisposable
             var accountId = contentId.ToString();
             databaseService.ClearRunRecords(accountId);
             
-            log.Information($"[RunHistory] Cleared all run history for account {accountId}");
+            log.Information($"[MOGTOME][RunHistory] Cleared all run history for account {accountId}");
         }
         catch (Exception ex)
         {
-            log.Error(ex, "[RunHistory] Failed to clear run history");
+            log.Error(ex, "[MOGTOME][RunHistory] Failed to clear run history");
         }
     }
 
@@ -562,7 +562,7 @@ public class RunHistoryService : IDisposable
         {
             var excessCount = runHistory.Count - config.MaxHistorySize;
             runHistory.RemoveRange(0, excessCount);
-            log.Debug($"[RunHistory] Removed {excessCount} old records to maintain size limit");
+            log.Debug($"[MOGTOME][RunHistory] Removed {excessCount} old records to maintain size limit");
         }
     }
 
@@ -578,8 +578,8 @@ public class RunHistoryService : IDisposable
         // Validate territory
         if (state.DutyStartTerritory != 1044 && state.DutyStartTerritory != 1048)
         {
-            log.Warning($"[RunHistory] Invalid territory {state.DutyStartTerritory}, expected 1044 (Prae) or 1048 (Decu)");
-            log.Debug($"[RunHistory] CurrentTerritory={state.CurrentTerritory}, DutyStartTerritory={state.DutyStartTerritory}");
+            log.Warning($"[MOGTOME][RunHistory] Invalid territory {state.DutyStartTerritory}, expected 1044 (Prae) or 1048 (Decu)");
+            log.Debug($"[MOGTOME][RunHistory] CurrentTerritory={state.CurrentTerritory}, DutyStartTerritory={state.DutyStartTerritory}");
         }
         
         // Capture party members - use stored snapshot if available, otherwise current PartyList
@@ -589,24 +589,24 @@ public class RunHistoryService : IDisposable
         {
             // Use stored snapshot captured at /ad start
             partyMembers.AddRange(storedPartySnapshot);
-            log.Information($"[RunHistory] Using stored party snapshot: {partyMembers.Count} members captured at {snapshotTimestamp:HH:mm:ss}");
-            log.Information($"[RunHistory] Stored snapshot members: {string.Join(", ", partyMembers)}");
+            log.Information($"[MOGTOME][RunHistory] Using stored party snapshot: {partyMembers.Count} members captured at {snapshotTimestamp:HH:mm:ss}");
+            log.Information($"[MOGTOME][RunHistory] Stored snapshot members: {string.Join(", ", partyMembers)}");
         }
         else
         {
             // Fallback: capture current PartyList (solo case or snapshot not taken)
-            log.Information($"[RunHistory] No party snapshot available, using current PartyList as fallback");
+            log.Information($"[MOGTOME][RunHistory] No party snapshot available, using current PartyList as fallback");
             
             // Debug party detection - enhanced logging
-            log.Information($"[RunHistory] Party detection: PartyList.Length={partyList.Length}, LocalPlayer={localPlayer?.Name}");
-            log.Information($"[RunHistory] LocalPlayer Address: {localPlayer?.Address:X16}");
+            log.Information($"[MOGTOME][RunHistory] Party detection: PartyList.Length={partyList.Length}, LocalPlayer={localPlayer?.Name}");
+            log.Information($"[MOGTOME][RunHistory] LocalPlayer Address: {localPlayer?.Address:X16}");
             
             for (int i = 0; i < partyList.Length; i++)
             {
                 var member = partyList[i];
                 if (member == null)
                 {
-                    log.Information($"[RunHistory] PartyList[{i}]: NULL");
+                    log.Information($"[MOGTOME][RunHistory] PartyList[{i}]: NULL");
                     continue;
                 }
                 
@@ -616,31 +616,31 @@ public class RunHistoryService : IDisposable
                 var classJob = member.ClassJob.IsValid ? member.ClassJob.Value.Abbreviation.ToString() : "INVALID";
                 var level = member.Level;
                 
-                log.Information($"[RunHistory] PartyList[{i}]: Name={memberName}, Address={memberAddress}, IsLocalPlayer={isLocalPlayer}, Job={classJob}, Level={level}");
+                log.Information($"[MOGTOME][RunHistory] PartyList[{i}]: Name={memberName}, Address={memberAddress}, IsLocalPlayer={isLocalPlayer}, Job={classJob}, Level={level}");
             }
             
             // Capture party members with full format
             for (int i = 0; i < partyList.Length; i++)
             {
                 var member = partyList[i];
-                log.Information($"[RunHistory] Processing PartyList[{i}] for capture: member={member?.Name}");
+                log.Information($"[MOGTOME][RunHistory] Processing PartyList[{i}] for capture: member={member?.Name}");
                 
                 if (member == null)
                 {
-                    log.Information($"[RunHistory] Skipping PartyList[{i}] - member is NULL");
+                    log.Information($"[MOGTOME][RunHistory] Skipping PartyList[{i}] - member is NULL");
                     continue;
                 }
                 
                 if (string.IsNullOrEmpty(member.Name.ToString()))
                 {
-                    log.Information($"[RunHistory] Skipping PartyList[{i}] - member.Name is empty/null");
+                    log.Information($"[MOGTOME][RunHistory] Skipping PartyList[{i}] - member.Name is empty/null");
                     continue;
                 }
                 
                 // Check ClassJob validity
                 if (!member.ClassJob.IsValid)
                 {
-                    log.Information($"[RunHistory] Skipping PartyList[{i}] - ClassJob is invalid");
+                    log.Information($"[MOGTOME][RunHistory] Skipping PartyList[{i}] - ClassJob is invalid");
                     continue;
                 }
                 
@@ -649,7 +649,7 @@ public class RunHistoryService : IDisposable
                 var formatted = $"{member.Name} - {job} - {level}";
                 
                 partyMembers.Add(formatted);
-                log.Information($"[RunHistory] CAPTURED PartyList[{i}]: {formatted}");
+                log.Information($"[MOGTOME][RunHistory] CAPTURED PartyList[{i}]: {formatted}");
             }
             
             // Add local player if solo with full format
@@ -662,7 +662,7 @@ public class RunHistoryService : IDisposable
             }
         }
         
-        log.Information($"[RunHistory] Captured {partyMembers.Count} party members: {string.Join(", ", partyMembers)}");
+        log.Information($"[MOGTOME][RunHistory] Captured {partyMembers.Count} party members: {string.Join(", ", partyMembers)}");
         var recordedPartySize = partyMembers.Count;
         if (recordedPartySize == 0)
         {

@@ -40,15 +40,15 @@ public class BossModIPC : IDisposable
             }
 
             if (WhichBossMod == "bmr")
-                log.Information("[BossMod] Detected BossModReborn (bmr)");
+                log.Information("[MOGTOME][BossMod] Detected BossModReborn (bmr)");
             else
-                log.Information("[BossMod] Using default VBM");
+                log.Information("[MOGTOME][BossMod] Using default VBM");
         }
         catch (Exception ex)
         {
             WhichBossMod = "vbm";
             HasRotationSolver = false;
-            log.Warning($"[BossMod] Detection failed, defaulting to vbm: {ex.Message}");
+            log.Warning($"[MOGTOME][BossMod] Detection failed, defaulting to vbm: {ex.Message}");
         }
     }
 
@@ -57,12 +57,12 @@ public class BossModIPC : IDisposable
         try
         {
             var cmd = $"/{WhichBossMod}ai preset {presetName}";
-            log.Information($"[BossMod] Setting preset: {cmd}");
+            log.Information($"[MOGTOME][BossMod] Setting preset: {cmd}");
             commandManager.ProcessCommand(cmd);
         }
         catch (Exception ex)
         {
-            log.Error($"[BossMod] SetPreset failed: {ex.Message}");
+            log.Error($"[MOGTOME][BossMod] SetPreset failed: {ex.Message}");
         }
     }
 
@@ -71,12 +71,12 @@ public class BossModIPC : IDisposable
         try
         {
             var cmd = $"/{WhichBossMod}ai on";
-            log.Debug($"[BossMod] {cmd}");
+            log.Debug($"[MOGTOME][BossMod] {cmd}");
             commandManager.ProcessCommand(cmd);
         }
         catch (Exception ex)
         {
-            log.Error($"[BossMod] EnableAI failed: {ex.Message}");
+            log.Error($"[MOGTOME][BossMod] EnableAI failed: {ex.Message}");
         }
     }
 
@@ -85,12 +85,12 @@ public class BossModIPC : IDisposable
         try
         {
             var cmd = $"/{WhichBossMod}ai off";
-            log.Debug($"[BossMod] {cmd}");
+            log.Debug($"[MOGTOME][BossMod] {cmd}");
             commandManager.ProcessCommand(cmd);
         }
         catch (Exception ex)
         {
-            log.Error($"[BossMod] DisableAI failed: {ex.Message}");
+            log.Error($"[MOGTOME][BossMod] DisableAI failed: {ex.Message}");
         }
     }
 
@@ -115,11 +115,11 @@ public class BossModIPC : IDisposable
         try
         {
             commandManager.ProcessCommand("/rotation auto");
-            //log.Debug("[BossMod] RSR auto rotation enabled");
+            //log.Debug("[MOGTOME][BossMod] RSR auto rotation enabled");
         }
         catch (Exception ex)
         {
-            log.Error($"[BossMod] EnableRSR failed: {ex.Message}");
+            log.Error($"[MOGTOME][BossMod] EnableRSR failed: {ex.Message}");
         }
     }
 
@@ -128,11 +128,11 @@ public class BossModIPC : IDisposable
         try
         {
             commandManager.ProcessCommand("/rotation cancel");
-            log.Debug("[BossMod] RSR rotation cancelled");
+            log.Debug("[MOGTOME][BossMod] RSR rotation cancelled");
         }
         catch (Exception ex)
         {
-            log.Debug($"[BossMod] DisableRSR failed (may not be installed): {ex.Message}");
+            log.Debug($"[MOGTOME][BossMod] DisableRSR failed (may not be installed): {ex.Message}");
         }
     }
 
@@ -167,11 +167,11 @@ public class BossModIPC : IDisposable
             GameHelpers.SendCommand(cmd10);
             GameHelpers.SendCommand(cmd11);
             GameHelpers.SendCommand(cmd12);
-            log.Information("[MOGTOME][BossMod][RotationSolverReborn] Requested RSR and both bossmod shenanigans to calm down");
+            log.Information("[MOGTOME][MOGTOME][BossMod][RotationSolverReborn] Requested RSR and both bossmod shenanigans to calm down");
         }
         catch (Exception ex)
         {
-            log.Error($"[BossMod] DisableKeyboardNoise failed: {ex.Message}");
+            log.Error($"[MOGTOME][BossMod] DisableKeyboardNoise failed: {ex.Message}");
         }
     }
 

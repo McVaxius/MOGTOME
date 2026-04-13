@@ -19,11 +19,11 @@ public class AutomatonIPC : IDisposable
         {
             isTweakEnabled = Plugin.PluginInterface.GetIpcSubscriber<string, bool>("Automaton.IsTweakEnabled");
             setTweakState = Plugin.PluginInterface.GetIpcSubscriber<string, bool, object>("Automaton.SetTweakState");
-            log.Information("[Automaton] IPC subscribers initialized");
+            log.Information("[MOGTOME][Automaton] IPC subscribers initialized");
         }
         catch (Exception ex)
         {
-            log.Warning($"[Automaton] IPC init failed (plugin may not be loaded): {ex.Message}");
+            log.Warning($"[MOGTOME][Automaton] IPC init failed (plugin may not be loaded): {ex.Message}");
         }
     }
 
@@ -35,7 +35,7 @@ public class AutomatonIPC : IDisposable
         }
         catch (Exception ex)
         {
-            log.Debug($"[Automaton] IsTweakEnabled({tweakName}) failed: {ex.Message}");
+            log.Debug($"[MOGTOME][Automaton] IsTweakEnabled({tweakName}) failed: {ex.Message}");
             return false;
         }
     }
@@ -45,11 +45,11 @@ public class AutomatonIPC : IDisposable
         try
         {
             setTweakState?.InvokeAction(tweakName, enabled);
-            log.Debug($"[Automaton] SetTweakState: {tweakName} = {enabled}");
+            log.Debug($"[MOGTOME][Automaton] SetTweakState: {tweakName} = {enabled}");
         }
         catch (Exception ex)
         {
-            log.Warning($"[Automaton] SetTweakState({tweakName}) failed: {ex.Message}");
+            log.Warning($"[MOGTOME][Automaton] SetTweakState({tweakName}) failed: {ex.Message}");
         }
     }
 
@@ -58,7 +58,7 @@ public class AutomatonIPC : IDisposable
         if (IsTweakEnabled("AutoQueue"))
         {
             SetTweakState("AutoQueue", false);
-            log.Information("[Automaton] AutoQueue disabled");
+            log.Information("[MOGTOME][Automaton] AutoQueue disabled");
         }
     }
 
@@ -67,7 +67,7 @@ public class AutomatonIPC : IDisposable
         if (!IsTweakEnabled("AutoQueue"))
         {
             SetTweakState("AutoQueue", true);
-            log.Information("[Automaton] AutoQueue enabled");
+            log.Information("[MOGTOME][Automaton] AutoQueue enabled");
         }
     }
 
