@@ -5,9 +5,9 @@
   <PropertyGroup>
     <TargetFramework>net10.0-windows</TargetFramework>
     <PlatformTarget>x64</PlatformTarget>
-    <Version>0.0.0.59</Version>
-    <FileVersion>0.0.0.59</FileVersion>
-    <AssemblyVersion>0.0.0.59</AssemblyVersion>
+    <Version>0.0.0.60</Version>
+    <FileVersion>0.0.0.60</FileVersion>
+    <AssemblyVersion>0.0.0.60</AssemblyVersion>
     <PackageProjectUrl>https://github.com/McVaxius/MOGTOME</PackageProjectUrl>
     <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
     <IsPackable>false</IsPackable>

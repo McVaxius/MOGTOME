@@ -56,7 +56,7 @@ public class AutoDutyIPC : IDisposable
         SetConfig("BM_UpdatePresetsAutomatically", "true");
         SetConfig("maxDistanceToTargetRoleBased", "true");
         SetConfig("positionalRoleBased", "true");
-        SetConfig("AutoExitDuty", isLeader ? "true" : "false");
+        SetConfig("AutoExitDuty", isLeader ? "false" : "true");
         SetConfig("OnlyExitWhenDutyDone", "true");
         SetConfig("EnableTerminationActions", "false");
         SetConfig("Unsynced", "true");
