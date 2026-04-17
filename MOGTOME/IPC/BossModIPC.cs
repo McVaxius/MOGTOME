@@ -155,6 +155,7 @@ public class BossModIPC : IDisposable
             const string cmd10 = "/rotation Settings ToggleAuto False";
             const string cmd11 = "/rotation Settings ToggleManual False";
             const string cmd12 = "/rotation Auto";
+            const string cmd13 = "/fr off";
             GameHelpers.SendCommand(cmd);
             GameHelpers.SendCommand(cmd2);
             GameHelpers.SendCommand(cmd3);
@@ -167,6 +168,7 @@ public class BossModIPC : IDisposable
             GameHelpers.SendCommand(cmd10);
             GameHelpers.SendCommand(cmd11);
             GameHelpers.SendCommand(cmd12);
+            GameHelpers.SendCommand(cmd13);
             log.Information("[MOGTOME][MOGTOME][BossMod][RotationSolverReborn] Requested RSR and both bossmod shenanigans to calm down");
         }
         catch (Exception ex)
