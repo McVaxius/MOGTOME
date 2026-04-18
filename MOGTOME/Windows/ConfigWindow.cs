@@ -349,14 +349,14 @@ public class ConfigWindow : Window, IDisposable
             pathExists ? new Vector4(0, 1, 0, 1) : new Vector4(1, 0, 0, 1),
             pathExists ? $"Praetorium path: INSTALLED ({pathDisplayName})" : $"Praetorium path: NOT FOUND ({pathDisplayName})");
 
-        if (!pathExists)
-        {
+//        if (!pathExists)
+//        {
             if (ImGui.Button("Install Bundled Praetorium Paths"))
             {
                 _ = Task.Run(async () => await plugin.AutoDutyPathService.EnsurePathExists());
             }
             ImGui.TextDisabled("This copies the bundled W2W Praetorium path files from MOGTOME's data folder into AutoDuty's paths folder.");
-        }
+//       }
 
         ImGui.Spacing();
 		//re-add back if reflect becomes a fool's errand
