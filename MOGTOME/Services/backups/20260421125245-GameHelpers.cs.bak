@@ -76,37 +76,15 @@ public static class GameHelpers
     /// Pattern from FrenRider GameHelpers.
     /// SND equivalent: /callback AddonName true/false arg1 arg2 ...
     /// </summary>
-    public static void FireAddonCallback(string addonName, bool updateState, params object[] args)
-        => TryFireAddonCallback(addonName, updateState, args);
-
-    public static bool TryFireAddonCallback(string addonName, bool updateState, params object[] args)
-        => TryFireAddonCallbackInternal(addonName, updateState, adsOperationId: null, args);
-
-    public static bool TryFireAdsAddonCallback(int operationId, string addonName, bool updateState, params object[] args)
-        => TryFireAddonCallbackInternal(addonName, updateState, operationId, args);
-
-    private static unsafe bool TryFireAddonCallbackInternal(string addonName, bool updateState, int? adsOperationId, params object[] args)
+    public static unsafe void FireAddonCallback(string addonName, bool updateState, params object[] args)
     {
-        var argsText = string.Join(", ", args);
-
         try
         {
             var addon = RaptureAtkUnitManager.Instance()->GetAddonByName(addonName);
-            var addonAddress = (nint)addon;
-            var visible = addon != null && addon->IsVisible;
-
-            if (!visible)
+            if (addon == null || !addon->IsVisible)
             {
-                if (adsOperationId.HasValue)
-                {
-                    Plugin.Log.Warning($"[MOGTOME][ADS] Callback operation {adsOperationId.Value}: addon={addonName}, ptr=0x{addonAddress:X}, visible={visible}, updateState={updateState}, args=[{argsText}], result=failure-not-visible");
-                }
-                else
-                {
-                    Plugin.Log.Warning($"[MOGTOME][Callback] Addon '{addonName}' not found or not visible");
-                }
-
-                return false;
+                Plugin.Log.Warning($"[MOGTOME][Callback] Addon '{addonName}' not found or not visible");
+                return;
             }
 
             var atkValues = new AtkValue[args.Length];
@@ -125,30 +103,12 @@ public static class GameHelpers
             {
                 addon->FireCallback((uint)atkValues.Length, ptr, updateState);
             }
-
-            if (adsOperationId.HasValue)
-            {
-                Plugin.Log.Information($"[MOGTOME][ADS] Callback operation {adsOperationId.Value}: addon={addonName}, ptr=0x{addonAddress:X}, visible={visible}, updateState={updateState}, args=[{argsText}], result=success");
-            }
-            else
-            {
-                Plugin.Log.Information($"[MOGTOME][Callback] Fired callback on '{addonName}' with args: {argsText}");
-            }
-
-            return true;
+            
+            Plugin.Log.Information($"[MOGTOME][Callback] Fired callback on '{addonName}' with args: {string.Join(", ", args)}");
         }
         catch (Exception ex)
         {
-            if (adsOperationId.HasValue)
-            {
-                Plugin.Log.Error($"[MOGTOME][ADS] Callback operation {adsOperationId.Value}: addon={addonName}, visible=unknown, updateState={updateState}, args=[{argsText}], result=failure-exception, error={ex.Message}");
-            }
-            else
-            {
-                Plugin.Log.Error($"[MOGTOME][Callback] Failed to fire callback on '{addonName}': {ex.Message}");
-            }
-
-            return false;
+            Plugin.Log.Error($"[MOGTOME][Callback] Failed to fire callback on '{addonName}': {ex.Message}");
         }
     }
 

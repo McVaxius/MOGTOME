@@ -336,7 +336,6 @@ public class MogtomeEngine
         lastPraetoriumReadyWaitLogUtc = DateTime.MinValue;
         lastRotationRefreshUtc = DateTime.MinValue;
         ResetRepairRecoveryWatchdog();
-        dutyAutomationService.InvalidateAdsQueueOperations("duty entered");
         ResetQueueRecoveryState();
     }
 
@@ -483,7 +482,7 @@ public class MogtomeEngine
             // Condition[26] = InCombat
             state.IsInCombat = condition[26];
 
-            if (IsRepairFlowActive() && HasQueueRegistrationOrConfirm())
+            if (IsRepairFlowActive() && (HasQueueRegistrationCondition() || GameHelpers.IsAddonVisible("ContentsFinderConfirm")))
             {
                 dutyQueue.CancelDutyPopForRepair();
             }
@@ -672,7 +671,6 @@ public class MogtomeEngine
         autoDutyStartedInDuty = false;
         dutyCompleted = false;
         ResetRepairRecoveryWatchdog();
-        dutyAutomationService.InvalidateAdsQueueOperations("duty left");
         ResetQueueRecoveryState();
         
         // Reset requeue state when successfully entering duty
@@ -928,14 +926,11 @@ public class MogtomeEngine
                 case RequeueState.WaitingToQueue:
                     if (elapsed >= 1.0)
                     {
-                        if (StartQueueAttempt(isPrae, ignoreCooldown: false, "Auto-queueing"))
-                        {
-                            requeueState = RequeueState.Complete;
-                            requeueInProgress = false;
-                            log.Information($"[MOGTOME][Engine] Auto-queue command sent for next run: {dutyTracker?.GetCurrentDutyName() ?? "Unknown"}");
-                            return;
-                        }
-                        break;
+                        StartQueueAttempt(isPrae, ignoreCooldown: false, "Auto-queueing");
+                        requeueState = RequeueState.Complete;
+                        requeueInProgress = false;
+                        log.Information($"[MOGTOME][Engine] Auto-queue command sent for next run: {dutyTracker?.GetCurrentDutyName() ?? "Unknown"}");
+                        return;
                     }
                     StatusMessage = $"Waiting to queue ({1.0 - elapsed:F0}s)";
                     break;
@@ -990,7 +985,7 @@ public class MogtomeEngine
             return;
 
         var dutyName = dutyTracker.GetCurrentDutyName();
-        if (HasQueueRegistrationOrConfirm())
+        if (HasQueueRegistrationCondition())
         {
             if (queueRegistrationStartedUtc != DateTime.MinValue)
             {
@@ -999,21 +994,7 @@ public class MogtomeEngine
                 ResetQueueRegistrationWatchdog();
             }
 
-            dutyAutomationService.ClearAdsQueueFailure();
             StatusMessage = $"Queueing: {dutyName} (registered)";
-            return;
-        }
-
-        if (dutyAutomationService.TryGetAdsQueueFailure(out var failureReason, out var cooldownRemainingSeconds))
-        {
-            if (cooldownRemainingSeconds > 0)
-            {
-                StatusMessage = $"Queueing: {dutyName} (ADS retry cooldown {Math.Ceiling(cooldownRemainingSeconds):F0}s)";
-                return;
-            }
-
-            dutyAutomationService.ClearAdsQueueFailure();
-            BeginQueueRecovery($"ADS queue attempt failed: {failureReason}");
             return;
         }
 
@@ -1284,26 +1265,14 @@ public class MogtomeEngine
            || condition[WaitingForDutyConditionIndex]
            || condition[WaitingForDutyFinderConditionIndex];
 
-    private bool HasQueueRegistrationOrConfirm()
-        => HasQueueRegistrationCondition() || GameHelpers.IsAddonVisible("ContentsFinderConfirm");
-
     private void ResetQueueRegistrationWatchdog()
     {
         queueRegistrationStartedUtc = DateTime.MinValue;
     }
 
-    private bool StartQueueAttempt(bool isPrae, bool ignoreCooldown, string statusPrefix)
+    private void StartQueueAttempt(bool isPrae, bool ignoreCooldown, string statusPrefix)
     {
         var dutyName = dutyTracker.GetCurrentDutyName();
-
-        if (dutyAutomationService.IsAdsQueueRetryCooldownActive(out var cooldownRemainingSeconds, out var cooldownReason))
-        {
-            CurrentState = EngineState.WaitingOutsideDuty;
-            StatusMessage = $"ADS queue cooldown: {dutyName} ({Math.Ceiling(cooldownRemainingSeconds):F0}s)";
-            log.Debug($"[MOGTOME][Engine] Holding {statusPrefix} for {dutyName}; ADS queue cooldown active ({Math.Ceiling(cooldownRemainingSeconds):F0}s remaining; {cooldownReason})");
-            return false;
-        }
-
         CurrentState = EngineState.Queueing;
         StatusMessage = $"{statusPrefix}: {dutyName}";
 
@@ -1316,13 +1285,11 @@ public class MogtomeEngine
 
             queueRegistrationStartedUtc = DateTime.UtcNow;
             log.Information($"[MOGTOME][Engine] {statusPrefix} command sent for {dutyName}; waiting up to {QueueRegistrationWatchdogSeconds:F0}s for queue registration");
-            return true;
         }
         catch (Exception ex)
         {
             ResetQueueRegistrationWatchdog();
             log.Error($"[MOGTOME][Engine] {statusPrefix} failed for {dutyName}: {ex.Message}");
-            return false;
         }
     }
 
@@ -1347,7 +1314,6 @@ public class MogtomeEngine
         outsideDutyTicks = 0;
         StatusMessage = $"Queue recovery: waiting after {dutyAutomationService.StopCommandLabel} ({QueueRecoveryStopSeconds:F0}s)";
         log.Warning($"[MOGTOME][Engine] {reason}; sending {dutyAutomationService.StopCommandLabel}, waiting {QueueRecoveryStopSeconds:F0}s, then holding {QueueRecoveryRepairGraceSeconds:F0}s for repairs");
-        dutyAutomationService.InvalidateAdsQueueOperations("queue recovery");
         dutyAutomationService.StopDuty();
     }
 
@@ -1362,7 +1328,7 @@ public class MogtomeEngine
         if (IsQueueRecoveryActive())
             return;
 
-        if (HasQueueRegistrationOrConfirm())
+        if (HasQueueRegistrationCondition())
         {
             sawQueueConditionOutsideDuty = true;
             return;

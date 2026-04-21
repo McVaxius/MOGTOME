@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
 using Dalamud.Game.Command;
-using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.IoC;
@@ -169,7 +168,6 @@ public sealed class Plugin : IDalamudPlugin
         PluginInterface.UiBuilder.OpenConfigUi += ToggleConfigUi;
         PluginInterface.UiBuilder.OpenMainUi += ToggleMainUi;
         ClientState.Login += OnLoginEvent;
-        ChatGui.ChatMessage += OnChatMessage;
         Framework.Update += OnFrameworkUpdate;
         DutyStateService.DutyStarted += OnDutyStarted;
         DutyStateService.DutyCompleted += OnDutyCompleted;
@@ -182,7 +180,6 @@ public sealed class Plugin : IDalamudPlugin
         DutyStateService.DutyCompleted -= OnDutyCompleted;
         DutyStateService.DutyStarted -= OnDutyStarted;
         Framework.Update -= OnFrameworkUpdate;
-        ChatGui.ChatMessage -= OnChatMessage;
         ClientState.Login -= OnLoginEvent;
 
         AppDomain.CurrentDomain.UnhandledException -= OnUnhandledException;
@@ -505,18 +502,6 @@ public sealed class Plugin : IDalamudPlugin
         // Don't run OnLogin here - Login event fires off main thread.
         // Instead, set a delay so OnFrameworkUpdate picks it up.
         loginDetectionDelay = 3;
-    }
-
-    private void OnChatMessage(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled)
-    {
-        try
-        {
-            DutyAutomationService.HandleAdsQueueChatMessage(message.TextValue);
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "[Plugin] ADS queue chat watcher failed");
-        }
     }
 
     private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
