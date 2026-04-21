@@ -1,14 +1,24 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Dalamud.Game.Command;
 using Dalamud.Plugin.Services;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using MOGTOME.IPC;
 using MOGTOME.Models;
 
 namespace MOGTOME.Services;
+
+public sealed record PraetoriumUnlockStatus(string DutyName, bool IsUnlocked, string QuestSummary);
+
+public sealed record PraetoriumSelectionInfo(int SelectionIndex, IReadOnlyList<PraetoriumUnlockStatus> Unlocks)
+{
+    public int MissingUnlockCount => Unlocks.Count(unlock => !unlock.IsUnlocked);
+    public string CallbackCommand => $"ContentsFinder true 3 {SelectionIndex}";
+}
 
 public sealed class DutyAutomationService
 {
@@ -48,6 +58,14 @@ public sealed class DutyAutomationService
     private readonly RotationService rotationService;
     private int adsQueueOperationId = 0;
     private AdsQueuedDuty lastAdsQueuedDuty = AdsQueuedDuty.Unknown;
+    private static readonly PraetoriumUnlockDefinition[] PraetoriumOptionalUnlocks =
+    [
+        new("Sunken Temple of Qarn", [764]),
+        new("Cutter's Cry", [921]),
+        new("Dzemael Darkhold", [979, 1128, 1129, 1130]),
+        new("The Aurum Vale", [1014, 1131, 1132, 1133]),
+        new("The Wanderer's Palace", [870]),
+    ];
 
     private Configuration Config => configManager.GetActiveConfig();
 
@@ -267,6 +285,43 @@ public sealed class DutyAutomationService
     public bool GetSubsystemHealthy()
         => UseAdsExperimental ? IsAdsLoaded() : autoDutyPathService.PathExists(Config.PraetoriumPathFileName);
 
+    public PraetoriumSelectionInfo GetPraetoriumSelectionInfo()
+    {
+        var unlocks = PraetoriumOptionalUnlocks
+            .Select(definition =>
+            {
+                var isUnlocked = IsAnyQuestComplete(definition.QuestIds);
+                var questSummary = string.Join(", ", definition.QuestIds);
+                return new PraetoriumUnlockStatus(definition.DutyName, isUnlocked, questSummary);
+            })
+            .ToArray();
+
+        var missingUnlockCount = unlocks.Count(unlock => !unlock.IsUnlocked);
+        var selectionIndex = Math.Clamp(15 - missingUnlockCount, 10, 15);
+        return new PraetoriumSelectionInfo(selectionIndex, unlocks);
+    }
+
+    public void LogPraetoriumSelectionInfo()
+    {
+        var selectionInfo = GetPraetoriumSelectionInfo();
+        var missingDuties = selectionInfo.Unlocks
+            .Where(unlock => !unlock.IsUnlocked)
+            .Select(unlock => unlock.DutyName)
+            .ToArray();
+        var missingSummary = missingDuties.Length > 0
+            ? string.Join(", ", missingDuties)
+            : "none";
+
+        log.Information($"[MOGTOME][ADS] Praetorium callback test -> {selectionInfo.CallbackCommand} (missing optional unlocks: {selectionInfo.MissingUnlockCount})");
+        foreach (var unlock in selectionInfo.Unlocks)
+        {
+            log.Information($"[MOGTOME][ADS] Praetorium unlock check: {unlock.DutyName} -> {(unlock.IsUnlocked ? "unlocked" : "missing")} (quests: {unlock.QuestSummary})");
+        }
+
+        Plugin.ChatGui.Print($"[MOGTOME] Praetorium callback test: {selectionInfo.CallbackCommand}");
+        Plugin.ChatGui.Print($"[MOGTOME] Missing optional unlocks: {missingSummary}");
+    }
+
     private static string GetDutyName(bool isPraetorium)
         => isPraetorium ? "The Praetorium" : "The Porta Decumana";
 
@@ -392,6 +447,8 @@ public sealed class DutyAutomationService
 
     private async Task<bool> RunAdsDutySelectionSequenceAsync(int operationId, AdsQueuedDuty targetDuty, string dutyName)
     {
+        var praetoriumSelectionIndex = GetPraetoriumSelectionInfo().SelectionIndex;
+
         switch (targetDuty)
         {
             case AdsQueuedDuty.Praetorium:
@@ -406,12 +463,12 @@ public sealed class DutyAutomationService
                 }
 
                 return await FireAdsContentsFinderStepAsync(operationId, dutyName, "switching to Praetorium tab", 1, 1).ConfigureAwait(false) &&
-                       await FireAdsContentsFinderStepAsync(operationId, dutyName, "selecting Praetorium", 3, 15).ConfigureAwait(false);
+                       await FireAdsContentsFinderStepAsync(operationId, dutyName, "selecting Praetorium", 3, praetoriumSelectionIndex).ConfigureAwait(false);
 
             case AdsQueuedDuty.Decumana:
                 return await FireAdsContentsFinderStepAsync(operationId, dutyName, "switching to Praetorium tab for Decumana pre-clear", 1, 1).ConfigureAwait(false) &&
-                       await FireAdsContentsFinderStepAsync(operationId, dutyName, "selecting Praetorium for Decumana pre-clear", 3, 15).ConfigureAwait(false) &&
-                       await FireAdsContentsFinderStepAsync(operationId, dutyName, "unselecting Praetorium before Decumana", 3, 15).ConfigureAwait(false) &&
+                       await FireAdsContentsFinderStepAsync(operationId, dutyName, "selecting Praetorium for Decumana pre-clear", 3, praetoriumSelectionIndex).ConfigureAwait(false) &&
+                       await FireAdsContentsFinderStepAsync(operationId, dutyName, "unselecting Praetorium before Decumana", 3, praetoriumSelectionIndex).ConfigureAwait(false) &&
                        await FireAdsContentsFinderStepAsync(operationId, dutyName, "switching to Decumana tab", 1, 4).ConfigureAwait(false) &&
                        await FireAdsContentsFinderStepAsync(operationId, dutyName, "selecting Decumana", 3, 4).ConfigureAwait(false);
 
@@ -484,4 +541,20 @@ public sealed class DutyAutomationService
             log.Error(ex, $"[MOGTOME][{backendName}] Failed to refresh BossMod AI + RSR after duty start");
         }
     }
+
+    private static unsafe bool IsAnyQuestComplete(ushort[] questIds)
+    {
+        if (QuestManager.Instance() == null)
+            return false;
+
+        foreach (var questId in questIds)
+        {
+            if (QuestManager.IsQuestComplete(questId))
+                return true;
+        }
+
+        return false;
+    }
+
+    private sealed record PraetoriumUnlockDefinition(string DutyName, ushort[] QuestIds);
 }

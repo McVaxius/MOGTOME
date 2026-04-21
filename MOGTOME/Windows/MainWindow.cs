@@ -539,8 +539,38 @@ public class MainWindow : Window, IDisposable
         }
         else if (config.DebugModeEnabled && config.UseAdsExperimental)
         {
+            var praeSelection = plugin.DutyAutomationService.GetPraetoriumSelectionInfo();
+
             ImGui.TextColored(new Vector4(1.0f, 0.5f, 0.0f, 1.0f), "Debug Tools");
+            ImGui.Indent();
+
+            if (ImGui.Button("TEST PRAE INDEX", new Vector2(200, 25)))
+            {
+                plugin.DutyAutomationService.LogPraetoriumSelectionInfo();
+            }
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("Logs Praetorium callback index and missing optional unlocks. Does not queue.");
+            }
+
+            ImGui.Text($"Praetorium callback: {praeSelection.CallbackCommand}");
+            ImGui.Text($"Missing optional unlocks: {praeSelection.MissingUnlockCount}");
+
+            foreach (var unlock in praeSelection.Unlocks)
+            {
+                var color = unlock.IsUnlocked
+                    ? new Vector4(0.3f, 1.0f, 0.3f, 1.0f)
+                    : new Vector4(1.0f, 0.45f, 0.45f, 1.0f);
+                var status = unlock.IsUnlocked ? "Unlocked" : "Missing";
+                ImGui.TextColored(color, $"{unlock.DutyName}: {status}");
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.SetTooltip($"Quest IDs: {unlock.QuestSummary}");
+                }
+            }
+
             ImGui.TextDisabled("ADS mode active. AutoDuty reflection/path debug tools are hidden.");
+            ImGui.Unindent();
             ImGui.Separator();
         }
 

@@ -24,7 +24,6 @@ public class DutyState
     public const float DecumanaTimeLimit = 3600f;   // 60 minutes
 
     // --- Duty IDs for ContentsFinder ---
-    public int PraetoriumDutyIndex { get; set; } = 16;
     public const int DecumanaDutyId = 830;
 
     // --- Timing ---

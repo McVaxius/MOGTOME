@@ -527,8 +527,7 @@ public class MogtomeEngine
     private void OnEnteredDuty()
     {
         state.IsInDuty = true;
-        dutyTracker.OnDutyStarted();
-        rotationService.ForceRotation();
+        state.IsInCombat = condition[26];
         autoDutyStartedInDuty = false;
         dutyCompleted = false;
         dutyEnteredUtc = DateTime.UtcNow;
@@ -540,6 +539,13 @@ public class MogtomeEngine
         // Reset requeue state when successfully entering duty
         requeueInProgress = false;
         requeueState = RequeueState.Idle;
+
+        var enteredTerritory = ResolveEnteredDutyTerritory();
+        if (HandleUnexpectedDutyEntry(enteredTerritory))
+            return;
+
+        dutyTracker.OnDutyStarted();
+        rotationService.ForceRotation();
         
         CurrentState = EngineState.InDuty;
         StatusMessage = $"In Duty - #{state.DutyCounter} ({dutyTracker.GetCurrentDutyName()})";
@@ -553,6 +559,46 @@ public class MogtomeEngine
             config.TotalDecus++;
         // Note: ConfigManager.SaveCurrentAccount() will be called by the engine
         // We don't save here to avoid multiple saves during duty counting
+    }
+
+    private ushort ResolveEnteredDutyTerritory()
+    {
+        if (state.DutyStartTerritory != 0)
+            return state.DutyStartTerritory;
+
+        if (state.CurrentTerritory != 0)
+        {
+            state.DutyStartTerritory = state.CurrentTerritory;
+            log.Warning($"[MOGTOME][Engine] DutyStartTerritory was empty on duty entry; using CurrentTerritory {state.CurrentTerritory}");
+        }
+
+        return state.DutyStartTerritory;
+    }
+
+    private bool HandleUnexpectedDutyEntry(ushort territoryId)
+    {
+        if (territoryId == DutyState.PraetoriumTerritoryId || territoryId == DutyState.DecumanaTerritoryId)
+            return false;
+
+        var territoryName = GameHelpers.GetTerritoryName(territoryId);
+        var territoryLabel = territoryId == 0
+            ? "Unknown duty"
+            : $"{territoryName} ({territoryId})";
+        var message = $"Entered unexpected duty {territoryLabel}. Finish optional dungeon unlock quests; Praetorium index is probably wrong.";
+
+        log.Warning($"[MOGTOME][Engine] {message}");
+        Plugin.ChatGui.Print($"[MOGTOME] {message}");
+
+        Stop();
+        state.Reset();
+
+        if (dutyAutomationService.UseAdsExperimental)
+        {
+            log.Warning("[MOGTOME][Engine] Unexpected duty entered in ADS mode; sending /ads leave");
+            dutyAutomationService.RequestDutyLeave();
+        }
+
+        return true;
     }
 
     private void OnLeftDuty()
