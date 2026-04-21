@@ -23,6 +23,8 @@ public sealed class ConflictPluginService
     private readonly IPluginLog log;
     private readonly ICommandManager commandManager;
     private readonly object stateLock = new();
+    private readonly record struct PluginStatus(bool IsInstalled, bool IsLoaded, string InternalName, string DisplayName);
+    private readonly record struct PluginDisableResult(PluginStatus InitialStatus, PluginStatus FinalStatus, bool DisableAttempted);
 
     private DateTime lastDisableAttemptUtc = DateTime.MinValue;
     private string? pendingWarningMessage;
@@ -35,26 +37,42 @@ public sealed class ConflictPluginService
 
     public (bool IsInstalled, bool IsLoaded) GetTwistOfFayteStatus()
     {
-        return GetPluginStatus(MatchesTwistOfFayte);
+        var status = GetPluginStatus(MatchesTwistOfFayte);
+        return (status.IsInstalled, status.IsLoaded);
     }
 
     public (bool IsInstalled, bool IsLoaded) GetAutoDutyStatus()
     {
-        return GetPluginStatus(MatchesAutoDuty);
+        var status = GetPluginStatus(MatchesAutoDuty);
+        return (status.IsInstalled, status.IsLoaded);
     }
 
     public async Task<bool> EnsureTwistOfFayteDisabledAsync(string triggerSource, bool showPopup)
     {
-        var unloaded = await EnsurePluginDisabledAsync(
+        var result = await EnsurePluginDisabledAsync(
             triggerSource,
             TwistOfFayteDisplayName,
             TwistOfFayteDisableCommand,
             MatchesTwistOfFayte).ConfigureAwait(false);
-        if (unloaded)
+        if (!result.InitialStatus.IsInstalled)
+        {
+            ClearPendingWarning();
+            log.Information($"[MOGTOME][Conflict] {TwistOfFayteDisplayName} check during {triggerSource}: no matching installed plugin entry was found; popup suppressed.");
+            return true;
+        }
+
+        if (!result.InitialStatus.IsLoaded)
+        {
+            ClearPendingWarning();
+            log.Information($"[MOGTOME][Conflict] {TwistOfFayteDisplayName} check during {triggerSource}: {DescribePluginStatus(result.InitialStatus)}; popup suppressed because the plugin is already disabled.");
+            return true;
+        }
+
+        if (!result.FinalStatus.IsLoaded)
         {
             var successMessage = $"{TwistOfFayteDisplayName} was enabled and has been auto-disabled for MOGTOME.";
             Plugin.ChatGui.Print($"[MOGTOME] {successMessage}");
-            log.Information($"[MOGTOME][Conflict] {successMessage}");
+            log.Information($"[MOGTOME][Conflict] {successMessage} Match={DescribePluginStatus(result.InitialStatus)} DisableAttempted={result.DisableAttempted}");
 
             if (showPopup)
             {
@@ -67,7 +85,7 @@ public sealed class ConflictPluginService
 
         var failureMessage = $"{TwistOfFayteDisplayName} is still enabled. MOGTOME will keep running, but you should disable it with {TwistOfFayteDisableCommand}.";
         Plugin.ChatGui.Print($"[MOGTOME] {failureMessage}");
-        log.Warning($"[MOGTOME][Conflict] {failureMessage}");
+        log.Warning($"[MOGTOME][Conflict] {failureMessage} Match={DescribePluginStatus(result.FinalStatus)} DisableAttempted={result.DisableAttempted}");
 
         if (showPopup)
         {
@@ -75,21 +93,33 @@ public sealed class ConflictPluginService
                 $"{failureMessage}\n\nUse the warning window button to try disabling it again, or dismiss the warning and keep going.");
         }
 
-        return true;
+        return false;
     }
 
     public async Task<bool> EnsureAutoDutyDisabledAsync(string triggerSource, bool showPopup)
     {
-        var unloaded = await EnsurePluginDisabledAsync(
+        var result = await EnsurePluginDisabledAsync(
             triggerSource,
             AutoDutyDisplayName,
             AutoDutyDisableCommand,
             MatchesAutoDuty).ConfigureAwait(false);
-        if (unloaded)
+        if (!result.InitialStatus.IsInstalled)
+        {
+            log.Information($"[MOGTOME][Conflict] {AutoDutyDisplayName} check during {triggerSource}: no matching installed plugin entry was found; popup suppressed.");
+            return true;
+        }
+
+        if (!result.InitialStatus.IsLoaded)
+        {
+            log.Information($"[MOGTOME][Conflict] {AutoDutyDisplayName} check during {triggerSource}: {DescribePluginStatus(result.InitialStatus)}; popup suppressed because the plugin is already disabled.");
+            return true;
+        }
+
+        if (!result.FinalStatus.IsLoaded)
         {
             var successMessage = $"{AutoDutyDisplayName} was enabled and has been auto-disabled for ADS mode.";
             Plugin.ChatGui.Print($"[MOGTOME] {successMessage}");
-            log.Information($"[MOGTOME][Conflict] {successMessage}");
+            log.Information($"[MOGTOME][Conflict] {successMessage} Match={DescribePluginStatus(result.InitialStatus)} DisableAttempted={result.DisableAttempted}");
 
             if (showPopup)
                 QueueWarning(successMessage);
@@ -97,13 +127,9 @@ public sealed class ConflictPluginService
             return true;
         }
 
-        var status = GetAutoDutyStatus();
-        if (!status.IsLoaded)
-            return true;
-
         var failureMessage = $"{AutoDutyDisplayName} is still enabled. ADS mode expects {AutoDutyDisableCommand}.";
         Plugin.ChatGui.Print($"[MOGTOME] {failureMessage}");
-        log.Warning($"[MOGTOME][Conflict] {failureMessage}");
+        log.Warning($"[MOGTOME][Conflict] {failureMessage} Match={DescribePluginStatus(result.FinalStatus)} DisableAttempted={result.DisableAttempted}");
 
         if (showPopup)
             QueueWarning(failureMessage);
@@ -135,29 +161,23 @@ public sealed class ConflictPluginService
         }
     }
 
-    private async Task<bool> WaitForTwistOfFayteUnloadAsync()
+    private void ClearPendingWarning()
     {
-        var deadline = DateTime.UtcNow + DisableWaitTimeout;
-        while (DateTime.UtcNow < deadline)
+        lock (stateLock)
         {
-            if (!GetTwistOfFayteStatus().IsLoaded)
-                return true;
-
-            await Task.Delay(DisablePollInterval).ConfigureAwait(false);
+            pendingWarningMessage = null;
         }
-
-        return !GetTwistOfFayteStatus().IsLoaded;
     }
 
-    private async Task<bool> EnsurePluginDisabledAsync(
+    private async Task<PluginDisableResult> EnsurePluginDisabledAsync(
         string triggerSource,
         string displayName,
         string disableCommand,
         Func<string?, string?, bool> matcher)
     {
-        var status = GetPluginStatus(matcher);
-        if (!status.IsLoaded)
-            return true;
+        var initialStatus = GetPluginStatus(matcher);
+        if (!initialStatus.IsLoaded)
+            return new PluginDisableResult(initialStatus, initialStatus, false);
 
         var shouldSendDisable = false;
         lock (stateLock)
@@ -172,32 +192,34 @@ public sealed class ConflictPluginService
 
         if (shouldSendDisable)
         {
-            log.Warning($"[MOGTOME][Conflict] {displayName} is enabled during {triggerSource}; sending {disableCommand}");
+            log.Warning($"[MOGTOME][Conflict] {displayName} is enabled during {triggerSource}; matched {DescribePluginStatus(initialStatus)}; sending {disableCommand}");
             commandManager.ProcessCommand(disableCommand);
         }
         else
         {
-            log.Warning($"[MOGTOME][Conflict] {displayName} is still enabled during {triggerSource}; waiting for recent disable attempt");
+            log.Warning($"[MOGTOME][Conflict] {displayName} is still enabled during {triggerSource}; matched {DescribePluginStatus(initialStatus)}; waiting for recent disable attempt");
         }
 
-        return await WaitForPluginUnloadAsync(matcher).ConfigureAwait(false);
+        var finalStatus = await WaitForPluginUnloadAsync(matcher).ConfigureAwait(false);
+        return new PluginDisableResult(initialStatus, finalStatus, shouldSendDisable);
     }
 
-    private async Task<bool> WaitForPluginUnloadAsync(Func<string?, string?, bool> matcher)
+    private async Task<PluginStatus> WaitForPluginUnloadAsync(Func<string?, string?, bool> matcher)
     {
         var deadline = DateTime.UtcNow + DisableWaitTimeout;
         while (DateTime.UtcNow < deadline)
         {
-            if (!GetPluginStatus(matcher).IsLoaded)
-                return true;
+            var status = GetPluginStatus(matcher);
+            if (!status.IsLoaded)
+                return status;
 
             await Task.Delay(DisablePollInterval).ConfigureAwait(false);
         }
 
-        return !GetPluginStatus(matcher).IsLoaded;
+        return GetPluginStatus(matcher);
     }
 
-    private (bool IsInstalled, bool IsLoaded) GetPluginStatus(Func<string?, string?, bool> matcher)
+    private PluginStatus GetPluginStatus(Func<string?, string?, bool> matcher)
     {
         try
         {
@@ -206,7 +228,11 @@ public sealed class ConflictPluginService
                 if (!matcher(plugin.InternalName, plugin.Name))
                     continue;
 
-                return (true, plugin.IsLoaded);
+                return new PluginStatus(
+                    true,
+                    plugin.IsLoaded,
+                    plugin.InternalName ?? string.Empty,
+                    plugin.Name ?? string.Empty);
             }
         }
         catch (Exception ex)
@@ -214,7 +240,7 @@ public sealed class ConflictPluginService
             log.Warning($"[MOGTOME][Conflict] Failed to inspect installed plugins: {ex.Message}");
         }
 
-        return (false, false);
+        return new PluginStatus(false, false, string.Empty, string.Empty);
     }
 
     private static bool MatchesTwistOfFayte(string? internalName, string? displayName)
@@ -250,5 +276,15 @@ public sealed class ConflictPluginService
         }
 
         return builder.ToString();
+    }
+
+    private static string DescribePluginStatus(PluginStatus status)
+    {
+        if (!status.IsInstalled)
+            return "InternalName='<missing>', Name='<missing>', IsLoaded=false";
+
+        var internalName = string.IsNullOrWhiteSpace(status.InternalName) ? "<empty>" : status.InternalName;
+        var displayName = string.IsNullOrWhiteSpace(status.DisplayName) ? "<empty>" : status.DisplayName;
+        return $"InternalName='{internalName}', Name='{displayName}', IsLoaded={status.IsLoaded}";
     }
 }
