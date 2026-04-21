@@ -61,8 +61,6 @@ public class DialogHandlerService
         try
         {
             TryAcceptRecognizedYesNoPrompt();
-            // Check for ContentFinderConfirm addon
-            CheckAndConfirmDialog("ContentsFinderConfirm");
         }
         catch (Exception ex)
         {

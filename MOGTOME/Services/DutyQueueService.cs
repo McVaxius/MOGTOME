@@ -11,7 +11,7 @@ public class DutyQueueService
     private readonly IPluginLog log;
     private readonly Configuration config;
     private readonly DutyState state;
-    private readonly AutoDutyIPC autoDutyIPC;
+    private readonly DutyAutomationService dutyAutomationService;
     private readonly AutomatonIPC automatonIPC;
     private readonly ICommandManager commandManager;
     private readonly ICondition condition;
@@ -23,13 +23,13 @@ public class DutyQueueService
 
     public DutyQueueService(
         IPluginLog log, Configuration config, DutyState state,
-        AutoDutyIPC autoDutyIPC, AutomatonIPC automatonIPC,
+        DutyAutomationService dutyAutomationService, AutomatonIPC automatonIPC,
         ICommandManager commandManager, ICondition condition)
     {
         this.log = log;
         this.config = config;
         this.state = state;
-        this.autoDutyIPC = autoDutyIPC;
+        this.dutyAutomationService = dutyAutomationService;
         this.automatonIPC = automatonIPC;
         this.commandManager = commandManager;
         this.condition = condition;
@@ -55,9 +55,9 @@ public class DutyQueueService
 
         var dutyName = isPraetorium ? "The Praetorium" : "The Porta Decumana";
         log.Information(ignoreCooldown
-            ? $"[MOGTOME][DutyQueue] Force-queueing via AutoDuty: {dutyName}"
-            : $"[MOGTOME][DutyQueue] Queueing via AutoDuty: {dutyName}");
-        autoDutyIPC.QueueDuty(dutyName);
+            ? $"[MOGTOME][DutyQueue] Force-queueing via {dutyAutomationService.ActiveBackendDisplayName}: {dutyName}"
+            : $"[MOGTOME][DutyQueue] Queueing via {dutyAutomationService.ActiveBackendDisplayName}: {dutyName}");
+        dutyAutomationService.QueueDuty(isPraetorium);
     }
 
     public void DisableAutoQueueForRepair()
@@ -111,15 +111,12 @@ public class DutyQueueService
     }
 
     /// <summary>
-    /// Auto-accept duty pop for non-leaders.
-    /// All party members should accept unless engaged in repair.
-    /// Uses FrenRider's ContentsFinderConfirm approach.
+    /// Auto-accept duty pop for any party member that should accept.
+    /// Repair flow owns the popup when repair is active.
+    /// Uses the known ContentsFinderConfirm Commence callback.
     /// </summary>
     public void AutoAcceptDuty()
     {
-        // Only auto-accept if not the party leader
-        if (state.IsPartyLeader) return;
-
         // Don't accept if in the middle of repair
         if (state.AutoQueueDisabledForRepair) return;
 
@@ -130,7 +127,7 @@ public class DutyQueueService
             if ((now - lastCommenceClickTime).TotalSeconds > 2) // Rate limit to prevent spam
             {
                 lastCommenceClickTime = now;
-                log.Information("[MOGTOME][DutyQueue] Clicking Commence on ContentsFinderConfirm (non-leader)");
+                log.Information("[MOGTOME][DutyQueue] Clicking Commence on ContentsFinderConfirm");
                 
                 // Fire commence callback - typically callback index 8 = Commence button
                 GameHelpers.FireAddonCallback("ContentsFinderConfirm", true, 8);

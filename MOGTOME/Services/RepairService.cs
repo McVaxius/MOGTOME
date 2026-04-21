@@ -10,7 +10,7 @@ public class RepairService
     private readonly IPluginLog log;
     private Configuration config; // Remove readonly to allow updates
     private readonly DutyState state;
-    private readonly ICommandManager commandManager;
+    private readonly DutyAutomationService dutyAutomationService;
     private readonly ICondition condition;
 
     private DateTime lastRepairCheck = DateTime.MinValue;
@@ -18,12 +18,12 @@ public class RepairService
 
     public RepairService(
         IPluginLog log, Configuration config, DutyState state,
-        ICommandManager commandManager, ICondition condition)
+        DutyAutomationService dutyAutomationService, ICondition condition)
     {
         this.log = log;
         this.config = config; // Still store initial config
         this.state = state;
-        this.commandManager = commandManager;
+        this.dutyAutomationService = dutyAutomationService;
         this.condition = condition;
     }
 
@@ -110,8 +110,7 @@ public class RepairService
     {
         try
         {
-            log.Information("[MOGTOME][Repair] Requesting repair via AutoDuty");
-            commandManager.ProcessCommand("/ad repair");
+            dutyAutomationService.RequestSelfRepair();
         }
         catch (Exception ex)
         {
@@ -123,8 +122,7 @@ public class RepairService
     {
         try
         {
-            log.Information("[MOGTOME][Repair] Attempting NPC repair via AutoDuty");
-            commandManager.ProcessCommand("/ad repair");
+            dutyAutomationService.RequestNpcRepair();
         }
         catch (Exception ex)
         {
@@ -134,23 +132,7 @@ public class RepairService
 
     public void ReturnToInnIfNeeded()
     {
-        try
-        {
-            var territoryId = (ushort)Plugin.ClientState.TerritoryType;
-            var territoryName = GameHelpers.GetTerritoryName(territoryId);
-            if (GameHelpers.IsInnTerritory(territoryId))
-            {
-                log.Information($"[MOGTOME][Repair] Repair completed while already in inn territory {territoryName} ({territoryId})");
-                return;
-            }
-
-            log.Information($"[MOGTOME][Repair] Repair completed outside inn territory {territoryName} ({territoryId}); sending internal /mog inn auto command");
-            GameHelpers.SendChatCommand("/mog inn auto");
-        }
-        catch (Exception ex)
-        {
-            log.Error($"[MOGTOME][Repair] ReturnToInnIfNeeded failed: {ex.Message}");
-        }
+        dutyAutomationService.ReturnToInnIfNeeded();
     }
 
     public void AutoEquipIfEnabled()

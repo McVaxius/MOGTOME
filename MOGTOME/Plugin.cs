@@ -74,6 +74,7 @@ public sealed class Plugin : IDalamudPlugin
     public AutoDutyPathService AutoDutyPathService { get; private set; }
     public ConflictPluginService ConflictPluginService { get; private set; }
     public RunHistoryService RunHistoryService { get; private set; }
+    public DutyAutomationService DutyAutomationService { get; private set; }
     public MogtomeEngine Engine { get; private set; }
 
     // Windows
@@ -110,15 +111,24 @@ public sealed class Plugin : IDalamudPlugin
 
         // Initialize Services (needs RotationService)
         DutyTrackerService = new DutyTrackerService(Log, Configuration, State, ConfigManager, RunHistoryService);
-        DutyQueueService = new DutyQueueService(Log, Configuration, State, AutoDutyIPC, AutomatonIPC, CommandManager, Condition);
-        RepairService = new RepairService(Log, Configuration, State, CommandManager, Condition);
+        AutoDutyPathService = new AutoDutyPathService(Log, PluginInterface);
+        ConflictPluginService = new ConflictPluginService(Log, CommandManager);
+        DutyAutomationService = new DutyAutomationService(
+            Log,
+            ConfigManager,
+            AutoDutyIPC,
+            AutoDutyPathService,
+            ConflictPluginService,
+            CommandManager,
+            RunHistoryService,
+            RotationService);
+        DutyQueueService = new DutyQueueService(Log, Configuration, State, DutyAutomationService, AutomatonIPC, CommandManager, Condition);
+        RepairService = new RepairService(Log, Configuration, State, DutyAutomationService, Condition);
         InnEntryService = new InnEntryService(Log, VNavIPC);
         FoodService = new FoodService(Log, Configuration, State, Condition);
         BossHandlerService = new BossHandlerService(Log, Configuration, State, VNavIPC, CommandManager, Condition);
         StuckDetectionService = new StuckDetectionService(Log, Configuration, State, VNavIPC, Condition);
         DialogHandlerService = new DialogHandlerService(Log, YesAlreadyIPC, CommandManager, GameGui);
-        AutoDutyPathService = new AutoDutyPathService(Log, PluginInterface);
-        ConflictPluginService = new ConflictPluginService(Log, CommandManager);
 
         // Wire up configuration change subscriptions
         FoodService.SubscribeToConfigChanges(ConfigManager);
@@ -386,6 +396,7 @@ public sealed class Plugin : IDalamudPlugin
                     RepairService, FoodService,
                     RotationService, BossHandlerService,
                     StuckDetectionService, DialogHandlerService,
+                    DutyAutomationService,
                     AutoDutyPathService, ConflictPluginService, RunHistoryService,
                     AutoDutyIPC, AutomatonIPC, YesAlreadyIPC,
                     Condition, ClientState, CommandManager);

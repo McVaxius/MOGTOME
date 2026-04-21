@@ -27,7 +27,7 @@ public class ConfigWindow : Window, IDisposable
 
     // Dependency check cache
     private DateTime lastDepCheck = DateTime.MinValue;
-    private bool depRsr, depBmr, depVbm, depVnav, depTextAdv, depCutsceneSkip, depAutoDuty, depSimpleTweaks, depLifestream;
+    private bool depRsr, depBmr, depVbm, depVnav, depTextAdv, depCutsceneSkip, depAutoDuty, depAds, depSimpleTweaks, depLifestream;
     private bool depCustomRes, depChillframes, depKrangler, depDps, depTtsl;
     private bool depTwistOfFayteInstalled, depTwistOfFayteEnabled;
     private bool allDepsGreen = false;
@@ -43,6 +43,7 @@ public class ConfigWindow : Window, IDisposable
         { "TextAdvance", "https://raw.githubusercontent.com/NightmareXIV/MyDalamudPlugins/main/pluginmaster.json" },
         { "SkipCutscene", "https://raw.githubusercontent.com/a08381/Dalamud.SkipCutscene/dist/repo.json" },
         { "AutoDuty", "https://puni.sh/api/repository/erdelf" },
+        { "ADS", "https://aethertek.io/x.json" },
         { "SimpleTweaks", "its in the main dalamud repo. what are you doing :D" },
         { "CustomResolution", "https://raw.githubusercontent.com/0x0ade/CustomResolution/main/pluginmaster.json" },
     };
@@ -209,6 +210,7 @@ public class ConfigWindow : Window, IDisposable
             depTextAdv = false;
             depCutsceneSkip = false;
             depAutoDuty = false;
+            depAds = false;
             depSimpleTweaks = false;
             depLifestream = false;
             depCustomRes = false;
@@ -235,6 +237,7 @@ public class ConfigWindow : Window, IDisposable
                     case "TextAdvance": depTextAdv = true; break;
                     case "SkipCutscene": depCutsceneSkip = true; break;
                     case "AutoDuty": depAutoDuty = true; break;
+                    case "ADS": depAds = true; break;
                     case "SimpleTweaksPlugin": depSimpleTweaks = true; break;
                     case "Lifestream": depLifestream = true; break;
                     case "ChillFrames": depChillframes = true; break;
@@ -255,7 +258,11 @@ public class ConfigWindow : Window, IDisposable
             }
 
             var pathOk = plugin.AutoDutyPathService.PathExists(plugin.Configuration.PraetoriumPathFileName);
-            allDepsGreen = depRsr && (depBmr || depVbm) && !(depBmr && depVbm) && depVnav && depLifestream && depTextAdv && depCutsceneSkip && depAutoDuty && depSimpleTweaks && pathOk;
+            var useAdsExperimental = plugin.Configuration.UseAdsExperimental;
+            var backendReady = useAdsExperimental
+                ? depAds
+                : depAutoDuty && pathOk;
+            allDepsGreen = depRsr && (depBmr || depVbm) && !(depBmr && depVbm) && depVnav && depLifestream && depTextAdv && depCutsceneSkip && depSimpleTweaks && backendReady;
         }
         catch (Exception ex)
         {
@@ -265,6 +272,18 @@ public class ConfigWindow : Window, IDisposable
 
     private void DrawDependencyCheckTab(Configuration config)
     {
+        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Backend Mode");
+        var useAdsExperimental = config.UseAdsExperimental;
+        if (ImGui.Checkbox("ADS (TESTING VERY EXPERIMENTAL)", ref useAdsExperimental))
+        {
+            ToggleAdsExperimental(useAdsExperimental);
+            config = plugin.Configuration;
+        }
+        ImGui.TextDisabled(config.UseAdsExperimental
+            ? "ADS required. AutoDuty path install no longer blocks tabs."
+            : "AutoDuty required. ADS optional and disabled.");
+        ImGui.Spacing();
+
         ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Required Plugins");
         if (!allDepsGreen)
         {
@@ -303,8 +322,10 @@ public class ConfigWindow : Window, IDisposable
         // SkipCutscene
         DrawDepLine("SkipCutscene", depCutsceneSkip, depCutsceneSkip ? "Installed" : "NOT FOUND", "SkipCutscene");
 
-        // AutoDuty
-        DrawDepLine("AutoDuty", depAutoDuty, depAutoDuty ? "Installed" : "NOT FOUND", "AutoDuty");
+        if (config.UseAdsExperimental)
+            DrawDepLine("ADS", depAds, depAds ? "Installed" : "NOT FOUND", "ADS");
+        else
+            DrawDepLine("AutoDuty", depAutoDuty, depAutoDuty ? "Installed" : "NOT FOUND", "AutoDuty");
 
         // SimpleTweaks
         DrawDepLine("SimpleTweaks", depSimpleTweaks, depSimpleTweaks ? "Installed" : "NOT FOUND", "SimpleTweaks");
@@ -340,27 +361,32 @@ public class ConfigWindow : Window, IDisposable
             });
 
         ImGui.Spacing();
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "AutoDuty Path");
-        ImGui.Separator();
+        if (!config.UseAdsExperimental)
+        {
+            ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "AutoDuty Path");
+            ImGui.Separator();
 
-        var pathDisplayName = plugin.AutoDutyPathService.GetPraetoriumPathDisplayName(config.PraetoriumPathFileName);
-        var pathExists = plugin.AutoDutyPathService.PathExists(config.PraetoriumPathFileName);
-        ImGui.TextColored(
-            pathExists ? new Vector4(0, 1, 0, 1) : new Vector4(1, 0, 0, 1),
-            pathExists ? $"Praetorium path: INSTALLED ({pathDisplayName})" : $"Praetorium path: NOT FOUND ({pathDisplayName})");
+            var pathDisplayName = plugin.AutoDutyPathService.GetPraetoriumPathDisplayName(config.PraetoriumPathFileName);
+            var pathExists = plugin.AutoDutyPathService.PathExists(config.PraetoriumPathFileName);
+            ImGui.TextColored(
+                pathExists ? new Vector4(0, 1, 0, 1) : new Vector4(1, 0, 0, 1),
+                pathExists ? $"Praetorium path: INSTALLED ({pathDisplayName})" : $"Praetorium path: NOT FOUND ({pathDisplayName})");
 
-//        if (!pathExists)
-//        {
             if (ImGui.Button("Install Bundled Praetorium Paths"))
             {
                 _ = Task.Run(async () => await plugin.AutoDutyPathService.EnsurePathExists());
             }
             ImGui.TextDisabled("This copies the bundled W2W Praetorium path files from MOGTOME's data folder into AutoDuty's paths folder.");
-//       }
-
-        ImGui.Spacing();
-		//re-add back if reflect becomes a fool's errand
-        //ImGui.TextWrapped("BEFORE starting the M.O.G.T.O.M.E. plugin, Open AutoDuty, pick Regular, pick Praetorium, then pick the \"(1044) The Praetorium - W2W 20250716 phecda\" path. This will save the path for your job and you shouldn't have to do it again in the future.  Even so, always check this before starting your runs.");
+            ImGui.Spacing();
+        }
+        else
+        {
+            ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "ADS Mode Notes");
+            ImGui.Separator();
+            ImGui.TextWrapped("ADS mode disables AutoDuty immediately and again on Start. Queueing uses ADS ownership plus direct duty finder registration.");
+            ImGui.TextWrapped("Repair/inn/leave switch to /ads npcrepair, /ads selfrepair, /ads enterinn, and /ads leave.");
+            ImGui.Spacing();
+        }
     }
 
     private static void DrawDepLine(string name, bool ok, string detail, string? repoKey)
@@ -429,6 +455,19 @@ public class ConfigWindow : Window, IDisposable
         }
 
         ImGui.TextDisabled("MOGTOME tries /xldisableplugin TwistOfFayte when you start it, but it no longer blocks startup.");
+    }
+
+    private void ToggleAdsExperimental(bool enable)
+    {
+        plugin.Configuration.UseAdsExperimental = enable;
+        plugin.ConfigManager.SaveCurrentAccount();
+        plugin.ConfigManager.NotifyConfigurationChanged(force: true);
+        lastDepCheck = DateTime.MinValue;
+
+        if (!enable)
+            return;
+
+        _ = Task.Run(async () => await plugin.DutyAutomationService.EnsureAutoDutyDisabledForAdsAsync("ADS config toggle"));
     }
 
     private void QueueWindowPosition(Vector2 position)
@@ -530,34 +569,41 @@ public class ConfigWindow : Window, IDisposable
         }
         ImGui.TextDisabled("Current Praetorium run count. Set to 0 for first run of the day.");
 
-        var selectedPraetoriumPath = plugin.AutoDutyPathService.ResolvePraetoriumPathFileName(config.PraetoriumPathFileName);
-        if (!string.Equals(selectedPraetoriumPath, config.PraetoriumPathFileName, StringComparison.OrdinalIgnoreCase))
+        if (!config.UseAdsExperimental)
         {
-            config.PraetoriumPathFileName = selectedPraetoriumPath;
-            changed = true;
-        }
-
-        var selectedPraetoriumPathLabel = plugin.AutoDutyPathService.GetPraetoriumPathDisplayName(selectedPraetoriumPath);
-        if (ImGui.BeginCombo("Praetorium AutoDuty Path", selectedPraetoriumPathLabel))
-        {
-            foreach (var option in plugin.AutoDutyPathService.GetPraetoriumPathOptions())
+            var selectedPraetoriumPath = plugin.AutoDutyPathService.ResolvePraetoriumPathFileName(config.PraetoriumPathFileName);
+            if (!string.Equals(selectedPraetoriumPath, config.PraetoriumPathFileName, StringComparison.OrdinalIgnoreCase))
             {
-                var isSelected = string.Equals(option.FileName, selectedPraetoriumPath, StringComparison.OrdinalIgnoreCase);
-                if (ImGui.Selectable(option.DisplayName, isSelected))
-                {
-                    config.PraetoriumPathFileName = option.FileName;
-                    selectedPraetoriumPath = option.FileName;
-                    selectedPraetoriumPathLabel = option.DisplayName;
-                    changed = true;
-                }
-
-                if (isSelected)
-                    ImGui.SetItemDefaultFocus();
+                config.PraetoriumPathFileName = selectedPraetoriumPath;
+                changed = true;
             }
 
-            ImGui.EndCombo();
+            var selectedPraetoriumPathLabel = plugin.AutoDutyPathService.GetPraetoriumPathDisplayName(selectedPraetoriumPath);
+            if (ImGui.BeginCombo("Praetorium AutoDuty Path", selectedPraetoriumPathLabel))
+            {
+                foreach (var option in plugin.AutoDutyPathService.GetPraetoriumPathOptions())
+                {
+                    var isSelected = string.Equals(option.FileName, selectedPraetoriumPath, StringComparison.OrdinalIgnoreCase);
+                    if (ImGui.Selectable(option.DisplayName, isSelected))
+                    {
+                        config.PraetoriumPathFileName = option.FileName;
+                        selectedPraetoriumPath = option.FileName;
+                        selectedPraetoriumPathLabel = option.DisplayName;
+                        changed = true;
+                    }
+
+                    if (isSelected)
+                        ImGui.SetItemDefaultFocus();
+                }
+
+                ImGui.EndCombo();
+            }
+            ImGui.TextDisabled("Bundled with MOGTOME and copied into AutoDuty's paths folder on start/install. Default: phecda.");
         }
-        ImGui.TextDisabled("Bundled with MOGTOME and copied into AutoDuty's paths folder on start/install. Default: phecda.");
+        else
+        {
+            ImGui.TextDisabled("ADS mode ignores AutoDuty path selection.");
+        }
 
         var praeThreshold = config.PraetoriumThreshold;
         if (ImGui.InputInt("Praetorium Threshold", ref praeThreshold))
@@ -795,12 +841,27 @@ public class ConfigWindow : Window, IDisposable
 
         ImGui.Spacing();
 
+        if (config.UseAdsExperimental)
+        {
+            var useAdsSelfRepair = config.UseAdsSelfRepair;
+            if (ImGui.Checkbox("Use self repair", ref useAdsSelfRepair))
+            {
+                config.UseAdsSelfRepair = useAdsSelfRepair;
+                changed = true;
+            }
+
+            ImGui.TextDisabled("Checked = /ads selfrepair. Unchecked = /ads npcrepair.");
+            ImGui.Spacing();
+        }
+
         // Repair method info
         ImGui.TextColored(new Vector4(0.7f, 0.7f, 0.7f, 1.0f), "Repair Behavior:");
         ImGui.TextWrapped("- Leader: Repairs automatically between duties when threshold is met");
         ImGui.TextWrapped("- Non-leader: Repairs independently after 1 second outside duty");
         ImGui.TextWrapped("- Solo: Treated as leader automatically");
-        ImGui.TextWrapped("- Repair METHOD (self/NPC) is configured in AutoDuty settings");
+        ImGui.TextWrapped(config.UseAdsExperimental
+            ? $"- ADS mode: currently uses {(config.UseAdsSelfRepair ? "/ads selfrepair" : "/ads npcrepair")} and /ads enterinn"
+            : "- AutoDuty mode: repair METHOD (self/NPC) is configured in AutoDuty settings");
         
         ImGui.Spacing();
         
@@ -808,6 +869,8 @@ public class ConfigWindow : Window, IDisposable
         ImGui.TextColored(new Vector4(0.7f, 0.7f, 0.7f, 1.0f), "Status:");
         ImGui.Text($"  Current Threshold: {config.RepairThreshold}%");
         ImGui.Text($"  Auto-Repair: {(config.RepairThreshold > 0 ? "Enabled" : "Disabled")}");
+        if (config.UseAdsExperimental)
+            ImGui.Text($"  ADS Repair Method: {(config.UseAdsSelfRepair ? "Self" : "NPC")}");
 
         return changed;
     }

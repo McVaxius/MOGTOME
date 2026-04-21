@@ -201,6 +201,21 @@ public class MainWindow : Window, IDisposable
             ImGui.SetTooltip("One-time same-world leader detection. Use only outside duty after the full party is visible.");
         }
 
+        ImGui.Spacing();
+        ImGui.TextColored(new Vector4(0.7f, 0.85f, 1.0f, 1.0f), "Main Window Settings");
+        var useAdsExperimental = config.UseAdsExperimental;
+        if (ImGui.Checkbox("ADS (TESTING VERY EXPERIMENTAL)", ref useAdsExperimental))
+        {
+            ToggleAdsExperimental(useAdsExperimental);
+        }
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.SetTooltip("Experimental backend swap.\nEnabling immediately sends /xldisableplugin AutoDuty.");
+        }
+        ImGui.TextDisabled(config.UseAdsExperimental
+            ? "ADS mode active. AutoDuty is disabled on toggle and again on start."
+            : "AutoDuty mode active.");
+
         ImGui.Separator();
 
         // Duty Info
@@ -231,7 +246,7 @@ public class MainWindow : Window, IDisposable
         ImGui.Separator();
 
         // Debug Section (only visible when debug mode is enabled via /mog debug)
-        if (config.DebugModeEnabled)
+        if (config.DebugModeEnabled && !config.UseAdsExperimental)
         {
             ImGui.TextColored(new Vector4(1.0f, 0.5f, 0.0f, 1.0f), "Debug Tools");
             ImGui.Indent();
@@ -522,6 +537,12 @@ public class MainWindow : Window, IDisposable
             ImGui.Unindent();
             ImGui.Separator();
         }
+        else if (config.DebugModeEnabled && config.UseAdsExperimental)
+        {
+            ImGui.TextColored(new Vector4(1.0f, 0.5f, 0.0f, 1.0f), "Debug Tools");
+            ImGui.TextDisabled("ADS mode active. AutoDuty reflection/path debug tools are hidden.");
+            ImGui.Separator();
+        }
 
         // Party Info
         ImGui.Text("Party");
@@ -542,9 +563,9 @@ public class MainWindow : Window, IDisposable
         DrawStatusLine("Potions", config.PotionItemId > 0 && state.PotionsAvailable, FormatConsumableLabel(config.PotionItemName, config.PotionUseHighQuality));
         DrawStatusLine("YesAlready", plugin.YesAlreadyIPC.IsPaused, "Paused by MOGTOME");
         DrawStatusLine(
-            "AutoDuty Path",
-            plugin.AutoDutyPathService.PathExists(config.PraetoriumPathFileName),
-            plugin.AutoDutyPathService.GetPraetoriumPathDisplayName(config.PraetoriumPathFileName));
+            config.UseAdsExperimental ? "ADS Mode" : "AutoDuty Path",
+            plugin.DutyAutomationService.GetSubsystemHealthy(),
+            plugin.DutyAutomationService.GetSubsystemStatusLabel());
         
         ImGui.Unindent();
         ImGui.Separator();
@@ -570,12 +591,24 @@ public class MainWindow : Window, IDisposable
             ImGui.Unindent();
             ImGui.Separator();
         }
-        DrawStatusLine("Queue", true, "AutoDuty");
+        DrawStatusLine("Queue", true, plugin.DutyAutomationService.GetQueueStatusLabel());
         DrawStatusLine("Bailout", true, $"{config.BailoutTimeout}s");
 
         ImGui.Unindent();
 
         FinalizePendingWindowPlacement();
+    }
+
+    private void ToggleAdsExperimental(bool enable)
+    {
+        plugin.Configuration.UseAdsExperimental = enable;
+        plugin.ConfigManager.SaveCurrentAccount();
+        plugin.ConfigManager.NotifyConfigurationChanged(force: true);
+
+        if (!enable)
+            return;
+
+        _ = Task.Run(async () => await plugin.DutyAutomationService.EnsureAutoDutyDisabledForAdsAsync("ADS toggle"));
     }
 
     private void QueueWindowPosition(Vector2 position)

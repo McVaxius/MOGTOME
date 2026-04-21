@@ -38,8 +38,9 @@ public class Configuration
     public bool PotionUseHighQuality { get; set; } = false;
     public int PotionTarget { get; set; } = 0;
 
-    // --- Repair Settings (handled by AutoDuty) ---
+    // --- Repair Settings (handled by duty automation backend) ---
     public int RepairThreshold { get; set; } = 25;
+    public bool UseAdsSelfRepair { get; set; } = false;
 
     // --- Debug Settings ---
     public int DebugCounter { get; set; } = 0;
@@ -48,6 +49,7 @@ public class Configuration
     // --- Dependency Check ---
     public bool AutoDutyPathInstalled { get; set; } = false;
     public string PraetoriumPathFileName { get; set; } = "(1044) The Praetorium - W2W 20250716 phecda.json";
+    public bool UseAdsExperimental { get; set; } = false;
 
     // --- Stats ---
     // Global stats (kept for compatibility)
