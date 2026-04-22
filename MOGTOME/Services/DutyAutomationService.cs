@@ -46,7 +46,7 @@ public sealed class DutyAutomationService
     private const int WaitingForDutyConditionIndex = 55;
     private const int WaitingForDutyFinderConditionIndex = 59;
 
-    private enum AdsQueuedDuty
+    private enum SelectedMogtomeDuty
     {
         Unknown,
         Praetorium,
@@ -69,7 +69,7 @@ public sealed class DutyAutomationService
     private bool adsQueueFailurePending = false;
     private string adsQueueFailureReason = string.Empty;
     private DateTime adsQueueFailureCooldownUntilUtc = DateTime.MinValue;
-    private AdsQueuedDuty lastAdsQueuedDuty = AdsQueuedDuty.Unknown;
+    private SelectedMogtomeDuty lastConfirmedSelectedDuty = SelectedMogtomeDuty.Unknown;
     private static readonly PraetoriumUnlockDefinition[] PraetoriumOptionalUnlocks =
     [
         new("Sunken Temple of Qarn", [764]),
@@ -190,12 +190,12 @@ public sealed class DutyAutomationService
             return;
         }
 
-        log.Information($"[MOGTOME][ADS] Claiming outside ownership, then queueing {dutyName} through AgentContentsFinder");
+        log.Information($"[MOGTOME][DutyQueue] Claiming backend outside ownership, then queueing {dutyName} through AgentContentsFinder");
         commandManager.ProcessCommand(AdsStartOutsideCommand);
         QueueDutyViaContentsFinder(
             GetContentFinderConditionId(isPraetorium),
             dutyName,
-            isPraetorium ? AdsQueuedDuty.Praetorium : AdsQueuedDuty.Decumana);
+            isPraetorium ? SelectedMogtomeDuty.Praetorium : SelectedMogtomeDuty.Decumana);
     }
 
     public void StartDutyInside()
@@ -316,7 +316,7 @@ public sealed class DutyAutomationService
         if (string.Equals(text, NoDutySelectedErrorText, StringComparison.Ordinal))
         {
             if (Interlocked.Exchange(ref lastNoDutySelectedLoggedOperationId, operationId) != operationId)
-                log.Warning($"[MOGTOME][ADS] Queue selection failed from chat error; aborting operation {operationId}");
+                log.Warning($"[MOGTOME][DutyQueue] Queue selection failed from chat error; aborting operation {operationId}");
 
             MarkAdsQueueAttemptFailed(operationId, "No duty selected chat error", invalidateOperation: true);
             return;
@@ -324,7 +324,7 @@ public sealed class DutyAutomationService
 
         if (Interlocked.Exchange(ref lastPartyRequirementsLoggedOperationId, operationId) != operationId)
         {
-            log.Information($"[MOGTOME][ADS] Party requirements chat evidence during operation {operationId}; not blocking for cross-world compatibility: {PartyRequirementsErrorText}");
+            log.Information($"[MOGTOME][DutyQueue] Party requirements chat evidence during operation {operationId}; not blocking for cross-world compatibility: {PartyRequirementsErrorText}");
         }
     }
 
@@ -365,6 +365,27 @@ public sealed class DutyAutomationService
         }
     }
 
+    public void ConfirmQueueRegistration(bool isPraetorium)
+    {
+        if (!UseAdsExperimental)
+            return;
+
+        var targetDuty = isPraetorium ? SelectedMogtomeDuty.Praetorium : SelectedMogtomeDuty.Decumana;
+        var previousDuty = SelectedMogtomeDuty.Unknown;
+        lock (adsQueueStateLock)
+        {
+            previousDuty = lastConfirmedSelectedDuty;
+            lastConfirmedSelectedDuty = targetDuty;
+            activeAdsQueueOperationId = 0;
+            adsQueueFailurePending = false;
+            adsQueueFailureReason = string.Empty;
+            adsQueueFailureCooldownUntilUtc = DateTime.MinValue;
+        }
+
+        if (previousDuty != targetDuty)
+            log.Debug($"[MOGTOME][DutyQueue] Engine confirmed queue registration; last selected duty={targetDuty}");
+    }
+
     public void InvalidateAdsQueueOperations(string reason)
     {
         if (!UseAdsExperimental)
@@ -379,9 +400,9 @@ public sealed class DutyAutomationService
         }
 
         if (invalidatedOperationId != 0)
-            log.Information($"[MOGTOME][ADS] Invalidated queued ContentsFinder callbacks for operation {invalidatedOperationId} ({reason})");
+            log.Information($"[MOGTOME][DutyQueue] Invalidated queued ContentsFinder callbacks for operation {invalidatedOperationId} ({reason})");
         else
-            log.Debug($"[MOGTOME][ADS] Queue callback invalidation requested with no active operation ({reason})");
+            log.Debug($"[MOGTOME][DutyQueue] Queue callback invalidation requested with no active operation ({reason})");
     }
 
     public PraetoriumSelectionInfo GetPraetoriumSelectionInfo()
@@ -411,10 +432,10 @@ public sealed class DutyAutomationService
             ? string.Join(", ", missingDuties)
             : "none";
 
-        log.Information($"[MOGTOME][ADS] Praetorium callback test -> {selectionInfo.CallbackCommand} (missing optional unlocks: {selectionInfo.MissingUnlockCount})");
+        log.Information($"[MOGTOME][DutyQueue] Praetorium callback test -> {selectionInfo.CallbackCommand} (missing optional unlocks: {selectionInfo.MissingUnlockCount})");
         foreach (var unlock in selectionInfo.Unlocks)
         {
-            log.Information($"[MOGTOME][ADS] Praetorium unlock check: {unlock.DutyName} -> {(unlock.IsUnlocked ? "unlocked" : "missing")} (quests: {unlock.QuestSummary})");
+            log.Information($"[MOGTOME][DutyQueue] Praetorium unlock check: {unlock.DutyName} -> {(unlock.IsUnlocked ? "unlocked" : "missing")} (quests: {unlock.QuestSummary})");
         }
 
         Plugin.ChatGui.Print($"[MOGTOME] Praetorium callback test: {selectionInfo.CallbackCommand}");
@@ -448,26 +469,26 @@ public sealed class DutyAutomationService
             var agent = AgentContentsFinder.Instance();
             if (agent == null)
             {
-                log.Error($"[MOGTOME][ADS] AgentContentsFinder is null while trying to queue {dutyName}");
+                log.Error($"[MOGTOME][DutyQueue] AgentContentsFinder is null while trying to queue {dutyName}");
                 return false;
             }
 
             agent->OpenRegularDuty(contentFinderConditionId);
-            log.Information($"[MOGTOME][ADS] Opened duty finder for {dutyName} (CFC {contentFinderConditionId})");
+            log.Information($"[MOGTOME][DutyQueue] Opened duty finder for {dutyName} (CFC {contentFinderConditionId})");
             return true;
         }
         catch (Exception ex)
         {
-            log.Error($"[MOGTOME][ADS] Failed to open duty finder for {dutyName}: {ex.Message}");
+            log.Error($"[MOGTOME][DutyQueue] Failed to open duty finder for {dutyName}: {ex.Message}");
             return false;
         }
     }
 
-    private void QueueDutyViaContentsFinder(uint contentFinderConditionId, string dutyName, AdsQueuedDuty targetDuty)
+    private void QueueDutyViaContentsFinder(uint contentFinderConditionId, string dutyName, SelectedMogtomeDuty targetDuty)
     {
         if (IsAdsQueueRetryCooldownActive(out var cooldownRemainingSeconds, out var cooldownReason))
         {
-            log.Information($"[MOGTOME][ADS] Queue attempt for {dutyName} held for ADS callback cooldown ({Math.Ceiling(cooldownRemainingSeconds):F0}s remaining; {cooldownReason})");
+            log.Information($"[MOGTOME][DutyQueue] Queue attempt for {dutyName} held for ContentsFinder callback cooldown ({Math.Ceiling(cooldownRemainingSeconds):F0}s remaining; {cooldownReason})");
             return;
         }
 
@@ -478,69 +499,80 @@ public sealed class DutyAutomationService
         _ = Task.Run(() => ExecuteAdsQueueSequenceAsync(operationId, targetDuty, dutyName));
     }
 
-    private async Task ExecuteAdsQueueSequenceAsync(int operationId, AdsQueuedDuty targetDuty, string dutyName)
+    private async Task ExecuteAdsQueueSequenceAsync(int operationId, SelectedMogtomeDuty targetDuty, string dutyName)
     {
         try
         {
-            if (!await WaitForContentsFinderStableVisibleAsync(operationId, dutyName, "selection start", AdsVisiblePollAttempts).ConfigureAwait(false))
+            if (!await WaitForContentsFinderStableVisibleAsync(operationId, dutyName, "queue start", AdsVisiblePollAttempts).ConfigureAwait(false))
             {
-                log.Warning($"[MOGTOME][ADS] Operation {operationId}: ContentsFinder never became stable-visible while queueing {dutyName}; queue watchdog will retry");
+                log.Warning($"[MOGTOME][DutyQueue] Operation {operationId}: ContentsFinder never became stable-visible while queueing {dutyName}; queue watchdog will retry");
                 return;
             }
 
-            log.Information($"[MOGTOME][ADS] Operation {operationId}: ContentsFinder stable-visible for {dutyName}; running {GetSequenceLabel(targetDuty)}");
+            var selectionRequired = IsDutySelectionRequired(targetDuty);
+            log.Information($"[MOGTOME][DutyQueue] Operation {operationId}: ContentsFinder stable-visible for {dutyName}; running {GetSequenceLabel(targetDuty, selectionRequired)}");
             await Task.Delay(AdsInitialSettleDelayMs).ConfigureAwait(false);
 
             if (!IsCurrentAdsQueueOperation(operationId))
                 return;
 
-            log.Information($"[MOGTOME][ADS] Operation {operationId}: running {GetSequenceLabel(targetDuty)}");
-            var selectionCallbackIndex = GetFinalSelectionCallbackIndex(targetDuty);
-            if (!await RunAdsDutySelectionSequenceAsync(operationId, targetDuty, dutyName).ConfigureAwait(false))
-            {
-                log.Warning($"[MOGTOME][ADS] Operation {operationId}: {dutyName} selection sequence aborted; queue watchdog will retry");
-                return;
-            }
+            var selectionDebugText = selectionRequired
+                ? $", selectionCallback=ContentsFinder true 3 {GetFinalSelectionCallbackIndex(targetDuty)}"
+                : ", selected duty already confirmed";
 
-            lastAdsQueuedDuty = targetDuty;
+            if (selectionRequired)
+            {
+                log.Information($"[MOGTOME][DutyQueue] Operation {operationId}: target duty changed; selecting {GetShortDutyName(targetDuty)} before Join");
+                if (!await RunAdsDutySelectionSequenceAsync(operationId, targetDuty, dutyName).ConfigureAwait(false))
+                {
+                    log.Warning($"[MOGTOME][DutyQueue] Operation {operationId}: {dutyName} selection sequence aborted; queue watchdog will retry");
+                    return;
+                }
+            }
+            else
+            {
+                log.Information($"[MOGTOME][DutyQueue] Operation {operationId}: opening ContentsFinder for same-duty requeue; firing Join only");
+            }
 
             if (!IsCurrentAdsQueueOperation(operationId))
                 return;
 
             if (!await WaitForContentsFinderStableVisibleAsync(operationId, dutyName, "Join", AdsStableVisiblePollAttempts).ConfigureAwait(false))
             {
-                log.Warning($"[MOGTOME][ADS] Operation {operationId}: ContentsFinder was not stable-visible before Join for {dutyName}; queue watchdog will retry");
+                log.Warning($"[MOGTOME][DutyQueue] Operation {operationId}: ContentsFinder was not stable-visible before Join for {dutyName}; queue watchdog will retry");
                 return;
             }
 
             if (!IsCurrentAdsQueueOperation(operationId))
                 return;
 
-            log.Information($"[MOGTOME][ADS] Operation {operationId}: firing single Join callback for {dutyName} after staged selection");
+            log.Information($"[MOGTOME][DutyQueue] Operation {operationId}: firing Join callback for {dutyName}");
             if (!GameHelpers.TryFireAdsAddonCallback(operationId, "ContentsFinder", true, 12, 0))
             {
-                log.Warning($"[MOGTOME][ADS] Operation {operationId}: Join callback failed; selected-duty readback unavailable in this SDK. Target={dutyName}, selectionCallback=ContentsFinder true 3 {selectionCallbackIndex}");
+                log.Warning($"[MOGTOME][DutyQueue] Operation {operationId}: Join callback failed; selected-duty readback unavailable in this SDK. Target={dutyName}{selectionDebugText}");
                 MarkAdsQueueAttemptFailed(operationId, "Join callback could not be fired", invalidateOperation: true);
                 return;
             }
 
-            log.Information($"[MOGTOME][ADS] Operation {operationId}: Join callback sent; waiting for queue registration");
+            log.Information($"[MOGTOME][DutyQueue] Operation {operationId}: Join callback sent; waiting for queue registration");
             await Task.Delay(AdsPostJoinDelayMs).ConfigureAwait(false);
+
+            if (!IsCurrentAdsQueueOperation(operationId))
+                return;
 
             if (IsQueueRegistrationActive() || GameHelpers.IsAddonVisible("ContentsFinderConfirm"))
             {
-                ClearActiveAdsQueueOperation(operationId);
-                ClearAdsQueueFailure();
-                log.Information($"[MOGTOME][ADS] Operation {operationId}: queue registration confirmed for {dutyName}");
+                MarkQueueRegistrationConfirmed(operationId, targetDuty);
+                log.Information($"[MOGTOME][DutyQueue] Operation {operationId}: queue registration confirmed for {dutyName}; last selected duty={targetDuty}");
                 return;
             }
 
-            log.Warning($"[MOGTOME][ADS] Operation {operationId}: Join callback did not confirm queue registration; selected-duty readback unavailable in this SDK. Target={dutyName}, selectionCallback=ContentsFinder true 3 {selectionCallbackIndex}");
+            log.Warning($"[MOGTOME][DutyQueue] Operation {operationId}: Join callback did not confirm queue registration; selected-duty readback unavailable in this SDK. Target={dutyName}{selectionDebugText}");
             MarkAdsQueueAttemptFailed(operationId, "Join callback did not produce queue registration", invalidateOperation: true);
         }
         catch (Exception ex)
         {
-            log.Error($"[MOGTOME][ADS] Operation {operationId}: ADS queue sequence failed with exception: {ex.Message}");
+            log.Error($"[MOGTOME][DutyQueue] Operation {operationId}: ContentsFinder queue sequence failed with exception: {ex.Message}");
             MarkAdsQueueAttemptFailed(operationId, $"queue sequence exception: {ex.Message}", invalidateOperation: true);
         }
     }
@@ -558,7 +590,7 @@ public sealed class DutyAutomationService
                 visiblePolls++;
                 if (visiblePolls >= AdsStableVisiblePollsRequired)
                 {
-                    log.Information($"[MOGTOME][ADS] Operation {operationId}: ContentsFinder stable-visible before {gateName} for {dutyName} ({visiblePolls} consecutive polls)");
+                    log.Information($"[MOGTOME][DutyQueue] Operation {operationId}: ContentsFinder stable-visible before {gateName} for {dutyName} ({visiblePolls} consecutive polls)");
                     return true;
                 }
             }
@@ -567,22 +599,23 @@ public sealed class DutyAutomationService
                 visiblePolls = 0;
             }
 
-            var delayMs = gateName == "selection start" ? AdsVisiblePollDelayMs : AdsStableVisiblePollDelayMs;
+            var delayMs = gateName == "queue start" ? AdsVisiblePollDelayMs : AdsStableVisiblePollDelayMs;
             await Task.Delay(delayMs).ConfigureAwait(false);
         }
 
-        log.Warning($"[MOGTOME][ADS] Operation {operationId}: timed out waiting for stable ContentsFinder before {gateName} while queueing {dutyName}");
+        log.Warning($"[MOGTOME][DutyQueue] Operation {operationId}: timed out waiting for stable ContentsFinder before {gateName} while queueing {dutyName}");
         return false;
     }
 
-    private async Task<bool> RunAdsDutySelectionSequenceAsync(int operationId, AdsQueuedDuty targetDuty, string dutyName)
+    private async Task<bool> RunAdsDutySelectionSequenceAsync(int operationId, SelectedMogtomeDuty targetDuty, string dutyName)
     {
         var praetoriumSelectionIndex = GetPraetoriumSelectionInfo().SelectionIndex;
+        var previousDuty = GetLastConfirmedSelectedDuty();
 
         switch (targetDuty)
         {
-            case AdsQueuedDuty.Praetorium:
-                if (lastAdsQueuedDuty == AdsQueuedDuty.Decumana)
+            case SelectedMogtomeDuty.Praetorium:
+                if (previousDuty == SelectedMogtomeDuty.Decumana)
                 {
                     if (!await FireAdsContentsFinderStepAsync(operationId, dutyName, "switching to Decumana tab to clear prior selection", 1, 4).ConfigureAwait(false) ||
                         !await FireAdsContentsFinderStepAsync(operationId, dutyName, "selecting Decumana to clear prior selection", 3, 4).ConfigureAwait(false) ||
@@ -595,7 +628,7 @@ public sealed class DutyAutomationService
                 return await FireAdsContentsFinderStepAsync(operationId, dutyName, "switching to Praetorium tab", 1, 1).ConfigureAwait(false) &&
                        await FireAdsContentsFinderStepAsync(operationId, dutyName, "selecting Praetorium", 3, praetoriumSelectionIndex).ConfigureAwait(false);
 
-            case AdsQueuedDuty.Decumana:
+            case SelectedMogtomeDuty.Decumana:
                 return await FireAdsContentsFinderStepAsync(operationId, dutyName, "switching to Praetorium tab for Decumana pre-clear", 1, 1).ConfigureAwait(false) &&
                        await FireAdsContentsFinderStepAsync(operationId, dutyName, "selecting Praetorium for Decumana pre-clear", 3, praetoriumSelectionIndex).ConfigureAwait(false) &&
                        await FireAdsContentsFinderStepAsync(operationId, dutyName, "unselecting Praetorium before Decumana", 3, praetoriumSelectionIndex).ConfigureAwait(false) &&
@@ -614,11 +647,11 @@ public sealed class DutyAutomationService
 
         if (!await WaitForContentsFinderStableVisibleAsync(operationId, dutyName, stepName, AdsStableVisiblePollAttempts).ConfigureAwait(false))
         {
-            log.Warning($"[MOGTOME][ADS] Operation {operationId}: ContentsFinder was not stable before {stepName} for {dutyName}");
+            log.Warning($"[MOGTOME][DutyQueue] Operation {operationId}: ContentsFinder was not stable before {stepName} for {dutyName}");
             return false;
         }
 
-        log.Information($"[MOGTOME][ADS] Operation {operationId}: {stepName} for {dutyName} via ContentsFinder true {arg1} {arg2}");
+        log.Information($"[MOGTOME][DutyQueue] Operation {operationId}: {stepName} for {dutyName} via ContentsFinder true {arg1} {arg2}");
         if (!GameHelpers.TryFireAdsAddonCallback(operationId, "ContentsFinder", true, arg1, arg2))
         {
             MarkAdsQueueAttemptFailed(operationId, $"selection callback failed: ContentsFinder true {arg1} {arg2}", invalidateOperation: true);
@@ -630,7 +663,7 @@ public sealed class DutyAutomationService
         return IsCurrentAdsQueueOperation(operationId);
     }
 
-    private int BeginAdsQueueOperation(AdsQueuedDuty targetDuty, string dutyName)
+    private int BeginAdsQueueOperation(SelectedMogtomeDuty targetDuty, string dutyName)
     {
         var operationId = Interlocked.Increment(ref adsQueueOperationId);
         lock (adsQueueStateLock)
@@ -641,7 +674,7 @@ public sealed class DutyAutomationService
             adsQueueFailureCooldownUntilUtc = DateTime.MinValue;
         }
 
-        log.Information($"[MOGTOME][ADS] Operation {operationId}: starting queue sequence for {dutyName} ({targetDuty})");
+        log.Information($"[MOGTOME][DutyQueue] Operation {operationId}: starting queue sequence for {dutyName} ({targetDuty})");
         return operationId;
     }
 
@@ -653,17 +686,6 @@ public sealed class DutyAutomationService
     {
         var operationId = Volatile.Read(ref activeAdsQueueOperationId);
         return operationId != 0 && IsCurrentAdsQueueOperation(operationId) ? operationId : 0;
-    }
-
-    private void ClearActiveAdsQueueOperation(int operationId)
-    {
-        lock (adsQueueStateLock)
-        {
-            if (activeAdsQueueOperationId != operationId)
-                return;
-
-            activeAdsQueueOperationId = 0;
-        }
     }
 
     private void MarkAdsQueueAttemptFailed(int operationId, string reason, bool invalidateOperation)
@@ -683,19 +705,55 @@ public sealed class DutyAutomationService
             Interlocked.Increment(ref adsQueueOperationId);
     }
 
-    private static string GetSequenceLabel(AdsQueuedDuty targetDuty)
+    private bool IsDutySelectionRequired(SelectedMogtomeDuty targetDuty)
+    {
+        lock (adsQueueStateLock)
+        {
+            return lastConfirmedSelectedDuty != targetDuty;
+        }
+    }
+
+    private SelectedMogtomeDuty GetLastConfirmedSelectedDuty()
+    {
+        lock (adsQueueStateLock)
+        {
+            return lastConfirmedSelectedDuty;
+        }
+    }
+
+    private void MarkQueueRegistrationConfirmed(int operationId, SelectedMogtomeDuty targetDuty)
+    {
+        lock (adsQueueStateLock)
+        {
+            if (activeAdsQueueOperationId != operationId)
+                return;
+
+            lastConfirmedSelectedDuty = targetDuty;
+            activeAdsQueueOperationId = 0;
+            adsQueueFailurePending = false;
+            adsQueueFailureReason = string.Empty;
+            adsQueueFailureCooldownUntilUtc = DateTime.MinValue;
+        }
+    }
+
+    private static string GetSequenceLabel(SelectedMogtomeDuty targetDuty, bool selectionRequired)
+        => selectionRequired
+            ? $"{GetShortDutyName(targetDuty)} selection sequence"
+            : $"{GetShortDutyName(targetDuty)} Join-only sequence";
+
+    private static string GetShortDutyName(SelectedMogtomeDuty targetDuty)
         => targetDuty switch
         {
-            AdsQueuedDuty.Praetorium => "Praetorium queue sequence",
-            AdsQueuedDuty.Decumana => "Decumana queue sequence",
-            _ => "ADS queue sequence",
+            SelectedMogtomeDuty.Praetorium => "Praetorium",
+            SelectedMogtomeDuty.Decumana => "Decumana",
+            _ => "unknown duty",
         };
 
-    private int GetFinalSelectionCallbackIndex(AdsQueuedDuty targetDuty)
+    private int GetFinalSelectionCallbackIndex(SelectedMogtomeDuty targetDuty)
         => targetDuty switch
         {
-            AdsQueuedDuty.Praetorium => GetPraetoriumSelectionInfo().SelectionIndex,
-            AdsQueuedDuty.Decumana => 4,
+            SelectedMogtomeDuty.Praetorium => GetPraetoriumSelectionInfo().SelectionIndex,
+            SelectedMogtomeDuty.Decumana => 4,
             _ => -1,
         };
 

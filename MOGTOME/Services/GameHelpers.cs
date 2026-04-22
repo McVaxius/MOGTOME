@@ -99,7 +99,7 @@ public static class GameHelpers
             {
                 if (adsOperationId.HasValue)
                 {
-                    Plugin.Log.Warning($"[MOGTOME][ADS] Callback operation {adsOperationId.Value}: addon={addonName}, ptr=0x{addonAddress:X}, visible={visible}, updateState={updateState}, args=[{argsText}], result=failure-not-visible");
+                    Plugin.Log.Warning($"[MOGTOME][DutyQueue] Callback operation {adsOperationId.Value}: addon={addonName}, ptr=0x{addonAddress:X}, visible={visible}, updateState={updateState}, args=[{argsText}], result=failure-not-visible");
                 }
                 else
                 {
@@ -128,7 +128,7 @@ public static class GameHelpers
 
             if (adsOperationId.HasValue)
             {
-                Plugin.Log.Information($"[MOGTOME][ADS] Callback operation {adsOperationId.Value}: addon={addonName}, ptr=0x{addonAddress:X}, visible={visible}, updateState={updateState}, args=[{argsText}], result=success");
+                Plugin.Log.Information($"[MOGTOME][DutyQueue] Callback operation {adsOperationId.Value}: addon={addonName}, ptr=0x{addonAddress:X}, visible={visible}, updateState={updateState}, args=[{argsText}], result=success");
             }
             else
             {
@@ -141,7 +141,7 @@ public static class GameHelpers
         {
             if (adsOperationId.HasValue)
             {
-                Plugin.Log.Error($"[MOGTOME][ADS] Callback operation {adsOperationId.Value}: addon={addonName}, visible=unknown, updateState={updateState}, args=[{argsText}], result=failure-exception, error={ex.Message}");
+                Plugin.Log.Error($"[MOGTOME][DutyQueue] Callback operation {adsOperationId.Value}: addon={addonName}, visible=unknown, updateState={updateState}, args=[{argsText}], result=failure-exception, error={ex.Message}");
             }
             else
             {

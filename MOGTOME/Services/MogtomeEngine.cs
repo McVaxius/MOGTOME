@@ -994,6 +994,7 @@ public class MogtomeEngine
                 ResetQueueRegistrationWatchdog();
             }
 
+            dutyAutomationService.ConfirmQueueRegistration(dutyTracker.ShouldRunPraetorium());
             dutyAutomationService.ClearAdsQueueFailure();
             StatusMessage = $"Queueing: {dutyName} (registered)";
             return;
@@ -1003,12 +1004,12 @@ public class MogtomeEngine
         {
             if (cooldownRemainingSeconds > 0)
             {
-                StatusMessage = $"Queueing: {dutyName} (ADS retry cooldown {Math.Ceiling(cooldownRemainingSeconds):F0}s)";
+                StatusMessage = $"Queueing: {dutyName} (ContentsFinder retry cooldown {Math.Ceiling(cooldownRemainingSeconds):F0}s)";
                 return;
             }
 
             dutyAutomationService.ClearAdsQueueFailure();
-            BeginQueueRecovery($"ADS queue attempt failed: {failureReason}");
+            BeginQueueRecovery($"ContentsFinder queue attempt failed: {failureReason}");
             return;
         }
 
@@ -1294,8 +1295,8 @@ public class MogtomeEngine
         if (dutyAutomationService.IsAdsQueueRetryCooldownActive(out var cooldownRemainingSeconds, out var cooldownReason))
         {
             CurrentState = EngineState.WaitingOutsideDuty;
-            StatusMessage = $"ADS queue cooldown: {dutyName} ({Math.Ceiling(cooldownRemainingSeconds):F0}s)";
-            log.Debug($"[MOGTOME][Engine] Holding {statusPrefix} for {dutyName}; ADS queue cooldown active ({Math.Ceiling(cooldownRemainingSeconds):F0}s remaining; {cooldownReason})");
+            StatusMessage = $"ContentsFinder queue cooldown: {dutyName} ({Math.Ceiling(cooldownRemainingSeconds):F0}s)";
+            log.Debug($"[MOGTOME][Engine] Holding {statusPrefix} for {dutyName}; ContentsFinder queue cooldown active ({Math.Ceiling(cooldownRemainingSeconds):F0}s remaining; {cooldownReason})");
             return false;
         }
 
@@ -1711,7 +1712,7 @@ public class MogtomeEngine
 
         if (state.AutoQueueDisabledForRepair)
         {
-            log.Information($"[MOGTOME][Engine] MOGTOME manual queue already paused for repair before duty exit ({reason})");
+            log.Information($"[MOGTOME][Engine] MOGTOME queue already paused for repair before duty exit ({reason})");
             return;
         }
 
@@ -1719,7 +1720,7 @@ public class MogtomeEngine
             return;
 
         dutyQueue.PauseQueueForRepair();
-        log.Warning($"[MOGTOME][Engine] Leader repair detected before duty exit; MOGTOME manual queue paused before leaving duty ({reason})");
+        log.Warning($"[MOGTOME][Engine] Leader repair detected before duty exit; MOGTOME queue paused before leaving duty ({reason})");
     }
 
     public void ApplyConfiguredPartyLeaderState(string reason = "configured role")

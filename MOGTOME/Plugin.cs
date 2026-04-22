@@ -512,7 +512,7 @@ public sealed class Plugin : IDalamudPlugin
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "[Plugin] ADS queue chat watcher failed");
+            Log.Error(ex, "[Plugin] queue chat watcher failed");
         }
     }
 
