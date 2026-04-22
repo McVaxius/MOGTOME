@@ -44,6 +44,7 @@ public class MogtomeEngine
     private readonly ConflictPluginService conflictPluginService;
     private readonly RunHistoryService runHistoryService; // NEW
     private readonly AutoDutyIPC autoDutyIPC;
+    private readonly AutomatonIPC automatonIPC;
     private readonly YesAlreadyIPC yesAlreadyIPC;
     private readonly ICondition condition;
     private readonly IClientState clientState;
@@ -123,7 +124,7 @@ public class MogtomeEngine
         StuckDetectionService stuckDetection, DialogHandlerService dialogHandler,
         DutyAutomationService dutyAutomationService,
         AutoDutyPathService autoDutyPath, ConflictPluginService conflictPluginService, RunHistoryService runHistoryService, // NEW
-        AutoDutyIPC autoDutyIPC, YesAlreadyIPC yesAlreadyIPC,
+        AutoDutyIPC autoDutyIPC, AutomatonIPC automatonIPC, YesAlreadyIPC yesAlreadyIPC,
         ICondition condition, IClientState clientState, ICommandManager commandManager)
     {
         this.log = log;
@@ -142,6 +143,7 @@ public class MogtomeEngine
         this.conflictPluginService = conflictPluginService;
         this.runHistoryService = runHistoryService; // NEW
         this.autoDutyIPC = autoDutyIPC;
+        this.automatonIPC = automatonIPC;
         this.yesAlreadyIPC = yesAlreadyIPC;
         this.condition = condition;
         this.clientState = clientState;
@@ -149,7 +151,7 @@ public class MogtomeEngine
 
         // Hook duty completed event
         Plugin.DutyStateService.DutyCompleted += OnDutyCompleted;
-        ApplyConfiguredPartyLeaderState(reason: "engine init");
+        ApplyConfiguredPartyLeaderState(applyAutoQueuePolicy: false, reason: "engine init");
     }
 
     public void Dispose()
@@ -162,7 +164,7 @@ public class MogtomeEngine
         if (!IsRunning) return;
         dutyCompleted = true;
         dutyCompletedTime = DateTime.UtcNow;
-        PauseLeaderQueueBeforeExitIfRepairNeeded($"Duty completed in territory {territoryId}");
+        DisableLeaderAutoQueueBeforeExitIfRepairNeeded($"Duty completed in territory {territoryId}");
         log.Information($"[MOGTOME][Engine] Duty completed event in territory {territoryId} - will leave in {DutyExitDelaySeconds}s");
     }
 
@@ -237,6 +239,9 @@ public class MogtomeEngine
             // 7. Pause YesAlready - we handle dialogs directly
             dialogHandler.Start();
 
+            // 8. Apply the live AutoQueue policy for this character role
+            dutyQueue.ApplyAutoQueuePolicyAtStart();
+
             // Check potion availability
             state.PotionsAvailable = config.PotionItemId > 0 &&
                                      GameHelpers.GetInventoryItemCount((uint)config.PotionItemId, config.PotionUseHighQuality) > 0;
@@ -292,7 +297,7 @@ public class MogtomeEngine
             dutyAutomationService.StopDuty();
             dialogHandler.Stop();
             rotationService.DisableRotation();
-            dutyQueue.ClearRepairQueuePauseOnStop();
+            dutyQueue.EnsureAutoQueueDisabledOnStop();
             ResetRepairRequestState();
             ResetRepairRecoveryWatchdog();
             ResetQueueRegistrationWatchdog();
@@ -1171,7 +1176,7 @@ public class MogtomeEngine
 
         ResetRepairRequestState();
         repairService.ReturnToInnIfNeeded();
-        dutyQueue.ResumeQueueAfterRepair();
+        dutyQueue.RestoreAutoQueueAfterRepair();
         CurrentState = EngineState.WaitingOutsideDuty;
         outsideDutyTicks = 0;
         ArmRepairRecoveryWatchdog();
@@ -1205,7 +1210,7 @@ public class MogtomeEngine
         CurrentState = EngineState.RepairingOutside;
         StatusMessage = statusMessage;
         outsideDutyTicks = 0;
-        dutyQueue.PauseQueueForRepair();
+        dutyQueue.DisableAutoQueueForRepair();
         activeRepairUsesNpc = useNpcRepair;
         IssueRepairRequest("entered repair mode");
     }
@@ -1495,7 +1500,7 @@ public class MogtomeEngine
         // Throttle leave attempts to every 5 seconds
         if ((now - lastLeaveAttemptTime).TotalSeconds < 5.0) return;
 
-        PauseLeaderQueueBeforeExitIfRepairNeeded("LeaveDuty");
+        DisableLeaderAutoQueueBeforeExitIfRepairNeeded("LeaveDuty");
 
         lastLeaveAttemptTime = now;
         leaveAttemptCount++;
@@ -1704,33 +1709,33 @@ public class MogtomeEngine
         return true;
     }
 
-    private void PauseLeaderQueueBeforeExitIfRepairNeeded(string reason)
+    private void DisableLeaderAutoQueueBeforeExitIfRepairNeeded(string reason)
     {
         if (!state.IsPartyLeader)
             return;
 
         if (state.AutoQueueDisabledForRepair)
         {
-            log.Information($"[MOGTOME][Engine] MOGTOME manual queue already paused for repair before duty exit ({reason})");
+            log.Information($"[MOGTOME][Engine] AutoQueue is already disabled for repair before duty exit ({reason})");
             return;
         }
 
         if (!repairService.NeedsRepair(forceRefresh: true))
             return;
 
-        dutyQueue.PauseQueueForRepair();
-        log.Warning($"[MOGTOME][Engine] Leader repair detected before duty exit; MOGTOME manual queue paused before leaving duty ({reason})");
+        dutyQueue.DisableAutoQueueForRepair();
+        log.Warning($"[MOGTOME][Engine] Leader repair detected before duty exit; AutoQueue disabled before leaving duty ({reason})");
     }
 
-    public void ApplyConfiguredPartyLeaderState(string reason = "configured role")
+    public void ApplyConfiguredPartyLeaderState(bool applyAutoQueuePolicy = true, string reason = "configured role")
     {
         var source = config.IsCrossWorldParty
             ? "configured cross-world role"
             : "configured party role checkbox";
-        SetPartyLeaderState(config.IsPartyLeader, reason, $"Source={source}");
+        SetPartyLeaderState(config.IsPartyLeader, applyAutoQueuePolicy, reason, $"Source={source}");
     }
 
-    public void RefreshPartyLeaderState()
+    public void RefreshPartyLeaderState(bool applyAutoQueuePolicy = true)
     {
         if (condition[34] || state.IsInDuty)
         {
@@ -1743,7 +1748,7 @@ public class MogtomeEngine
         if (config.IsCrossWorldParty)
         {
             log.Information($"[MOGTOME][Engine] Manual party refresh requested in cross-world mode; keeping configured role. Party={GetPartyComposition()}");
-            ApplyConfiguredPartyLeaderState("manual refresh");
+            ApplyConfiguredPartyLeaderState(applyAutoQueuePolicy, "manual refresh");
             return;
         }
 
@@ -1755,10 +1760,10 @@ public class MogtomeEngine
             return;
         }
 
-        SetPartyLeaderState(isPartyLeader, "manual refresh", details);
+        SetPartyLeaderState(isPartyLeader, applyAutoQueuePolicy, "manual refresh", details);
     }
 
-    private void SetPartyLeaderState(bool isPartyLeader, string reason, string details)
+    private void SetPartyLeaderState(bool isPartyLeader, bool applyAutoQueuePolicy, string reason, string details)
     {
         var previousLeaderState = state.IsPartyLeader;
         state.IsPartyLeader = isPartyLeader;
@@ -1770,6 +1775,9 @@ public class MogtomeEngine
         }
 
         log.Information($"[MOGTOME][Engine] Party leader state changed ({reason}): {previousLeaderState} -> {isPartyLeader}. {details}");
+
+        if (applyAutoQueuePolicy && IsRunning)
+            dutyQueue.ApplyAutoQueuePolicyForCurrentRole(reason);
     }
 
     private bool TryDetectSameWorldPartyLeader(out bool isPartyLeader, out string details)

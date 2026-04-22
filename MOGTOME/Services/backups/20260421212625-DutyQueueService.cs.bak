@@ -1,5 +1,6 @@
 using System;
 using Dalamud.Plugin.Services;
+using MOGTOME.IPC;
 using MOGTOME.Models;
 using MOGTOME.Services;
 
@@ -8,8 +9,11 @@ namespace MOGTOME.Services;
 public class DutyQueueService
 {
     private readonly IPluginLog log;
+    private readonly Configuration config;
     private readonly DutyState state;
     private readonly DutyAutomationService dutyAutomationService;
+    private readonly AutomatonIPC automatonIPC;
+    private readonly ICommandManager commandManager;
     private readonly ICondition condition;
 
     private DateTime lastQueueAttempt = DateTime.MinValue;
@@ -18,12 +22,16 @@ public class DutyQueueService
     private const float QueueCooldown = 10.0f;
 
     public DutyQueueService(
-        IPluginLog log, DutyState state,
-        DutyAutomationService dutyAutomationService, ICondition condition)
+        IPluginLog log, Configuration config, DutyState state,
+        DutyAutomationService dutyAutomationService, AutomatonIPC automatonIPC,
+        ICommandManager commandManager, ICondition condition)
     {
         this.log = log;
+        this.config = config;
         this.state = state;
         this.dutyAutomationService = dutyAutomationService;
+        this.automatonIPC = automatonIPC;
+        this.commandManager = commandManager;
         this.condition = condition;
     }
 
@@ -52,30 +60,54 @@ public class DutyQueueService
         dutyAutomationService.QueueDuty(isPraetorium);
     }
 
-    public void PauseQueueForRepair()
+    public void DisableAutoQueueForRepair()
     {
         if (!state.AutoQueueDisabledForRepair)
         {
+            automatonIPC.DisableAutoQueue();
             state.AutoQueueDisabledForRepair = true;
-            log.Information("[MOGTOME][DutyQueue] MOGTOME manual queue paused for repair");
+            log.Information("[MOGTOME][DutyQueue] AutoQueue disabled for repair");
         }
     }
 
-    public void ResumeQueueAfterRepair()
+    public void ApplyAutoQueuePolicyAtStart()
+        => ApplyAutoQueuePolicyForCurrentRole("startup");
+
+    public void ApplyAutoQueuePolicyForCurrentRole(string reason)
+    {
+        if (state.AutoQueueDisabledForRepair)
+        {
+            automatonIPC.DisableAutoQueue();
+            log.Information($"[MOGTOME][DutyQueue] AutoQueue kept disabled while repair is active ({reason})");
+            return;
+        }
+
+        if (state.IsPartyLeader)
+        {
+            automatonIPC.EnableAutoQueue();
+            log.Information($"[MOGTOME][DutyQueue] AutoQueue enabled for leader ({reason})");
+        }
+        else
+        {
+            automatonIPC.DisableAutoQueue();
+            log.Information($"[MOGTOME][DutyQueue] AutoQueue disabled for non-leader ({reason})");
+        }
+    }
+
+    public void RestoreAutoQueueAfterRepair()
     {
         if (!state.AutoQueueDisabledForRepair)
             return;
 
         state.AutoQueueDisabledForRepair = false;
-        log.Information("[MOGTOME][DutyQueue] MOGTOME manual queue resumed after repair");
+        ApplyAutoQueuePolicyForCurrentRole("repair complete");
     }
 
-    public void ClearRepairQueuePauseOnStop()
+    public void EnsureAutoQueueDisabledOnStop()
     {
-        if (state.AutoQueueDisabledForRepair)
-            log.Information("[MOGTOME][DutyQueue] MOGTOME manual queue repair pause cleared on stop");
-
         state.AutoQueueDisabledForRepair = false;
+        automatonIPC.DisableAutoQueue();
+        log.Information("[MOGTOME][DutyQueue] Ensured AutoQueue is disabled on stop");
     }
 
     /// <summary>

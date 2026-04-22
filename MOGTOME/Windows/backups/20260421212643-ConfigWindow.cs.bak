@@ -544,9 +544,9 @@ public class ConfigWindow : Window, IDisposable
 
         ImGui.Spacing();
         ImGui.TextColored(new Vector4(0.7f, 0.7f, 0.7f, 1.0f), "Party Behaviour:");
-        ImGui.TextWrapped("- Leader: Queues duties and controls the MOGTOME run flow.");
-        ImGui.TextWrapped("- Non-leader: Waits for party queue pops and repairs independently.");
-        ImGui.TextWrapped("- Repair: MOGTOME pauses its own manual queue attempts while repair is active, then resumes after repair.");
+        ImGui.TextWrapped("- Leader: Queues duties, controls flow, and keeps Automaton AutoQueue on outside repair.");
+        ImGui.TextWrapped("- Non-leader: Waits for queue, repairs independently, and keeps Automaton AutoQueue off.");
+        ImGui.TextWrapped("- Repair: Leader turns AutoQueue off while repairing, then turns it back on when done.");
         ImGui.TextWrapped("- Detection: Refresh Party State is manual-only and will not auto-promote solo or partial party data to leader.");
 
         return changed;

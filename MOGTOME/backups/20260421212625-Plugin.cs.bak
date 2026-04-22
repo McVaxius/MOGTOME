@@ -58,6 +58,7 @@ public sealed class Plugin : IDalamudPlugin
     public YesAlreadyIPC YesAlreadyIPC { get; init; }
     public VNavIPC VNavIPC { get; init; }
     public AutoDutyIPC AutoDutyIPC { get; init; }
+    public AutomatonIPC AutomatonIPC { get; init; }
     public BossModIPC BossModIPC { get; init; }
 
     // Services
@@ -105,6 +106,7 @@ public sealed class Plugin : IDalamudPlugin
         BossModIPC = new BossModIPC(Log, CommandManager);
         YesAlreadyIPC = new YesAlreadyIPC(Log);
         VNavIPC = new VNavIPC(Log, CommandManager);
+        AutomatonIPC = new AutomatonIPC(Log);
         RotationService = new RotationService(Log, Configuration, State, BossModIPC);
         AutoDutyIPC = new AutoDutyIPC(Log, CommandManager, RunHistoryService, RotationService);
 
@@ -121,7 +123,7 @@ public sealed class Plugin : IDalamudPlugin
             CommandManager,
             RunHistoryService,
             RotationService);
-        DutyQueueService = new DutyQueueService(Log, State, DutyAutomationService, Condition);
+        DutyQueueService = new DutyQueueService(Log, Configuration, State, DutyAutomationService, AutomatonIPC, CommandManager, Condition);
         RepairService = new RepairService(Log, Configuration, State, DutyAutomationService, Condition);
         InnEntryService = new InnEntryService(Log, VNavIPC);
         FoodService = new FoodService(Log, Configuration, State, Condition);
@@ -215,6 +217,7 @@ public sealed class Plugin : IDalamudPlugin
         YesAlreadyIPC.Dispose();
         VNavIPC.Dispose();
         AutoDutyIPC.Dispose();
+        AutomatonIPC.Dispose();
         BossModIPC.Dispose();
 
         CommandManager.RemoveHandler(AliasCommandName);
@@ -398,7 +401,7 @@ public sealed class Plugin : IDalamudPlugin
                     StuckDetectionService, DialogHandlerService,
                     DutyAutomationService,
                     AutoDutyPathService, ConflictPluginService, RunHistoryService,
-                    AutoDutyIPC, YesAlreadyIPC,
+                    AutoDutyIPC, AutomatonIPC, YesAlreadyIPC,
                     Condition, ClientState, CommandManager);
                 
                 Log.Information("[Plugin] Engine initialized successfully with proper config");
