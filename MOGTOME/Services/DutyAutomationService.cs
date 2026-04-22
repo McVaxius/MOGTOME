@@ -170,7 +170,6 @@ public sealed class DutyAutomationService
             await GameHelpers.RunOnFrameworkThreadAsync(() =>
             {
                 SetAdsRuntimeRole(isLeader, startingInsideDuty);
-                EnsureFollowerOutsideArmed("startup prep");
             }).ConfigureAwait(false);
 
             log.Information("[MOGTOME][Automation] ADS backend ready");

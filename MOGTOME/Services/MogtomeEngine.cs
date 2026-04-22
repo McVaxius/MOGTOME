@@ -250,6 +250,11 @@ public class MogtomeEngine
                 log.Information("[MOGTOME][Engine] Checking repair status before start");
                 if (repairService.NeedsRepair())
                 {
+                    if (dutyAutomationService.UseAdsExperimental && !state.IsPartyLeader && !startupSnapshot.StartingInsideDuty)
+                    {
+                        log.Information("[MOGTOME][ADS][Repair] Repair needed before follower outside-arm at startup; deferring /ads outside until repair completes");
+                    }
+
                     log.Information("[Engine] Repair needed - repairing before start");
                     EnterRepairMode(useNpcRepair: ShouldUseNpcRepair(), "Repairing before start...");
                     return new StartupPreparationResult(EnteredRepairMode: true);
@@ -295,6 +300,9 @@ public class MogtomeEngine
                     log.Warning("[MOGTOME][Engine] Start aborted before entering waiting-outside-duty state");
                     return;
                 }
+
+                if (dutyAutomationService.UseAdsExperimental && !startupSnapshot.IsPartyLeader)
+                    dutyAutomationService.EnsureFollowerOutsideArmed("startup ready");
 
                 CurrentState = EngineState.WaitingOutsideDuty;
                 StatusMessage = $"Running - Duty #{state.DutyCounter + 1}";
@@ -839,20 +847,25 @@ public class MogtomeEngine
     {
         outsideDutyTicks++;
 
-        if (dutyAutomationService.UseAdsExperimental && !state.IsPartyLeader)
-        {
-            dutyAutomationService.EnsureFollowerOutsideArmed("outside-duty follower wait");
-            dutyAutomationService.UpdateFollowerWaitingForEntry();
-        }
-
         // Food check
         foodService.Update();
 
         // Repair check
         if (repairService.NeedsRepair())
         {
+            if (dutyAutomationService.UseAdsExperimental && !state.IsPartyLeader)
+            {
+                log.Information("[MOGTOME][ADS][Repair] Repair needed while outside duty; deferring follower /ads outside until repair completes");
+            }
+
             EnterRepairMode(useNpcRepair: ShouldUseNpcRepair(), "Repairing...");
             return;
+        }
+
+        if (dutyAutomationService.UseAdsExperimental && !state.IsPartyLeader)
+        {
+            dutyAutomationService.EnsureFollowerOutsideArmed("outside-duty follower wait");
+            dutyAutomationService.UpdateFollowerWaitingForEntry();
         }
 
         // Auto-equip
