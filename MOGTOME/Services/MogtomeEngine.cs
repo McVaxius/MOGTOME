@@ -69,7 +69,10 @@ public class MogtomeEngine
     private DateTime dutyCompletedTime;
     private DateTime lastLeaveAttemptTime = DateTime.MinValue;
     private int leaveAttemptCount = 0;
-    private const int DutyExitDelaySeconds = 10;
+    private DateTime leaveRequestedUtc = DateTime.MinValue;
+    private bool leaveConfirmationObserved = false;
+    private string lastLeaveBlocker = string.Empty;
+    private const int DutyExitSettleSeconds = 10;
     private bool delayedRequeueInProgress = false;
 
     // Requeue state machine
@@ -162,8 +165,9 @@ public class MogtomeEngine
         if (!IsRunning) return;
         dutyCompleted = true;
         dutyCompletedTime = DateTime.UtcNow;
+        ResetLeaveTracking();
         PauseLeaderQueueBeforeExitIfRepairNeeded($"Duty completed in territory {territoryId}");
-        log.Information($"[MOGTOME][Engine] Duty completed event in territory {territoryId} - will leave in {DutyExitDelaySeconds}s");
+        log.Information($"[MOGTOME][Engine] Duty completed event in territory {territoryId} - leave will request at first safe seam");
     }
 
     public async void Start()
@@ -293,6 +297,7 @@ public class MogtomeEngine
             dialogHandler.Stop();
             rotationService.DisableRotation();
             dutyQueue.ClearRepairQueuePauseOnStop();
+            ResetLeaveTracking();
             ResetRepairRequestState();
             ResetRepairRecoveryWatchdog();
             ResetQueueRegistrationWatchdog();
@@ -340,6 +345,7 @@ public class MogtomeEngine
         dutyCompleted = false;
         autoDutyStartedInDuty = false;
         dutyEnteredUtc = DateTime.UtcNow;
+        ResetLeaveTracking();
         lastPraetoriumReadyWaitLogUtc = DateTime.MinValue;
         lastRotationRefreshUtc = DateTime.MinValue;
         ResetRepairRecoveryWatchdog();
@@ -526,6 +532,7 @@ public class MogtomeEngine
         state.IsInCombat = condition[26];
         autoDutyStartedInDuty = false;
         dutyCompleted = false;
+        ResetLeaveTracking();
         dutyEnteredUtc = DateTime.UtcNow;
         lastPraetoriumReadyWaitLogUtc = DateTime.MinValue;
         lastRotationRefreshUtc = DateTime.MinValue;
@@ -591,7 +598,7 @@ public class MogtomeEngine
         if (dutyAutomationService.UseAdsExperimental)
         {
             log.Warning("[MOGTOME][Engine] Unexpected duty entered in ADS mode; sending /ads leave");
-            dutyAutomationService.RequestDutyLeave();
+            dutyAutomationService.RequestDutyLeave("Unexpected duty entered in ADS mode", DateTime.MinValue, 1);
         }
 
         return true;
@@ -666,8 +673,10 @@ public class MogtomeEngine
         outsideDutyTicks = 0;
         autoDutyStartedInDuty = false;
         dutyCompleted = false;
+        ResetLeaveTracking();
         ResetRepairRecoveryWatchdog();
         dutyAutomationService.InvalidateAdsQueueOperations("duty left");
+        dutyAutomationService.NotifyDutyLeft();
         ResetQueueRecoveryState();
         
         // Reset requeue state when successfully entering duty
@@ -827,6 +836,12 @@ public class MogtomeEngine
     {
         outsideDutyTicks++;
 
+        if (dutyAutomationService.UseAdsExperimental && !state.IsPartyLeader)
+        {
+            dutyAutomationService.EnsureFollowerOutsideArmed("outside-duty follower wait");
+            dutyAutomationService.UpdateFollowerWaitingForEntry();
+        }
+
         // Food check
         foodService.Update();
 
@@ -865,7 +880,9 @@ public class MogtomeEngine
         }
         else if (!state.IsPartyLeader)
         {
-            StatusMessage = $"Waiting for leader - #{state.DutyCounter + 1}";
+            StatusMessage = dutyAutomationService.UseAdsExperimental
+                ? $"Waiting for leader - #{state.DutyCounter + 1} ({dutyAutomationService.GetAdsRuntimeStatusLabel()})"
+                : $"Waiting for leader - #{state.DutyCounter + 1}";
         }
         else if (delayedRequeueInProgress)
         {
@@ -996,7 +1013,9 @@ public class MogtomeEngine
 
             dutyAutomationService.ConfirmQueueRegistration(dutyTracker.ShouldRunPraetorium());
             dutyAutomationService.ClearAdsQueueFailure();
-            StatusMessage = $"Queueing: {dutyName} (registered)";
+            StatusMessage = dutyAutomationService.UseAdsExperimental
+                ? $"Queueing: {dutyName} (registered, {dutyAutomationService.GetAdsRuntimeStatusLabel()})"
+                : $"Queueing: {dutyName} (registered)";
             return;
         }
 
@@ -1004,7 +1023,7 @@ public class MogtomeEngine
         {
             if (cooldownRemainingSeconds > 0)
             {
-                StatusMessage = $"Queueing: {dutyName} (ContentsFinder retry cooldown {Math.Ceiling(cooldownRemainingSeconds):F0}s)";
+                StatusMessage = $"Queueing: {dutyName} (ContentsFinder retry cooldown {Math.Ceiling(cooldownRemainingSeconds):F0}s, {dutyAutomationService.GetAdsRuntimeStatusLabel()})";
                 return;
             }
 
@@ -1022,7 +1041,9 @@ public class MogtomeEngine
                 return;
             }
 
-            StatusMessage = $"Queueing: {dutyName} (waiting for queue registration {Math.Ceiling(elapsed):F0}/{QueueRegistrationWatchdogSeconds:F0}s)";
+            StatusMessage = dutyAutomationService.UseAdsExperimental
+                ? $"Queueing: {dutyName} (waiting for queue registration {Math.Ceiling(elapsed):F0}/{QueueRegistrationWatchdogSeconds:F0}s, {dutyAutomationService.GetAdsRuntimeStatusLabel()})"
+                : $"Queueing: {dutyName} (waiting for queue registration {Math.Ceiling(elapsed):F0}/{QueueRegistrationWatchdogSeconds:F0}s)";
             return;
         }
 
@@ -1030,7 +1051,9 @@ public class MogtomeEngine
         // Otherwise keep waiting
         if (!condition[34])
         {
-            StatusMessage = $"Queueing: {dutyName} (waiting...)";
+            StatusMessage = dutyAutomationService.UseAdsExperimental
+                ? $"Queueing: {dutyName} (waiting, {dutyAutomationService.GetAdsRuntimeStatusLabel()})"
+                : $"Queueing: {dutyName} (waiting...)";
         }
     }
 
@@ -1046,30 +1069,37 @@ public class MogtomeEngine
 
             autoDutyStartedInDuty = true;
             log.Information($"[MOGTOME][Engine] Starting {dutyAutomationService.ActiveBackendDisplayName} inside duty");
-            dutyAutomationService.StartDutyInside();
+            dutyAutomationService.StartDutyInside(state.IsPartyLeader);
         }
 
         // Duty completion exit logic
         if (dutyCompleted)
         {
-            // Cutscene protection: don't leave during cutscenes
-            if (condition[ConditionFlag.OccupiedInCutSceneEvent] || condition[ConditionFlag.WatchingCutscene])
+            if (IsLeaveBlocked(out var leaveBlocker))
             {
-                log.Information("[MOGTOME][Engine] Delaying leave - in cutscene");
+                LogLeaveBlocker(leaveBlocker);
+                StatusMessage = $"Duty complete - leave blocked ({leaveBlocker})";
                 return;
             }
 
-            var elapsed = (DateTime.UtcNow - dutyCompletedTime).TotalSeconds;
-            if (elapsed >= DutyExitDelaySeconds)
+            lastLeaveBlocker = string.Empty;
+            ObserveLeaveConfirmationEvidence();
+
+            if (leaveRequestedUtc == DateTime.MinValue)
             {
-                // Keep trying to leave until territory changes
                 LeaveDuty();
                 return;
             }
-            else
+
+            var settleElapsed = (DateTime.UtcNow - leaveRequestedUtc).TotalSeconds;
+            if (settleElapsed < DutyExitSettleSeconds)
             {
-                StatusMessage = $"Waiting to leave duty ({DutyExitDelaySeconds - elapsed:F0}s)";
+                StatusMessage = $"Leave requested - waiting for zone-out ({DutyExitSettleSeconds - settleElapsed:F0}s)";
+                return;
             }
+
+            LeaveDuty();
+            return;
         }
 
         // Boss combat handler
@@ -1079,6 +1109,63 @@ public class MogtomeEngine
         stuckDetection.Update();
 
         StatusMessage = $"In Duty #{state.DutyCounter} - {state.TimeInDuty:F0}s";
+    }
+
+    private bool IsLeaveBlocked(out string blocker)
+    {
+        if (condition[ConditionFlag.OccupiedInCutSceneEvent] || condition[ConditionFlag.WatchingCutscene])
+        {
+            blocker = "cutscene";
+            return true;
+        }
+
+        if (condition[ConditionFlag.OccupiedInQuestEvent] ||
+            condition[ConditionFlag.Occupied33] ||
+            condition[ConditionFlag.Occupied39])
+        {
+            blocker = "occupied transition";
+            return true;
+        }
+
+        blocker = string.Empty;
+        return false;
+    }
+
+    private void LogLeaveBlocker(string blocker)
+    {
+        if (string.Equals(lastLeaveBlocker, blocker, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        lastLeaveBlocker = blocker;
+        log.Information($"[MOGTOME][Engine] Leave request blocked by {blocker}; waiting for safe exit seam");
+    }
+
+    private void ObserveLeaveConfirmationEvidence()
+    {
+        if (leaveRequestedUtc == DateTime.MinValue || leaveConfirmationObserved)
+            return;
+
+        if (condition[ConditionFlag.BetweenAreas])
+        {
+            leaveConfirmationObserved = true;
+            dutyAutomationService.ObserveLeaveConfirmationEvidence("ConditionFlag.BetweenAreas");
+            return;
+        }
+
+        if (GameHelpers.IsAddonVisible("SelectYesno"))
+        {
+            leaveConfirmationObserved = true;
+            dutyAutomationService.ObserveLeaveConfirmationEvidence("SelectYesno visible");
+        }
+    }
+
+    private void ResetLeaveTracking()
+    {
+        leaveRequestedUtc = DateTime.MinValue;
+        leaveConfirmationObserved = false;
+        lastLeaveBlocker = string.Empty;
+        lastLeaveAttemptTime = DateTime.MinValue;
+        leaveAttemptCount = 0;
     }
 
     private bool IsReadyToStartDutyBackendInsideDuty()
@@ -1295,13 +1382,17 @@ public class MogtomeEngine
         if (dutyAutomationService.IsAdsQueueRetryCooldownActive(out var cooldownRemainingSeconds, out var cooldownReason))
         {
             CurrentState = EngineState.WaitingOutsideDuty;
-            StatusMessage = $"ContentsFinder queue cooldown: {dutyName} ({Math.Ceiling(cooldownRemainingSeconds):F0}s)";
+            StatusMessage = dutyAutomationService.UseAdsExperimental
+                ? $"ContentsFinder queue cooldown: {dutyName} ({Math.Ceiling(cooldownRemainingSeconds):F0}s, {dutyAutomationService.GetAdsRuntimeStatusLabel()})"
+                : $"ContentsFinder queue cooldown: {dutyName} ({Math.Ceiling(cooldownRemainingSeconds):F0}s)";
             log.Debug($"[MOGTOME][Engine] Holding {statusPrefix} for {dutyName}; ContentsFinder queue cooldown active ({Math.Ceiling(cooldownRemainingSeconds):F0}s remaining; {cooldownReason})");
             return false;
         }
 
         CurrentState = EngineState.Queueing;
-        StatusMessage = $"{statusPrefix}: {dutyName}";
+        StatusMessage = dutyAutomationService.UseAdsExperimental
+            ? $"{statusPrefix}: {dutyName} ({dutyAutomationService.GetQueueStatusLabel()} / {dutyAutomationService.GetAdsRuntimeStatusLabel()})"
+            : $"{statusPrefix}: {dutyName}";
 
         try
         {
@@ -1500,15 +1591,18 @@ public class MogtomeEngine
 
         lastLeaveAttemptTime = now;
         leaveAttemptCount++;
+        leaveRequestedUtc = now;
+        leaveConfirmationObserved = false;
+        lastLeaveBlocker = string.Empty;
 
-        var elapsed = (DateTime.Now - dutyCompletedTime).TotalSeconds;
-        var leaveReason = $"Exit after duty ends - {elapsed:F0}s elapsed (configured: {DutyExitDelaySeconds}s)";
+        var elapsed = (now - dutyCompletedTime).TotalSeconds;
+        var leaveReason = $"Exit on first safe seam after duty complete ({elapsed:F1}s since completion)";
 
         if (dutyAutomationService.UseAdsExperimental)
         {
             log.Information($"[MOGTOME][Engine] ADS leave attempt #{leaveAttemptCount} - REASON: {leaveReason}");
-            dutyAutomationService.RequestDutyLeave();
-            StatusMessage = $"Leaving duty via ADS (attempt #{leaveAttemptCount}) - {leaveReason}";
+            dutyAutomationService.RequestDutyLeave(leaveReason, dutyCompletedTime, leaveAttemptCount);
+            StatusMessage = $"Leave requested via ADS (attempt #{leaveAttemptCount}) - waiting for zone-out";
             return;
         }
 
@@ -1545,7 +1639,7 @@ public class MogtomeEngine
             }
         }, System.Threading.Tasks.TaskContinuationOptions.OnlyOnRanToCompletion);
 
-        StatusMessage = $"Leaving duty (attempt #{leaveAttemptCount}) - {leaveReason}";
+        StatusMessage = $"Leave requested (attempt #{leaveAttemptCount}) - waiting for zone-out";
     }
 
     private unsafe void TryClickLeaveDutyButton()

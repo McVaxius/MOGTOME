@@ -621,7 +621,9 @@ public class MainWindow : Window, IDisposable
             ImGui.Unindent();
             ImGui.Separator();
         }
-        DrawStatusLine("Queue", true, plugin.DutyAutomationService.GetQueueStatusLabel());
+        DrawStatusLine("Queue Role", true, plugin.DutyAutomationService.GetQueueStatusLabel());
+        if (config.UseAdsExperimental)
+            DrawStatusLine("ADS Runtime", true, plugin.DutyAutomationService.GetAdsRuntimeStatusLabel());
         DrawStatusLine("Bailout", true, $"{config.BailoutTimeout}s");
 
         ImGui.Unindent();

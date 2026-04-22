@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Dalamud.Game.Command;
+using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
@@ -53,6 +54,23 @@ public sealed class DutyAutomationService
         Decumana,
     }
 
+    private enum AdsRuntimeRole
+    {
+        None,
+        QueueLeader,
+        Follower,
+    }
+
+    private enum AdsFollowerState
+    {
+        None,
+        OutsideArmed,
+        WaitingForEntry,
+        InsideObserved,
+        Leaving,
+        Recovered,
+    }
+
     private readonly IPluginLog log;
     private readonly ConfigManager configManager;
     private readonly AutoDutyIPC autoDutyIPC;
@@ -70,6 +88,17 @@ public sealed class DutyAutomationService
     private string adsQueueFailureReason = string.Empty;
     private DateTime adsQueueFailureCooldownUntilUtc = DateTime.MinValue;
     private SelectedMogtomeDuty lastConfirmedSelectedDuty = SelectedMogtomeDuty.Unknown;
+    private AdsRuntimeRole adsRuntimeRole = AdsRuntimeRole.None;
+    private AdsFollowerState adsFollowerState = AdsFollowerState.None;
+    private bool adsStartingInsideDutyRecovery = false;
+    private bool adsLeaderOutsideOwned = false;
+    private bool adsLeaderInsideOwned = false;
+    private bool adsLeaveRequested = false;
+    private bool adsLeaveConfirmationObserved = false;
+    private DateTime adsLastOutsideArmUtc = DateTime.MinValue;
+    private DateTime adsLastLeaveRequestUtc = DateTime.MinValue;
+    private const float AdsFollowerOutsideArmRetrySeconds = 5.0f;
+    private const float AdsFollowerOutsideArmVisibleSeconds = 1.0f;
     private static readonly PraetoriumUnlockDefinition[] PraetoriumOptionalUnlocks =
     [
         new("Sunken Temple of Qarn", [764]),
@@ -131,6 +160,10 @@ public sealed class DutyAutomationService
                 return false;
             }
 
+            SetAdsRuntimeRole(isLeader, startingInsideDuty);
+            //if (!isLeader && !startingInsideDuty)
+                EnsureFollowerOutsideArmed("startup prep");
+
             log.Information("[MOGTOME][Automation] ADS backend ready");
             return true;
         }
@@ -190,7 +223,11 @@ public sealed class DutyAutomationService
             return;
         }
 
-        log.Information($"[MOGTOME][DutyQueue] Claiming backend outside ownership, then queueing {dutyName} through AgentContentsFinder");
+        adsRuntimeRole = AdsRuntimeRole.QueueLeader;
+        adsLeaderOutsideOwned = true;
+        adsLeaderInsideOwned = false;
+        ResetAdsLeaveTracking();
+        log.Information($"[MOGTOME][ADS] Leader queue-control path selected for {dutyName}; claiming /ads outside before ContentsFinder queue");
         commandManager.ProcessCommand(AdsStartOutsideCommand);
         QueueDutyViaContentsFinder(
             GetContentFinderConditionId(isPraetorium),
@@ -198,7 +235,7 @@ public sealed class DutyAutomationService
             isPraetorium ? SelectedMogtomeDuty.Praetorium : SelectedMogtomeDuty.Decumana);
     }
 
-    public void StartDutyInside()
+    public void StartDutyInside(bool isLeader)
     {
         if (!UseAdsExperimental)
         {
@@ -207,9 +244,36 @@ public sealed class DutyAutomationService
         }
 
         CapturePartySnapshot("ADS");
-        log.Information($"[MOGTOME][ADS] Starting via {AdsStartInsideCommand}");
-        commandManager.ProcessCommand(AdsStartInsideCommand);
         RefreshCombatStack("ADS");
+
+        if (isLeader)
+        {
+            adsRuntimeRole = AdsRuntimeRole.QueueLeader;
+            adsLeaderOutsideOwned = false;
+            adsLeaderInsideOwned = true;
+            ResetAdsLeaveTracking();
+            log.Information($"[MOGTOME][ADS] Leader entered duty; taking inside ownership via {AdsStartInsideCommand}");
+            commandManager.ProcessCommand(AdsStartInsideCommand);
+            adsStartingInsideDutyRecovery = false;
+            return;
+        }
+
+        adsRuntimeRole = AdsRuntimeRole.Follower;
+        if (adsStartingInsideDutyRecovery)
+        {
+            adsFollowerState = AdsFollowerState.InsideObserved;
+            ResetAdsLeaveTracking();
+            log.Warning($"[MOGTOME][ADS] Follower started inside duty; using {AdsStartInsideCommand} as manual recovery path");
+            commandManager.ProcessCommand(AdsStartInsideCommand);
+            adsStartingInsideDutyRecovery = false;
+            return;
+        }
+
+        var previousState = adsFollowerState;
+        adsFollowerState = AdsFollowerState.InsideObserved;
+        ResetAdsLeaveTracking();
+        adsStartingInsideDutyRecovery = false;
+        log.Information($"[MOGTOME][ADS] Follower observed duty entry after /ads outside pre-arm; skipping normal {AdsStartInsideCommand} (previous state: {previousState})");
     }
 
     public void StopDuty()
@@ -221,18 +285,37 @@ public sealed class DutyAutomationService
         }
 
         InvalidateAdsQueueOperations("ads stop");
+        ResetAdsLeaveTracking();
+        adsLeaderOutsideOwned = false;
+        adsLeaderInsideOwned = false;
+        if (adsRuntimeRole == AdsRuntimeRole.Follower)
+            adsFollowerState = AdsFollowerState.Recovered;
         log.Information($"[MOGTOME][ADS] Stopping via {AdsStopCommand}");
         commandManager.ProcessCommand(AdsStopCommand);
     }
 
-    public void RequestDutyLeave()
+    public void RequestDutyLeave(string reason, DateTime dutyCompletedUtc, int attemptNumber)
     {
         if (!UseAdsExperimental)
             return;
 
-        log.Information($"[MOGTOME][ADS] Leaving via {AdsLeaveCommand}");
+        adsLeaveRequested = true;
+        adsLeaveConfirmationObserved = false;
+        adsLastLeaveRequestUtc = DateTime.UtcNow;
+        adsLeaderInsideOwned = false;
+        if (adsRuntimeRole == AdsRuntimeRole.Follower)
+            adsFollowerState = AdsFollowerState.Leaving;
+
+        var deltaSeconds = dutyCompletedUtc == DateTime.MinValue
+            ? -1.0
+            : (adsLastLeaveRequestUtc - dutyCompletedUtc).TotalSeconds;
+        var deltaText = deltaSeconds < 0 ? "n/a" : $"+{deltaSeconds:F1}s";
+        log.Information($"[MOGTOME][ADS] /ads leave request #{attemptNumber} ({GetAdsRoleLabel()}) at {deltaText} from duty-complete - {reason}");
         commandManager.ProcessCommand(AdsLeaveCommand);
     }
+
+    public void RequestDutyLeave()
+        => RequestDutyLeave("ADS leave requested.", DateTime.MinValue, 1);
 
     public void RequestSelfRepair()
     {
@@ -289,13 +372,119 @@ public sealed class DutyAutomationService
     }
 
     public string GetQueueStatusLabel()
-        => ActiveBackendDisplayName;
+        => UseAdsExperimental
+            ? adsRuntimeRole switch
+            {
+                AdsRuntimeRole.QueueLeader => "Queue leader",
+                AdsRuntimeRole.Follower => "Follower waiting on leader",
+                _ => "ADS",
+            }
+            : ActiveBackendDisplayName;
+
+    public string GetAdsRuntimeStatusLabel()
+    {
+        if (!UseAdsExperimental)
+            return ActiveBackendDisplayName;
+
+        if (adsLeaveRequested)
+        {
+            return adsLeaveConfirmationObserved
+                ? "leave requested, waiting for zone-out"
+                : "leave requested";
+        }
+
+        return adsRuntimeRole switch
+        {
+            AdsRuntimeRole.QueueLeader when adsLeaderInsideOwned => "ADS inside-owned",
+            AdsRuntimeRole.QueueLeader when adsLeaderOutsideOwned => "ADS outside-owned",
+            AdsRuntimeRole.QueueLeader => "leader-ready",
+            AdsRuntimeRole.Follower => adsFollowerState switch
+            {
+                AdsFollowerState.OutsideArmed => "outside-armed",
+                AdsFollowerState.WaitingForEntry => "waiting-for-entry",
+                AdsFollowerState.InsideObserved => "inside-observed",
+                AdsFollowerState.Leaving => "leaving",
+                AdsFollowerState.Recovered => "recovered",
+                _ => "waiting-for-entry",
+            },
+            _ => "idle",
+        };
+    }
 
     public string GetSubsystemStatusLabel()
         => UseAdsExperimental ? "ADS experimental mode" : autoDutyPathService.GetPraetoriumPathDisplayName(Config.PraetoriumPathFileName);
 
     public bool GetSubsystemHealthy()
         => UseAdsExperimental ? IsAdsLoaded() : autoDutyPathService.PathExists(Config.PraetoriumPathFileName);
+
+    public void EnsureFollowerOutsideArmed(string reason)
+    {
+        if (!UseAdsExperimental || adsRuntimeRole != AdsRuntimeRole.Follower || Plugin.Condition[ConditionFlag.BoundByDuty])
+            return;
+
+        if (adsFollowerState == AdsFollowerState.OutsideArmed &&
+            (DateTime.UtcNow - adsLastOutsideArmUtc).TotalSeconds >= AdsFollowerOutsideArmVisibleSeconds)
+        {
+            adsFollowerState = AdsFollowerState.WaitingForEntry;
+            return;
+        }
+
+        if (adsFollowerState is AdsFollowerState.WaitingForEntry or AdsFollowerState.InsideObserved)
+            return;
+
+        if ((DateTime.UtcNow - adsLastOutsideArmUtc).TotalSeconds < AdsFollowerOutsideArmRetrySeconds)
+            return;
+
+        adsLastOutsideArmUtc = DateTime.UtcNow;
+        adsFollowerState = AdsFollowerState.OutsideArmed;
+        ResetAdsLeaveTracking();
+        log.Information($"[MOGTOME][ADS] Follower arming via {AdsStartOutsideCommand} while outside duty ({reason})");
+        commandManager.ProcessCommand(AdsStartOutsideCommand);
+    }
+
+    public void UpdateFollowerWaitingForEntry()
+    {
+        if (!UseAdsExperimental || adsRuntimeRole != AdsRuntimeRole.Follower || Plugin.Condition[ConditionFlag.BoundByDuty])
+            return;
+
+        if (adsFollowerState == AdsFollowerState.OutsideArmed &&
+            (DateTime.UtcNow - adsLastOutsideArmUtc).TotalSeconds >= AdsFollowerOutsideArmVisibleSeconds)
+        {
+            adsFollowerState = AdsFollowerState.WaitingForEntry;
+        }
+    }
+
+    public void ObserveLeaveConfirmationEvidence(string evidence)
+    {
+        if (!UseAdsExperimental || !adsLeaveRequested || adsLeaveConfirmationObserved)
+            return;
+
+        adsLeaveConfirmationObserved = true;
+        var elapsed = adsLastLeaveRequestUtc == DateTime.MinValue
+            ? 0.0
+            : (DateTime.UtcNow - adsLastLeaveRequestUtc).TotalSeconds;
+        log.Information($"[MOGTOME][ADS] First leave confirmation evidence after {elapsed:F1}s: {evidence}");
+    }
+
+    public void NotifyDutyLeft()
+    {
+        if (!UseAdsExperimental)
+            return;
+
+        if (adsLeaveRequested)
+        {
+            var elapsed = adsLastLeaveRequestUtc == DateTime.MinValue
+                ? 0.0
+                : (DateTime.UtcNow - adsLastLeaveRequestUtc).TotalSeconds;
+            log.Information($"[MOGTOME][ADS] Duty left after leave request in {elapsed:F1}s ({GetAdsRoleLabel()})");
+        }
+
+        ResetAdsLeaveTracking();
+        adsLeaderOutsideOwned = false;
+        adsLeaderInsideOwned = false;
+        if (adsRuntimeRole == AdsRuntimeRole.Follower)
+            adsFollowerState = AdsFollowerState.Recovered;
+    }
 
     public void HandleAdsQueueChatMessage(string messageText)
     {
@@ -447,6 +636,40 @@ public sealed class DutyAutomationService
 
     private static uint GetContentFinderConditionId(bool isPraetorium)
         => isPraetorium ? 16u : DutyState.DecumanaDutyId;
+
+    private void SetAdsRuntimeRole(bool isLeader, bool startingInsideDuty)
+    {
+        adsRuntimeRole = isLeader ? AdsRuntimeRole.QueueLeader : AdsRuntimeRole.Follower;
+        adsStartingInsideDutyRecovery = startingInsideDuty;
+        adsLeaderOutsideOwned = false;
+        adsLeaderInsideOwned = false;
+        ResetAdsLeaveTracking();
+
+        if (isLeader)
+        {
+            adsFollowerState = AdsFollowerState.None;
+            log.Information($"[MOGTOME][ADS] ADS mode choice: queue leader keeps queue-control ownership path (startingInsideDuty={startingInsideDuty})");
+            return;
+        }
+
+        adsFollowerState = AdsFollowerState.Recovered;
+        log.Information($"[MOGTOME][ADS] ADS mode choice: follower uses {AdsStartOutsideCommand} before duty and treats {AdsStartInsideCommand} as leader/manual-recovery only (startingInsideDuty={startingInsideDuty})");
+    }
+
+    private void ResetAdsLeaveTracking()
+    {
+        adsLeaveRequested = false;
+        adsLeaveConfirmationObserved = false;
+        adsLastLeaveRequestUtc = DateTime.MinValue;
+    }
+
+    private string GetAdsRoleLabel()
+        => adsRuntimeRole switch
+        {
+            AdsRuntimeRole.QueueLeader => "queue leader",
+            AdsRuntimeRole.Follower => "follower",
+            _ => "ads",
+        };
 
     private static bool IsPluginLoaded(string internalName)
     {
