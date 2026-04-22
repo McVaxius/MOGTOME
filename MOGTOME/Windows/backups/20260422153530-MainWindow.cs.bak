@@ -54,7 +54,6 @@ public class MainWindow : Window, IDisposable
         var config = plugin.Configuration;
         var state = plugin.State;
         var engine = plugin.Engine;
-        plugin.ConsumableInventoryService.Refresh();
 
         // Header
         ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "M.O.G.T.O.M.E.");
@@ -589,8 +588,8 @@ public class MainWindow : Window, IDisposable
         ImGui.Text("Subsystems");
         ImGui.Indent();
         
-        DrawStatusLine("Food", config.FoodItemId > 0 && state.FoodAvailable, FormatConsumableLabel(config.FoodItemName, config.FoodUseHighQuality, state.FoodExactCount));
-        DrawStatusLine("Potions", config.PotionItemId > 0 && state.PotionsAvailable, FormatConsumableLabel(config.PotionItemName, config.PotionUseHighQuality, state.PotionExactCount));
+        DrawStatusLine("Food", config.FoodItemId > 0 && state.FoodAvailable, FormatConsumableLabel(config.FoodItemName, config.FoodUseHighQuality));
+        DrawStatusLine("Potions", config.PotionItemId > 0 && state.PotionsAvailable, FormatConsumableLabel(config.PotionItemName, config.PotionUseHighQuality));
         DrawStatusLine("YesAlready", plugin.YesAlreadyIPC.IsPaused, "Paused by MOGTOME");
         DrawStatusLine(
             config.UseAdsExperimental ? "ADS Mode" : "AutoDuty Path",
@@ -718,11 +717,11 @@ public class MainWindow : Window, IDisposable
         Plugin.Log.Information("=== END CONFIGURATION DUMP ===");
     }
 
-    private static string FormatConsumableLabel(string name, bool highQuality, int exactCount)
+    private static string FormatConsumableLabel(string name, bool highQuality)
     {
         if (string.IsNullOrWhiteSpace(name))
-            return "Not configured";
+            return string.Empty;
 
-        return $"{name} [{(highQuality ? "HQ" : "NQ")}] x{Math.Max(0, exactCount)}";
+        return $"{name} [{(highQuality ? "HQ" : "NQ")}]";
     }
 }

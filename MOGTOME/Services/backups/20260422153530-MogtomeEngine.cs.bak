@@ -37,7 +37,6 @@ public class MogtomeEngine
     private readonly DutyQueueService dutyQueue;
     private readonly RepairService repairService;
     private readonly FoodService foodService;
-    private readonly ConsumableInventoryService consumableInventoryService;
     private readonly RotationService rotationService;
     private readonly BossHandlerService bossHandler;
     private readonly StuckDetectionService stuckDetection;
@@ -124,7 +123,7 @@ public class MogtomeEngine
     public MogtomeEngine(
         IPluginLog log, Configuration config, DutyState state,
         DutyTrackerService dutyTracker, DutyQueueService dutyQueue,
-        RepairService repairService, FoodService foodService, ConsumableInventoryService consumableInventoryService,
+        RepairService repairService, FoodService foodService,
         RotationService rotationService, BossHandlerService bossHandler,
         StuckDetectionService stuckDetection, DialogHandlerService dialogHandler,
         DutyAutomationService dutyAutomationService,
@@ -139,7 +138,6 @@ public class MogtomeEngine
         this.dutyQueue = dutyQueue;
         this.repairService = repairService;
         this.foodService = foodService;
-        this.consumableInventoryService = consumableInventoryService;
         this.rotationService = rotationService;
         this.bossHandler = bossHandler;
         this.stuckDetection = stuckDetection;
@@ -258,7 +256,10 @@ public class MogtomeEngine
                 rotationService.Initialize();
                 dialogHandler.Start();
 
-                consumableInventoryService.Refresh(force: true);
+                state.PotionsAvailable = config.PotionItemId > 0 &&
+                                         GameHelpers.GetInventoryItemCount((uint)config.PotionItemId, config.PotionUseHighQuality) > 0;
+                state.FoodAvailable = config.FoodItemId > 0 &&
+                                      GameHelpers.GetInventoryItemCount((uint)config.FoodItemId, config.FoodUseHighQuality) > 0;
                 state.CalculateTimeouts(LoopInterval);
 
                 dutyAutomationService.ApplyQueueConfiguration(testingModeUnsynced);
@@ -470,7 +471,6 @@ public class MogtomeEngine
 
             // Update territory
             state.CurrentTerritory = (ushort)(clientState.TerritoryType);
-            consumableInventoryService.Refresh();
 
             // Condition[34] = BoundByDuty
             var inDuty = condition[34];

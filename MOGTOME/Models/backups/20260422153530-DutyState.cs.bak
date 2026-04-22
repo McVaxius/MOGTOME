@@ -45,8 +45,6 @@ public class DutyState
     public bool AutoQueueDisabledForRepair { get; set; } = false;
     public bool PotionsAvailable { get; set; } = true;
     public bool FoodAvailable { get; set; } = true;
-    public int PotionExactCount { get; set; } = 0;
-    public int FoodExactCount { get; set; } = 0;
     public bool IsRunning { get; set; } = false;
     public bool ShouldStop { get; set; } = false;
 

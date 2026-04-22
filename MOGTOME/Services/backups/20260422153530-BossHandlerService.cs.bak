@@ -14,7 +14,6 @@ public class BossHandlerService
     private readonly VNavIPC vNavIPC;
     private readonly ICommandManager commandManager;
     private readonly ICondition condition;
-    private readonly ConsumableInventoryService consumableInventoryService;
 
     // Boss names
     private const string NeroName = "Nero tol Scaeva";
@@ -26,10 +25,11 @@ public class BossHandlerService
     // Potion cooldown
     private DateTime lastPotionUse = DateTime.MinValue;
     private const float PotionCooldown = 15.0f;
+    private bool? lastPotionAvailability;
 
     public BossHandlerService(
         IPluginLog log, Configuration config, DutyState state,
-        VNavIPC vNavIPC, ICommandManager commandManager, ICondition condition, ConsumableInventoryService consumableInventoryService)
+        VNavIPC vNavIPC, ICommandManager commandManager, ICondition condition)
     {
         this.log = log;
         this.config = config;
@@ -37,7 +37,6 @@ public class BossHandlerService
         this.vNavIPC = vNavIPC;
         this.commandManager = commandManager;
         this.condition = condition;
-        this.consumableInventoryService = consumableInventoryService;
     }
 
     // ADD EVENT HANDLER
@@ -159,8 +158,16 @@ public class BossHandlerService
 
     private void HandlePotions(string targetName)
     {
-        consumableInventoryService.Refresh();
         if (config.PotionItemId <= 0) return;
+
+        var availableCount = GameHelpers.GetInventoryItemCount((uint)config.PotionItemId, config.PotionUseHighQuality);
+        state.PotionsAvailable = availableCount > 0;
+        if (lastPotionAvailability != state.PotionsAvailable)
+        {
+            lastPotionAvailability = state.PotionsAvailable;
+            var qualityLabel = config.PotionUseHighQuality ? "HQ" : "NQ";
+            log.Information($"[MOGTOME][BossHandler] {qualityLabel} potion availability changed for {config.PotionItemName}: count={availableCount}");
+        }
 
         if (!state.PotionsAvailable) return;
 
@@ -197,8 +204,6 @@ public class BossHandlerService
             {
                 log.Warning($"[MOGTOME][BossHandler] Failed to use {config.PotionItemName} [{qualityLabel}] - UseItem returned false");
             }
-
-            consumableInventoryService.Refresh(force: true);
             
             lastPotionUse = now;
         }

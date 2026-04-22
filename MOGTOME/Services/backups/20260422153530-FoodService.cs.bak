@@ -11,22 +11,21 @@ public class FoodService
     private Configuration config; // Remove readonly to allow updates
     private readonly DutyState state;
     private readonly ICondition condition;
-    private readonly ConsumableInventoryService consumableInventoryService;
 
     // Well Fed status ID = 48
     private const uint WellFedStatusId = 48;
     private const float FoodRefreshThreshold = 90.0f;
 
     private DateTime lastFoodCheck = DateTime.MinValue;
+    private bool? lastFoodAvailability;
     private const float FoodCheckCooldown = 5.0f;
 
-    public FoodService(IPluginLog log, Configuration config, DutyState state, ICondition condition, ConsumableInventoryService consumableInventoryService)
+    public FoodService(IPluginLog log, Configuration config, DutyState state, ICondition condition)
     {
         this.log = log;
         this.config = config; // Still store initial config
         this.state = state;
         this.condition = condition;
-        this.consumableInventoryService = consumableInventoryService;
     }
 
     // ADD EVENT HANDLER
@@ -44,9 +43,9 @@ public class FoodService
 
     public void Update()
     {
-        consumableInventoryService.Refresh();
         if (config.FoodItemId <= 0) 
         {
+            state.FoodAvailable = false;
             return;
         }
 
@@ -87,8 +86,20 @@ public class FoodService
                 return;
             }
 
+            var availableCount = GameHelpers.GetInventoryItemCount((uint)config.FoodItemId, config.FoodUseHighQuality);
+            state.FoodAvailable = availableCount > 0;
+            if (lastFoodAvailability != state.FoodAvailable)
+            {
+                lastFoodAvailability = state.FoodAvailable;
+                var qualityLabel = config.FoodUseHighQuality ? "HQ" : "NQ";
+                log.Information($"[MOGTOME][Food] {qualityLabel} availability changed for {config.FoodItemName}: count={availableCount}");
+            }
+
             if (!state.FoodAvailable)
+            {
+                log.Warning($"[MOGTOME][Food] No {(config.FoodUseHighQuality ? "HQ" : "NQ")} {config.FoodItemName} found");
                 return;
+            }
 
             float wellFedRemaining = 0;
             foreach (var status in player.StatusList)
@@ -126,8 +137,6 @@ public class FoodService
             {
                 log.Warning($"[MOGTOME][Food] Failed to eat {config.FoodItemName} [{qualityLabel}] - UseItem returned false");
             }
-
-            consumableInventoryService.Refresh(force: true);
         }
         catch (Exception ex)
         {

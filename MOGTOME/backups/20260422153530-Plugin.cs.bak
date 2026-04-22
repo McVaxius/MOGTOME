@@ -69,7 +69,6 @@ public sealed class Plugin : IDalamudPlugin
     public RepairService RepairService { get; private set; }
     public InnEntryService InnEntryService { get; private set; }
     public FoodService FoodService { get; private set; }
-    public ConsumableInventoryService ConsumableInventoryService { get; private set; }
     public DialogHandlerService DialogHandlerService { get; private set; }
     public StuckDetectionService StuckDetectionService { get; private set; }
     public AutoDutyPathService AutoDutyPathService { get; private set; }
@@ -129,14 +128,12 @@ public sealed class Plugin : IDalamudPlugin
         DutyQueueService = new DutyQueueService(Log, State, DutyAutomationService, Condition);
         RepairService = new RepairService(Log, Configuration, State, DutyAutomationService, Condition);
         InnEntryService = new InnEntryService(Log, VNavIPC);
-        ConsumableInventoryService = new ConsumableInventoryService(Log, Configuration, State);
-        FoodService = new FoodService(Log, Configuration, State, Condition, ConsumableInventoryService);
-        BossHandlerService = new BossHandlerService(Log, Configuration, State, VNavIPC, CommandManager, Condition, ConsumableInventoryService);
+        FoodService = new FoodService(Log, Configuration, State, Condition);
+        BossHandlerService = new BossHandlerService(Log, Configuration, State, VNavIPC, CommandManager, Condition);
         StuckDetectionService = new StuckDetectionService(Log, Configuration, State, VNavIPC, Condition);
         DialogHandlerService = new DialogHandlerService(Log, YesAlreadyIPC, CommandManager, GameGui);
 
         // Wire up configuration change subscriptions
-        ConsumableInventoryService.SubscribeToConfigChanges(ConfigManager);
         FoodService.SubscribeToConfigChanges(ConfigManager);
         BossHandlerService.SubscribeToConfigChanges(ConfigManager);
         RepairService.SubscribeToConfigChanges(ConfigManager);
@@ -428,7 +425,7 @@ public sealed class Plugin : IDalamudPlugin
                 Engine = new MogtomeEngine(
                     Log, Configuration, State,
                     DutyTrackerService, DutyQueueService,
-                    RepairService, FoodService, ConsumableInventoryService,
+                    RepairService, FoodService,
                     RotationService, BossHandlerService,
                     StuckDetectionService, DialogHandlerService,
                     DutyAutomationService,
