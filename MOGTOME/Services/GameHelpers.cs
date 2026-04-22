@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Game.ClientState.Conditions;
 using FFXIVClientStructs.FFXIV.Client.Game;
@@ -38,14 +39,59 @@ public static class GameHelpers
     };
 
     /// <summary>
+    /// Run work on the framework thread immediately or on a future tick after a delay.
+    /// </summary>
+    public static Task RunOnFrameworkThreadAsync(System.Action action, TimeSpan delay = default)
+    {
+        if (delay <= TimeSpan.Zero && Plugin.Framework.IsInFrameworkUpdateThread)
+        {
+            action();
+            return Task.CompletedTask;
+        }
+
+        return Plugin.Framework.RunOnTick(action, delay);
+    }
+
+    public static Task<T> RunOnFrameworkThreadAsync<T>(Func<T> func, TimeSpan delay = default)
+    {
+        if (delay <= TimeSpan.Zero && Plugin.Framework.IsInFrameworkUpdateThread)
+            return Task.FromResult(func());
+
+        return Plugin.Framework.RunOnTick(func, delay);
+    }
+
+    public static void QueueFrameworkAction(string owner, string stepName, TimeSpan delay, System.Action action)
+    {
+        _ = QueueFrameworkActionAsync(owner, stepName, delay, action);
+    }
+
+    private static async Task QueueFrameworkActionAsync(string owner, string stepName, TimeSpan delay, System.Action action)
+    {
+        try
+        {
+            await RunOnFrameworkThreadAsync(action, delay).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            Plugin.Log.Error(ex, "[MOGTOME][FrameworkQueue] {Owner} step '{StepName}' failed", owner, stepName);
+        }
+    }
+
+    /// <summary>
     /// Click Yes on SelectYesno dialog if visible.
     /// Uses AtkUnitBase.FireCallback with proper AtkValue array.
     /// </summary>
     public static unsafe bool ClickYesIfVisible()
     {
+        const string addonName = "SelectYesno";
+        const string callbackArgs = "0, 0";
+
+        if (!EnsureFrameworkThreadForCallback(addonName, updateState: null, callbackArgs, adsOperationId: null))
+            return false;
+
         try
         {
-            nint addonPtr = Plugin.GameGui.GetAddonByName("SelectYesno", 1);
+            nint addonPtr = Plugin.GameGui.GetAddonByName(addonName, 1);
             if (addonPtr == 0)
                 return false;
 
@@ -88,6 +134,9 @@ public static class GameHelpers
     private static unsafe bool TryFireAddonCallbackInternal(string addonName, bool updateState, int? adsOperationId, params object[] args)
     {
         var argsText = string.Join(", ", args);
+
+        if (!EnsureFrameworkThreadForCallback(addonName, updateState, argsText, adsOperationId))
+            return false;
 
         try
         {
@@ -150,6 +199,24 @@ public static class GameHelpers
 
             return false;
         }
+    }
+
+    private static bool EnsureFrameworkThreadForCallback(string addonName, bool? updateState, string argsText, int? adsOperationId)
+    {
+        if (Plugin.Framework.IsInFrameworkUpdateThread)
+            return true;
+
+        var updateStateText = updateState.HasValue ? updateState.Value.ToString() : "n/a";
+        if (adsOperationId.HasValue)
+        {
+            Plugin.Log.Warning($"[MOGTOME][DutyQueue] Callback operation {adsOperationId.Value}: addon={addonName}, updateState={updateStateText}, args=[{argsText}], result=blocked-off-thread");
+        }
+        else
+        {
+            Plugin.Log.Warning($"[MOGTOME][Callback] Blocked off-thread callback: addon={addonName}, updateState={updateStateText}, args=[{argsText}]");
+        }
+
+        return false;
     }
 
     /// <summary>

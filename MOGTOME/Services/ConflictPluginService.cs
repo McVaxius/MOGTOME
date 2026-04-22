@@ -193,7 +193,7 @@ public sealed class ConflictPluginService
         if (shouldSendDisable)
         {
             log.Warning($"[MOGTOME][Conflict] {displayName} is enabled during {triggerSource}; matched {DescribePluginStatus(initialStatus)}; sending {disableCommand}");
-            commandManager.ProcessCommand(disableCommand);
+            await GameHelpers.RunOnFrameworkThreadAsync(() => commandManager.ProcessCommand(disableCommand)).ConfigureAwait(false);
         }
         else
         {

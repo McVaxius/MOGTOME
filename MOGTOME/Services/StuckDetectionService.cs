@@ -1,5 +1,4 @@
 using System;
-using System.Threading.Tasks;
 using Dalamud.Plugin.Services;
 using MOGTOME.IPC;
 using MOGTOME.Models;
@@ -128,32 +127,18 @@ public class StuckDetectionService
         log.Information("[MOGTOME][StuckDetection] Opening duty panel for bailout leave");
         GameHelpers.SendCommand("/dutyfinder");
 
-        Task.Delay(500).ContinueWith(_ =>
+        GameHelpers.QueueFrameworkAction("StuckDetection leave", "open leave duty button", TimeSpan.FromMilliseconds(500), () =>
         {
-            try
-            {
-                TryClickLeaveDutyButton();
-            }
-            catch (Exception ex)
-            {
-                log.Error($"[MOGTOME][StuckDetection] ContinueWith exception in TryClickLeaveDutyButton: {ex.Message}");
-            }
-        }, TaskContinuationOptions.OnlyOnRanToCompletion);
+            TryClickLeaveDutyButton();
+        });
 
-        Task.Delay(1000).ContinueWith(_ =>
+        GameHelpers.QueueFrameworkAction("StuckDetection leave", "confirm leave duty", TimeSpan.FromMilliseconds(1000), () =>
         {
-            try
+            if (GameHelpers.ClickYesIfVisible())
             {
-                if (GameHelpers.ClickYesIfVisible())
-                {
-                    log.Information("[MOGTOME][StuckDetection] Successfully clicked Yes on bailout leave confirmation");
-                }
+                log.Information("[MOGTOME][StuckDetection] Successfully clicked Yes on bailout leave confirmation");
             }
-            catch (Exception ex)
-            {
-                log.Error($"[MOGTOME][StuckDetection] ContinueWith exception in ClickYesIfVisible: {ex.Message}");
-            }
-        }, TaskContinuationOptions.OnlyOnRanToCompletion);
+        });
     }
 
     private unsafe void TryClickLeaveDutyButton()
@@ -163,17 +148,7 @@ public class StuckDetectionService
             log.Information("[MOGTOME][StuckDetection] Opening ContentsFinderMenu with callback");
             GameHelpers.FireAddonCallback("ContentsFinderMenu", true, 0);
 
-            Task.Delay(500).ContinueWith(_ =>
-            {
-                try
-                {
-                    TryClickLeaveButton();
-                }
-                catch (Exception ex)
-                {
-                    log.Error($"[MOGTOME][StuckDetection] ContinueWith exception in TryClickLeaveButton: {ex.Message}");
-                }
-            }, TaskContinuationOptions.OnlyOnRanToCompletion);
+            GameHelpers.QueueFrameworkAction("StuckDetection leave", "click leave button", TimeSpan.FromMilliseconds(500), TryClickLeaveButton);
         }
         catch (Exception ex)
         {
@@ -188,17 +163,7 @@ public class StuckDetectionService
             log.Information("[MOGTOME][StuckDetection] Clicking Leave button on ContentsFinderMenu");
             GameHelpers.FireAddonCallback("ContentsFinderMenu", true, 43);
 
-            Task.Delay(500).ContinueWith(_ =>
-            {
-                try
-                {
-                    HandleLeaveConfirmation();
-                }
-                catch (Exception ex)
-                {
-                    log.Error($"[MOGTOME][StuckDetection] ContinueWith exception in HandleLeaveConfirmation: {ex.Message}");
-                }
-            }, TaskContinuationOptions.OnlyOnRanToCompletion);
+            GameHelpers.QueueFrameworkAction("StuckDetection leave", "handle leave confirmation", TimeSpan.FromMilliseconds(500), HandleLeaveConfirmation);
         }
         catch (Exception ex)
         {

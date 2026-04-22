@@ -160,9 +160,11 @@ public sealed class DutyAutomationService
                 return false;
             }
 
-            SetAdsRuntimeRole(isLeader, startingInsideDuty);
-            //if (!isLeader && !startingInsideDuty)
+            await GameHelpers.RunOnFrameworkThreadAsync(() =>
+            {
+                SetAdsRuntimeRole(isLeader, startingInsideDuty);
                 EnsureFollowerOutsideArmed("startup prep");
+            }).ConfigureAwait(false);
 
             log.Information("[MOGTOME][Automation] ADS backend ready");
             return true;
@@ -187,11 +189,14 @@ public sealed class DutyAutomationService
             return false;
         }
 
-        autoDutyIPC.StopDuty();
-        autoDutyIPC.ConfigureForMogtome(isLeader);
+        await GameHelpers.RunOnFrameworkThreadAsync(() =>
+        {
+            autoDutyIPC.StopDuty();
+            autoDutyIPC.ConfigureForMogtome(isLeader);
 
-        if (!startingInsideDuty)
-            autoDutyPathService.ForcePathSelection(Config.PraetoriumPathFileName);
+            if (!startingInsideDuty)
+                autoDutyPathService.ForcePathSelection(Config.PraetoriumPathFileName);
+        }).ConfigureAwait(false);
 
         log.Information("[MOGTOME][Automation] AutoDuty backend ready");
         return true;
@@ -770,7 +775,7 @@ public sealed class DutyAutomationService
                 return;
 
             log.Information($"[MOGTOME][DutyQueue] Operation {operationId}: firing Join callback for {dutyName}");
-            if (!GameHelpers.TryFireAdsAddonCallback(operationId, "ContentsFinder", true, 12, 0))
+            if (!await GameHelpers.RunOnFrameworkThreadAsync(() => GameHelpers.TryFireAdsAddonCallback(operationId, "ContentsFinder", true, 12, 0)).ConfigureAwait(false))
             {
                 log.Warning($"[MOGTOME][DutyQueue] Operation {operationId}: Join callback failed; selected-duty readback unavailable in this SDK. Target={dutyName}{selectionDebugText}");
                 MarkAdsQueueAttemptFailed(operationId, "Join callback could not be fired", invalidateOperation: true);
@@ -783,7 +788,7 @@ public sealed class DutyAutomationService
             if (!IsCurrentAdsQueueOperation(operationId))
                 return;
 
-            if (IsQueueRegistrationActive() || GameHelpers.IsAddonVisible("ContentsFinderConfirm"))
+            if (IsQueueRegistrationActive() || await IsAddonVisibleOnFrameworkAsync("ContentsFinderConfirm").ConfigureAwait(false))
             {
                 MarkQueueRegistrationConfirmed(operationId, targetDuty);
                 log.Information($"[MOGTOME][DutyQueue] Operation {operationId}: queue registration confirmed for {dutyName}; last selected duty={targetDuty}");
@@ -808,7 +813,7 @@ public sealed class DutyAutomationService
             if (!IsCurrentAdsQueueOperation(operationId))
                 return false;
 
-            if (GameHelpers.IsAddonVisible("ContentsFinder"))
+            if (await IsAddonVisibleOnFrameworkAsync("ContentsFinder").ConfigureAwait(false))
             {
                 visiblePolls++;
                 if (visiblePolls >= AdsStableVisiblePollsRequired)
@@ -875,7 +880,7 @@ public sealed class DutyAutomationService
         }
 
         log.Information($"[MOGTOME][DutyQueue] Operation {operationId}: {stepName} for {dutyName} via ContentsFinder true {arg1} {arg2}");
-        if (!GameHelpers.TryFireAdsAddonCallback(operationId, "ContentsFinder", true, arg1, arg2))
+        if (!await GameHelpers.RunOnFrameworkThreadAsync(() => GameHelpers.TryFireAdsAddonCallback(operationId, "ContentsFinder", true, arg1, arg2)).ConfigureAwait(false))
         {
             MarkAdsQueueAttemptFailed(operationId, $"selection callback failed: ContentsFinder true {arg1} {arg2}", invalidateOperation: true);
             return false;
@@ -904,6 +909,9 @@ public sealed class DutyAutomationService
     private bool IsCurrentAdsQueueOperation(int operationId)
         => Volatile.Read(ref adsQueueOperationId) == operationId
            && Volatile.Read(ref activeAdsQueueOperationId) == operationId;
+
+    private static Task<bool> IsAddonVisibleOnFrameworkAsync(string addonName)
+        => GameHelpers.RunOnFrameworkThreadAsync(() => GameHelpers.IsAddonVisible(addonName));
 
     private int GetActiveAdsQueueOperationId()
     {

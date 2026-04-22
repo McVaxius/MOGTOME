@@ -138,8 +138,7 @@ public class MainWindow : Window, IDisposable
         {
             if (ImGui.Button("Start", new Vector2(80, 30)))
             {
-                plugin.ShowStartReminderToast();
-                _ = Task.Run(() => engine.Start());
+                plugin.QueueEngineStart("main window", notifyChat: false);
             }
         }
         else

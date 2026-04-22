@@ -27,6 +27,8 @@ public class MogtomeEngine
 {
     private const string PhantomGaiusName = "Phantom Gaius";
     private const int MinimumSyncedPartyMembers = 3;
+    private readonly record struct StartupSnapshot(bool StartingInsideDuty, bool AbortForMinimumPartySize, bool IsPartyLeader);
+    private readonly record struct StartupPreparationResult(bool EnteredRepairMode);
 
     private readonly IPluginLog log;
     private readonly Configuration config;
@@ -170,7 +172,7 @@ public class MogtomeEngine
         log.Information($"[MOGTOME][Engine] Duty completed event in territory {territoryId} - leave will request at first safe seam");
     }
 
-    public async void Start()
+    public void Start()
     {
         if (IsRunning)
         {
@@ -182,9 +184,16 @@ public class MogtomeEngine
         CurrentState = EngineState.Initializing;
         StatusMessage = "Initializing...";
 
+        _ = StartCoreAsync();
+    }
+
+    private async Task StartCoreAsync()
+    {
+        var testingModeUnsynced = config.TestingModeUnsynced;
+
         try
         {
-            ClearStaleDutyStateIfNeeded();
+            await GameHelpers.RunOnFrameworkThreadAsync(ClearStaleDutyStateIfNeeded).ConfigureAwait(false);
 
             StatusMessage = "Checking conflicting plugins...";
             var conflictingPluginsReady = await conflictPluginService.EnsureTwistOfFayteDisabledAsync("MOGTOME start", showPopup: true);
@@ -199,14 +208,20 @@ public class MogtomeEngine
                 log.Warning("[MOGTOME][Engine] Twist of Fayte warning path reported a soft failure, but startup will continue");
             }
 
-            var startingInsideDuty = condition[34];
-            if (!startingInsideDuty && EnforceMinimumPartySizeAtLeaderStart())
+            var startupSnapshot = await GameHelpers.RunOnFrameworkThreadAsync(() =>
+            {
+                var startingInsideDuty = condition[34];
+                var abortForMinimumPartySize = !startingInsideDuty && EnforceMinimumPartySizeAtLeaderStart();
+                return new StartupSnapshot(startingInsideDuty, abortForMinimumPartySize, state.IsPartyLeader);
+            }).ConfigureAwait(false);
+
+            if (startupSnapshot.AbortForMinimumPartySize)
                 return;
 
             StatusMessage = dutyAutomationService.UseAdsExperimental
                 ? "Preparing ADS..."
                 : "Preparing AutoDuty...";
-            var backendReady = await dutyAutomationService.PrepareForStartAsync(state.IsPartyLeader, startingInsideDuty);
+            var backendReady = await dutyAutomationService.PrepareForStartAsync(startupSnapshot.IsPartyLeader, startupSnapshot.StartingInsideDuty).ConfigureAwait(false);
             if (CurrentState != EngineState.Initializing)
             {
                 log.Warning("[MOGTOME][Engine] Start aborted while preparing automation backend");
@@ -215,73 +230,82 @@ public class MogtomeEngine
 
             if (!backendReady)
             {
-                CurrentState = EngineState.Idle;
-                StatusMessage = "Idle";
+                await GameHelpers.RunOnFrameworkThreadAsync(() =>
+                {
+                    CurrentState = EngineState.Idle;
+                    StatusMessage = "Idle";
+                }).ConfigureAwait(false);
                 return;
             }
 
-            log.Information("[MOGTOME][Engine] Sending /at enable as part of startup command prep");
-            GameHelpers.SendCommand("/at enable");
-
-            log.Information($"[MOGTOME][Engine] Using current party role at start: IsLeader={state.IsPartyLeader}, ConfiguredLeader={config.IsPartyLeader}, CrossWorld={config.IsCrossWorldParty}");
-
-            // 5. Check for repair needs before starting
-            log.Information("[MOGTOME][Engine] Checking repair status before start");
-            if (repairService.NeedsRepair())
+            var preparationResult = await GameHelpers.RunOnFrameworkThreadAsync(() =>
             {
-                log.Information("[Engine] Repair needed - repairing before start");
-                EnterRepairMode(useNpcRepair: ShouldUseNpcRepair(), "Repairing before start...");
-                // Don't set IsRunning yet - repair will complete first
+                log.Information("[MOGTOME][Engine] Sending /at enable as part of startup command prep");
+                GameHelpers.SendCommand("/at enable");
+
+                log.Information($"[MOGTOME][Engine] Using current party role at start: IsLeader={state.IsPartyLeader}, ConfiguredLeader={config.IsPartyLeader}, CrossWorld={config.IsCrossWorldParty}");
+
+                log.Information("[MOGTOME][Engine] Checking repair status before start");
+                if (repairService.NeedsRepair())
+                {
+                    log.Information("[Engine] Repair needed - repairing before start");
+                    EnterRepairMode(useNpcRepair: ShouldUseNpcRepair(), "Repairing before start...");
+                    return new StartupPreparationResult(EnteredRepairMode: true);
+                }
+
+                rotationService.Initialize();
+                dialogHandler.Start();
+
+                state.PotionsAvailable = config.PotionItemId > 0 &&
+                                         GameHelpers.GetInventoryItemCount((uint)config.PotionItemId, config.PotionUseHighQuality) > 0;
+                state.FoodAvailable = config.FoodItemId > 0 &&
+                                      GameHelpers.GetInventoryItemCount((uint)config.FoodItemId, config.FoodUseHighQuality) > 0;
+                state.CalculateTimeouts(LoopInterval);
+
+                dutyAutomationService.ApplyQueueConfiguration(testingModeUnsynced);
+                GameHelpers.SetDutyFinderLevelSync(!testingModeUnsynced);
+
+                if (testingModeUnsynced)
+                    log.Information("[MOGTOME][Engine] Testing mode: Unsync=ON, LevelSync=OFF");
+                else
+                    log.Information("[MOGTOME][Engine] Normal mode: Unsync=ON, LevelSync=ON");
+
+                return new StartupPreparationResult(EnteredRepairMode: false);
+            }).ConfigureAwait(false);
+
+            if (preparationResult.EnteredRepairMode)
                 return;
-            }
 
-            // 6. Initialize rotation
-            rotationService.Initialize();
-
-            // 7. Pause YesAlready - we handle dialogs directly
-            dialogHandler.Start();
-
-            // Check potion availability
-            state.PotionsAvailable = config.PotionItemId > 0 &&
-                                     GameHelpers.GetInventoryItemCount((uint)config.PotionItemId, config.PotionUseHighQuality) > 0;
-            state.FoodAvailable = config.FoodItemId > 0 &&
-                                  GameHelpers.GetInventoryItemCount((uint)config.FoodItemId, config.FoodUseHighQuality) > 0;
-
-            // Calculate timeouts
-            state.CalculateTimeouts(LoopInterval);
-
-            dutyAutomationService.ApplyQueueConfiguration(config.TestingModeUnsynced);
-            GameHelpers.SetDutyFinderLevelSync(!config.TestingModeUnsynced);
-
-            if (config.TestingModeUnsynced)
-                log.Information("[MOGTOME][Engine] Testing mode: Unsync=ON, LevelSync=OFF");
-            else
-                log.Information("[MOGTOME][Engine] Normal mode: Unsync=ON, LevelSync=ON");
-
-            if (startingInsideDuty)
+            if (startupSnapshot.StartingInsideDuty)
             {
                 log.Information("[MOGTOME][Engine] Start requested while already inside duty - skipping duty finder setup");
-            }
-            else
-            {
-                await ConfigureDutyFinderSettingsAsync(enableLevelSync: !config.TestingModeUnsynced);
-            }
-
-            if (startingInsideDuty)
-            {
-                StatusMessage = "Resuming inside duty...";
-                ResumeOrEnterCurrentDuty();
+                await GameHelpers.RunOnFrameworkThreadAsync(() =>
+                {
+                    StatusMessage = "Resuming inside duty...";
+                    ResumeOrEnterCurrentDuty();
+                }).ConfigureAwait(false);
                 return;
             }
 
-            CurrentState = EngineState.WaitingOutsideDuty;
-            StatusMessage = $"Running - Duty #{state.DutyCounter + 1}";
-            log.Information($"[MOGTOME][Engine] Initialized. Leader={state.IsPartyLeader}, Counter={state.DutyCounter}");
+            await ConfigureDutyFinderSettingsAsync(enableLevelSync: !testingModeUnsynced).ConfigureAwait(false);
+
+            await GameHelpers.RunOnFrameworkThreadAsync(() =>
+            {
+                if (CurrentState != EngineState.Initializing)
+                {
+                    log.Warning("[MOGTOME][Engine] Start aborted before entering waiting-outside-duty state");
+                    return;
+                }
+
+                CurrentState = EngineState.WaitingOutsideDuty;
+                StatusMessage = $"Running - Duty #{state.DutyCounter + 1}";
+                log.Information($"[MOGTOME][Engine] Initialized. Leader={state.IsPartyLeader}, Counter={state.DutyCounter}");
+            }).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             log.Error($"[MOGTOME][Engine] Initialization failed: {ex.Message}");
-            Stop();
+            await GameHelpers.RunOnFrameworkThreadAsync(Stop).ConfigureAwait(false);
         }
     }
 
@@ -373,13 +397,13 @@ public class MogtomeEngine
         var deadline = DateTime.UtcNow + timeout;
         while (DateTime.UtcNow < deadline)
         {
-            if (GameHelpers.IsAddonVisible(addonName))
+            if (await GameHelpers.RunOnFrameworkThreadAsync(() => GameHelpers.IsAddonVisible(addonName)).ConfigureAwait(false))
                 return true;
 
-            await Task.Delay(pollInterval);
+            await Task.Delay(pollInterval).ConfigureAwait(false);
         }
 
-        return GameHelpers.IsAddonVisible(addonName);
+        return await GameHelpers.RunOnFrameworkThreadAsync(() => GameHelpers.IsAddonVisible(addonName)).ConfigureAwait(false);
     }
 
     private async Task ConfigureDutyFinderSettingsAsync(bool enableLevelSync)
@@ -389,30 +413,9 @@ public class MogtomeEngine
         try
         {
             log.Debug("[MOGTOME][Engine] Step 1: Opening duty finder");
+            await GameHelpers.RunOnFrameworkThreadAsync(() => GameHelpers.SendCommand("/dutyfinder")).ConfigureAwait(false);
 
-            var commandProcessed = commandManager.ProcessCommand("/dutyfinder");
-            if (commandProcessed)
-            {
-                log.Debug("[MOGTOME][Engine] /dutyfinder command processed by CommandManager");
-            }
-            else
-            {
-                log.Debug("[MOGTOME][Engine] /dutyfinder not handled by CommandManager, trying UIModule fallback");
-
-                unsafe
-                {
-                    var uiModule = FFXIVClientStructs.FFXIV.Client.UI.UIModule.Instance();
-                    if (uiModule == null)
-                        throw new InvalidOperationException("UIModule is null, cannot send /dutyfinder command");
-
-                    var bytes = System.Text.Encoding.UTF8.GetBytes("/dutyfinder");
-                    var utf8String = FFXIVClientStructs.FFXIV.Client.System.String.Utf8String.FromSequence(bytes);
-                    uiModule->ProcessChatBoxEntry(utf8String, nint.Zero);
-                    log.Debug("[MOGTOME][Engine] /dutyfinder sent via UIModule successfully");
-                }
-            }
-
-            if (!await WaitForAddonVisibleAsync("ContentsFinder", TimeSpan.FromSeconds(5), TimeSpan.FromMilliseconds(200)))
+            if (!await WaitForAddonVisibleAsync("ContentsFinder", TimeSpan.FromSeconds(5), TimeSpan.FromMilliseconds(200)).ConfigureAwait(false))
             {
                 log.Warning("[MOGTOME][Engine] ContentsFinder addon not visible after /dutyfinder - continuing without verified duty finder UI setup");
                 return;
@@ -421,20 +424,20 @@ public class MogtomeEngine
             log.Debug("[MOGTOME][Engine] ContentsFinder addon is visible");
 
             log.Debug("[MOGTOME][Engine] Step 2: Opening duty finder options");
-            GameHelpers.FireAddonCallback("ContentsFinder", true, 15);
-            await Task.Delay(2000);
+            await GameHelpers.RunOnFrameworkThreadAsync(() => GameHelpers.FireAddonCallback("ContentsFinder", true, 15)).ConfigureAwait(false);
+            await Task.Delay(2000).ConfigureAwait(false);
 
             log.Debug("[MOGTOME][Engine] Step 3: Setting Unrestricted Party (Unsync)");
-            GameHelpers.FireAddonCallback("ContentsFinderSetting", true, 1, 1, 1);
-            await Task.Delay(2000);
+            await GameHelpers.RunOnFrameworkThreadAsync(() => GameHelpers.FireAddonCallback("ContentsFinderSetting", true, 1, 1, 1)).ConfigureAwait(false);
+            await Task.Delay(2000).ConfigureAwait(false);
 
             log.Debug("[MOGTOME][Engine] Step 4: Setting Level Sync");
-            GameHelpers.FireAddonCallback("ContentsFinderSetting", true, 1, 2, enableLevelSync ? 1 : 0);
-            await Task.Delay(2000);
+            await GameHelpers.RunOnFrameworkThreadAsync(() => GameHelpers.FireAddonCallback("ContentsFinderSetting", true, 1, 2, enableLevelSync ? 1 : 0)).ConfigureAwait(false);
+            await Task.Delay(2000).ConfigureAwait(false);
 
             log.Debug("[MOGTOME][Engine] Step 5: Confirming duty finder settings");
-            GameHelpers.FireAddonCallback("ContentsFinderSetting", true, 0);
-            await Task.Delay(2000);
+            await GameHelpers.RunOnFrameworkThreadAsync(() => GameHelpers.FireAddonCallback("ContentsFinderSetting", true, 0)).ConfigureAwait(false);
+            await Task.Delay(2000).ConfigureAwait(false);
 
             log.Information($"[MOGTOME][Engine] Duty finder setup complete: Unsync=ON, LevelSync={(enableLevelSync ? "ON" : "OFF")}");
         }
@@ -1612,32 +1615,12 @@ public class MogtomeEngine
         // Open duty panel to access Leave Duty button
         GameHelpers.SendCommand("/dutyfinder");
 
-        // Wait a moment for panel to open, then try to click Leave Duty
-        System.Threading.Tasks.Task.Delay(500).ContinueWith(_ => {
-            try
-            {
-                TryClickLeaveDutyButton();
-            }
-            catch (Exception ex)
-            {
-                log.Error($"[MOGTOME][Engine] ContinueWith exception in TryClickLeaveDutyButton: {ex.Message}");
-            }
-        }, System.Threading.Tasks.TaskContinuationOptions.OnlyOnRanToCompletion);
-
-        // Also try clicking Yes on any confirmation dialog that appears
-        System.Threading.Tasks.Task.Delay(1000).ContinueWith(_ => {
-            try
-            {
-                if (GameHelpers.ClickYesIfVisible())
-                {
-                    log.Information("[MOGTOME][Engine] Successfully clicked Yes on leave duty confirmation");
-                }
-            }
-            catch (Exception ex)
-            {
-                log.Error($"[MOGTOME][Engine] ContinueWith exception in ClickYesIfVisible: {ex.Message}");
-            }
-        }, System.Threading.Tasks.TaskContinuationOptions.OnlyOnRanToCompletion);
+        GameHelpers.QueueFrameworkAction("Engine leave", "open leave duty button", TimeSpan.FromMilliseconds(500), TryClickLeaveDutyButton);
+        GameHelpers.QueueFrameworkAction("Engine leave", "confirm leave duty", TimeSpan.FromMilliseconds(1000), () =>
+        {
+            if (GameHelpers.ClickYesIfVisible())
+                log.Information("[MOGTOME][Engine] Successfully clicked Yes on leave duty confirmation");
+        });
 
         StatusMessage = $"Leave requested (attempt #{leaveAttemptCount}) - waiting for zone-out";
     }
@@ -1660,17 +1643,7 @@ public class MogtomeEngine
                 log.Error($"[MOGTOME][Engine] ContentsFinderMenu callback failed: {ex.Message}");
             }
             
-            // Wait a moment for the menu to open, then click Leave button
-            System.Threading.Tasks.Task.Delay(500).ContinueWith(_ => {
-                try
-                {
-                    TryClickLeaveButton();
-                }
-                catch (Exception ex)
-                {
-                    log.Error($"[MOGTOME][Engine] ContinueWith exception in TryClickLeaveButton: {ex.Message}");
-                }
-            }, System.Threading.Tasks.TaskContinuationOptions.OnlyOnRanToCompletion);
+            GameHelpers.QueueFrameworkAction("Engine leave", "click leave button", TimeSpan.FromMilliseconds(500), TryClickLeaveButton);
         }
         catch (Exception ex)
         {
@@ -1686,17 +1659,7 @@ public class MogtomeEngine
             log.Information("[MOGTOME][Engine] Clicking Leave button on ContentsFinderMenu");
             GameHelpers.FireAddonCallback("ContentsFinderMenu", true, 43);
             
-            // Handle the confirmation dialog
-            System.Threading.Tasks.Task.Delay(500).ContinueWith(_ => {
-                try
-                {
-                    HandleLeaveConfirmation();
-                }
-                catch (Exception ex)
-                {
-                    log.Error($"[MOGTOME][Engine] ContinueWith exception in HandleLeaveConfirmation: {ex.Message}");
-                }
-            }, System.Threading.Tasks.TaskContinuationOptions.OnlyOnRanToCompletion);
+            GameHelpers.QueueFrameworkAction("Engine leave", "handle leave confirmation", TimeSpan.FromMilliseconds(500), HandleLeaveConfirmation);
         }
         catch (Exception ex)
         {

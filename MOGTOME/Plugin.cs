@@ -88,6 +88,10 @@ public sealed class Plugin : IDalamudPlugin
     private static readonly TimeSpan ExternalExceptionSuppressionWindow = TimeSpan.FromSeconds(10);
     private readonly object externalExceptionLogLock = new();
     private readonly Dictionary<string, ExternalExceptionLogState> externalExceptionLogStates = new(StringComparer.Ordinal);
+    private bool pendingEngineStartRequest;
+    private string pendingEngineStartSource = string.Empty;
+    private bool pendingEngineStartNotifyChat;
+    private bool pendingEngineStartDuplicateNotified;
 
     public Plugin()
     {
@@ -234,22 +238,7 @@ public sealed class Plugin : IDalamudPlugin
         switch (arg)
         {
             case "start":
-                if (Engine == null)
-                {
-                    ChatGui.Print("[MOGTOME] Engine is still initializing. Try again in a moment.");
-                    break;
-                }
-
-                if (!Engine.IsRunning)
-                {
-                    ShowStartReminderToast();
-                    _ = Task.Run(() => Engine.Start());
-                    ChatGui.Print("[MOGTOME] Started");
-                }
-                else
-                {
-                    ChatGui.Print("[MOGTOME] Already running");
-                }
+                QueueEngineStart("slash command", notifyChat: true);
                 break;
 
             case "stop":
@@ -363,6 +352,49 @@ public sealed class Plugin : IDalamudPlugin
         ToastGui.ShowNormal(new SeString(new TextPayload(StartReminderToastMessage)));
     }
 
+    public void QueueEngineStart(string source, bool notifyChat)
+    {
+        if (Engine == null)
+        {
+            Log.Information("[Plugin] Start request from {Source} skipped because engine is still initializing", source);
+            if (notifyChat)
+                ChatGui.Print("[MOGTOME] Engine is still initializing. Try again in a moment.");
+            return;
+        }
+
+        if (Engine.IsRunning)
+        {
+            Log.Information("[Plugin] Start request from {Source} skipped because engine is already running", source);
+            if (notifyChat)
+                ChatGui.Print("[MOGTOME] Already running");
+            return;
+        }
+
+        if (pendingEngineStartRequest)
+        {
+            if (!pendingEngineStartDuplicateNotified)
+            {
+                pendingEngineStartDuplicateNotified = true;
+                Log.Information("[Plugin] Start request from {Source} ignored because a framework-thread start is already queued from {QueuedSource}",
+                    source,
+                    pendingEngineStartSource);
+                if (notifyChat)
+                    ChatGui.Print("[MOGTOME] Start already queued.");
+            }
+
+            return;
+        }
+
+        ShowStartReminderToast();
+        pendingEngineStartRequest = true;
+        pendingEngineStartSource = source;
+        pendingEngineStartNotifyChat = notifyChat;
+        pendingEngineStartDuplicateNotified = false;
+        Log.Information("[Plugin] Start request queued from {Source}; engine start will begin on framework thread", source);
+        if (notifyChat)
+            ChatGui.Print("[MOGTOME] Start queued.");
+    }
+
     private void OnFrameworkUpdate(IFramework fw)
     {
         // Delayed login detection (LocalPlayer may not be ready immediately)
@@ -432,6 +464,8 @@ public sealed class Plugin : IDalamudPlugin
             ConflictPluginWarningWindow.ShowWarning(conflictPopupMessage);
         }
 
+        TryConsumeQueuedEngineStart();
+
         if (accountInitialized)
         {
             WarningTextWindow.ShowIfNeeded();
@@ -444,6 +478,38 @@ public sealed class Plugin : IDalamudPlugin
         {
             Engine.Update();
         }
+    }
+
+    private void TryConsumeQueuedEngineStart()
+    {
+        if (!pendingEngineStartRequest)
+            return;
+
+        var source = pendingEngineStartSource;
+        var notifyChat = pendingEngineStartNotifyChat;
+        pendingEngineStartRequest = false;
+        pendingEngineStartSource = string.Empty;
+        pendingEngineStartNotifyChat = false;
+        pendingEngineStartDuplicateNotified = false;
+
+        if (Engine == null)
+        {
+            Log.Warning("[Plugin] Framework-thread start skipped for {Source} because engine is still initializing", source);
+            if (notifyChat)
+                ChatGui.Print("[MOGTOME] Engine is still initializing. Try again in a moment.");
+            return;
+        }
+
+        if (Engine.IsRunning)
+        {
+            Log.Information("[Plugin] Framework-thread start skipped for {Source} because engine is already running", source);
+            if (notifyChat)
+                ChatGui.Print("[MOGTOME] Already running");
+            return;
+        }
+
+        Log.Information("[Plugin] Framework-thread startup begins for queued request from {Source}", source);
+        Engine.Start();
     }
 
     private void TriggerMigrationForAllAccounts()
