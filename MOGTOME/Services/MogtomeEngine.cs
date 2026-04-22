@@ -1254,11 +1254,15 @@ public class MogtomeEngine
         if (outsideDutyTicks <= 5)
             return;
 
-        if (repairService.NeedsRepair())
+        var waitingForAdsRepairCompletion = dutyAutomationService.IsAdsRepairHandoffActive && !state.IsInDuty;
+        if (repairService.NeedsRepair(forceRefresh: waitingForAdsRepairCompletion))
         {
             RetryRepairRequestIfNeeded();
             return;
         }
+
+        if (waitingForAdsRepairCompletion)
+            dutyAutomationService.RestoreAdsOutsideAfterRepair();
 
         ResetRepairRequestState();
         repairService.ReturnToInnIfNeeded();

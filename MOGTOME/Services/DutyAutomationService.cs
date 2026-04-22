@@ -80,8 +80,11 @@ public sealed class DutyAutomationService
     private readonly RunHistoryService runHistoryService;
     private readonly RotationService rotationService;
     private readonly object adsQueueStateLock = new();
+    private readonly object adsRepairStateLock = new();
     private int adsQueueOperationId = 0;
     private int activeAdsQueueOperationId = 0;
+    private int adsRepairOperationId = 0;
+    private int activeAdsRepairOperationId = 0;
     private int lastNoDutySelectedLoggedOperationId = 0;
     private int lastPartyRequirementsLoggedOperationId = 0;
     private bool adsQueueFailurePending = false;
@@ -95,10 +98,14 @@ public sealed class DutyAutomationService
     private bool adsLeaderInsideOwned = false;
     private bool adsLeaveRequested = false;
     private bool adsLeaveConfirmationObserved = false;
+    private bool adsRepairHandoffActive = false;
+    private bool adsRepairWaitingForCompletion = false;
+    private bool adsRepairOutsideRestorePending = false;
     private DateTime adsLastOutsideArmUtc = DateTime.MinValue;
     private DateTime adsLastLeaveRequestUtc = DateTime.MinValue;
     private const float AdsFollowerOutsideArmRetrySeconds = 5.0f;
     private const float AdsFollowerOutsideArmVisibleSeconds = 1.0f;
+    private const int AdsRepairStopSettleDelayMs = 1000;
     private static readonly PraetoriumUnlockDefinition[] PraetoriumOptionalUnlocks =
     [
         new("Sunken Temple of Qarn", [764]),
@@ -248,6 +255,7 @@ public sealed class DutyAutomationService
             return;
         }
 
+        CancelAdsRepairHandoff("duty entry");
         CapturePartySnapshot("ADS");
         RefreshCombatStack("ADS");
 
@@ -289,6 +297,7 @@ public sealed class DutyAutomationService
             return;
         }
 
+        CancelAdsRepairHandoff("ads stop");
         InvalidateAdsQueueOperations("ads stop");
         ResetAdsLeaveTracking();
         adsLeaderOutsideOwned = false;
@@ -331,8 +340,7 @@ public sealed class DutyAutomationService
             return;
         }
 
-        log.Information($"[MOGTOME][Repair] Requesting self-repair via {AdsSelfRepairCommand}");
-        commandManager.ProcessCommand(AdsSelfRepairCommand);
+        BeginAdsRepairHandoff(AdsSelfRepairCommand, "self-repair");
     }
 
     public void RequestNpcRepair()
@@ -344,8 +352,37 @@ public sealed class DutyAutomationService
             return;
         }
 
-        log.Information($"[MOGTOME][Repair] Requesting NPC repair via {AdsNpcRepairCommand}");
-        commandManager.ProcessCommand(AdsNpcRepairCommand);
+        BeginAdsRepairHandoff(AdsNpcRepairCommand, "npc repair");
+    }
+
+    public void RestoreAdsOutsideAfterRepair()
+    {
+        var operationId = 0;
+        lock (adsRepairStateLock)
+        {
+            if (!adsRepairHandoffActive || !adsRepairOutsideRestorePending)
+                return;
+
+            operationId = activeAdsRepairOperationId;
+            activeAdsRepairOperationId = 0;
+            adsRepairHandoffActive = false;
+            adsRepairWaitingForCompletion = false;
+            adsRepairOutsideRestorePending = false;
+        }
+
+        Interlocked.Increment(ref adsRepairOperationId);
+        ResetAdsLeaveTracking();
+        adsLeaderOutsideOwned = adsRuntimeRole == AdsRuntimeRole.QueueLeader;
+        adsLeaderInsideOwned = false;
+
+        if (adsRuntimeRole == AdsRuntimeRole.Follower)
+        {
+            adsFollowerState = AdsFollowerState.OutsideArmed;
+            adsLastOutsideArmUtc = DateTime.UtcNow;
+        }
+
+        log.Information($"[MOGTOME][ADS][Repair] Operation {operationId}: repair complete; restoring {AdsStartOutsideCommand}");
+        commandManager.ProcessCommand(AdsStartOutsideCommand);
     }
 
     public void ReturnToInnIfNeeded()
@@ -391,6 +428,9 @@ public sealed class DutyAutomationService
         if (!UseAdsExperimental)
             return ActiveBackendDisplayName;
 
+        if (IsAdsRepairHandoffActive)
+            return IsAdsRepairWaitingForCompletion ? "repair-waiting" : "repair-handoff";
+
         if (adsLeaveRequested)
         {
             return adsLeaveConfirmationObserved
@@ -421,6 +461,28 @@ public sealed class DutyAutomationService
 
     public bool GetSubsystemHealthy()
         => UseAdsExperimental ? IsAdsLoaded() : autoDutyPathService.PathExists(Config.PraetoriumPathFileName);
+
+    public bool IsAdsRepairHandoffActive
+    {
+        get
+        {
+            lock (adsRepairStateLock)
+            {
+                return adsRepairHandoffActive;
+            }
+        }
+    }
+
+    public bool IsAdsRepairWaitingForCompletion
+    {
+        get
+        {
+            lock (adsRepairStateLock)
+            {
+                return adsRepairHandoffActive && adsRepairWaitingForCompletion;
+            }
+        }
+    }
 
     public void EnsureFollowerOutsideArmed(string reason)
     {
@@ -912,6 +974,94 @@ public sealed class DutyAutomationService
 
     private static Task<bool> IsAddonVisibleOnFrameworkAsync(string addonName)
         => GameHelpers.RunOnFrameworkThreadAsync(() => GameHelpers.IsAddonVisible(addonName));
+
+    private void BeginAdsRepairHandoff(string repairCommand, string repairLabel)
+    {
+        var operationId = Interlocked.Increment(ref adsRepairOperationId);
+        lock (adsRepairStateLock)
+        {
+            activeAdsRepairOperationId = operationId;
+            adsRepairHandoffActive = true;
+            adsRepairWaitingForCompletion = false;
+            adsRepairOutsideRestorePending = true;
+        }
+
+        ResetAdsLeaveTracking();
+        adsLeaderOutsideOwned = false;
+        adsLeaderInsideOwned = false;
+        if (adsRuntimeRole == AdsRuntimeRole.Follower)
+            adsFollowerState = AdsFollowerState.Recovered;
+
+        log.Information($"[MOGTOME][ADS][Repair] Operation {operationId}: sending {AdsStopCommand}, waiting {AdsRepairStopSettleDelayMs / 1000.0:F1}s, then {repairCommand} ({repairLabel})");
+        _ = Task.Run(() => ExecuteAdsRepairHandoffAsync(operationId, repairCommand, repairLabel));
+    }
+
+    private async Task ExecuteAdsRepairHandoffAsync(int operationId, string repairCommand, string repairLabel)
+    {
+        try
+        {
+            if (!IsCurrentAdsRepairOperation(operationId))
+                return;
+
+            await GameHelpers.RunOnFrameworkThreadAsync(() =>
+            {
+                commandManager.ProcessCommand(AdsStopCommand);
+            }).ConfigureAwait(false);
+
+            await Task.Delay(AdsRepairStopSettleDelayMs).ConfigureAwait(false);
+
+            if (!IsCurrentAdsRepairOperation(operationId))
+                return;
+
+            await GameHelpers.RunOnFrameworkThreadAsync(() =>
+            {
+                commandManager.ProcessCommand(repairCommand);
+            }).ConfigureAwait(false);
+
+            if (!IsCurrentAdsRepairOperation(operationId))
+                return;
+
+            lock (adsRepairStateLock)
+            {
+                if (activeAdsRepairOperationId != operationId)
+                    return;
+
+                adsRepairWaitingForCompletion = true;
+            }
+
+            log.Information($"[MOGTOME][ADS][Repair] Operation {operationId}: {repairLabel} requested; waiting for durability truth before {AdsStartOutsideCommand}");
+        }
+        catch (Exception ex)
+        {
+            log.Error($"[MOGTOME][ADS][Repair] Operation {operationId}: repair handoff failed: {ex.Message}");
+        }
+    }
+
+    private bool IsCurrentAdsRepairOperation(int operationId)
+        => Volatile.Read(ref adsRepairOperationId) == operationId
+           && Volatile.Read(ref activeAdsRepairOperationId) == operationId;
+
+    private void CancelAdsRepairHandoff(string reason)
+    {
+        var hadRepairState = false;
+        lock (adsRepairStateLock)
+        {
+            hadRepairState = activeAdsRepairOperationId != 0
+                || adsRepairHandoffActive
+                || adsRepairOutsideRestorePending;
+
+            activeAdsRepairOperationId = 0;
+            adsRepairHandoffActive = false;
+            adsRepairWaitingForCompletion = false;
+            adsRepairOutsideRestorePending = false;
+        }
+
+        if (!hadRepairState)
+            return;
+
+        Interlocked.Increment(ref adsRepairOperationId);
+        log.Information($"[MOGTOME][ADS][Repair] Cleared repair handoff state ({reason})");
+    }
 
     private int GetActiveAdsQueueOperationId()
     {
