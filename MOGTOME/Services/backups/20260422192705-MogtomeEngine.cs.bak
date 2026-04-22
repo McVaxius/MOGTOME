@@ -94,9 +94,6 @@ public class MogtomeEngine
     private int repairRequestAttempts = 0;
     private bool activeRepairUsesNpc = false;
     private const float RepairRequestRetrySeconds = 10.0f;
-    private DateTime lastRepairRetryBlockedLogUtc = DateTime.MinValue;
-    private string lastRepairRetryBlockedReason = string.Empty;
-    private const float RepairRetryBlockedLogSeconds = 15.0f;
     private bool sawQueueConditionOutsideDuty = false;
     private bool pendingQueueRecoveryAfterRepair = false;
     private DateTime queueRecoveryStopUntilUtc = DateTime.MinValue;
@@ -251,7 +248,7 @@ public class MogtomeEngine
                 log.Information($"[MOGTOME][Engine] Using current party role at start: IsLeader={state.IsPartyLeader}, ConfiguredLeader={config.IsPartyLeader}, CrossWorld={config.IsCrossWorldParty}");
 
                 log.Information("[MOGTOME][Engine] Checking repair status before start");
-                if (repairService.NeedsRepair(forceRefresh: true))
+                if (repairService.NeedsRepair())
                 {
                     if (dutyAutomationService.UseAdsExperimental && !state.IsPartyLeader && !startupSnapshot.StartingInsideDuty)
                     {
@@ -854,7 +851,7 @@ public class MogtomeEngine
         foodService.Update();
 
         // Repair check
-        if (repairService.NeedsRepair(forceRefresh: true))
+        if (repairService.NeedsRepair())
         {
             if (dutyAutomationService.UseAdsExperimental && !state.IsPartyLeader)
             {
@@ -1270,16 +1267,8 @@ public class MogtomeEngine
         if (outsideDutyTicks <= 5)
             return;
 
-        var outsideDutyForRepairTruth = !state.IsInDuty && !condition[ConditionFlag.BoundByDuty];
-        var waitingForAdsRepairCompletion = dutyAutomationService.IsAdsRepairHandoffActive && outsideDutyForRepairTruth;
-        if (!outsideDutyForRepairTruth)
-        {
-            RetryRepairRequestIfNeeded();
-            return;
-        }
-
-        // Repair completion must win over stale cached state before retrying commands.
-        if (repairService.NeedsRepair(forceRefresh: true))
+        var waitingForAdsRepairCompletion = dutyAutomationService.IsAdsRepairHandoffActive && !state.IsInDuty;
+        if (repairService.NeedsRepair(forceRefresh: waitingForAdsRepairCompletion))
         {
             RetryRepairRequestIfNeeded();
             return;
@@ -1349,8 +1338,6 @@ public class MogtomeEngine
         lastRepairRequestUtc = DateTime.MinValue;
         repairRequestAttempts = 0;
         activeRepairUsesNpc = false;
-        lastRepairRetryBlockedLogUtc = DateTime.MinValue;
-        lastRepairRetryBlockedReason = string.Empty;
     }
 
     private void IssueRepairRequest(string reason)
@@ -1375,13 +1362,6 @@ public class MogtomeEngine
 
     private void RetryRepairRequestIfNeeded()
     {
-        if (IsRepairRetryBlocked(out var blocker))
-        {
-            StatusMessage = $"Repairing - waiting for {blocker}";
-            LogRepairRetryBlocked(blocker);
-            return;
-        }
-
         if (lastRepairRequestUtc == DateTime.MinValue)
         {
             IssueRepairRequest("repair state had no active request timestamp");
@@ -1394,70 +1374,6 @@ public class MogtomeEngine
 
         // Retry repair requests on a bounded cadence, never per-frame.
         IssueRepairRequest($"repair still needed after {elapsedSinceRequest:F0}s");
-    }
-
-    private bool IsRepairRetryBlocked(out string blocker)
-    {
-        if (state.IsInDuty || condition[ConditionFlag.BoundByDuty])
-        {
-            blocker = "duty state";
-            return true;
-        }
-
-        if (condition[ConditionFlag.BetweenAreas])
-        {
-            blocker = "zone transition";
-            return true;
-        }
-
-        if (HasQueueRegistrationCondition())
-        {
-            blocker = "queue registration";
-            return true;
-        }
-
-        if (GameHelpers.IsAddonVisible("ContentsFinderConfirm"))
-        {
-            blocker = "duty confirm popup";
-            return true;
-        }
-
-        if (GameHelpers.IsAddonVisible("SelectYesno"))
-        {
-            blocker = "SelectYesno dialog";
-            return true;
-        }
-
-        if (condition[ConditionFlag.OccupiedInCutSceneEvent] || condition[ConditionFlag.WatchingCutscene])
-        {
-            blocker = "cutscene";
-            return true;
-        }
-
-        if (condition[ConditionFlag.OccupiedInQuestEvent] ||
-            condition[ConditionFlag.Occupied33] ||
-            condition[ConditionFlag.Occupied39])
-        {
-            blocker = "occupied transition";
-            return true;
-        }
-
-        blocker = string.Empty;
-        return false;
-    }
-
-    private void LogRepairRetryBlocked(string blocker)
-    {
-        var now = DateTime.UtcNow;
-        if (string.Equals(lastRepairRetryBlockedReason, blocker, StringComparison.OrdinalIgnoreCase) &&
-            (now - lastRepairRetryBlockedLogUtc).TotalSeconds < RepairRetryBlockedLogSeconds)
-        {
-            return;
-        }
-
-        lastRepairRetryBlockedReason = blocker;
-        lastRepairRetryBlockedLogUtc = now;
-        log.Information($"[MOGTOME][Engine] Repair retry held while {blocker}; rechecking durability instead of sending another repair command");
     }
 
     private bool IsRepairFlowActive()
