@@ -274,7 +274,7 @@ public class ConfigWindow : Window, IDisposable
     {
         ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Backend Mode");
         var useAdsExperimental = config.UseAdsExperimental;
-        if (ImGui.Checkbox("ADS (TESTING VERY EXPERIMENTAL)", ref useAdsExperimental))
+        if (ImGui.Checkbox("AI Duty Solver (ADS) (Experimental)", ref useAdsExperimental))
         {
             ToggleAdsExperimental(useAdsExperimental);
             config = plugin.Configuration;

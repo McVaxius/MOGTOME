@@ -161,7 +161,7 @@ public sealed class DutyAutomationService
 
             if (!IsAdsLoaded())
             {
-                const string message = "ADS experimental mode is enabled, but ADS is not loaded.";
+                const string message = "AI Duty Solver (ADS) experimental mode is enabled, but ADS is not loaded.";
                 log.Warning($"[MOGTOME][Automation] {message}");
                 Plugin.ChatGui.Print($"[MOGTOME] {message}");
                 return false;
