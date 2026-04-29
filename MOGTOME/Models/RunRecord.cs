@@ -41,7 +41,7 @@ public class RunRecord
     /// <summary>
     /// Territory type ID (1044=Praetorium, 1048=Decumana)
     /// </summary>
-    public ushort TerritoryId { get; set; } = 0;
+    public uint TerritoryId { get; set; } = 0;
     
     /// <summary>
     /// Completion time in seconds

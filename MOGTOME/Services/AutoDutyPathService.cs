@@ -211,9 +211,10 @@ public class AutoDutyPathService
             // AutoDuty may store these at the plugin level rather than config
             var instanceType = pluginInstance.GetType();
 
-            // Try setting currentTerritoryType (exact field name from log)
-            var territorySet = SetMemberValue(instanceType, pluginInstance, "currentTerritoryType", (uint)TargetTerritoryType);
-            log.Information($"[MOGTOME][AutoDutyPath] Set currentTerritoryType={TargetTerritoryType}: {territorySet}");
+            // AutoDuty has used both private-field and internal-field casing here.
+            var territorySet = SetMemberValue(instanceType, pluginInstance, "currentTerritoryType", (uint)TargetTerritoryType)
+                || SetMemberValue(instanceType, pluginInstance, "CurrentTerritoryType", (uint)TargetTerritoryType);
+            log.Information($"[MOGTOME][AutoDutyPath] Set territory type={TargetTerritoryType}: {territorySet}");
 
             // Try setting currentPath by finding the target path index using the FILE DATE method
             var pathIndex = FindPathIndexFromDictionaryPaths(pluginInstance, selectedPathName);
@@ -1566,11 +1567,12 @@ public class AutoDutyPathService
             log.Information("[MOGTOME][AutoDutyPath] === CURRENT AUTO DUTY SELECTION ===");
 
             // Check plugin-level values
-            var currentTerritoryType = GetMemberValue(pluginType, autoDutyPlugin, "currentTerritoryType");
+            var currentTerritoryType = GetMemberValue(pluginType, autoDutyPlugin, "currentTerritoryType")
+                ?? GetMemberValue(pluginType, autoDutyPlugin, "CurrentTerritoryType");
             var currentPath = GetMemberValue(pluginType, autoDutyPlugin, "currentPath");
             var pathFile = GetMemberValue(pluginType, autoDutyPlugin, "pathFile");
             
-            log.Information($"[MOGTOME][AutoDutyPath] Plugin currentTerritoryType: {currentTerritoryType}");
+            log.Information($"[MOGTOME][AutoDutyPath] Plugin territory type: {currentTerritoryType}");
             log.Information($"[MOGTOME][AutoDutyPath] Plugin currentPath: {currentPath}");
             log.Information($"[MOGTOME][AutoDutyPath] Plugin pathFile: {pathFile}");
 

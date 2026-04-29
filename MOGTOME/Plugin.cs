@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
+using Dalamud.Game.Chat;
 using Dalamud.Game.Command;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
@@ -174,7 +175,7 @@ public sealed class Plugin : IDalamudPlugin
         PluginInterface.UiBuilder.OpenConfigUi += ToggleConfigUi;
         PluginInterface.UiBuilder.OpenMainUi += ToggleMainUi;
         ClientState.Login += OnLoginEvent;
-        ChatGui.ChatMessage += OnChatMessage;
+        ChatGui.ChatMessageUnhandled += OnChatMessage;
         Framework.Update += OnFrameworkUpdate;
         DutyStateService.DutyStarted += OnDutyStarted;
         DutyStateService.DutyCompleted += OnDutyCompleted;
@@ -187,7 +188,7 @@ public sealed class Plugin : IDalamudPlugin
         DutyStateService.DutyCompleted -= OnDutyCompleted;
         DutyStateService.DutyStarted -= OnDutyStarted;
         Framework.Update -= OnFrameworkUpdate;
-        ChatGui.ChatMessage -= OnChatMessage;
+        ChatGui.ChatMessageUnhandled -= OnChatMessage;
         ClientState.Login -= OnLoginEvent;
 
         AppDomain.CurrentDomain.UnhandledException -= OnUnhandledException;
@@ -551,14 +552,26 @@ public sealed class Plugin : IDalamudPlugin
         }
     }
 
+    private void OnDutyStarted(Dalamud.Game.DutyState.IDutyStateEventArgs args)
+        => OnDutyStarted(args.TerritoryType.RowId);
+
     private void OnDutyStarted(object? sender, ushort territoryId)
+        => OnDutyStarted((uint)territoryId);
+
+    private void OnDutyStarted(uint territoryId)
     {
         Log.Information($"[Plugin] DutyStarted event: territory={territoryId}");
         State.DutyStartTerritory = territoryId;  // Store the correct territory
         Log.Debug($"[Plugin] Stored DutyStartTerritory={territoryId}");
     }
 
+    private void OnDutyCompleted(Dalamud.Game.DutyState.IDutyStateEventArgs args)
+        => OnDutyCompleted(args.TerritoryType.RowId);
+
     private void OnDutyCompleted(object? sender, ushort territoryId)
+        => OnDutyCompleted((uint)territoryId);
+
+    private void OnDutyCompleted(uint territoryId)
     {
         Log.Information($"[Plugin] DutyCompleted event: territory={territoryId}");
         
@@ -573,7 +586,13 @@ public sealed class Plugin : IDalamudPlugin
         loginDetectionDelay = 3;
     }
 
+    private void OnChatMessage(IChatMessage message)
+        => HandleChatMessage(message.Message);
+
     private void OnChatMessage(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled)
+        => HandleChatMessage(message);
+
+    private void HandleChatMessage(SeString message)
     {
         try
         {

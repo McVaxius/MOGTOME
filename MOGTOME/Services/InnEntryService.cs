@@ -79,9 +79,9 @@ public class InnEntryService
         if (IsRunning && allowRestart)
             Cancel(restartReason, notifyUser: false);
 
-        if (GameHelpers.IsInnTerritory((ushort)Plugin.ClientState.TerritoryType))
+        if (GameHelpers.IsInnTerritory(Plugin.ClientState.TerritoryType))
         {
-            var territoryName = GameHelpers.GetTerritoryName((ushort)Plugin.ClientState.TerritoryType);
+            var territoryName = GameHelpers.GetTerritoryName(Plugin.ClientState.TerritoryType);
             log.Information($"[MOGTOME][Inn] /mog inn skipped because the player is already inside inn territory {territoryName}");
             Plugin.ChatGui.Print($"[MOGTOME] Already inside inn territory: {territoryName}.");
             return;
@@ -125,7 +125,7 @@ public class InnEntryService
 
         try
         {
-            if (GameHelpers.IsInnTerritory((ushort)Plugin.ClientState.TerritoryType))
+            if (GameHelpers.IsInnTerritory(Plugin.ClientState.TerritoryType))
             {
                 Complete("Entered inn territory successfully.");
                 return;

@@ -79,7 +79,7 @@ public class DialogHandlerService
             return;
 
         var promptNode = addon->PromptText;
-        if (promptNode == null || promptNode->NodeText.StringPtr == null)
+        if (promptNode == null || !promptNode->NodeText.StringPtr.HasValue)
             return;
 
         var promptSeString = MemoryHelper.ReadSeStringNullTerminated(new IntPtr(promptNode->NodeText.StringPtr));

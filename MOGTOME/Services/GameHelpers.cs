@@ -101,9 +101,9 @@ public static class GameHelpers
 
             // Create AtkValue array for Yes button (index 0)
             var atkValues = stackalloc AtkValue[2];
-            atkValues[0].Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.Int;
+            atkValues[0].Type = FFXIVClientStructs.FFXIV.Component.GUI.AtkValueType.Int;
             atkValues[0].Int = 0; // Yes button index
-            atkValues[1].Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.Int;
+            atkValues[1].Type = FFXIVClientStructs.FFXIV.Component.GUI.AtkValueType.Int;
             atkValues[1].Int = 0;
 
             addon->FireCallback(2, atkValues);
@@ -163,10 +163,10 @@ public static class GameHelpers
             {
                 atkValues[i] = args[i] switch
                 {
-                    int intVal => new AtkValue { Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.Int, Int = intVal },
-                    uint uintVal => new AtkValue { Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.UInt, UInt = uintVal },
-                    bool boolVal => new AtkValue { Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.Bool, Byte = (byte)(boolVal ? 1 : 0) },
-                    _ => new AtkValue { Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.Int, Int = Convert.ToInt32(args[i]) },
+                    int intVal => new AtkValue { Type = FFXIVClientStructs.FFXIV.Component.GUI.AtkValueType.Int, Int = intVal },
+                    uint uintVal => new AtkValue { Type = FFXIVClientStructs.FFXIV.Component.GUI.AtkValueType.UInt, UInt = uintVal },
+                    bool boolVal => new AtkValue { Type = FFXIVClientStructs.FFXIV.Component.GUI.AtkValueType.Bool, Byte = (byte)(boolVal ? 1 : 0) },
+                    _ => new AtkValue { Type = FFXIVClientStructs.FFXIV.Component.GUI.AtkValueType.Int, Int = Convert.ToInt32(args[i]) },
                 };
             }
 
@@ -354,7 +354,7 @@ public static class GameHelpers
         return $"Territory {territoryId}";
     }
 
-    public static bool IsInnTerritory(ushort territoryId)
+    public static bool IsInnTerritory(uint territoryId)
     {
         var territoryName = GetTerritoryName(territoryId);
         if (territoryName.StartsWith("Territory ", StringComparison.OrdinalIgnoreCase))

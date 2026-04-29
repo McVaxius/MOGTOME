@@ -15,9 +15,9 @@
     "other"
   ],
   "InternalName": "MOGTOME",
-  "AssemblyVersion": "0.1.0.2",
+  "AssemblyVersion": "0.1.0.3",
   "RepoUrl": "https://github.com/McVaxius/MOGTOME",
   "IconUrl": "https://raw.githubusercontent.com/McVaxius/MOGTOME/refs/heads/master/MOGTOME/images/icon.png",
   "ApplicableVersion": "any",
-  "DalamudApiLevel": 14
+  "DalamudApiLevel": 15
 }

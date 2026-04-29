@@ -167,7 +167,13 @@ public class MogtomeEngine
         Plugin.DutyStateService.DutyCompleted -= OnDutyCompleted;
     }
 
+    private void OnDutyCompleted(Dalamud.Game.DutyState.IDutyStateEventArgs args)
+        => OnDutyCompleted(args.TerritoryType.RowId);
+
     private void OnDutyCompleted(object? sender, ushort territoryId)
+        => OnDutyCompleted((uint)territoryId);
+
+    private void OnDutyCompleted(uint territoryId)
     {
         if (!IsRunning) return;
         dutyCompleted = true;
@@ -352,7 +358,7 @@ public class MogtomeEngine
         {
             if (state.DutyStartTerritory == 0 && clientState.TerritoryType > 0)
             {
-                state.DutyStartTerritory = (ushort)clientState.TerritoryType;
+                state.DutyStartTerritory = clientState.TerritoryType;
                 log.Warning($"[MOGTOME][Engine] DutyStartTerritory was empty while already inside duty - using current territory {state.DutyStartTerritory}");
             }
 
@@ -480,7 +486,7 @@ public class MogtomeEngine
             }
 
             // Update territory
-            state.CurrentTerritory = (ushort)(clientState.TerritoryType);
+            state.CurrentTerritory = clientState.TerritoryType;
             consumableInventoryService.Refresh();
 
             // Condition[34] = BoundByDuty
@@ -578,7 +584,7 @@ public class MogtomeEngine
         // We don't save here to avoid multiple saves during duty counting
     }
 
-    private ushort ResolveEnteredDutyTerritory()
+    private uint ResolveEnteredDutyTerritory()
     {
         if (state.DutyStartTerritory != 0)
             return state.DutyStartTerritory;
@@ -592,7 +598,7 @@ public class MogtomeEngine
         return state.DutyStartTerritory;
     }
 
-    private bool HandleUnexpectedDutyEntry(ushort territoryId)
+    private bool HandleUnexpectedDutyEntry(uint territoryId)
     {
         if (territoryId == DutyState.PraetoriumTerritoryId || territoryId == DutyState.DecumanaTerritoryId)
             return false;

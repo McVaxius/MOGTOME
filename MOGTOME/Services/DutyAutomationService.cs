@@ -388,7 +388,7 @@ public sealed class DutyAutomationService
     {
         try
         {
-            var territoryId = (ushort)Plugin.ClientState.TerritoryType;
+            var territoryId = Plugin.ClientState.TerritoryType;
             var territoryName = GameHelpers.GetTerritoryName(territoryId);
             if (GameHelpers.IsInnTerritory(territoryId))
             {

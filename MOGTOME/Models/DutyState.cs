@@ -11,13 +11,13 @@ public class DutyState
     public bool IsInDuty { get; set; } = false;
     public bool IsInCombat { get; set; } = false;
     public bool IsPartyLeader { get; set; } = false;
-    public ushort CurrentTerritory { get; set; } = 0;
-    public ushort DutyStartTerritory { get; set; } = 0;
+    public uint CurrentTerritory { get; set; } = 0;
+    public uint DutyStartTerritory { get; set; } = 0;
 
     // --- Territory IDs ---
-    public const ushort PraetoriumTerritoryId = 1044;
-    public const ushort DecumanaTerritoryId = 1048;
-    public const ushort LimsaLowerTerritoryId = 129;
+    public const uint PraetoriumTerritoryId = 1044;
+    public const uint DecumanaTerritoryId = 1048;
+    public const uint LimsaLowerTerritoryId = 129;
 
     // --- Duty Time Limits (in seconds) ---
     public const float PraetoriumTimeLimit = 7200f; // 120 minutes
