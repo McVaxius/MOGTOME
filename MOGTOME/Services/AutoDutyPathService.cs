@@ -221,8 +221,8 @@ public class AutoDutyPathService
             var pathSet = false;
             if (pathIndex >= 0)
             {
-                pathSet = SetMemberValue(instanceType, pluginInstance, "currentPath", pathIndex);
-                log.Information($"[MOGTOME][AutoDutyPath] Set currentPath={pathIndex} for '{selectedPathName}' (DICTIONARY PATHS METHOD): {pathSet}");
+                pathSet = SetAutoDutyCurrentPath(instanceType, pluginInstance, pathIndex);
+                log.Information($"[MOGTOME][AutoDutyPath] Set current path={pathIndex} for '{selectedPathName}' (DICTIONARY PATHS METHOD): {pathSet}");
                 if (pathSet)
                 {
                     LastForceResult = $"OK: Territory={TargetTerritoryType}, Path={pathIndex} ({selectedPathName}) [DictionaryPaths]";
@@ -235,8 +235,8 @@ public class AutoDutyPathService
                 var fallbackIndex = FindPathIndexByFileDate(selectedPathFileName);
                 if (fallbackIndex >= 0)
                 {
-                    pathSet = SetMemberValue(instanceType, pluginInstance, "currentPath", fallbackIndex);
-                    log.Information($"[MOGTOME][AutoDutyPath] Set currentPath={fallbackIndex} (FILE DATE FALLBACK) for '{selectedPathName}': {pathSet}");
+                    pathSet = SetAutoDutyCurrentPath(instanceType, pluginInstance, fallbackIndex);
+                    log.Information($"[MOGTOME][AutoDutyPath] Set current path={fallbackIndex} (FILE DATE FALLBACK) for '{selectedPathName}': {pathSet}");
                     if (pathSet)
                     {
                         LastForceResult = $"OK: Territory={TargetTerritoryType}, Path={fallbackIndex} ({selectedPathName}) [FileDateFallback]";
@@ -248,8 +248,8 @@ public class AutoDutyPathService
                     fallbackIndex = FindPathIndexByName(pluginInstance, selectedPathName);
                     if (fallbackIndex >= 0)
                     {
-                        pathSet = SetMemberValue(instanceType, pluginInstance, "currentPath", fallbackIndex);
-                        log.Information($"[MOGTOME][AutoDutyPath] Set currentPath={fallbackIndex} (PATHSELECTIONS FALLBACK) for '{selectedPathName}': {pathSet}");
+                        pathSet = SetAutoDutyCurrentPath(instanceType, pluginInstance, fallbackIndex);
+                        log.Information($"[MOGTOME][AutoDutyPath] Set current path={fallbackIndex} (PATHSELECTIONS FALLBACK) for '{selectedPathName}': {pathSet}");
                         if (pathSet)
                         {
                             LastForceResult = $"OK: Territory={TargetTerritoryType}, Path={fallbackIndex} ({selectedPathName}) [PathSelectionsFallback]";
@@ -1569,8 +1569,10 @@ public class AutoDutyPathService
             // Check plugin-level values
             var currentTerritoryType = GetMemberValue(pluginType, autoDutyPlugin, "currentTerritoryType")
                 ?? GetMemberValue(pluginType, autoDutyPlugin, "CurrentTerritoryType");
-            var currentPath = GetMemberValue(pluginType, autoDutyPlugin, "currentPath");
-            var pathFile = GetMemberValue(pluginType, autoDutyPlugin, "pathFile");
+            var currentPath = GetMemberValue(pluginType, autoDutyPlugin, "currentPath")
+                ?? GetMemberValue(pluginType, autoDutyPlugin, "CurrentPath");
+            var pathFile = GetMemberValue(pluginType, autoDutyPlugin, "pathFile")
+                ?? GetMemberValue(pluginType, autoDutyPlugin, "PathFile");
             
             log.Information($"[MOGTOME][AutoDutyPath] Plugin territory type: {currentTerritoryType}");
             log.Information($"[MOGTOME][AutoDutyPath] Plugin currentPath: {currentPath}");
@@ -2103,6 +2105,10 @@ public class AutoDutyPathService
 
         return null;
     }
+
+    private static bool SetAutoDutyCurrentPath(Type type, object? instance, int pathIndex)
+        => SetMemberValue(type, instance, "currentPath", pathIndex)
+           || SetMemberValue(type, instance, "CurrentPath", pathIndex);
 
     private static bool SetMemberValue(Type type, object? instance, string memberName, object value)
     {
