@@ -555,9 +555,6 @@ public sealed class Plugin : IDalamudPlugin
     private void OnDutyStarted(Dalamud.Game.DutyState.IDutyStateEventArgs args)
         => OnDutyStarted(args.TerritoryType.RowId);
 
-    private void OnDutyStarted(object? sender, ushort territoryId)
-        => OnDutyStarted((uint)territoryId);
-
     private void OnDutyStarted(uint territoryId)
     {
         Log.Information($"[Plugin] DutyStarted event: territory={territoryId}");
@@ -567,9 +564,6 @@ public sealed class Plugin : IDalamudPlugin
 
     private void OnDutyCompleted(Dalamud.Game.DutyState.IDutyStateEventArgs args)
         => OnDutyCompleted(args.TerritoryType.RowId);
-
-    private void OnDutyCompleted(object? sender, ushort territoryId)
-        => OnDutyCompleted((uint)territoryId);
 
     private void OnDutyCompleted(uint territoryId)
     {
@@ -588,9 +582,6 @@ public sealed class Plugin : IDalamudPlugin
 
     private void OnChatMessage(IChatMessage message)
         => HandleChatMessage(message.Message);
-
-    private void OnChatMessage(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled)
-        => HandleChatMessage(message);
 
     private void HandleChatMessage(SeString message)
     {
