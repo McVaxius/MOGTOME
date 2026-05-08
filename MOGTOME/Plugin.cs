@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Text;
 using System.Threading.Tasks;
 using Dalamud.Game.Chat;
 using Dalamud.Game.Command;
@@ -676,7 +677,7 @@ public sealed class Plugin : IDalamudPlugin
             Log.Warning(suppressionSummary);
 
         var extraSuffix = string.IsNullOrWhiteSpace(extraContext) ? string.Empty : $", {extraContext}";
-        Log.Error(ex, $"[Plugin] External {category} observed via MOGTOME hook (source={source}{extraSuffix})");
+        Log.Warning(ex, $"[Plugin] External {category} observed via MOGTOME hook (source={source}{extraSuffix})");
     }
 
     private void PruneExternalExceptionLogState_NoLock(DateTime now)
@@ -713,19 +714,153 @@ public sealed class Plugin : IDalamudPlugin
 
     private static string ClassifyExceptionSource(Exception ex)
     {
-        var text = ex.ToString();
-        if (text.Contains("MOGTOME.", StringComparison.OrdinalIgnoreCase))
+        var root = ex.GetBaseException();
+        var rootText = BuildExceptionClassificationText(root);
+        if (ContainsMogtomeFrame(rootText))
             return "MOGTOME";
-        if (text.Contains("AutoDuty.", StringComparison.OrdinalIgnoreCase))
+
+        var rootExternalSource = ClassifyKnownExternalSource(rootText);
+        if (rootExternalSource != null)
+            return rootExternalSource;
+
+        var fullText = BuildExceptionClassificationText(ex);
+        var externalSource = ClassifyKnownExternalSource(fullText);
+        if (externalSource != null)
+            return externalSource;
+
+        if (ContainsMogtomeFrame(fullText))
+            return "MOGTOME";
+
+        return GetFallbackExceptionSource(ex);
+    }
+
+    private static string BuildExceptionClassificationText(Exception ex)
+    {
+        var builder = new StringBuilder();
+        AppendExceptionClassificationText(builder, ex);
+
+        if (ex is AggregateException aggregate)
+        {
+            foreach (var inner in aggregate.Flatten().InnerExceptions)
+            {
+                AppendExceptionClassificationText(builder, inner);
+                var innerRoot = inner.GetBaseException();
+                if (!ReferenceEquals(innerRoot, inner))
+                    AppendExceptionClassificationText(builder, innerRoot);
+            }
+        }
+
+        var root = ex.GetBaseException();
+        if (!ReferenceEquals(root, ex))
+            AppendExceptionClassificationText(builder, root);
+
+        return builder.ToString();
+    }
+
+    private static void AppendExceptionClassificationText(StringBuilder builder, Exception ex)
+    {
+        builder.AppendLine(ex.GetType().FullName);
+        if (!string.IsNullOrWhiteSpace(ex.Source))
+            builder.Append("Source: ").AppendLine(ex.Source);
+
+        var targetType = ex.TargetSite?.DeclaringType?.FullName;
+        if (!string.IsNullOrWhiteSpace(targetType))
+            builder.Append("Target: ").Append(targetType).Append('.').AppendLine(ex.TargetSite!.Name);
+
+        builder.AppendLine(ex.ToString());
+    }
+
+    private static bool ContainsMogtomeFrame(string text)
+        => text.Contains("MOGTOME.", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("Source: MOGTOME", StringComparison.OrdinalIgnoreCase);
+
+    private static string? ClassifyKnownExternalSource(string text)
+    {
+        if (text.Contains("SomethingNeedDoing", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("Something Need Doing", StringComparison.OrdinalIgnoreCase))
+        {
+            return "SomethingNeedDoing";
+        }
+
+        if (text.Contains("AutoDuty", StringComparison.OrdinalIgnoreCase))
             return "AutoDuty";
-        if (text.Contains("PandorasBox.", StringComparison.OrdinalIgnoreCase))
+
+        if (text.Contains("Dalamud.Plugin.Internal", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("Dalamud.Plugin.PluginManager", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("PluginManager", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("plugin manager", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Dalamud Plugin Manager";
+        }
+
+        if (text.Contains("PandorasBox.", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("Pandora's Box", StringComparison.OrdinalIgnoreCase))
+        {
             return "Pandora's Box";
+        }
+
         if (text.Contains("RotationSolverReborn", StringComparison.OrdinalIgnoreCase))
             return "RotationSolverReborn";
+
         if (text.Contains("TwistOfFayte", StringComparison.OrdinalIgnoreCase))
             return "TwistOfFayte";
 
-        return string.IsNullOrWhiteSpace(ex.Source) ? "Unknown" : ex.Source;
+        return null;
+    }
+
+    private static string GetFallbackExceptionSource(Exception ex)
+    {
+        foreach (var candidate in EnumerateExceptionSources(ex))
+        {
+            var normalized = NormalizeExceptionSource(candidate);
+            if (!string.IsNullOrWhiteSpace(normalized))
+                return normalized;
+        }
+
+        return "Unknown";
+    }
+
+    private static IEnumerable<string?> EnumerateExceptionSources(Exception ex)
+    {
+        yield return ex.Source;
+
+        if (ex is AggregateException aggregate)
+        {
+            foreach (var inner in aggregate.Flatten().InnerExceptions)
+            {
+                yield return inner.Source;
+                var innerRoot = inner.GetBaseException();
+                if (!ReferenceEquals(innerRoot, inner))
+                    yield return innerRoot.Source;
+            }
+        }
+
+        var root = ex.GetBaseException();
+        if (!ReferenceEquals(root, ex))
+            yield return root.Source;
+    }
+
+    private static string? NormalizeExceptionSource(string? source)
+    {
+        if (string.IsNullOrWhiteSpace(source))
+            return null;
+
+        if (source.Equals("MOGTOME", StringComparison.OrdinalIgnoreCase))
+            return "MOGTOME";
+
+        var externalSource = ClassifyKnownExternalSource(source);
+        if (externalSource != null)
+            return externalSource;
+
+        if (source.Equals("mscorlib", StringComparison.OrdinalIgnoreCase)
+            || source.Equals("netstandard", StringComparison.OrdinalIgnoreCase)
+            || source.StartsWith("System.", StringComparison.OrdinalIgnoreCase)
+            || source.StartsWith("Microsoft.", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        return source;
     }
 
     private static string UppercaseFirst(string value)
