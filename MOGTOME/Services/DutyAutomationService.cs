@@ -105,6 +105,7 @@ public sealed class DutyAutomationService
     private DateTime adsLastLeaveRequestUtc = DateTime.MinValue;
     private const float AdsFollowerOutsideArmRetrySeconds = 5.0f;
     private const float AdsFollowerOutsideArmVisibleSeconds = 1.0f;
+    private const int AdsStartupStopSettleDelayMs = 1000;
     private const int AdsRepairStopSettleDelayMs = 1000;
     private static readonly PraetoriumUnlockDefinition[] PraetoriumOptionalUnlocks =
     [
@@ -167,10 +168,30 @@ public sealed class DutyAutomationService
                 return false;
             }
 
+            var sentStartupStop = false;
             await GameHelpers.RunOnFrameworkThreadAsync(() =>
             {
                 SetAdsRuntimeRole(isLeader, startingInsideDuty);
+                CancelAdsRepairHandoff("ads startup reset");
+                InvalidateAdsQueueOperations("ads startup reset");
+                ResetAdsLeaveTracking();
+                adsLeaderOutsideOwned = false;
+                adsLeaderInsideOwned = false;
+
+                if (!startingInsideDuty)
+                {
+                    sentStartupStop = true;
+                    log.Information($"[MOGTOME][ADS] Startup reset: sending {AdsStopCommand} while outside duty before MOGTOME handoff");
+                    commandManager.ProcessCommand(AdsStopCommand);
+                }
+                else
+                {
+                    log.Information($"[MOGTOME][ADS] Startup reset skipped {AdsStopCommand} because MOGTOME started inside duty");
+                }
             }).ConfigureAwait(false);
+
+            if (sentStartupStop)
+                await Task.Delay(AdsStartupStopSettleDelayMs).ConfigureAwait(false);
 
             log.Information("[MOGTOME][Automation] ADS backend ready");
             return true;
@@ -271,21 +292,12 @@ public sealed class DutyAutomationService
         }
 
         adsRuntimeRole = AdsRuntimeRole.Follower;
-        if (adsStartingInsideDutyRecovery)
-        {
-            adsFollowerState = AdsFollowerState.InsideObserved;
-            ResetAdsLeaveTracking();
-            log.Warning($"[MOGTOME][ADS] Follower started inside duty; using {AdsStartInsideCommand} as manual recovery path");
-            commandManager.ProcessCommand(AdsStartInsideCommand);
-            adsStartingInsideDutyRecovery = false;
-            return;
-        }
-
         var previousState = adsFollowerState;
         adsFollowerState = AdsFollowerState.InsideObserved;
         ResetAdsLeaveTracking();
+        log.Information($"[MOGTOME][ADS] Follower entered duty; taking inside ownership via {AdsStartInsideCommand} after /ads outside pre-arm (previous state: {previousState}, startingInsideDuty={adsStartingInsideDutyRecovery})");
+        commandManager.ProcessCommand(AdsStartInsideCommand);
         adsStartingInsideDutyRecovery = false;
-        log.Information($"[MOGTOME][ADS] Follower observed duty entry after /ads outside pre-arm; skipping normal {AdsStartInsideCommand} (previous state: {previousState})");
     }
 
     public void StopDuty()
@@ -326,9 +338,6 @@ public sealed class DutyAutomationService
         log.Information($"[MOGTOME][ADS] /ads leave request #{attemptNumber} ({GetAdsRoleLabel()}) at {deltaText} from duty-complete - {reason}");
         commandManager.ProcessCommand(AdsLeaveCommand);
     }
-
-    public void RequestDutyLeave()
-        => RequestDutyLeave("ADS leave requested.", DateTime.MinValue, 1);
 
     public void RequestSelfRepair()
     {
@@ -719,7 +728,7 @@ public sealed class DutyAutomationService
         }
 
         adsFollowerState = AdsFollowerState.Recovered;
-        log.Information($"[MOGTOME][ADS] ADS mode choice: follower uses {AdsStartOutsideCommand} before duty and treats {AdsStartInsideCommand} as leader/manual-recovery only (startingInsideDuty={startingInsideDuty})");
+        log.Information($"[MOGTOME][ADS] ADS mode choice: follower uses {AdsStartOutsideCommand} before duty, then {AdsStartInsideCommand} after DutyStarted (startingInsideDuty={startingInsideDuty})");
     }
 
     private void ResetAdsLeaveTracking()
