@@ -50,7 +50,6 @@ public sealed class Plugin : IDalamudPlugin
 
     private const string CommandName = "/mogtome";
     private const string AliasCommandName = "/mog";
-    private const string XaSkipCutscenesCommand = "/xa skipcutscenes on";
 
     // Per-account configuration management
     public ConfigManager ConfigManager { get; init; }
@@ -514,33 +513,8 @@ public sealed class Plugin : IDalamudPlugin
             return;
         }
 
-        if (!TryEnableXaSlaveSkipCutscenes(source))
-            return;
-
         Log.Information("[Plugin] Framework-thread startup begins for queued request from {Source}", source);
         Engine.Start();
-    }
-
-    private bool TryEnableXaSlaveSkipCutscenes(string source)
-    {
-        try
-        {
-            if (CommandManager.ProcessCommand(XaSkipCutscenesCommand))
-            {
-                Log.Information("[Plugin] XA Slave skipcutscenes enabled before start request from {Source}", source);
-                return true;
-            }
-
-            Log.Warning("[Plugin] Start aborted for {Source}: XA Slave did not handle {Command}", source, XaSkipCutscenesCommand);
-            ChatGui.Print($"[MOGTOME] Start aborted: XA Slave did not handle {XaSkipCutscenesCommand}. Ensure XA Slave is installed and loaded.");
-            return false;
-        }
-        catch (Exception ex)
-        {
-            Log.Warning(ex, "[Plugin] Start aborted for {Source}: failed to send {Command}", source, XaSkipCutscenesCommand);
-            ChatGui.Print($"[MOGTOME] Start aborted: failed to send {XaSkipCutscenesCommand}. Check Dalamud log.");
-            return false;
-        }
     }
 
     private void TriggerMigrationForAllAccounts()

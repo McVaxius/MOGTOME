@@ -27,7 +27,7 @@ public class ConfigWindow : Window, IDisposable
 
     // Dependency check cache
     private DateTime lastDepCheck = DateTime.MinValue;
-    private bool depRsr, depBmr, depVbm, depVnav, depTextAdv, depXaSlave, depAutoDuty, depAds, depLifestream;
+    private bool depRsr, depBmr, depVbm, depVnav, depTextAdv, depCutsceneSkip, depAutoDuty, depAds, depSimpleTweaks, depLifestream;
     private bool depCustomRes, depChillframes, depKrangler, depDps, depTtsl;
     private bool depTwistOfFayteInstalled, depTwistOfFayteEnabled;
     private bool allDepsGreen = false;
@@ -41,9 +41,10 @@ public class ConfigWindow : Window, IDisposable
         { "vnavmesh", "https://raw.githubusercontent.com/awgil/ffxiv_plugin_distribution/master/pluginmaster.json" },
         { "Lifestream", "https://raw.githubusercontent.com/NightmareXIV/MyDalamudPlugins/main/pluginmaster.json" },
         { "TextAdvance", "https://raw.githubusercontent.com/NightmareXIV/MyDalamudPlugins/main/pluginmaster.json" },
-        { "XASlave", "https://aethertek.io/x.json" },
+        { "SkipCutscene", "https://raw.githubusercontent.com/a08381/Dalamud.SkipCutscene/dist/repo.json" },
         { "AutoDuty", "https://puni.sh/api/repository/erdelf" },
         { "ADS", "https://aethertek.io/x.json" },
+        { "SimpleTweaks", "its in the main dalamud repo. what are you doing :D" },
         { "CustomResolution", "https://raw.githubusercontent.com/0x0ade/CustomResolution/main/pluginmaster.json" },
     };
 
@@ -207,9 +208,10 @@ public class ConfigWindow : Window, IDisposable
             depVbm = false;
             depVnav = false;
             depTextAdv = false;
-            depXaSlave = false;
+            depCutsceneSkip = false;
             depAutoDuty = false;
             depAds = false;
+            depSimpleTweaks = false;
             depLifestream = false;
             depCustomRes = false;
             depChillframes = false;
@@ -233,19 +235,15 @@ public class ConfigWindow : Window, IDisposable
                     case "BossMod": depVbm = true; break;
                     case "vnavmesh": depVnav = true; break;
                     case "TextAdvance": depTextAdv = true; break;
+                    case "SkipCutscene": depCutsceneSkip = true; break;
                     case "AutoDuty": depAutoDuty = true; break;
                     case "ADS": depAds = true; break;
+                    case "SimpleTweaksPlugin": depSimpleTweaks = true; break;
                     case "Lifestream": depLifestream = true; break;
                     case "ChillFrames": depChillframes = true; break;
                     case "Krangler": depKrangler = true; break;
                     case "DPS": depDps = true; break;
                     case "TTSL": depTtsl = true; break;
-                }
-
-                if (!depXaSlave &&
-                    (IsXaSlavePlugin(p.InternalName) || IsXaSlavePlugin(p.Name)))
-                {
-                    depXaSlave = true;
                 }
 
                 if (!depLifestream &&
@@ -264,7 +262,7 @@ public class ConfigWindow : Window, IDisposable
             var backendReady = useAdsExperimental
                 ? depAds
                 : depAutoDuty && pathOk;
-            allDepsGreen = depRsr && (depBmr || depVbm) && !(depBmr && depVbm) && depVnav && depLifestream && depTextAdv && depXaSlave && backendReady;
+            allDepsGreen = depRsr && (depBmr || depVbm) && !(depBmr && depVbm) && depVnav && depLifestream && depTextAdv && depCutsceneSkip && depSimpleTweaks && backendReady;
         }
         catch (Exception ex)
         {
@@ -321,14 +319,16 @@ public class ConfigWindow : Window, IDisposable
         // TextAdvance
         DrawDepLine("TextAdvance", depTextAdv, depTextAdv ? "Installed" : "NOT FOUND", "TextAdvance");
 
-        // XA Slave
-        DrawDepLine("XA Slave", depXaSlave, depXaSlave ? "Installed" : "NOT FOUND", "XASlave");
-        ImGui.TextDisabled("MOGTOME runs /xa skipcutscenes on before every manual start.");
+        // SkipCutscene
+        DrawDepLine("SkipCutscene", depCutsceneSkip, depCutsceneSkip ? "Installed" : "NOT FOUND", "SkipCutscene");
 
         if (config.UseAdsExperimental)
             DrawDepLine("ADS", depAds, depAds ? "Installed" : "NOT FOUND", "ADS");
         else
             DrawDepLine("AutoDuty", depAutoDuty, depAutoDuty ? "Installed" : "NOT FOUND", "AutoDuty");
+
+        // SimpleTweaks
+        DrawDepLine("SimpleTweaks", depSimpleTweaks, depSimpleTweaks ? "Installed" : "NOT FOUND", "SimpleTweaks");
 
         ImGui.Spacing();
         ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Optional Plugins");
@@ -416,17 +416,6 @@ public class ConfigWindow : Window, IDisposable
         ImGui.TextColored(color, $"[!!] {name}");
         ImGui.SameLine();
         ImGui.TextColored(color, $"- {detail}");
-    }
-
-    private static bool IsXaSlavePlugin(string? name)
-        => string.Equals(NormalizePluginName(name), "XASlave", StringComparison.OrdinalIgnoreCase);
-
-    private static string NormalizePluginName(string? name)
-    {
-        if (string.IsNullOrWhiteSpace(name))
-            return string.Empty;
-
-        return new string(name.Where(char.IsLetterOrDigit).ToArray());
     }
 
     private static void DrawDepLineOptional(string name, bool exists, string? missingDetail = null, string? installedWarning = null)

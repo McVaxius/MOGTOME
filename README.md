@@ -44,18 +44,17 @@ MOGTOME automates farming of The Praetorium (99 runs) and The Porta Decumana (un
 ### Required Plugins
 - **AutoDuty** - Duty path execution
 - **vnavmesh** - Navigation and pathfinding
-- **SimpleTweaks** - Targeting fix, equipment updates
+- **XA Slave** - Provides `/xa skipcutscenes on` startup control
 - **YesAlready** - Auto-confirm dialogs
 - **BossMod Reborn** OR **Rotation Solver Reborn** - Combat automation
 
 ### Optional Plugins
 - **Automaton (Pandora)** - AutoQueue tweak
-- **Cutscene Skip** - Skip cutscenes
 
 ### Game Configuration (MANDATORY)
 - **NOT in controller mode** (causes chat spam)
 - **Duty Finder**: Unrestricted Party + Level Sync enabled
-- **SimpleTweaks**: "Fix '/target' Command" enabled
+- **XA Slave**: Installed and loaded. MOGTOME runs `/xa skipcutscenes on` before each manual start
 - **AutoDuty**: "Leave Duty" disabled OR "Only when duty complete"
 - **YesAlready**: Configured for repair, exit, sealed area dialogs
 
@@ -92,7 +91,7 @@ See [how-to-import-plugins.md](how-to-import-plugins.md) for detailed setup inst
 1. Ensure you're outside a duty
 2. Open MOGTOME: `/mogtome`
 3. Click **Start** button
-4. Bot will queue, run duties, repair, and consume food automatically
+4. MOGTOME sends `/xa skipcutscenes on`, then queues, runs duties, repairs, and consumes food automatically
 
 ### Configuration
 
@@ -104,10 +103,10 @@ See [how-to-import-plugins.md](how-to-import-plugins.md) for detailed setup inst
 ### Commands
 
 - `/mogtome` - Open status window
-- `/mogtome config` - Open configuration window
-- `/mogtome start` - Start the bot
-- `/mogtome stop` - Stop the bot
-- `/mogtome reset` - Reset duty counter
+- `/mog config` - Open configuration window
+- `/mog start` - Start the bot
+- `/mog stop` - Stop the bot
+- `/mog status` - Print current status
 
 ---
 
@@ -181,7 +180,7 @@ See [PROJECT_GAMEPLAN.md](PROJECT_GAMEPLAN.md) for detailed technical documentat
 
 - **Original Script**: G.O.O.N. (Generally Ordered Optimized Navigation) by dhogGPT
 - **Inspiration**: @Akasha, @Ritsuko for ideas and code
-- **Dependencies**: AutoDuty, vnavmesh, SimpleTweaks, YesAlready, BossMod/RSR
+- **Dependencies**: AutoDuty, vnavmesh, XA Slave, YesAlready, BossMod/RSR
 
 ---
 

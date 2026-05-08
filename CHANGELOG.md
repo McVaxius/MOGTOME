@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Added SQLite backfill for missing `IsDebugRun` metadata and missing party sizes on existing run records
 - Revalidated the BossModReborn dependency repo link against the CombatReborn distribution and kept the existing BMR repo target
+- Replaced SkipCutscene and SimpleTweaks setup requirements with XA Slave and run `/xa skipcutscenes on` before manual starts
 ### Project Setup
 - Created project structure and documentation
 - Defined comprehensive project gameplan
