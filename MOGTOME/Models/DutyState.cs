@@ -19,6 +19,10 @@ public class DutyState
     public const uint DecumanaTerritoryId = 1048;
     public const uint LimsaLowerTerritoryId = 129;
 
+    public static bool IsMogtomeDutyTerritory(uint territoryId)
+        => territoryId == PraetoriumTerritoryId ||
+           territoryId == DecumanaTerritoryId;
+
     // --- Duty Time Limits (in seconds) ---
     public const float PraetoriumTimeLimit = 7200f; // 120 minutes
     public const float DecumanaTimeLimit = 3600f;   // 60 minutes
@@ -73,6 +77,8 @@ public class DutyState
         IsInDuty = false;
         IsInCombat = false;
         DutyStartTime = null;
+        CurrentTerritory = 0;
+        DutyStartTerritory = 0;
         MaxContentTime = 0;
         TimeInDuty = 0;
         RemainingTimeAtCompletion = 0;

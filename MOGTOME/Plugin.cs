@@ -586,8 +586,14 @@ public sealed class Plugin : IDalamudPlugin
     private void OnDutyStarted(uint territoryId)
     {
         Log.Information($"[Plugin] DutyStarted event: territory={territoryId}");
-        State.DutyStartTerritory = territoryId;  // Store the correct territory
-        Log.Debug($"[Plugin] Stored DutyStartTerritory={territoryId}");
+        if (DutyState.IsMogtomeDutyTerritory(territoryId))
+        {
+            State.DutyStartTerritory = territoryId;
+            Log.Debug($"[Plugin] Stored MOGTOME DutyStartTerritory={territoryId}");
+            return;
+        }
+
+        Log.Debug($"[Plugin] Ignored non-MOGTOME DutyStarted territory={territoryId}");
     }
 
     private void OnDutyCompleted(Dalamud.Game.DutyState.IDutyStateEventArgs args)
