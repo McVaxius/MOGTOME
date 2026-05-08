@@ -110,7 +110,7 @@ public sealed class Plugin : IDalamudPlugin
         RunHistoryService = new RunHistoryService(Log, Configuration, State, PlayerState, ConfigManager, DatabaseService);
 
         // Initialize IPC that RotationService needs
-        BossModIPC = new BossModIPC(Log, CommandManager);
+        BossModIPC = new BossModIPC(PluginInterface, Log, CommandManager);
         YesAlreadyIPC = new YesAlreadyIPC(Log);
         VNavIPC = new VNavIPC(Log, CommandManager);
         RotationService = new RotationService(Log, Configuration, State, BossModIPC);
@@ -518,6 +518,7 @@ public sealed class Plugin : IDalamudPlugin
             return;
 
         Log.Information("[Plugin] Framework-thread startup begins for queued request from {Source}", source);
+        BossModIPC.PreparePassivePresetForStart();
         Engine.Start();
     }
 
