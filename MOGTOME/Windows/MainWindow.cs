@@ -210,11 +210,11 @@ public class MainWindow : Window, IDisposable
         }
         if (ImGui.IsItemHovered())
         {
-            ImGui.SetTooltip("Experimental backend swap.\nEnabling immediately sends /xldisableplugin AutoDuty.");
+            ImGui.SetTooltip("Duty backend selector.\nEnabling ADS immediately sends /xldisableplugin AutoDuty.\nADS remains required when this is off because inn entry uses /ads enterinn.");
         }
         ImGui.TextDisabled(config.UseAdsExperimental
-            ? "ADS mode active. AutoDuty is disabled on toggle and again on start."
-            : "AutoDuty mode active.");
+            ? "ADS duty backend active. ADS also handles inn entry."
+            : "AutoDuty duty backend active. ADS still handles inn entry.");
 
         ImGui.Separator();
 
@@ -593,7 +593,7 @@ public class MainWindow : Window, IDisposable
         DrawStatusLine("Potions", config.PotionItemId > 0 && state.PotionsAvailable, FormatConsumableLabel(config.PotionItemName, config.PotionUseHighQuality, state.PotionExactCount));
         DrawStatusLine("YesAlready", plugin.YesAlreadyIPC.IsPaused, "Paused by MOGTOME");
         DrawStatusLine(
-            config.UseAdsExperimental ? "ADS Mode" : "AutoDuty Path",
+            "Duty Backend",
             plugin.DutyAutomationService.GetSubsystemHealthy(),
             plugin.DutyAutomationService.GetSubsystemStatusLabel());
         

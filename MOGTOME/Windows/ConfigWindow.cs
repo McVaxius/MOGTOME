@@ -263,7 +263,7 @@ public class ConfigWindow : Window, IDisposable
             var useAdsExperimental = plugin.Configuration.UseAdsExperimental;
             var backendReady = useAdsExperimental
                 ? depAds
-                : depAutoDuty && pathOk;
+                : depAds && depAutoDuty && pathOk;
             allDepsGreen = depRsr && (depBmr || depVbm) && !(depBmr && depVbm) && depVnav && depLifestream && depTextAdv && depXaSlave && backendReady;
         }
         catch (Exception ex)
@@ -282,8 +282,8 @@ public class ConfigWindow : Window, IDisposable
             config = plugin.Configuration;
         }
         ImGui.TextDisabled(config.UseAdsExperimental
-            ? "ADS required. AutoDuty path install no longer blocks tabs."
-            : "AutoDuty required. ADS optional and disabled.");
+            ? "ADS handles duty automation and inn return."
+            : "AutoDuty handles duty automation. ADS remains required for inn return.");
         ImGui.Spacing();
 
         ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Required Plugins");
@@ -325,9 +325,10 @@ public class ConfigWindow : Window, IDisposable
         DrawDepLine("XA Slave", depXaSlave, depXaSlave ? "Installed" : "NOT FOUND", "XASlave");
         ImGui.TextDisabled("MOGTOME runs /xa skipcutscenes on before every manual start.");
 
-        if (config.UseAdsExperimental)
-            DrawDepLine("ADS", depAds, depAds ? "Installed" : "NOT FOUND", "ADS");
-        else
+        DrawDepLine("ADS", depAds, depAds ? "Installed" : "NOT FOUND", "ADS");
+        ImGui.TextDisabled("Required in both backend modes. MOGTOME delegates all inn entry to /ads enterinn.");
+
+        if (!config.UseAdsExperimental)
             DrawDepLine("AutoDuty", depAutoDuty, depAutoDuty ? "Installed" : "NOT FOUND", "AutoDuty");
 
         ImGui.Spacing();
@@ -377,6 +378,7 @@ public class ConfigWindow : Window, IDisposable
                 _ = Task.Run(async () => await plugin.AutoDutyPathService.EnsurePathExists());
             }
             ImGui.TextDisabled("This copies the bundled W2W Praetorium path files from MOGTOME's data folder into AutoDuty's paths folder.");
+            ImGui.TextDisabled("ADS is still required for /ads enterinn after repairs and manual /mog inn.");
             ImGui.Spacing();
         }
         else
@@ -385,6 +387,7 @@ public class ConfigWindow : Window, IDisposable
             ImGui.Separator();
             ImGui.TextWrapped("ADS mode disables AutoDuty immediately and again on Start. Queueing uses ADS ownership plus direct duty finder registration.");
             ImGui.TextWrapped("Repair/inn/leave switch to /ads npcrepair, /ads selfrepair, /ads enterinn, and /ads leave.");
+            ImGui.TextWrapped("The checkbox changes only the duty backend. ADS is required either way because inn entry is delegated to ADS.");
             ImGui.Spacing();
         }
     }
@@ -872,7 +875,7 @@ public class ConfigWindow : Window, IDisposable
         ImGui.TextWrapped("- Solo: Treated as leader automatically");
         ImGui.TextWrapped(config.UseAdsExperimental
             ? $"- ADS mode: currently uses {(config.UseAdsSelfRepair ? "/ads selfrepair" : "/ads npcrepair")} and /ads enterinn"
-            : "- AutoDuty mode: repair METHOD (self/NPC) is configured in AutoDuty settings");
+            : "- AutoDuty mode: repair METHOD (self/NPC) is configured in AutoDuty settings; inn return uses /ads enterinn");
         
         ImGui.Spacing();
         

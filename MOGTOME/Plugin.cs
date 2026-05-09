@@ -50,6 +50,7 @@ public sealed class Plugin : IDalamudPlugin
 
     private const string CommandName = "/mogtome";
     private const string AliasCommandName = "/mog";
+    private const string AdsEnterInnCommand = "/ads enterinn";
     private const string XaSkipCutscenesCommand = "/xa skipcutscenes on";
 
     // Per-account configuration management
@@ -70,7 +71,6 @@ public sealed class Plugin : IDalamudPlugin
     public RotationService RotationService { get; private set; }
     public BossHandlerService BossHandlerService { get; private set; }
     public RepairService RepairService { get; private set; }
-    public InnEntryService InnEntryService { get; private set; }
     public FoodService FoodService { get; private set; }
     public ConsumableInventoryService ConsumableInventoryService { get; private set; }
     public DialogHandlerService DialogHandlerService { get; private set; }
@@ -131,7 +131,6 @@ public sealed class Plugin : IDalamudPlugin
             RotationService);
         DutyQueueService = new DutyQueueService(Log, State, DutyAutomationService, Condition);
         RepairService = new RepairService(Log, Configuration, State, DutyAutomationService, Condition);
-        InnEntryService = new InnEntryService(Log, VNavIPC);
         ConsumableInventoryService = new ConsumableInventoryService(Log, Configuration, State);
         FoodService = new FoodService(Log, Configuration, State, Condition, ConsumableInventoryService);
         BossHandlerService = new BossHandlerService(Log, Configuration, State, VNavIPC, CommandManager, Condition, ConsumableInventoryService);
@@ -210,7 +209,6 @@ public sealed class Plugin : IDalamudPlugin
         }
 
         RunHistoryService.Dispose();
-        InnEntryService.Cancel("plugin dispose", notifyUser: false);
 
         // Save current account configuration before disposing everything
         ConfigManager.SaveCurrentAccount();
@@ -248,21 +246,13 @@ public sealed class Plugin : IDalamudPlugin
                 break;
 
             case "stop":
-                var stoppedSomething = false;
-                if (InnEntryService.IsRunning)
-                {
-                    InnEntryService.Cancel("manual stop", notifyUser: false);
-                    stoppedSomething = true;
-                }
-
                 if (Engine == null)
                 {
-                    ChatGui.Print(stoppedSomething
-                        ? "[MOGTOME] Stopped"
-                        : "[MOGTOME] Engine is still initializing.");
+                    ChatGui.Print("[MOGTOME] Engine is still initializing.");
                     break;
                 }
 
+                var stoppedSomething = false;
                 if (Engine.IsRunning)
                 {
                     Engine.Stop();
@@ -283,11 +273,11 @@ public sealed class Plugin : IDalamudPlugin
                     break;
                 }
 
-                InnEntryService.StartManualEntry();
+                SendAdsEnterInnCommand("/mog inn", notifyFailure: true);
                 break;
 
             case "inn auto":
-                InnEntryService.StartRepairReturnEntry();
+                SendAdsEnterInnCommand("/mog inn auto", notifyFailure: false);
                 break;
 
             case "status":
@@ -324,6 +314,29 @@ public sealed class Plugin : IDalamudPlugin
             default:
                 MainWindow.Toggle();
                 break;
+        }
+    }
+
+    private static bool SendAdsEnterInnCommand(string source, bool notifyFailure)
+    {
+        try
+        {
+            Log.Information($"[MOGTOME][Inn] {source} delegated to {AdsEnterInnCommand}");
+            if (CommandManager.ProcessCommand(AdsEnterInnCommand))
+                return true;
+
+            const string message = "ADS did not handle /ads enterinn. Ensure ADS is installed and loaded.";
+            Log.Warning($"[MOGTOME][Inn] {message}");
+            if (notifyFailure)
+                ChatGui.Print($"[MOGTOME] {message}");
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, $"[MOGTOME][Inn] Failed to send {AdsEnterInnCommand} from {source}");
+            if (notifyFailure)
+                ChatGui.Print("[MOGTOME] Failed to send /ads enterinn. Check Dalamud log.");
+            return false;
         }
     }
 
@@ -477,8 +490,6 @@ public sealed class Plugin : IDalamudPlugin
             WarningTextWindow.ShowIfNeeded();
         }
 
-        InnEntryService.Update();
-        
         // Only update engine if it's initialized
         if (Engine != null)
         {

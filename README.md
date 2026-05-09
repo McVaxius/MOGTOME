@@ -42,7 +42,8 @@ MOGTOME automates farming of The Praetorium (99 runs) and The Porta Decumana (un
 ## Requirements
 
 ### Required Plugins
-- **AutoDuty** - Duty path execution
+- **AutoDuty** - Duty path execution when ADS duty backend is disabled
+- **ADS (AI Duty Solver)** - Inn entry handoff through `/ads enterinn`; optional duty backend when enabled
 - **vnavmesh** - Navigation and pathfinding
 - **XA Slave** - Provides `/xa skipcutscenes on` startup control
 - **YesAlready** - Auto-confirm dialogs
@@ -106,6 +107,7 @@ See [how-to-import-plugins.md](how-to-import-plugins.md) for detailed setup inst
 - `/mog config` - Open configuration window
 - `/mog start` - Start the bot
 - `/mog stop` - Stop the bot
+- `/mog inn` - Delegate inn entry to ADS with `/ads enterinn`
 - `/mog status` - Print current status
 
 ---

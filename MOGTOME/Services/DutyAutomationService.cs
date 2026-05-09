@@ -405,15 +405,13 @@ public sealed class DutyAutomationService
                 return;
             }
 
-            if (!UseAdsExperimental)
-            {
-                log.Information($"[MOGTOME][Repair] Repair completed outside inn territory {territoryName} ({territoryId}); sending internal /mog inn auto command");
-                GameHelpers.SendChatCommand("/mog inn auto");
-                return;
-            }
-
             log.Information($"[MOGTOME][Repair] Repair completed outside inn territory {territoryName} ({territoryId}); sending {AdsEnterInnCommand}");
-            commandManager.ProcessCommand(AdsEnterInnCommand);
+            if (!commandManager.ProcessCommand(AdsEnterInnCommand))
+            {
+                const string message = "ADS did not handle /ads enterinn after repair. Ensure ADS is installed and loaded.";
+                log.Warning($"[MOGTOME][Repair] {message}");
+                Plugin.ChatGui.Print($"[MOGTOME] {message}");
+            }
         }
         catch (Exception ex)
         {
@@ -465,10 +463,19 @@ public sealed class DutyAutomationService
     }
 
     public string GetSubsystemStatusLabel()
-        => UseAdsExperimental ? "ADS experimental mode" : autoDutyPathService.GetPraetoriumPathDisplayName(Config.PraetoriumPathFileName);
+    {
+        if (UseAdsExperimental)
+            return IsAdsLoaded() ? "ADS duty backend + inn return" : "ADS missing";
+
+        var pathName = autoDutyPathService.GetPraetoriumPathDisplayName(Config.PraetoriumPathFileName);
+        var adsStatus = IsAdsLoaded() ? "ADS inn ready" : "ADS missing";
+        return $"{pathName} / {adsStatus}";
+    }
 
     public bool GetSubsystemHealthy()
-        => UseAdsExperimental ? IsAdsLoaded() : autoDutyPathService.PathExists(Config.PraetoriumPathFileName);
+        => UseAdsExperimental
+            ? IsAdsLoaded()
+            : IsAutoDutyLoaded() && autoDutyPathService.PathExists(Config.PraetoriumPathFileName) && IsAdsLoaded();
 
     public bool IsAdsRepairHandoffActive
     {
