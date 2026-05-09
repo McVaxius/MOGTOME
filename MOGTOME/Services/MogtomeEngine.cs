@@ -99,6 +99,9 @@ public class MogtomeEngine
     private DateTime lastRepairRetryBlockedLogUtc = DateTime.MinValue;
     private string lastRepairRetryBlockedReason = string.Empty;
     private const float RepairRetryBlockedLogSeconds = 15.0f;
+    private DateTime telepotTownVisibleSinceUtc = DateTime.MinValue;
+    private const string TelepotTownAddon = "TelepotTown";
+    private const float TelepotTownRepairCancelSeconds = 10.0f;
     private bool sawQueueConditionOutsideDuty = false;
     private bool pendingQueueRecoveryAfterRepair = false;
     private DateTime queueRecoveryStopUntilUtc = DateTime.MinValue;
@@ -586,11 +589,9 @@ public class MogtomeEngine
             // Condition[26] = InCombat
             state.IsInCombat = condition[26];
 
-            if (IsRepairFlowActive() && HasQueueRegistrationOrConfirm())
-            {
-                dutyQueue.CancelDutyPopForRepair();
-            }
-            else
+            var repairFlowBlockingDutyPop = IsRepairFlowActive()
+                && (dutyQueue.CancelDutyPopForRepair() || HasQueueRegistrationCondition());
+            if (!repairFlowBlockingDutyPop)
             {
                 // Handle dialogs always unless repair is actively protecting an inn/NPC repair flow.
                 dialogHandler.Update();
@@ -1701,6 +1702,7 @@ public class MogtomeEngine
         activeRepairUsesNpc = false;
         lastRepairRetryBlockedLogUtc = DateTime.MinValue;
         lastRepairRetryBlockedReason = string.Empty;
+        ResetTelepotTownRepairState();
     }
 
     private void IssueRepairRequest(string reason)
@@ -1723,8 +1725,55 @@ public class MogtomeEngine
             repairService.TrySelfRepair();
     }
 
+    private bool HandleTelepotTownRepairBlock()
+    {
+        if (!GameHelpers.IsAddonVisible(TelepotTownAddon))
+        {
+            ResetTelepotTownRepairState();
+            return false;
+        }
+
+        if (state.IsInDuty ||
+            condition[ConditionFlag.BoundByDuty] ||
+            condition[ConditionFlag.BetweenAreas] ||
+            HasQueueRegistrationCondition() ||
+            GameHelpers.IsAddonVisible("ContentsFinderConfirm") ||
+            dutyQueue.IsRepairDutyPopCancelInFlight)
+        {
+            ResetTelepotTownRepairState();
+            return false;
+        }
+
+        var now = DateTime.UtcNow;
+        if (telepotTownVisibleSinceUtc == DateTime.MinValue)
+            telepotTownVisibleSinceUtc = now;
+
+        var visibleSeconds = (now - telepotTownVisibleSinceUtc).TotalSeconds;
+        if (visibleSeconds < TelepotTownRepairCancelSeconds)
+        {
+            var remainingSeconds = Math.Ceiling(TelepotTownRepairCancelSeconds - visibleSeconds);
+            StatusMessage = $"Repairing - waiting for TelepotTown ({remainingSeconds:F0}s)";
+            LogRepairRetryBlocked("TelepotTown dialog");
+            return true;
+        }
+
+        log.Warning($"[MOGTOME][Engine] TelepotTown blocked repair for {visibleSeconds:F0}s; cancelling it and retrying ADS NPC repair");
+        var cancelFired = GameHelpers.TryFireAddonCallback(TelepotTownAddon, true, -2);
+        var closeFired = GameHelpers.TryFireAddonCallback(TelepotTownAddon, true, 1);
+        if (!cancelFired || !closeFired)
+            log.Warning($"[MOGTOME][Engine] TelepotTown cancel callbacks incomplete: -2={cancelFired}, 1={closeFired}");
+
+        ResetTelepotTownRepairState();
+        activeRepairUsesNpc = true;
+        IssueRepairRequest($"TelepotTown blocked repair for {visibleSeconds:F0}s; forcing NPC repair");
+        return true;
+    }
+
     private void RetryRepairRequestIfNeeded()
     {
+        if (HandleTelepotTownRepairBlock())
+            return;
+
         if (IsRepairRetryBlocked(out var blocker))
         {
             StatusMessage = $"Repairing - waiting for {blocker}";
@@ -1744,6 +1793,11 @@ public class MogtomeEngine
 
         // Retry repair requests on a bounded cadence, never per-frame.
         IssueRepairRequest($"repair still needed after {elapsedSinceRequest:F0}s");
+    }
+
+    private void ResetTelepotTownRepairState()
+    {
+        telepotTownVisibleSinceUtc = DateTime.MinValue;
     }
 
     private bool IsRepairRetryBlocked(out string blocker)
@@ -1769,6 +1823,18 @@ public class MogtomeEngine
         if (GameHelpers.IsAddonVisible("ContentsFinderConfirm"))
         {
             blocker = "duty confirm popup";
+            return true;
+        }
+
+        if (GameHelpers.IsAddonVisible("_NotificationFinder"))
+        {
+            blocker = "minimized duty confirm popup";
+            return true;
+        }
+
+        if (dutyQueue.IsRepairDutyPopCancelInFlight)
+        {
+            blocker = "duty confirm cancel sequence";
             return true;
         }
 
@@ -1903,6 +1969,13 @@ public class MogtomeEngine
 
         if (IsQueueRecoveryActive())
             return;
+
+        if (IsRepairFlowActive() && (dutyQueue.IsRepairDutyPopCancelInFlight || GameHelpers.IsAddonVisible("_NotificationFinder")))
+        {
+            MarkQueueAcceptanceEvidence();
+            sawQueueConditionOutsideDuty = true;
+            return;
+        }
 
         if (HasQueueRegistrationOrConfirm())
         {
