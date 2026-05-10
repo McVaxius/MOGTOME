@@ -480,6 +480,8 @@ public class BossModIPC : IDisposable
         try
         {
             const string cmd = "/rotation Settings KeyBoardNoise false";
+            const string cmd2 = "/rotation Settings BmrSafetyCheckAuto True";
+            const string cmd3 = "/rotation Settings BmrSafetyCheckIntercept True";
             //const string cmd2 = "/bmrai setpresetname AutoDuty Passive";
             //const string cmd3 = "/vbm ar set AutoDuty Passive";
             const string cmd4 = "/rotation Settings AutoOffBetweenArea False";
@@ -493,6 +495,8 @@ public class BossModIPC : IDisposable
             const string cmd12 = "/rotation Auto";
             const string cmd13 = "/fr off";
             GameHelpers.SendCommand(cmd);
+            GameHelpers.SendCommand(cmd2);
+            GameHelpers.SendCommand(cmd3);
             //GameHelpers.SendCommand(cmd2);
             //GameHelpers.SendCommand(cmd3);
             GameHelpers.SendCommand(cmd4);
