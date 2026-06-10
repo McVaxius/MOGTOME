@@ -37,6 +37,9 @@ public class DutyState
     public float MaxContentTime { get; set; } = 0;
     public float TimeInDuty { get; set; } = 0;
     public float RemainingTimeAtCompletion { get; set; } = 0; // Remaining time when duty completes
+    public float BailoutElapsedTime { get; set; } = 0;
+    public string BailoutReason { get; set; } = string.Empty;
+    public bool BailoutRequested { get; set; } = false;
 
     // --- Stuck Detection ---
     public float LastPositionX { get; set; } = 0;
@@ -46,16 +49,13 @@ public class DutyState
 
     // --- State Flags ---
     public bool HasEnteredDuty { get; set; } = false;
-    public bool AutoQueueDisabledForRepair { get; set; } = false;
+    public bool QueuePausedForRepair { get; set; } = false;
     public bool PotionsAvailable { get; set; } = true;
     public bool FoodAvailable { get; set; } = true;
     public int PotionExactCount { get; set; } = 0;
     public int FoodExactCount { get; set; } = 0;
     public bool IsRunning { get; set; } = false;
     public bool ShouldStop { get; set; } = false;
-
-    // --- BossMod ---
-    public string WhichBossMod { get; set; } = "vbm";
 
     // --- Repair State ---
     public bool NeedsRepair { get; set; } = false;
@@ -82,6 +82,9 @@ public class DutyState
         MaxContentTime = 0;
         TimeInDuty = 0;
         RemainingTimeAtCompletion = 0;
+        BailoutElapsedTime = 0;
+        BailoutReason = string.Empty;
+        BailoutRequested = false;
         StuckTickCount = 0;
         HasEnteredDuty = false;
     }

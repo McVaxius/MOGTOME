@@ -30,7 +30,7 @@ MOGTOME automates farming of The Praetorium (99 runs) and The Porta Decumana (un
 - ✅ **Daily Reset Detection**: Auto-resets counters at 7 AM UTC (3 AM EST / 12 AM PST)
 - ✅ **Repair Management**: Self-repair with dark matter or NPC repair automation
 - ✅ **Food Management**: Auto-consume food when buff expires
-- ✅ **Combat Integration**: BossMod or Rotation Solver Reborn support
+- ✅ **Combat Integration**: Select one of BMR, VBM, Rotation Solver Reborn, or Wrath Combo
 - ✅ **Filtered Statistics**: Unsynced testing runs stay out of stats unless you explicitly opt in
 - ✅ **Persistent Run Counters**: Duty counters and summary stats save against the active account after login and duty completion
 - ✅ **Stuck Detection**: Auto-recovery from stuck states
@@ -42,15 +42,13 @@ MOGTOME automates farming of The Praetorium (99 runs) and The Porta Decumana (un
 ## Requirements
 
 ### Required Plugins
-- **AutoDuty** - Duty path execution when ADS duty backend is disabled
-- **ADS (AI Duty Solver)** - Inn entry handoff through `/ads enterinn`; optional duty backend when enabled
+- **Selected duty backend** - ADS, or AutoDuty plus the selected Praetorium path
+- **Selected combat provider** - BMR, VBM, Rotation Solver Reborn, or Wrath Combo
 - **vnavmesh** - Navigation and pathfinding
 - **XA Slave** - Provides `/xa skipcutscenes on` startup control
 - **YesAlready** - Auto-confirm dialogs
-- **BossMod Reborn** OR **Rotation Solver Reborn** - Combat automation
-
 ### Optional Plugins
-- **Automaton (Pandora)** - AutoQueue tweak
+- **ADS (AI Duty Solver)** - Optional in AutoDuty mode; enables `/mog inn` delegation
 
 ### Game Configuration (MANDATORY)
 - **NOT in controller mode** (causes chat spam)
@@ -115,7 +113,7 @@ See [how-to-import-plugins.md](how-to-import-plugins.md) for detailed setup inst
 ## How It Works
 
 1. **Queue Phase**: Queues for The Praetorium (runs 1-99) or The Porta Decumana (runs 100+)
-2. **Duty Phase**: AutoDuty handles navigation, BossMod/RSR handles combat
+2. **Duty Phase**: The selected duty backend handles navigation and the selected combat provider handles combat
 3. **Boss Mechanics**: Automatic tank mitigation, potion usage, limit breaks
 4. **Completion**: Calculates completion time, leaves duty, increments counter
 5. **Maintenance**: Auto-repair when threshold reached, auto-consume food when buff expires
@@ -182,7 +180,7 @@ See [PROJECT_GAMEPLAN.md](PROJECT_GAMEPLAN.md) for detailed technical documentat
 
 - **Original Script**: G.O.O.N. (Generally Ordered Optimized Navigation) by dhogGPT
 - **Inspiration**: @Akasha, @Ritsuko for ideas and code
-- **Dependencies**: AutoDuty, vnavmesh, XA Slave, YesAlready, BossMod/RSR
+- **Dependencies**: Selected duty backend, vnavmesh, XA Slave, YesAlready, and selected combat provider
 
 ---
 

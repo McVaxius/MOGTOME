@@ -15,6 +15,7 @@ public class Configuration
     // --- Party Settings ---
     public bool IsPartyLeader { get; set; } = false;
     public bool IsCrossWorldParty { get; set; } = false;
+    public bool OnlyQueueWithFourPeople { get; set; } = true;
 
     // --- Duty Settings ---
     public int DutyCounter { get; set; } = 0;
@@ -50,6 +51,11 @@ public class Configuration
     public bool AutoDutyPathInstalled { get; set; } = false;
     public string PraetoriumPathFileName { get; set; } = "(1044) The Praetorium - W2W 20250716 phecda.json";
     public bool UseAdsExperimental { get; set; } = true; //default is now to use ADS for new users
+
+    // --- Combat Provider ---
+    public CombatProvider CombatProvider { get; set; } = CombatProvider.Rsr;
+    public bool UseManualBossModPreset { get; set; } = false;
+    public string ManualBossModPresetName { get; set; } = "";
 
     // --- Stats ---
     // Global stats (kept for compatibility)

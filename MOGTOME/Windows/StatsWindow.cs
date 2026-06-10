@@ -682,7 +682,7 @@ public class StatsWindow : Window, IDisposable
             ImGui.TableSetupColumn("Time", ImGuiTableColumnFlags.WidthFixed, 50);
             ImGui.TableSetupColumn("Party", ImGuiTableColumnFlags.WidthFixed, 180);
             ImGui.TableSetupColumn("Deaths", ImGuiTableColumnFlags.WidthFixed, 50);
-            ImGui.TableSetupColumn("Status", ImGuiTableColumnFlags.WidthFixed, 60);
+            ImGui.TableSetupColumn("Status", ImGuiTableColumnFlags.WidthFixed, 180);
             ImGui.TableHeadersRow();
             
             // Data rows
@@ -731,8 +731,11 @@ public class StatsWindow : Window, IDisposable
                 ImGui.Text(run.DeathCount.ToString());
                 
                 ImGui.TableSetColumnIndex(7);
-                var statusColor = run.WasSuccessful ? new Vector4(0, 1, 0, 1) : new Vector4(1, 0, 0, 1);
-                ImGui.TextColored(statusColor, run.WasSuccessful ? "Success" : "Failed");
+                var successful = RunHistoryService.IsSuccessful(run);
+                var statusColor = successful ? new Vector4(0, 1, 0, 1) : new Vector4(1, 0, 0, 1);
+                ImGui.TextColored(statusColor, successful
+                    ? "Success"
+                    : $"Aborted: {(string.IsNullOrWhiteSpace(run.AbortReason) ? "No reason recorded" : run.AbortReason)}");
             }
             
             ImGui.EndTable();
@@ -750,7 +753,12 @@ public class StatsWindow : Window, IDisposable
             return;
         }
 
-        var allRuns = plugin.RunHistoryService.RunHistory;
+        var allRuns = plugin.RunHistoryService.SuccessfulRunHistory;
+        if (allRuns.Count == 0)
+        {
+            ImGui.TextDisabled("No successful run data available.");
+            return;
+        }
         var last10 = allRuns.TakeLast(10);
         var last50 = allRuns.TakeLast(50);
         
@@ -785,8 +793,7 @@ public class StatsWindow : Window, IDisposable
         {
             var run = recentRuns[i];
             var timeStr = FormatTime(run.CompletionTime);
-            var statusStr = run.WasSuccessful ? "✓" : "✗";
-            ImGui.Text($"  {run.Timestamp.ToString("MM/dd HH:mm")} - {GetJobName(run.JobId)} - {timeStr} {statusStr}");
+            ImGui.Text($"  {run.Timestamp:MM/dd HH:mm} - {GetJobName(run.JobId)} - {timeStr}");
         }
     }
 

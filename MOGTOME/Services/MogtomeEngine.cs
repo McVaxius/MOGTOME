@@ -26,8 +26,7 @@ public enum EngineState
 public class MogtomeEngine
 {
     private const string PhantomGaiusName = "Phantom Gaius";
-    private const int MinimumSyncedPartyMembers = 3;
-    private readonly record struct StartupSnapshot(bool StartingInsideDuty, bool AbortForMinimumPartySize, bool IsPartyLeader);
+    private readonly record struct StartupSnapshot(bool StartingInsideDuty, bool IsPartyLeader);
     private readonly record struct StartupPreparationResult(bool EnteredRepairMode);
 
     private readonly IPluginLog log;
@@ -55,6 +54,7 @@ public class MogtomeEngine
     public EngineState CurrentState { get; private set; } = EngineState.Idle;
     public bool IsRunning => CurrentState != EngineState.Idle && CurrentState != EngineState.Stopped;
     public string StatusMessage { get; private set; } = "Idle";
+    public bool StopAfterNextSuccessfulRunArmed { get; private set; }
 
     private DateTime lastTick = DateTime.MinValue;
     private int outsideDutyTicks = 0;
@@ -220,6 +220,7 @@ public class MogtomeEngine
     private void OnDutyCompleted(uint territoryId)
     {
         if (!IsRunning) return;
+        dutyTracker.CaptureCompletionRemainingTime();
         var now = DateTime.UtcNow;
         if (ShouldIgnoreEarlyDutyCompleted(territoryId, now))
             return;
@@ -270,12 +271,8 @@ public class MogtomeEngine
             var startupSnapshot = await GameHelpers.RunOnFrameworkThreadAsync(() =>
             {
                 var startingInsideDuty = condition[34];
-                var abortForMinimumPartySize = !startingInsideDuty && EnforceMinimumPartySizeAtLeaderStart();
-                return new StartupSnapshot(startingInsideDuty, abortForMinimumPartySize, state.IsPartyLeader);
+                return new StartupSnapshot(startingInsideDuty, state.IsPartyLeader);
             }).ConfigureAwait(false);
-
-            if (startupSnapshot.AbortForMinimumPartySize)
-                return;
 
             StatusMessage = dutyAutomationService.UseAdsExperimental
                 ? "Preparing ADS..."
@@ -376,6 +373,7 @@ public class MogtomeEngine
     public void Stop()
     {
         log.Information("[MOGTOME][Engine] Stopping MOGTOME engine");
+        ClearStopAfterNextSuccessfulRun();
         CurrentState = EngineState.Stopping;
         StatusMessage = "Stopping...";
 
@@ -400,6 +398,23 @@ public class MogtomeEngine
         CurrentState = EngineState.Idle;
         StatusMessage = "Idle";
         log.Information("[MOGTOME][Engine] Stopped");
+    }
+
+    public bool ToggleStopAfterNextSuccessfulRun()
+    {
+        StopAfterNextSuccessfulRunArmed = !StopAfterNextSuccessfulRunArmed;
+        log.Information($"[MOGTOME][Engine] Stop after next successful run {(StopAfterNextSuccessfulRunArmed ? "armed" : "cancelled")}");
+        return StopAfterNextSuccessfulRunArmed;
+    }
+
+    public bool ClearStopAfterNextSuccessfulRun()
+    {
+        if (!StopAfterNextSuccessfulRunArmed)
+            return false;
+
+        StopAfterNextSuccessfulRunArmed = false;
+        log.Information("[MOGTOME][Engine] Stop after next successful run cleared");
+        return true;
     }
 
     private void ClearStaleDutyStateIfNeeded()
@@ -479,7 +494,7 @@ public class MogtomeEngine
         state.IsInCombat = condition[26];
         rotationService.ForceRotation();
         CurrentState = EngineState.InDuty;
-        StatusMessage = $"In Duty - #{state.DutyCounter} ({dutyTracker.GetCurrentDutyName()})";
+        StatusMessage = $"In Duty - #{state.DutyCounter + 1} ({dutyTracker.GetCurrentDutyName()})";
         log.Information($"[MOGTOME][Engine] Resuming current duty without re-counting start (HasEnteredDuty={state.HasEnteredDuty}, DutyCounter={state.DutyCounter})");
 
         if (dutyAutomationService.UseAdsExperimental)
@@ -673,17 +688,9 @@ public class MogtomeEngine
         rotationService.ForceRotation();
         
         CurrentState = EngineState.InDuty;
-        StatusMessage = $"In Duty - #{state.DutyCounter} ({dutyTracker.GetCurrentDutyName()})";
-        log.Information($"[MOGTOME][Engine] Entered duty #{state.DutyCounter}");
+        StatusMessage = $"In Duty - #{state.DutyCounter + 1} ({dutyTracker.GetCurrentDutyName()})";
+        log.Information($"[MOGTOME][Engine] Entered duty attempt #{state.DutyCounter + 1}");
 
-        // Always count instances fired up (even unsynced)
-        var isPrae = state.DutyStartTerritory == DutyState.PraetoriumTerritoryId;
-        if (isPrae)
-            config.TotalPraes++;
-        else
-            config.TotalDecus++;
-        // Note: ConfigManager.SaveCurrentAccount() will be called by the engine
-        // We don't save here to avoid multiple saves during duty counting
         return true;
     }
 
@@ -868,6 +875,12 @@ public class MogtomeEngine
 
     private void OnLeftDuty()
     {
+        if (state.BailoutRequested)
+        {
+            HandleBailoutDutyExit();
+            return;
+        }
+
         if (HandleEarlyAbortedDutyExit())
             return;
 
@@ -879,7 +892,7 @@ public class MogtomeEngine
         // Now read the freshly created record for stats update
         if ((!config.TestingModeUnsynced || config.ShowDebugRuns) && runHistoryService.RunHistory.Count > 0)
         {
-            var mostRecentRun = runHistoryService.RunHistory.LastOrDefault();
+            var mostRecentRun = runHistoryService.SuccessfulRunHistory.LastOrDefault();
             if (mostRecentRun != null)
             {
                 log.Debug($"[MOGTOME][Engine] Stats validation - CompletionTime: {mostRecentRun.CompletionTime:F1}s, BailoutTimeout: {config.BailoutTimeout}s, Valid: {mostRecentRun.CompletionTime > 0 && mostRecentRun.CompletionTime < config.BailoutTimeout}");
@@ -934,60 +947,81 @@ public class MogtomeEngine
         {
             log.Warning("[MOGTOME][Engine] Skipping stats update - NO_RUN_HISTORY (count: 0)");
         }
+        ResetAfterConfirmedDutyExit("successful duty left");
+        ContinueAfterConfirmedDutyExit(successful: true);
+    }
+
+    private void HandleBailoutDutyExit()
+    {
+        var reason = string.IsNullOrWhiteSpace(state.BailoutReason)
+            ? "Bailout timeout reached"
+            : state.BailoutReason;
+        var elapsed = state.BailoutElapsedTime;
+        if (!float.IsFinite(elapsed) || elapsed <= 0)
+        {
+            var start = state.DutyStartTime?.ToUniversalTime() ?? dutyEnteredUtc;
+            elapsed = start == DateTime.MinValue
+                ? 0
+                : (float)Math.Max(0, (DateTime.UtcNow - start).TotalSeconds);
+        }
+
+        runHistoryService.RecordRun(RunOutcome.Aborted, reason, elapsed);
+        log.Warning($"[MOGTOME][Engine] Recorded aborted run after confirmed bailout exit: elapsed={elapsed:F1}s, reason={reason}");
+
+        state.Reset();
+        ResetAfterConfirmedDutyExit("bailout duty left");
+        ContinueAfterConfirmedDutyExit(successful: false);
+    }
+
+    private void ResetAfterConfirmedDutyExit(string reason)
+    {
         state.IsInDuty = false;
         outsideDutyTicks = 0;
         autoDutyStartedInDuty = false;
         dutyCompleted = false;
+        dutyCompletedTime = DateTime.MinValue;
+        dutyEnteredUtc = DateTime.MinValue;
+        delayedRequeueInProgress = false;
         ResetLeaveTracking();
         ResetDutyEntryTerritoryWait();
         ResetRepairRecoveryWatchdog();
-        dutyAutomationService.InvalidateAdsQueueOperations("duty left");
+        dutyAutomationService.InvalidateAdsQueueOperations(reason);
         dutyAutomationService.NotifyDutyLeft();
         ResetQueueRecoveryState();
-        
-        // Reset requeue state when successfully entering duty
         requeueInProgress = false;
         requeueState = RequeueState.Idle;
-        
         CurrentState = EngineState.WaitingOutsideDuty;
         StatusMessage = $"Outside Duty - Next: #{state.DutyCounter + 1}";
-        log.Information($"[MOGTOME][Engine] Left duty. Next: #{state.DutyCounter + 1}");
+        log.Information($"[MOGTOME][Engine] Confirmed duty exit ({reason}). Next: #{state.DutyCounter + 1}");
+    }
 
-        // Save configuration after leaving duty (stats updates, counter changes, etc.)
-        try
+    private void ContinueAfterConfirmedDutyExit(bool successful)
+    {
+        if (successful && StopAfterNextSuccessfulRunArmed)
         {
-            // This needs to be called via the plugin since we don't have direct access to ConfigManager here
-            // The plugin will handle the actual save
-            log.Debug("[MOGTOME][Engine] Configuration save requested after leaving duty");
-        }
-        catch (Exception ex)
-        {
-            log.Error($"[MOGTOME][Engine] Failed to save configuration after leaving duty: {ex.Message}");
-        }
-
-        // Check if we should continue running
-        if (state.DutyCounter < config.MaxRuns)
-        {
-            if (state.IsPartyLeader)
-            {
-                log.Information($"[MOGTOME][Engine] Starting leader requeue sequence - {state.DutyCounter}/{config.MaxRuns} completed");
-                
-                // Start requeue state machine with 10s delay to prevent crashes
-                requeueState = RequeueState.WaitingAfterLeave;
-                requeueStartTime = DateTime.UtcNow;
-                requeueInProgress = true;
-            }
-            else
-            {
-                log.Information($"[MOGTOME][Engine] Non-leader ready for next duty - {state.DutyCounter}/{config.MaxRuns} completed");
-                // Non-leader continues running; selected backend starts after next duty entry
-            }
-        }
-        else
-        {
-            log.Information($"[MOGTOME][Engine] Run limit reached - stopping");
+            log.Information("[MOGTOME][Engine] Stop-after-next consumed after successful run and confirmed duty exit");
+            Plugin.ChatGui.Print("[MOGTOME] Stop-after-next completed. Stopping before requeue.");
             Stop();
+            return;
         }
+
+        if (state.DutyCounter >= config.MaxRuns)
+        {
+            log.Information("[MOGTOME][Engine] Run limit reached - stopping");
+            Stop();
+            return;
+        }
+
+        if (state.IsPartyLeader)
+        {
+            log.Information($"[MOGTOME][Engine] Starting leader requeue sequence - {state.DutyCounter}/{config.MaxRuns} completed");
+            requeueState = RequeueState.WaitingAfterLeave;
+            requeueStartTime = DateTime.UtcNow;
+            requeueInProgress = true;
+            return;
+        }
+
+        log.Information($"[MOGTOME][Engine] Non-leader ready for next duty - {state.DutyCounter}/{config.MaxRuns} completed");
     }
 
     private bool IsEarlyMogtomeDutyExitAbort(out uint territoryId, out double elapsedSeconds)
@@ -1378,6 +1412,7 @@ public class MogtomeEngine
 
     private void UpdateInDuty()
     {
+        dutyTracker.ObserveRemainingTime();
         RefreshInDutyRotationIfNeeded();
 
         // Start selected automation backend if not already started (handles the case where we're already in duty)
@@ -1424,8 +1459,18 @@ public class MogtomeEngine
 
         // Stuck detection
         stuckDetection.Update();
+        if (state.BailoutRequested && !dutyCompleted)
+        {
+            dutyCompleted = true;
+            dutyCompletedTime = DateTime.UtcNow;
+            ResetLeaveTracking();
+            PauseLeaderQueueBeforeExitIfRepairNeeded("Bailout requested");
+            log.Warning($"[MOGTOME][Engine] Consuming bailout request: {state.BailoutReason}");
+            StatusMessage = $"Bailout requested - {state.BailoutReason}";
+            return;
+        }
 
-        StatusMessage = $"In Duty #{state.DutyCounter} - {state.TimeInDuty:F0}s";
+        StatusMessage = $"In Duty #{state.DutyCounter + 1} - {state.TimeInDuty:F0}s";
     }
 
     private void StartDutyBackendInsideDuty(string reason)
@@ -1877,7 +1922,7 @@ public class MogtomeEngine
     }
 
     private bool IsRepairFlowActive()
-        => CurrentState == EngineState.RepairingOutside || state.AutoQueueDisabledForRepair;
+        => CurrentState == EngineState.RepairingOutside || state.QueuePausedForRepair;
 
     private bool IsQueueRecoveryActive()
         => queueRecoveryStopUntilUtc != DateTime.MinValue;
@@ -1916,10 +1961,17 @@ public class MogtomeEngine
 
         try
         {
-            if (ignoreCooldown)
-                dutyQueue.ForceQueue(isPrae);
-            else
-                dutyQueue.TryQueue(isPrae);
+            var queueSent = ignoreCooldown
+                ? dutyQueue.ForceQueue(isPrae)
+                : dutyQueue.TryQueue(isPrae);
+            if (!queueSent)
+            {
+                ResetQueueRegistrationWatchdog();
+                CurrentState = EngineState.WaitingOutsideDuty;
+                if (dutyQueue.LastQueueBlockedForPartySize)
+                    StatusMessage = $"waiting for 4 people (visible {dutyQueue.VisiblePartyMemberCount}/4)";
+                return false;
+            }
 
             queueRegistrationStartedUtc = DateTime.UtcNow;
             MarkQueueAcceptanceEvidence();
@@ -2272,28 +2324,12 @@ public class MogtomeEngine
         }
     }
 
-    private bool EnforceMinimumPartySizeAtLeaderStart()
-    {
-        if (config.TestingModeUnsynced || condition[34] || config.IsCrossWorldParty || !config.IsPartyLeader)
-            return false;
-
-        var partyMemberCount = GetCurrentPartyMemberCount();
-        if (partyMemberCount >= MinimumSyncedPartyMembers)
-            return false;
-
-        var message = $"Need at least {MinimumSyncedPartyMembers} visible same-world party members before starting synced MOGTOME as leader. Current count: {partyMemberCount}. Cross-world parties and non-leaders are exempt.";
-        log.Warning($"[MOGTOME][Engine] start gate: {message} Party={GetPartyComposition()}");
-        Plugin.ChatGui.Print($"[MOGTOME] {message}");
-        Stop();
-        return true;
-    }
-
     private void PauseLeaderQueueBeforeExitIfRepairNeeded(string reason)
     {
         if (!state.IsPartyLeader)
             return;
 
-        if (state.AutoQueueDisabledForRepair)
+        if (state.QueuePausedForRepair)
         {
             log.Information($"[MOGTOME][Engine] MOGTOME queue already paused for repair before duty exit ({reason})");
             return;

@@ -11,6 +11,7 @@ public class DutyQueueService
     private readonly DutyState state;
     private readonly DutyAutomationService dutyAutomationService;
     private readonly ICondition condition;
+    private readonly ConfigManager configManager;
 
     private DateTime lastQueueAttempt = DateTime.MinValue;
     private DateTime lastCommenceClickTime = DateTime.MinValue;
@@ -26,6 +27,11 @@ public class DutyQueueService
     private const string ContentsFinderConfirmAddon = "ContentsFinderConfirm";
     private const string NotificationAddon = "_Notification";
     private const string NotificationFinderAddon = "_NotificationFinder";
+    private DateTime lastPartyEligibilityLogUtc = DateTime.MinValue;
+    private const float PartyEligibilityLogIntervalSeconds = 15.0f;
+
+    public bool LastQueueBlockedForPartySize { get; private set; }
+    public int VisiblePartyMemberCount { get; private set; }
 
     private enum RepairCancelStage
     {
@@ -37,31 +43,35 @@ public class DutyQueueService
 
     public DutyQueueService(
         IPluginLog log, DutyState state,
-        DutyAutomationService dutyAutomationService, ICondition condition)
+        DutyAutomationService dutyAutomationService, ICondition condition, ConfigManager configManager)
     {
         this.log = log;
         this.state = state;
         this.dutyAutomationService = dutyAutomationService;
         this.condition = condition;
+        this.configManager = configManager;
     }
 
-    public void TryQueue(bool isPraetorium)
+    public bool TryQueue(bool isPraetorium)
         => TryQueueInternal(isPraetorium, ignoreCooldown: false);
 
-    public void ForceQueue(bool isPraetorium)
+    public bool ForceQueue(bool isPraetorium)
         => TryQueueInternal(isPraetorium, ignoreCooldown: true);
 
-    private void TryQueueInternal(bool isPraetorium, bool ignoreCooldown)
+    private bool TryQueueInternal(bool isPraetorium, bool ignoreCooldown)
     {
-        if (state.IsInDuty) return;
-        if (!state.IsPartyLeader) return;
+        LastQueueBlockedForPartySize = false;
+        if (state.IsInDuty) return false;
+        if (!state.IsPartyLeader) return false;
+        if (!IsLeaderQueueEligible())
+            return false;
 
         var now = DateTime.UtcNow;
-        if (!ignoreCooldown && (now - lastQueueAttempt).TotalSeconds < QueueCooldown) return;
+        if (!ignoreCooldown && (now - lastQueueAttempt).TotalSeconds < QueueCooldown) return false;
         lastQueueAttempt = now;
 
         // Condition[34] = BoundByDuty
-        if (condition[34]) return;
+        if (condition[34]) return false;
 
         var dutyName = isPraetorium ? "The Praetorium" : "The Porta Decumana";
         var queuePath = dutyAutomationService.UseAdsExperimental
@@ -71,33 +81,61 @@ public class DutyQueueService
             ? $"[MOGTOME][DutyQueue] Force-queueing via {queuePath}: {dutyName}"
             : $"[MOGTOME][DutyQueue] Queueing via {queuePath}: {dutyName}");
         dutyAutomationService.QueueDuty(isPraetorium);
+        return true;
+    }
+
+    private bool IsLeaderQueueEligible()
+    {
+        var config = configManager.GetActiveConfig();
+        if (!config.OnlyQueueWithFourPeople || config.TestingModeUnsynced)
+            return true;
+
+        VisiblePartyMemberCount = 0;
+        for (var index = 0; index < Plugin.PartyList.Length; index++)
+        {
+            if (Plugin.PartyList[index] != null)
+                VisiblePartyMemberCount++;
+        }
+
+        if (VisiblePartyMemberCount == 4)
+            return true;
+
+        LastQueueBlockedForPartySize = true;
+        var now = DateTime.UtcNow;
+        if ((now - lastPartyEligibilityLogUtc).TotalSeconds >= PartyEligibilityLogIntervalSeconds)
+        {
+            lastPartyEligibilityLogUtc = now;
+            log.Warning($"[MOGTOME][DutyQueue] waiting for 4 people; visible party members={VisiblePartyMemberCount}, crossWorld={config.IsCrossWorldParty}");
+        }
+
+        return false;
     }
 
     public void PauseQueueForRepair()
     {
-        if (!state.AutoQueueDisabledForRepair)
+        if (!state.QueuePausedForRepair)
         {
-            state.AutoQueueDisabledForRepair = true;
+            state.QueuePausedForRepair = true;
             log.Information("[MOGTOME][DutyQueue] MOGTOME queue paused for repair");
         }
     }
 
     public void ResumeQueueAfterRepair()
     {
-        if (!state.AutoQueueDisabledForRepair)
+        if (!state.QueuePausedForRepair)
             return;
 
-        state.AutoQueueDisabledForRepair = false;
+        state.QueuePausedForRepair = false;
         CancelRepairDutyPopSequence();
         log.Information("[MOGTOME][DutyQueue] MOGTOME queue resumed after repair");
     }
 
     public void ClearRepairQueuePauseOnStop()
     {
-        if (state.AutoQueueDisabledForRepair)
+        if (state.QueuePausedForRepair)
             log.Information("[MOGTOME][DutyQueue] MOGTOME queue repair pause cleared on stop");
 
-        state.AutoQueueDisabledForRepair = false;
+        state.QueuePausedForRepair = false;
         CancelRepairDutyPopSequence();
     }
 
@@ -112,7 +150,7 @@ public class DutyQueueService
     public void AutoAcceptDuty()
     {
         // Don't accept if in the middle of repair
-        if (state.AutoQueueDisabledForRepair) return;
+        if (state.QueuePausedForRepair) return;
 
         // Handle ContentsFinderConfirm popup (duty commence dialog) like FrenRider
         if (GameHelpers.IsAddonVisible(ContentsFinderConfirmAddon))

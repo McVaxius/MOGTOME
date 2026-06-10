@@ -186,6 +186,16 @@ public class MainWindow : Window, IDisposable
         }
 
         ImGui.Spacing();
+        var stopNextLabel = engine.StopAfterNextSuccessfulRunArmed
+            ? "Cancel Stop After Next"
+            : "Stop After Next Success";
+        if (ImGui.Button(stopNextLabel, new Vector2(190, 28)))
+            engine.ToggleStopAfterNextSuccessfulRun();
+        ImGui.TextDisabled(engine.StopAfterNextSuccessfulRunArmed
+            ? "Armed: stops after a successful run is recorded and the duty exit is confirmed."
+            : "Runtime-only. Aborted runs do not consume this request.");
+
+        ImGui.Spacing();
         if (ImGui.Button("->!HELP!<-", new Vector2(140, 28)))
         {
             plugin.WarningTextWindow.Show(force: true);
@@ -204,17 +214,17 @@ public class MainWindow : Window, IDisposable
         ImGui.Spacing();
         ImGui.TextColored(new Vector4(0.7f, 0.85f, 1.0f, 1.0f), "Main Window Settings");
         var useAdsExperimental = config.UseAdsExperimental;
-        if (ImGui.Checkbox("AI Duty Solver (ADS) (Experimental)", ref useAdsExperimental))
+        if (ImGui.Checkbox("AI Duty Solver (ADS)", ref useAdsExperimental))
         {
             ToggleAdsExperimental(useAdsExperimental);
         }
         if (ImGui.IsItemHovered())
         {
-            ImGui.SetTooltip("Duty backend selector.\nEnabling ADS immediately sends /xldisableplugin AutoDuty.\nADS remains required when this is off because inn entry uses /ads enterinn.");
+            ImGui.SetTooltip("Duty backend selector.\nEnabling ADS immediately sends /xldisableplugin AutoDuty.\nADS is optional in AutoDuty mode and is used only when /mog inn is requested.");
         }
         ImGui.TextDisabled(config.UseAdsExperimental
             ? "ADS duty backend active. ADS also handles inn entry."
-            : "AutoDuty duty backend active. ADS still handles inn entry.");
+            : "AutoDuty duty backend active. ADS is optional for /mog inn.");
 
         ImGui.Separator();
 

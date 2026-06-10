@@ -8,44 +8,76 @@ namespace MOGTOME.Services;
 public class RotationService
 {
     private readonly IPluginLog log;
-    private readonly Configuration config;
-    private readonly DutyState state;
+    private readonly ConfigManager configManager;
     private readonly BossModIPC bossModIPC;
 
     public RotationService(
-        IPluginLog log, Configuration config, DutyState state,
+        IPluginLog log, ConfigManager configManager,
         BossModIPC bossModIPC)
     {
         this.log = log;
-        this.config = config;
-        this.state = state;
+        this.configManager = configManager;
         this.bossModIPC = bossModIPC;
     }
 
     public void Initialize()
     {
-        bossModIPC.DetectBossMod();
-        state.WhichBossMod = bossModIPC.WhichBossMod;
-        bossModIPC.DisableKeyboardNoise();
+        var config = configManager.GetActiveConfig();
+        if (config.CombatProvider is CombatProvider.Bmr or CombatProvider.Vbm)
+        {
+            bossModIPC.PreparePresetForStart(
+                config.CombatProvider,
+                config.UseManualBossModPreset,
+                config.ManualBossModPresetName);
+        }
 
-        log.Information($"[MOGTOME][Rotation] Initialized: BossMod={state.WhichBossMod}, using BossMod AI + RSR");
+        log.Information($"[MOGTOME][Rotation] Initialized selected combat provider: {config.CombatProvider}");
     }
 
     public void ForceRotation()
-    {
-        bossModIPC.EnableAI();
-        bossModIPC.EnableRSR();
-    }
+        => EnableSelectedProvider();
 
     public void EnableRotation()
-    {
-        bossModIPC.EnableAI();
-        bossModIPC.EnableRSR();
-    }
+        => EnableSelectedProvider();
 
     public void DisableRotation()
     {
-        // Do not disable RSR or BossMod AI - let them continue running
-        log.Debug("[MOGTOME][Rotation] DisableRotation called - no action taken (BossMod AI/RSR left enabled)");
+        var provider = configManager.GetActiveConfig().CombatProvider;
+        switch (provider)
+        {
+            case CombatProvider.Rsr:
+                bossModIPC.SendCommand("/rotation cancel", "disable RSR");
+                break;
+            case CombatProvider.Bmr:
+                bossModIPC.SendCommand("/bmrai off", "disable BMR");
+                break;
+            case CombatProvider.Vbm:
+                bossModIPC.SendCommand("/vbmai off", "disable VBM");
+                break;
+            case CombatProvider.Wrath:
+                bossModIPC.SendCommand("/wrath auto off", "disable Wrath");
+                break;
+        }
+    }
+
+    private void EnableSelectedProvider()
+    {
+        var provider = configManager.GetActiveConfig().CombatProvider;
+        switch (provider)
+        {
+            case CombatProvider.Rsr:
+                if (!bossModIPC.TrySetRsrAutoViaIpc())
+                    bossModIPC.SendCommand("/rotation auto", "enable RSR fallback");
+                break;
+            case CombatProvider.Bmr:
+                bossModIPC.SendCommand("/bmrai on", "enable BMR");
+                break;
+            case CombatProvider.Vbm:
+                bossModIPC.SendCommand("/vbmai on", "enable VBM");
+                break;
+            case CombatProvider.Wrath:
+                bossModIPC.SendCommand("/wrath auto on", "enable Wrath");
+                break;
+        }
     }
 }

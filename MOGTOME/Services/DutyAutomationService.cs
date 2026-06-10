@@ -7,6 +7,7 @@ using Dalamud.Game.Command;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using MOGTOME.IPC;
 using MOGTOME.Models;
@@ -36,11 +37,11 @@ public sealed class DutyAutomationService
     private const int AdsVisiblePollAttempts = 20;
     private const int AdsInitialSettleDelayMs = 1500;
     private const int AdsStepDelayMs = 700;
-    private const int AdsPostJoinDelayMs = 1500;
+    private const int AdsPostRegistrationDelayMs = 1500;
     private const int AdsStableVisiblePollsRequired = 2;
     private const int AdsStableVisiblePollDelayMs = 250;
     private const int AdsStableVisiblePollAttempts = 20;
-    private const int AdsJoinFailureCooldownSeconds = 5;
+    private const int AdsRegistrationFailureCooldownSeconds = 5;
     private const string NoDutySelectedErrorText = "No duty has been selected.";
     private const string PartyRequirementsErrorText = "One of your party members does not meet the requirements for this duty.";
     private const int QueueConditionIndex = 91;
@@ -158,7 +159,7 @@ public sealed class DutyAutomationService
         if (UseAdsExperimental)
         {
             log.Information("[MOGTOME][Automation] Preparing ADS backend");
-            await conflictPluginService.EnsureAutoDutyDisabledAsync("MOGTOME ADS start", showPopup: false).ConfigureAwait(false);
+            await conflictPluginService.EnsureAutoDutyDisabledAsync("MOGTOME ADS start", showPopup: true).ConfigureAwait(false);
 
             if (!IsAdsLoaded())
             {
@@ -234,7 +235,7 @@ public sealed class DutyAutomationService
         if (!UseAdsExperimental)
             return;
 
-        await conflictPluginService.EnsureAutoDutyDisabledAsync(triggerSource, showPopup: false).ConfigureAwait(false);
+        await conflictPluginService.EnsureAutoDutyDisabledAsync(triggerSource, showPopup: true).ConfigureAwait(false);
     }
 
     public void ApplyQueueConfiguration(bool testingModeUnsynced)
@@ -251,7 +252,11 @@ public sealed class DutyAutomationService
         var dutyName = GetDutyName(isPraetorium);
         if (!UseAdsExperimental)
         {
-            autoDutyIPC.QueueDuty(dutyName);
+            log.Information($"[MOGTOME][AutoDuty] Queue-control path selected for {dutyName}; registering directly while AutoDuty remains the in-duty backend");
+            QueueDutyViaContentsFinder(
+                GetContentFinderConditionId(isPraetorium),
+                dutyName,
+                isPraetorium ? SelectedMogtomeDuty.Praetorium : SelectedMogtomeDuty.Decumana);
             return;
         }
 
@@ -302,6 +307,7 @@ public sealed class DutyAutomationService
 
     public void StopDuty()
     {
+        InvalidateAdsQueueOperations("backend stop");
         if (!UseAdsExperimental)
         {
             autoDutyIPC.StopDuty();
@@ -309,7 +315,6 @@ public sealed class DutyAutomationService
         }
 
         CancelAdsRepairHandoff("ads stop");
-        InvalidateAdsQueueOperations("ads stop");
         ResetAdsLeaveTracking();
         adsLeaderOutsideOwned = false;
         adsLeaderInsideOwned = false;
@@ -570,9 +575,6 @@ public sealed class DutyAutomationService
 
     public void HandleAdsQueueChatMessage(string messageText)
     {
-        if (!UseAdsExperimental)
-            return;
-
         var text = messageText.Trim();
         if (!string.Equals(text, NoDutySelectedErrorText, StringComparison.Ordinal) &&
             !string.Equals(text, PartyRequirementsErrorText, StringComparison.Ordinal))
@@ -621,13 +623,6 @@ public sealed class DutyAutomationService
 
     public bool IsAdsQueueRetryCooldownActive(out double cooldownRemainingSeconds, out string reason)
     {
-        if (!UseAdsExperimental)
-        {
-            cooldownRemainingSeconds = 0;
-            reason = string.Empty;
-            return false;
-        }
-
         lock (adsQueueStateLock)
         {
             reason = adsQueueFailureReason;
@@ -638,9 +633,6 @@ public sealed class DutyAutomationService
 
     public void ConfirmQueueRegistration(bool isPraetorium)
     {
-        if (!UseAdsExperimental)
-            return;
-
         var targetDuty = isPraetorium ? SelectedMogtomeDuty.Praetorium : SelectedMogtomeDuty.Decumana;
         var previousDuty = SelectedMogtomeDuty.Unknown;
         lock (adsQueueStateLock)
@@ -659,9 +651,6 @@ public sealed class DutyAutomationService
 
     public void InvalidateAdsQueueOperations(string reason)
     {
-        if (!UseAdsExperimental)
-            return;
-
         Interlocked.Increment(ref adsQueueOperationId);
         var invalidatedOperationId = 0;
         lock (adsQueueStateLock)
@@ -827,7 +816,7 @@ public sealed class DutyAutomationService
 
             if (selectionRequired)
             {
-                log.Information($"[MOGTOME][DutyQueue] Operation {operationId}: target duty changed; selecting {GetShortDutyName(targetDuty)} before Join");
+                log.Information($"[MOGTOME][DutyQueue] Operation {operationId}: target duty changed; selecting {GetShortDutyName(targetDuty)} before direct registration");
                 if (!await RunAdsDutySelectionSequenceAsync(operationId, targetDuty, dutyName).ConfigureAwait(false))
                 {
                     log.Warning($"[MOGTOME][DutyQueue] Operation {operationId}: {dutyName} selection sequence aborted; queue watchdog will retry");
@@ -836,31 +825,31 @@ public sealed class DutyAutomationService
             }
             else
             {
-                log.Information($"[MOGTOME][DutyQueue] Operation {operationId}: opening ContentsFinder for same-duty requeue; firing Join only");
+                log.Information($"[MOGTOME][DutyQueue] Operation {operationId}: opening ContentsFinder for same-duty direct registration");
             }
 
             if (!IsCurrentAdsQueueOperation(operationId))
                 return;
 
-            if (!await WaitForContentsFinderStableVisibleAsync(operationId, dutyName, "Join", AdsStableVisiblePollAttempts).ConfigureAwait(false))
+            if (!await WaitForContentsFinderStableVisibleAsync(operationId, dutyName, "direct registration", AdsStableVisiblePollAttempts).ConfigureAwait(false))
             {
-                log.Warning($"[MOGTOME][DutyQueue] Operation {operationId}: ContentsFinder was not stable-visible before Join for {dutyName}; queue watchdog will retry");
+                log.Warning($"[MOGTOME][DutyQueue] Operation {operationId}: ContentsFinder was not stable-visible before direct registration for {dutyName}; queue watchdog will retry");
                 return;
             }
 
             if (!IsCurrentAdsQueueOperation(operationId))
                 return;
 
-            log.Information($"[MOGTOME][DutyQueue] Operation {operationId}: firing Join callback for {dutyName}");
-            if (!await GameHelpers.RunOnFrameworkThreadAsync(() => GameHelpers.TryFireAdsAddonCallback(operationId, "ContentsFinder", true, 12, 0)).ConfigureAwait(false))
+            log.Information($"[MOGTOME][DutyQueue] Operation {operationId}: registering selected duties directly for {dutyName}");
+            if (!await GameHelpers.RunOnFrameworkThreadAsync(() => RegisterSelectedDutiesDirect(operationId, targetDuty, dutyName)).ConfigureAwait(false))
             {
-                log.Warning($"[MOGTOME][DutyQueue] Operation {operationId}: Join callback failed; selected-duty readback unavailable in this SDK. Target={dutyName}{selectionDebugText}");
-                MarkAdsQueueAttemptFailed(operationId, "Join callback could not be fired", invalidateOperation: true);
+                log.Warning($"[MOGTOME][DutyQueue] Operation {operationId}: direct queue registration failed. Target={dutyName}{selectionDebugText}");
+                MarkAdsQueueAttemptFailed(operationId, "Direct queue registration failed", invalidateOperation: true);
                 return;
             }
 
-            log.Information($"[MOGTOME][DutyQueue] Operation {operationId}: Join callback sent; waiting for queue registration");
-            await Task.Delay(AdsPostJoinDelayMs).ConfigureAwait(false);
+            log.Information($"[MOGTOME][DutyQueue] Operation {operationId}: direct queue registration sent; waiting for queue registration");
+            await Task.Delay(AdsPostRegistrationDelayMs).ConfigureAwait(false);
 
             if (!IsCurrentAdsQueueOperation(operationId))
                 return;
@@ -872,14 +861,75 @@ public sealed class DutyAutomationService
                 return;
             }
 
-            log.Warning($"[MOGTOME][DutyQueue] Operation {operationId}: Join callback did not confirm queue registration; selected-duty readback unavailable in this SDK. Target={dutyName}{selectionDebugText}");
-            MarkAdsQueueAttemptFailed(operationId, "Join callback did not produce queue registration", invalidateOperation: true);
+            log.Warning($"[MOGTOME][DutyQueue] Operation {operationId}: direct queue registration did not confirm. Target={dutyName}{selectionDebugText}");
+            MarkAdsQueueAttemptFailed(operationId, "Direct queue registration did not produce queue registration", invalidateOperation: true);
         }
         catch (Exception ex)
         {
             log.Error($"[MOGTOME][DutyQueue] Operation {operationId}: ContentsFinder queue sequence failed with exception: {ex.Message}");
             MarkAdsQueueAttemptFailed(operationId, $"queue sequence exception: {ex.Message}", invalidateOperation: true);
         }
+    }
+
+    private unsafe bool RegisterSelectedDutiesDirect(int operationId, SelectedMogtomeDuty targetDuty, string dutyName)
+    {
+        if (!IsCurrentAdsQueueOperation(operationId))
+            return false;
+
+        var agent = AgentContentsFinder.Instance();
+        if (agent == null)
+        {
+            log.Error($"[MOGTOME][DutyQueue] Operation {operationId}: AgentContentsFinder is null before direct registration for {dutyName}");
+            return false;
+        }
+
+        var contentsFinder = ContentsFinder.Instance();
+        if (contentsFinder == null)
+        {
+            log.Error($"[MOGTOME][DutyQueue] Operation {operationId}: ContentsFinder is null before direct registration for {dutyName}");
+            return false;
+        }
+
+        var queueInfo = contentsFinder->GetQueueInfo();
+        if (queueInfo == null)
+        {
+            log.Error($"[MOGTOME][DutyQueue] Operation {operationId}: ContentsFinderQueueInfo is null before direct registration for {dutyName}");
+            return false;
+        }
+
+        var expectedDutyId = GetContentFinderConditionId(targetDuty == SelectedMogtomeDuty.Praetorium);
+        var selectedDutyId = agent->SelectedDuty.Id;
+        var interfaceSelectedDutyId = agent->InterfaceSub.SelectedDutyId;
+        var selectedContent = agent->SelectedContent;
+        var selectedCount = selectedContent.Count;
+        if (selectedCount <= 0 || selectedCount > 5 || selectedContent.First == null)
+        {
+            log.Error($"[MOGTOME][DutyQueue] Operation {operationId}: invalid selected-content collection for {dutyName}; count={selectedCount}, first=0x{(nuint)selectedContent.First:X}");
+            return false;
+        }
+
+        if (selectedDutyId != expectedDutyId && interfaceSelectedDutyId != expectedDutyId)
+        {
+            log.Error($"[MOGTOME][DutyQueue] Operation {operationId}: selected duty does not match {dutyName}; expected={expectedDutyId}, selected={selectedDutyId}, interfaceSelected={interfaceSelectedDutyId}");
+            return false;
+        }
+
+        var entries = stackalloc uint[selectedCount];
+        for (var index = 0; index < selectedCount; index++)
+        {
+            var selected = selectedContent[index];
+            if (selected.ContentType != ContentsType.Regular || selected.Id == 0)
+            {
+                log.Error($"[MOGTOME][DutyQueue] Operation {operationId}: invalid selected content at index {index} for {dutyName}; type={selected.ContentType}, id={selected.Id}");
+                return false;
+            }
+
+            entries[index] = selected.Id;
+        }
+
+        queueInfo->QueueDuties(entries, selectedCount);
+        log.Information($"[MOGTOME][DutyQueue] Operation {operationId}: QueueDuties registered {selectedCount} selected content entries for {dutyName}; selected={string.Join(",", new ReadOnlySpan<uint>(entries, selectedCount).ToArray())}");
+        return true;
     }
 
     private async Task<bool> WaitForContentsFinderStableVisibleAsync(int operationId, string dutyName, string gateName, int maxPolls)
@@ -1093,7 +1143,7 @@ public sealed class DutyAutomationService
 
             adsQueueFailurePending = true;
             adsQueueFailureReason = reason;
-            adsQueueFailureCooldownUntilUtc = DateTime.UtcNow.AddSeconds(AdsJoinFailureCooldownSeconds);
+            adsQueueFailureCooldownUntilUtc = DateTime.UtcNow.AddSeconds(AdsRegistrationFailureCooldownSeconds);
             activeAdsQueueOperationId = 0;
         }
 
@@ -1135,7 +1185,7 @@ public sealed class DutyAutomationService
     private static string GetSequenceLabel(SelectedMogtomeDuty targetDuty, bool selectionRequired)
         => selectionRequired
             ? $"{GetShortDutyName(targetDuty)} selection sequence"
-            : $"{GetShortDutyName(targetDuty)} Join-only sequence";
+            : $"{GetShortDutyName(targetDuty)} direct-registration sequence";
 
     private static string GetShortDutyName(SelectedMogtomeDuty targetDuty)
         => targetDuty switch
@@ -1176,11 +1226,11 @@ public sealed class DutyAutomationService
         try
         {
             rotationService.ForceRotation();
-            log.Information($"[MOGTOME][{backendName}] BossMod AI + RSR refreshed after duty start");
+            log.Information($"[MOGTOME][{backendName}] Selected combat provider refreshed after duty start");
         }
         catch (Exception ex)
         {
-            log.Error(ex, $"[MOGTOME][{backendName}] Failed to refresh BossMod AI + RSR after duty start");
+            log.Error(ex, $"[MOGTOME][{backendName}] Failed to refresh selected combat provider after duty start");
         }
     }
 

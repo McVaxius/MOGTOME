@@ -8,6 +8,7 @@ using Dalamud.Interface.Utility;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Plugin.Services;
 using Lumina.Excel.Sheets;
+using MOGTOME.Models;
 
 namespace MOGTOME.Windows;
 
@@ -27,7 +28,7 @@ public class ConfigWindow : Window, IDisposable
 
     // Dependency check cache
     private DateTime lastDepCheck = DateTime.MinValue;
-    private bool depRsr, depBmr, depVbm, depVnav, depTextAdv, depXaSlave, depAutoDuty, depAds, depLifestream;
+    private bool depRsr, depBmr, depVbm, depWrath, depVnav, depTextAdv, depXaSlave, depAutoDuty, depAds, depLifestream;
     private bool depCustomRes, depChillframes, depKrangler, depDps, depTtsl;
     private bool depTwistOfFayteInstalled, depTwistOfFayteEnabled;
     private bool allDepsGreen = false;
@@ -205,6 +206,7 @@ public class ConfigWindow : Window, IDisposable
             depRsr = false;
             depBmr = false;
             depVbm = false;
+            depWrath = false;
             depVnav = false;
             depTextAdv = false;
             depXaSlave = false;
@@ -228,7 +230,8 @@ public class ConfigWindow : Window, IDisposable
                 if (!p.IsLoaded) continue;
                 switch (p.InternalName)
                 {
-                    case "RotationSolver": depRsr = true; break;
+                    case "RotationSolver":
+                    case "RotationSolverReborn": depRsr = true; break;
                     case "BossModReborn": depBmr = true; break;
                     case "BossMod": depVbm = true; break;
                     case "vnavmesh": depVnav = true; break;
@@ -240,6 +243,14 @@ public class ConfigWindow : Window, IDisposable
                     case "Krangler": depKrangler = true; break;
                     case "DPS": depDps = true; break;
                     case "TTSL": depTtsl = true; break;
+                }
+
+                if (!depWrath &&
+                    (p.InternalName.Contains("WrathCombo", StringComparison.OrdinalIgnoreCase) ||
+                     p.Name.Contains("Wrath Combo", StringComparison.OrdinalIgnoreCase) ||
+                     p.Name.Contains("WrathCombo", StringComparison.OrdinalIgnoreCase)))
+                {
+                    depWrath = true;
                 }
 
                 if (!depXaSlave &&
@@ -263,8 +274,16 @@ public class ConfigWindow : Window, IDisposable
             var useAdsExperimental = plugin.Configuration.UseAdsExperimental;
             var backendReady = useAdsExperimental
                 ? depAds
-                : depAds && depAutoDuty && pathOk;
-            allDepsGreen = depRsr && (depBmr || depVbm) && !(depBmr && depVbm) && depVnav && depLifestream && depTextAdv && depXaSlave && backendReady;
+                : depAutoDuty && pathOk;
+            var providerReady = plugin.Configuration.CombatProvider switch
+            {
+                CombatProvider.Bmr => depBmr,
+                CombatProvider.Vbm => depVbm,
+                CombatProvider.Rsr => depRsr,
+                CombatProvider.Wrath => depWrath,
+                _ => false,
+            };
+            allDepsGreen = providerReady && depVnav && depLifestream && depTextAdv && depXaSlave && backendReady;
         }
         catch (Exception ex)
         {
@@ -276,14 +295,60 @@ public class ConfigWindow : Window, IDisposable
     {
         ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Backend Mode");
         var useAdsExperimental = config.UseAdsExperimental;
-        if (ImGui.Checkbox("AI Duty Solver (ADS) (Experimental)", ref useAdsExperimental))
+        if (ImGui.Checkbox("AI Duty Solver (ADS)", ref useAdsExperimental))
         {
             ToggleAdsExperimental(useAdsExperimental);
             config = plugin.Configuration;
         }
         ImGui.TextDisabled(config.UseAdsExperimental
             ? "ADS handles duty automation and inn return."
-            : "AutoDuty handles duty automation. ADS remains required for inn return.");
+            : "AutoDuty handles duty automation. ADS is optional and only used when /mog inn is requested.");
+        ImGui.Spacing();
+
+        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Combat Provider");
+        if (ImGui.BeginCombo("Selected Provider", config.CombatProvider.ToString()))
+        {
+            foreach (var provider in Enum.GetValues<CombatProvider>())
+            {
+                var selected = config.CombatProvider == provider;
+                if (ImGui.Selectable(provider.ToString(), selected))
+                {
+                    config.CombatProvider = provider;
+                    plugin.ConfigManager.SaveCurrentAccount();
+                    plugin.ConfigManager.NotifyConfigurationChanged(force: true);
+                    lastDepCheck = DateTime.MinValue;
+                }
+
+                if (selected)
+                    ImGui.SetItemDefaultFocus();
+            }
+
+            ImGui.EndCombo();
+        }
+
+        if (config.CombatProvider is CombatProvider.Bmr or CombatProvider.Vbm)
+        {
+            var manualPreset = config.UseManualBossModPreset;
+            if (ImGui.Checkbox("Use manual BossMod preset", ref manualPreset))
+            {
+                config.UseManualBossModPreset = manualPreset;
+                plugin.ConfigManager.SaveCurrentAccount();
+            }
+
+            if (manualPreset)
+            {
+                var presetName = config.ManualBossModPresetName;
+                if (ImGui.InputText("Preset Name", ref presetName, 128))
+                {
+                    config.ManualBossModPresetName = presetName;
+                    plugin.ConfigManager.SaveCurrentAccount();
+                }
+            }
+            else
+            {
+                ImGui.TextDisabled("MOGTOME selects its packaged passive preset by current role.");
+            }
+        }
         ImGui.Spacing();
 
         ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Required Plugins");
@@ -293,23 +358,20 @@ public class ConfigWindow : Window, IDisposable
         }
         ImGui.Separator();
 
-        // RSR
-        DrawDepLine("RSR (RotationSolver)", depRsr, depRsr ? "Installed" : "NOT FOUND", "RSR");
-
-        // BMR / VBM
-        if (depBmr && depVbm)
+        switch (config.CombatProvider)
         {
-            DrawDepLineColor("BMR + VBM", new Vector4(1, 1, 0, 1), "WARNING: Both enabled! Disable one.");
-        }
-        else if (depBmr || depVbm)
-        {
-            var which = depBmr ? "BMR" : "VBM";
-            DrawDepLine($"BossMod ({which})", true, "Installed", depBmr ? "BMR" : "VBM");
-        }
-        else
-        {
-            DrawDepLine("BossMod (BMR or VBM, pick one)", false, "NOT FOUND - Need one", "VBM");
-            DrawDepLine("BossModReborn (BMR or VBM, pick one)", false, "NOT FOUND - Need one", "BMR");
+            case CombatProvider.Rsr:
+                DrawDepLine("RSR (RotationSolverReborn)", depRsr, depRsr ? "Installed" : "NOT FOUND", "RSR");
+                break;
+            case CombatProvider.Bmr:
+                DrawDepLine("BossModReborn (BMR)", depBmr, depBmr ? "Installed" : "NOT FOUND", "BMR");
+                break;
+            case CombatProvider.Vbm:
+                DrawDepLine("BossMod (VBM)", depVbm, depVbm ? "Installed" : "NOT FOUND", "VBM");
+                break;
+            case CombatProvider.Wrath:
+                DrawDepLine("Wrath Combo", depWrath, depWrath ? "Installed" : "NOT FOUND", null);
+                break;
         }
 
         // VNAV
@@ -325,11 +387,15 @@ public class ConfigWindow : Window, IDisposable
         DrawDepLine("XA Slave", depXaSlave, depXaSlave ? "Installed" : "NOT FOUND", "XASlave");
         ImGui.TextDisabled("MOGTOME runs /xa skipcutscenes on before every manual start.");
 
-        DrawDepLine("ADS", depAds, depAds ? "Installed" : "NOT FOUND", "ADS");
-        ImGui.TextDisabled("Required in both backend modes. MOGTOME delegates all inn entry to /ads enterinn.");
-
-        if (!config.UseAdsExperimental)
+        if (config.UseAdsExperimental)
+        {
+            DrawDepLine("ADS", depAds, depAds ? "Installed" : "NOT FOUND", "ADS");
+        }
+        else
+        {
             DrawDepLine("AutoDuty", depAutoDuty, depAutoDuty ? "Installed" : "NOT FOUND", "AutoDuty");
+            DrawDepLineOptional("ADS", depAds, "Optional. Enables /mog inn delegation.");
+        }
 
         ImGui.Spacing();
         ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Optional Plugins");
@@ -378,7 +444,7 @@ public class ConfigWindow : Window, IDisposable
                 _ = Task.Run(async () => await plugin.AutoDutyPathService.EnsurePathExists());
             }
             ImGui.TextDisabled("This copies the bundled W2W Praetorium path files from MOGTOME's data folder into AutoDuty's paths folder.");
-            ImGui.TextDisabled("ADS is still required for /ads enterinn after repairs and manual /mog inn.");
+            ImGui.TextDisabled("ADS is optional in AutoDuty mode; /mog inn needs ADS when explicitly requested.");
             ImGui.Spacing();
         }
         else
@@ -387,7 +453,7 @@ public class ConfigWindow : Window, IDisposable
             ImGui.Separator();
             ImGui.TextWrapped("ADS mode disables AutoDuty immediately and again on Start. Queueing uses ADS ownership plus direct duty finder registration.");
             ImGui.TextWrapped("Repair/inn/leave switch to /ads npcrepair, /ads selfrepair, /ads enterinn, and /ads leave.");
-            ImGui.TextWrapped("The checkbox changes only the duty backend. ADS is required either way because inn entry is delegated to ADS.");
+            ImGui.TextWrapped("The checkbox changes the duty backend. ADS is required only while ADS mode is selected.");
             ImGui.Spacing();
         }
     }
@@ -533,6 +599,14 @@ public class ConfigWindow : Window, IDisposable
             changed = true;
         }
         ImGui.TextDisabled("Enable if you're in a cross-world party.");
+
+        var onlyQueueWithFour = config.OnlyQueueWithFourPeople;
+        if (ImGui.Checkbox("Only queue with exactly 4 visible people", ref onlyQueueWithFour))
+        {
+            config.OnlyQueueWithFourPeople = onlyQueueWithFour;
+            changed = true;
+        }
+        ImGui.TextDisabled("Applies to leaders in all synced modes, including cross-world parties. Unsynced testing mode is exempt.");
 
         if (changed)
         {

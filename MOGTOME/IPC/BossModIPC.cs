@@ -4,12 +4,24 @@ using System.IO;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Ipc;
 using Dalamud.Plugin.Services;
+using MOGTOME.Models;
 using MOGTOME.Services;
 
 namespace MOGTOME.IPC;
 
 public class BossModIPC : IDisposable
 {
+    private enum RsrStateCommandType : byte
+    {
+        Off,
+        Auto,
+        TargetOnly,
+        Manual,
+        AutoDuty,
+        Henched,
+        PvP,
+    }
+
     private const string PassiveTankPreset = "passive - tank";
     private const string PassiveMeleePreset = "passive - melee";
     private const string PassiveRangedPreset = "passive - ranged";
@@ -29,9 +41,6 @@ public class BossModIPC : IDisposable
     private readonly IPluginLog log;
     private readonly ICommandManager commandManager;
 
-    public string WhichBossMod { get; private set; } = "vbm";
-    public bool HasRotationSolver { get; private set; }
-
     public BossModIPC(IDalamudPluginInterface pluginInterface, IPluginLog log, ICommandManager commandManager)
     {
         this.pluginInterface = pluginInterface;
@@ -39,21 +48,69 @@ public class BossModIPC : IDisposable
         this.commandManager = commandManager;
     }
 
-    public void PreparePassivePresetForStart()
+    public void PreparePresetForStart(CombatProvider provider, bool useManualPreset, string manualPresetName)
     {
         try
         {
-            var createdCount = InstallPassivePresets(forceRecreate: true);
-            var presetName = SelectPassivePresetForCurrentJob();
+            var manualPresetSelected = useManualPreset && !string.IsNullOrWhiteSpace(manualPresetName);
+            var presetName = manualPresetSelected
+                ? manualPresetName.Trim()
+                : SelectPassivePresetForCurrentJob();
+
+            if (!manualPresetSelected)
+                InstallPassivePresets(forceRecreate: true);
 
             SetActivePresetViaIpc(presetName);
-            SendPassivePresetCommands(presetName);
-
-            log.Information($"[MOGTOME][BossMod] Passive preset startup prep complete: preset='{presetName}', installed={createdCount}/{PassivePresetNames.Length}");
+            SendProviderPresetCommand(provider, presetName);
+            log.Information($"[MOGTOME][BossMod] Prepared {(manualPresetSelected ? "manual" : "role-based passive")} preset '{presetName}' for {provider}");
         }
         catch (Exception ex)
         {
-            log.Warning($"[MOGTOME][BossMod] Passive preset startup prep failed; continuing start: {ex.Message}");
+            log.Warning($"[MOGTOME][BossMod] Preset startup prep failed; continuing start: {ex.Message}");
+        }
+    }
+
+    private void SendProviderPresetCommand(CombatProvider provider, string presetName)
+    {
+        switch (provider)
+        {
+            case CombatProvider.Bmr:
+                SendCommand($"/bmrai setpresetname {presetName}", "set BMR preset");
+                break;
+            case CombatProvider.Vbm:
+                SendCommand($"/vbm ar set {presetName}", "set VBM preset");
+                break;
+        }
+    }
+
+    public bool TrySetRsrAutoViaIpc()
+    {
+        try
+        {
+            var subscriber = pluginInterface.GetIpcSubscriber<RsrStateCommandType, object>("RotationSolverReborn.ChangeOperatingMode");
+            subscriber.InvokeAction(RsrStateCommandType.Auto);
+            log.Debug("[MOGTOME][Rotation] RSR Auto mode set via IPC");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            log.Debug($"[MOGTOME][Rotation] RSR mode IPC unavailable; command fallback will be used: {ex.Message}");
+            return false;
+        }
+    }
+
+    public void SendCommand(string command, string purpose)
+    {
+        try
+        {
+            if (commandManager.ProcessCommand(command))
+                log.Debug($"[MOGTOME][Rotation] {purpose}: {command}");
+            else
+                log.Warning($"[MOGTOME][Rotation] Command was not handled while attempting to {purpose}: {command}");
+        }
+        catch (Exception ex)
+        {
+            log.Warning($"[MOGTOME][Rotation] Failed to {purpose} with {command}: {ex.Message}");
         }
     }
 
@@ -271,25 +328,6 @@ public class BossModIPC : IDisposable
         return handled;
     }
 
-    private void SendPassivePresetCommands(string presetName)
-    {
-        SendPassivePresetCommand($"/bmrai setpresetname {presetName}");
-        SendPassivePresetCommand($"/vbm ar set {presetName}");
-    }
-
-    private void SendPassivePresetCommand(string command)
-    {
-        try
-        {
-            log.Information($"[MOGTOME][BossMod] Sending passive preset command: {command}");
-            GameHelpers.SendCommand(command);
-        }
-        catch (Exception ex)
-        {
-            log.Warning($"[MOGTOME][BossMod] Passive preset command failed ({command}); continuing start: {ex.Message}");
-        }
-    }
-
     private bool? TryBoolIpc<TArg>(string channel, TArg arg)
     {
         try
@@ -352,169 +390,6 @@ public class BossModIPC : IDisposable
             log.Information($"[MOGTOME][BossMod] Preset '{presetName}' handled via legacy IPC channel {channel}");
         else
             log.Warning($"[MOGTOME][BossMod] Legacy IPC {channel} returned '{result}' for preset '{presetName}'");
-    }
-
-    public void DetectBossMod()
-    {
-        try
-        {
-            var installed = pluginInterface.InstalledPlugins;
-            WhichBossMod = "vbm";
-            HasRotationSolver = false;
-            foreach (var plugin in installed)
-            {
-                if (plugin.IsLoaded &&
-                    (plugin.InternalName == "RotationSolver" || plugin.InternalName == "RotationSolverReborn"))
-                {
-                    HasRotationSolver = true;
-                }
-
-                if (plugin.IsLoaded && plugin.InternalName == "BossModReborn")
-                {
-                    WhichBossMod = "bmr";
-                }
-            }
-
-            if (WhichBossMod == "bmr")
-                log.Information("[MOGTOME][BossMod] Detected BossModReborn (bmr)");
-            else
-                log.Information("[MOGTOME][BossMod] Using default VBM");
-        }
-        catch (Exception ex)
-        {
-            WhichBossMod = "vbm";
-            HasRotationSolver = false;
-            log.Warning($"[MOGTOME][BossMod] Detection failed, defaulting to vbm: {ex.Message}");
-        }
-    }
-
-    public void SetPreset(string presetName)
-    {
-        try
-        {
-            var cmd = $"/{WhichBossMod}ai preset {presetName}";
-            log.Information($"[MOGTOME][BossMod] Setting preset: {cmd}");
-            commandManager.ProcessCommand(cmd);
-        }
-        catch (Exception ex)
-        {
-            log.Error($"[MOGTOME][BossMod] SetPreset failed: {ex.Message}");
-        }
-    }
-
-    public void EnableAI()
-    {
-        try
-        {
-            var cmd = $"/{WhichBossMod}ai on";
-            log.Debug($"[MOGTOME][BossMod] {cmd}");
-            commandManager.ProcessCommand(cmd);
-        }
-        catch (Exception ex)
-        {
-            log.Error($"[MOGTOME][BossMod] EnableAI failed: {ex.Message}");
-        }
-    }
-
-    public void DisableAI()
-    {
-        try
-        {
-            var cmd = $"/{WhichBossMod}ai off";
-            log.Debug($"[MOGTOME][BossMod] {cmd}");
-            commandManager.ProcessCommand(cmd);
-        }
-        catch (Exception ex)
-        {
-            log.Error($"[MOGTOME][BossMod] DisableAI failed: {ex.Message}");
-        }
-    }
-
-    public void ForceRotation(string preset)
-    {
-        if (preset == "none")
-        {
-            // Using RSR instead of BossMod
-            EnableRSR();
-        }
-        else
-        {
-            // Keep RSR enabled, don't disable it
-            // DisableRSR(); // REMOVED - never disable RSR
-            SetPreset(preset);
-            EnableAI();
-        }
-    }
-
-    public void EnableRSR()
-    {
-        try
-        {
-            commandManager.ProcessCommand("/rotation auto");
-            //log.Debug("[MOGTOME][BossMod] RSR auto rotation enabled");
-        }
-        catch (Exception ex)
-        {
-            log.Error($"[MOGTOME][BossMod] EnableRSR failed: {ex.Message}");
-        }
-    }
-
-    public void DisableRSR()
-    {
-        try
-        {
-            commandManager.ProcessCommand("/rotation cancel");
-            log.Debug("[MOGTOME][BossMod] RSR rotation cancelled");
-        }
-        catch (Exception ex)
-        {
-            log.Debug($"[MOGTOME][BossMod] DisableRSR failed (may not be installed): {ex.Message}");
-        }
-    }
-
-    public void DisableKeyboardNoise()
-    {
-        if (!HasRotationSolver)
-            return;
-
-        try
-        {
-            const string cmd = "/rotation Settings KeyBoardNoise false";
-            const string cmd2 = "/rotation Settings BmrSafetyCheckAuto True";
-            const string cmd3 = "/rotation Settings BmrSafetyCheckIntercept True";
-            //const string cmd2 = "/bmrai setpresetname AutoDuty Passive";
-            //const string cmd3 = "/vbm ar set AutoDuty Passive";
-            const string cmd4 = "/rotation Settings AutoOffBetweenArea False";
-            const string cmd5 = "/rotation Settings AutoOffCutScene False";
-            const string cmd6 = "/rotation Settings AutoOffSwitchClass False";
-            const string cmd7 = "/rotation Settings AutoOffWhenDead False";
-            const string cmd8 = "/rotation Settings AutoOffWhenDutyCompleted False";
-            const string cmd9 = "/rotation Settings AutoOffAfterCombatTime 6942069";
-            const string cmd10 = "/rotation Settings ToggleAuto False";
-            const string cmd11 = "/rotation Settings ToggleManual False";
-            const string cmd12 = "/rotation Auto";
-            const string cmd13 = "/fr off";
-            GameHelpers.SendCommand(cmd);
-            GameHelpers.SendCommand(cmd2);
-            GameHelpers.SendCommand(cmd3);
-            //GameHelpers.SendCommand(cmd2);
-            //GameHelpers.SendCommand(cmd3);
-            GameHelpers.SendCommand(cmd4);
-            GameHelpers.SendCommand(cmd5);
-            GameHelpers.SendCommand(cmd6);
-            GameHelpers.SendCommand(cmd7);
-            GameHelpers.SendCommand(cmd8);
-            GameHelpers.SendCommand(cmd9);
-            GameHelpers.SendCommand(cmd10);
-            GameHelpers.SendCommand(cmd11);
-            GameHelpers.SendCommand(cmd12);
-            GameHelpers.SendCommand(cmd13);
-            log.Information("[MOGTOME][MOGTOME][BossMod][RotationSolverReborn] Requested RSR and both bossmod shenanigans to calm down");
-        }
-        catch (Exception ex)
-        {
-            log.Error($"[MOGTOME][BossMod] DisableKeyboardNoise failed: {ex.Message}");
-        }
     }
 
     public void Dispose() { }

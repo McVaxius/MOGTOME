@@ -49,8 +49,7 @@ public class AutoDutyIPC : IDisposable
     {
         SetConfig("AutoDutyModeEnum", "Looping");
         SetConfig("DutyModeEnum", "Regular");
-        // MOGTOME keeps BossMod AI and RSR armed itself so Praetorium combat
-        // does not lose melee movement during Phantom Gaius split transitions.
+        // MOGTOME owns the selected combat provider state.
         SetConfig("AutoManageRotationPluginState", "false");
         SetConfig("AutoManageBossModAISettings", "false");
         SetConfig("BM_UpdatePresetsAutomatically", "true");
@@ -61,7 +60,7 @@ public class AutoDutyIPC : IDisposable
         SetConfig("EnableTerminationActions", "false");
         SetConfig("Unsynced", "true");
         // LevelSync is set by the engine based on TestingModeUnsynced config
-        log.Information($"[MOGTOME][AutoDuty] Configured for MOGTOME (leader={isLeader}) - Unsync=ON, BossMod/RSR auto-manage=OFF");
+        log.Information($"[MOGTOME][AutoDuty] Configured for MOGTOME (leader={isLeader}) - Unsync=ON, combat-provider auto-manage=OFF");
     }
 
     public void SetUsingAlternativeRotation(bool useAlternative)
@@ -80,20 +79,6 @@ public class AutoDutyIPC : IDisposable
         catch (Exception ex)
         {
             log.Warning($"[MOGTOME][AutoDuty] SetPraetoriumPath failed: {ex.Message}");
-        }
-    }
-
-    public void QueueDuty(string dutyName)
-    {
-        try
-        {
-            var cmd = $"/ad queue {dutyName}";
-            log.Information($"[MOGTOME][AutoDuty] Queueing: {cmd}");
-            commandManager.ProcessCommand(cmd);
-        }
-        catch (Exception ex)
-        {
-            log.Error($"[MOGTOME][AutoDuty] Queue failed: {ex.Message}");
         }
     }
 
@@ -121,11 +106,11 @@ public class AutoDutyIPC : IDisposable
             try
             {
                 rotationService.ForceRotation();
-                log.Information("[MOGTOME][AutoDuty] BossMod AI + RSR refreshed after /ad start");
+                log.Information("[MOGTOME][AutoDuty] Selected combat provider refreshed after /ad start");
             }
             catch (Exception ex)
             {
-                log.Error(ex, "[MOGTOME][AutoDuty] Failed to refresh BossMod AI + RSR after /ad start");
+                log.Error(ex, "[MOGTOME][AutoDuty] Failed to refresh selected combat provider after /ad start");
             }
         }
         catch (Exception ex)

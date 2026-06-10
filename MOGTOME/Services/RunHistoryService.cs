@@ -160,6 +160,7 @@ public class RunHistoryService : IDisposable
     /// Get the current run history (read-only)
     /// </summary>
     public IReadOnlyList<RunRecord> RunHistory => GetVisibleRuns().AsReadOnly();
+    public IReadOnlyList<RunRecord> SuccessfulRunHistory => GetVisibleRuns().Where(IsSuccessful).ToList().AsReadOnly();
 
     /// <summary>
     /// Load run history from the account-specific database
@@ -210,7 +211,9 @@ public class RunHistoryService : IDisposable
         try
         {
             var config = configManager.GetCurrentAccount().Settings;
-            var visibleRecords = GetVisibleRuns(records);
+            var visibleRecords = GetVisibleRuns(records)
+                .Where(IsSuccessful)
+                .ToList();
 
             ResetSummaryStats(config);
             
@@ -389,16 +392,16 @@ public class RunHistoryService : IDisposable
     /// Record a completed duty run
     /// Thread-safe implementation with retry logic
     /// </summary>
-    public void RecordRun()
+    public RunRecord? RecordRun(RunOutcome outcome = RunOutcome.Successful, string abortReason = "", float? completionTime = null)
     {
-        if (!config.EnableDetailedTracking)
-            return;
+        if (!config.EnableDetailedTracking && outcome == RunOutcome.Successful)
+            return null;
 
         lock (runHistoryLock)
         {
             try
             {
-                var runRecord = CreateRunRecord();
+                var runRecord = CreateRunRecord(outcome, abortReason, completionTime);
                 
                 // Add to in-memory history
                 runHistory.Add(runRecord);
@@ -414,7 +417,7 @@ public class RunHistoryService : IDisposable
                 if (contentId == 0)
                 {
                     log.Warning("[MOGTOME][RunHistory] Skipping run recording - ContentId not available yet (player not logged in)");
-                    return;
+                    return runRecord;
                 }
                 
                 // Persist off-thread so duty completion is not held on SQLite retries.
@@ -422,11 +425,13 @@ public class RunHistoryService : IDisposable
                 QueueRunSave(accountId, runRecord);
                 
                 log.Debug($"[MOGTOME][RunHistory] Recorded run: {runRecord.PlayerName} ({GetJobName(runRecord.JobId)}) - {runRecord.CompletionTime:F1}s");
+                return runRecord;
             }
             catch (Exception ex)
             {
                 log.Error(ex, "[MOGTOME][RunHistory] Failed to record run");
                 // Don't rethrow - we don't want to break the duty completion flow
+                return null;
             }
         }
     }
@@ -569,7 +574,7 @@ public class RunHistoryService : IDisposable
     /// <summary>
     /// Create a RunRecord from current state
     /// </summary>
-    private RunRecord CreateRunRecord()
+    private RunRecord CreateRunRecord(RunOutcome outcome, string abortReason, float? completionTime)
     {
         var localPlayer = Plugin.ObjectTable.LocalPlayer;
         var partyList = Plugin.PartyList;
@@ -683,11 +688,13 @@ public class RunHistoryService : IDisposable
             JobId = localPlayer?.ClassJob.IsValid == true ? (byte)localPlayer.ClassJob.Value.RowId : (byte)0,
             Level = (byte)(localPlayer?.Level ?? 0),
             TerritoryId = state.DutyStartTerritory,
-            CompletionTime = state.LastCompletionDuration,
+            CompletionTime = completionTime ?? state.LastCompletionDuration,
             DeathCount = 0, // TODO: Implement death tracking
-            MogtomesEarned = isPrae ? 7 : 3, // Prae=7, Decu=3
+            MogtomesEarned = outcome == RunOutcome.Successful ? (isPrae ? 7 : 3) : 0,
             IsPraetorium = isPrae,
-            WasSuccessful = true,
+            WasSuccessful = outcome == RunOutcome.Successful,
+            Outcome = outcome,
+            AbortReason = abortReason ?? string.Empty,
             PartySize = (byte)Math.Clamp(recordedPartySize, 0, byte.MaxValue),
             PartyMembers = partyMembers,
             IsDebugRun = config.TestingModeUnsynced
@@ -730,6 +737,7 @@ public class RunHistoryService : IDisposable
     public Dictionary<byte, JobStats> GetJobStatistics()
     {
         return GetVisibleRuns()
+            .Where(IsSuccessful)
             .GroupBy(x => x.JobId)
             .ToDictionary(
                 g => g.Key,
@@ -740,7 +748,7 @@ public class RunHistoryService : IDisposable
                     BestTime = g.Min(x => x.CompletionTime),
                     WorstTime = g.Max(x => x.CompletionTime),
                     TotalDeaths = g.Sum(x => x.DeathCount),
-                    SuccessfulRuns = g.Count(x => x.WasSuccessful),
+                    SuccessfulRuns = g.Count(),
                     PraetoriumRuns = g.Count(x => x.IsPraetorium),
                     DecumanaRuns = g.Count(x => !x.IsPraetorium),
                     TotalMogtomes = g.Sum(x => x.MogtomesEarned),
@@ -755,6 +763,7 @@ public class RunHistoryService : IDisposable
     public Dictionary<ulong, PlayerStats> GetPlayerStatistics()
     {
         return GetVisibleRuns()
+            .Where(IsSuccessful)
             .GroupBy(x => x.ContentId)
             .ToDictionary(
                 g => g.Key,
@@ -788,7 +797,7 @@ public class RunHistoryService : IDisposable
         
         foreach (var run in runs.OrderByDescending(x => x.Timestamp))
         {
-            if (run.WasSuccessful)
+            if (IsSuccessful(run))
             {
                 currentStreak++;
                 bestStreak = Math.Max(bestStreak, currentStreak);
@@ -811,7 +820,7 @@ public class RunHistoryService : IDisposable
         
         foreach (var run in runs.OrderByDescending(x => x.Timestamp))
         {
-            if (run.WasSuccessful)
+            if (IsSuccessful(run))
             {
                 currentStreak++;
             }
@@ -850,6 +859,9 @@ public class RunHistoryService : IDisposable
             .OrderBy(r => r.Timestamp)
             .ToList();
     }
+
+    public static bool IsSuccessful(RunRecord run)
+        => run.Outcome == RunOutcome.Successful;
 
     /// <summary>
     /// Get job name from ID

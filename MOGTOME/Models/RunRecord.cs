@@ -3,6 +3,20 @@ using System.Collections.Generic;
 
 namespace MOGTOME.Models;
 
+public enum RunOutcome
+{
+    Successful,
+    Aborted,
+}
+
+public enum CombatProvider
+{
+    Bmr,
+    Vbm,
+    Rsr,
+    Wrath,
+}
+
 /// <summary>
 /// Represents a single duty run record for detailed statistics tracking
 /// </summary>
@@ -67,6 +81,10 @@ public class RunRecord
     /// Whether the run was successful (completed without issues)
     /// </summary>
     public bool WasSuccessful { get; set; } = true;
+
+    public RunOutcome Outcome { get; set; } = RunOutcome.Successful;
+
+    public string AbortReason { get; set; } = string.Empty;
     
     /// <summary>
     /// Party size during the run

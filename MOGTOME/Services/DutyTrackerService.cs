@@ -70,28 +70,32 @@ public class DutyTrackerService
     public void OnDutyStarted()
     {
         var isPrae = state.DutyStartTerritory == DutyState.PraetoriumTerritoryId;
-        
-        // Only increment duty counter for Praetorium runs
-        if (isPrae)
-        {
-            state.DutyCounter++;
-            config.DutyCounter = state.DutyCounter;
-            SaveCurrentAccount("Praetorium duty start");
-        }
-        
-        // Track daily Decumana runs
-        if (!isPrae)
-        {
-            state.DecumanaCounter++;
-        }
-        
+
         state.HasEnteredDuty = true;
         state.DutyStartTime = DateTime.UtcNow;
         state.MaxContentTime = 0;
         state.TimeInDuty = 0;
         state.StuckTickCount = 0;
 
-        log.Information($"[MOGTOME][DutyTracker] {(isPrae ? "Praetorium" : "Decumana")} started -> Prae counter: {state.DutyCounter}, Daily Decu: {state.DecumanaCounter}");
+        log.Information($"[MOGTOME][DutyTracker] {(isPrae ? "Praetorium" : "Decumana")} started; clear counters update only after confirmed successful completion");
+    }
+
+    public void ObserveRemainingTime()
+    {
+        var remaining = GameHelpers.GetDutyRemainingTime();
+        if (!float.IsFinite(remaining) || remaining <= 0)
+            return;
+
+        if (remaining > state.MaxContentTime)
+            state.MaxContentTime = remaining;
+    }
+
+    public void CaptureCompletionRemainingTime()
+    {
+        var remaining = GameHelpers.GetDutyRemainingTime();
+        state.RemainingTimeAtCompletion = float.IsFinite(remaining) && remaining > 0
+            ? remaining
+            : 0;
     }
 
     /// <summary>
@@ -102,61 +106,44 @@ public class DutyTrackerService
     {
         var now = DateTime.UtcNow;
         log.Information($"[MOGTOME][DutyTracker] OnDutyCompleted called - DutyStartTime: {state.DutyStartTime}, CurrentTime: {now}");
+
+        var isPrae = state.DutyStartTerritory == DutyState.PraetoriumTerritoryId;
+        if (isPrae)
+        {
+            state.DutyCounter++;
+            config.DutyCounter = state.DutyCounter;
+        }
+        else
+        {
+            state.DecumanaCounter++;
+        }
         
         if (state.DutyStartTime.HasValue)
         {
-            var isPrae = state.DutyStartTerritory == DutyState.PraetoriumTerritoryId;
-            var timeLimit = isPrae ? DutyState.PraetoriumTimeLimit : DutyState.DecumanaTimeLimit;
             var rawDuration = (float)(now - state.DutyStartTime.Value).TotalSeconds;
+            var maxObservedRemaining = state.MaxContentTime;
+            var completionRemaining = state.RemainingTimeAtCompletion;
+            var observedDuration = maxObservedRemaining - completionRemaining;
+            var observationsValid =
+                float.IsFinite(maxObservedRemaining) &&
+                float.IsFinite(completionRemaining) &&
+                maxObservedRemaining > 0 &&
+                completionRemaining > 0 &&
+                observedDuration > 0 &&
+                observedDuration <= 7200;
 
-            log.Debug($"[MOGTOME][DutyTracker] Duty parameters - CurrentTerritory: {state.CurrentTerritory}, DutyStartTerritory: {state.DutyStartTerritory}, IsPrae: {isPrae}, TimeLimit: {timeLimit:F0}s, RawDuration: {rawDuration:F0}s");
-
-            var remainingTime = GameHelpers.GetDutyRemainingTime();
-            log.Information($"[MOGTOME][DutyTracker] Remaining time check - API returned: {remainingTime:F0}s");
-            
-            float actualDuration;
-            string timingMethod;
-
-            if (remainingTime > 0)
+            var actualDuration = observationsValid ? observedDuration : rawDuration;
+            var timingMethod = observationsValid ? "OBSERVED_REMAINING_DELTA" : "UTC_ELAPSED_FALLBACK";
+            if (!float.IsFinite(actualDuration) || actualDuration <= 0 || actualDuration > 7200)
             {
-                actualDuration = timeLimit - remainingTime;
-                state.RemainingTimeAtCompletion = remainingTime;
-                timingMethod = "API_METHOD";
-                
-                log.Information($"[MOGTOME][DutyTracker] [{timingMethod}] Duty completed: {timeLimit:F0}s - {remainingTime:F0}s = {actualDuration:F0}s");
-                log.Debug($"[MOGTOME][DutyTracker] [{timingMethod}] TimeLimit: {timeLimit:F0}s, Remaining: {remainingTime:F0}s, Calculated: {actualDuration:F0}s");
-                
-                // Validate the calculated time
-                if (actualDuration < 0 || actualDuration > timeLimit)
-                {
-                    log.Warning($"[MOGTOME][DutyTracker] [{timingMethod}] Invalid calculated duration {actualDuration:F0}s, falling back to raw duration");
-                    actualDuration = rawDuration;
-                    timingMethod = "API_FALLBACK";
-                }
-            }
-            else
-            {
-                actualDuration = rawDuration;
-                state.RemainingTimeAtCompletion = 0;
-                timingMethod = "FALLBACK_METHOD";
-                
-                log.Information($"[MOGTOME][DutyTracker] [{timingMethod}] Duty completed: {actualDuration:F0}s (remaining time unavailable)");
-                log.Debug($"[MOGTOME][DutyTracker] [{timingMethod}] RawDuration: {rawDuration:F0}s, Reason: API returned {remainingTime:F0}s");
-            }
-
-            // Final validation
-            if (actualDuration <= 0 || actualDuration > 7200) // 2 hours max sanity check
-            {
-                log.Error($"[MOGTOME][DutyTracker] [{timingMethod}] Invalid final duration {actualDuration:F0}s, using fallback");
-                actualDuration = Math.Max(rawDuration, 1); // Ensure at least 1 second
-                timingMethod = "FINAL_FALLBACK";
+                actualDuration = Math.Max(float.IsFinite(rawDuration) ? rawDuration : 0, 1);
+                timingMethod = "UTC_ELAPSED_FINAL_FALLBACK";
             }
 
             state.LastCompletionDuration = actualDuration;
             state.LastCompletionTime = now;
 
-            log.Information($"[MOGTOME][DutyTracker] [{timingMethod}] FINAL: Duty completed in {state.LastCompletionDuration:F0}s -> counter: {state.DutyCounter}");
-            log.Debug($"[MOGTOME][DutyTracker] [{timingMethod}] Summary - TimeLimit: {timeLimit:F0}s, CurrentTerritory: {state.CurrentTerritory}, DutyStartTerritory: {state.DutyStartTerritory}, IsPrae: {isPrae}, Remaining: {remainingTime:F0}s, Actual: {actualDuration:F0}s");
+            log.Information($"[MOGTOME][DutyTracker] Timing method={timingMethod}; maxObservedRemaining={maxObservedRemaining:F1}s; completionRemaining={completionRemaining:F1}s; utcElapsed={rawDuration:F1}s; storedDuration={actualDuration:F1}s");
             
             // Now that we have the correct completion time, record the run
             try

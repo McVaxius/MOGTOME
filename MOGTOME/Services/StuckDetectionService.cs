@@ -8,21 +8,18 @@ namespace MOGTOME.Services;
 public class StuckDetectionService
 {
     private readonly IPluginLog log;
-    private readonly Configuration config;
+    private readonly ConfigManager configManager;
     private readonly DutyState state;
     private readonly VNavIPC vNavIPC;
     private readonly ICondition condition;
 
     private const float StuckDistanceThreshold = 1.0f;
-    private DateTime lastLeaveAttemptTime = DateTime.MinValue;
-    private int leaveAttemptCount = 0;
-
     public StuckDetectionService(
-        IPluginLog log, Configuration config, DutyState state,
+        IPluginLog log, ConfigManager configManager, DutyState state,
         VNavIPC vNavIPC, ICondition condition)
     {
         this.log = log;
-        this.config = config;
+        this.configManager = configManager;
         this.state = state;
         this.vNavIPC = vNavIPC;
         this.condition = condition;
@@ -31,11 +28,7 @@ public class StuckDetectionService
     public void Update()
     {
         if (!state.IsInDuty)
-        {
-            leaveAttemptCount = 0;
-            lastLeaveAttemptTime = DateTime.MinValue;
             return;
-        }
 
         var player = Plugin.ObjectTable.LocalPlayer;
         if (player == null) return;
@@ -96,93 +89,15 @@ public class StuckDetectionService
 
         var elapsed = (float)(DateTime.UtcNow - state.DutyStartTime.Value).TotalSeconds;
         state.TimeInDuty = elapsed;
+        var config = configManager.GetActiveConfig();
 
         // Condition[26] = InCombat
-        if (elapsed > config.BailoutTimeout && !condition[26])
+        if (elapsed > config.BailoutTimeout && !condition[26] && !state.BailoutRequested)
         {
-            AttemptLeaveDuty(elapsed);
-        }
-    }
-
-    private void AttemptLeaveDuty(float elapsed)
-    {
-        var now = DateTime.UtcNow;
-        if ((now - lastLeaveAttemptTime).TotalSeconds < 5.0)
-            return;
-
-        lastLeaveAttemptTime = now;
-        leaveAttemptCount++;
-        var leaveReason = $"Bailout triggered after {elapsed:F0}s (configured: {config.BailoutTimeout}s)";
-
-        try
-        {
-            vNavIPC.Rebuild();
-        }
-        catch (Exception ex)
-        {
-            log.Warning($"[MOGTOME][StuckDetection] vnav rebuild before bailout leave failed: {ex.Message}");
-        }
-
-        log.Information($"[MOGTOME][StuckDetection] Leave duty attempt #{leaveAttemptCount} - REASON: {leaveReason}");
-        log.Information("[MOGTOME][StuckDetection] Opening duty panel for bailout leave");
-        GameHelpers.SendCommand("/dutyfinder");
-
-        GameHelpers.QueueFrameworkAction("StuckDetection leave", "open leave duty button", TimeSpan.FromMilliseconds(500), () =>
-        {
-            TryClickLeaveDutyButton();
-        });
-
-        GameHelpers.QueueFrameworkAction("StuckDetection leave", "confirm leave duty", TimeSpan.FromMilliseconds(1000), () =>
-        {
-            if (GameHelpers.ClickYesIfVisible())
-            {
-                log.Information("[MOGTOME][StuckDetection] Successfully clicked Yes on bailout leave confirmation");
-            }
-        });
-    }
-
-    private unsafe void TryClickLeaveDutyButton()
-    {
-        try
-        {
-            log.Information("[MOGTOME][StuckDetection] Opening ContentsFinderMenu with callback");
-            GameHelpers.FireAddonCallback("ContentsFinderMenu", true, 0);
-
-            GameHelpers.QueueFrameworkAction("StuckDetection leave", "click leave button", TimeSpan.FromMilliseconds(500), TryClickLeaveButton);
-        }
-        catch (Exception ex)
-        {
-            log.Error($"[MOGTOME][StuckDetection] Error trying to leave duty during bailout: {ex.Message}");
-        }
-    }
-
-    private unsafe void TryClickLeaveButton()
-    {
-        try
-        {
-            log.Information("[MOGTOME][StuckDetection] Clicking Leave button on ContentsFinderMenu");
-            GameHelpers.FireAddonCallback("ContentsFinderMenu", true, 43);
-
-            GameHelpers.QueueFrameworkAction("StuckDetection leave", "handle leave confirmation", TimeSpan.FromMilliseconds(500), HandleLeaveConfirmation);
-        }
-        catch (Exception ex)
-        {
-            log.Error($"[MOGTOME][StuckDetection] Error clicking Leave button during bailout: {ex.Message}");
-        }
-    }
-
-    private void HandleLeaveConfirmation()
-    {
-        try
-        {
-            if (GameHelpers.ClickYesIfVisible())
-            {
-                log.Information("[MOGTOME][StuckDetection] Clicked Yes on bailout leave confirmation dialog");
-            }
-        }
-        catch (Exception ex)
-        {
-            log.Error($"[MOGTOME][StuckDetection] Error handling bailout leave confirmation: {ex.Message}");
+            state.BailoutElapsedTime = elapsed;
+            state.BailoutReason = $"Bailout triggered after {elapsed:F0}s (configured: {config.BailoutTimeout}s)";
+            state.BailoutRequested = true;
+            log.Warning($"[MOGTOME][StuckDetection] Queued bailout request: {state.BailoutReason}");
         }
     }
 }

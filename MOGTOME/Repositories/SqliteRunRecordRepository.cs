@@ -93,7 +93,9 @@ public class SqliteRunRecordRepository : IRunRecordRepository
                 WasSuccessful INTEGER NOT NULL,
                 PartySize INTEGER NOT NULL,
                 PartyMembers TEXT NOT NULL,
-                IsDebugRun INTEGER NOT NULL DEFAULT 0
+                IsDebugRun INTEGER NOT NULL DEFAULT 0,
+                Outcome TEXT NOT NULL DEFAULT 'Successful',
+                AbortReason TEXT NOT NULL DEFAULT ''
             );
             
             CREATE INDEX IF NOT EXISTS idx_runrecords_timestamp ON RunRecords(Timestamp);
@@ -103,6 +105,8 @@ public class SqliteRunRecordRepository : IRunRecordRepository
         ";
         cmd.ExecuteNonQuery();
         EnsureColumnExists(connection, "RunRecords", "IsDebugRun", "INTEGER NOT NULL DEFAULT 0");
+        EnsureColumnExists(connection, "RunRecords", "Outcome", "TEXT NOT NULL DEFAULT 'Successful'");
+        EnsureColumnExists(connection, "RunRecords", "AbortReason", "TEXT NOT NULL DEFAULT ''");
         RepairStoredPartySizes(connection);
     }
 
@@ -178,7 +182,7 @@ public class SqliteRunRecordRepository : IRunRecordRepository
                 using var cmd = connection.CreateCommand();
                 cmd.CommandText = @"
                     SELECT ContentId, Timestamp, TerritoryId, CompletionTime, MogtomesEarned,
-                           IsPraetorium, WasSuccessful, PartySize, PartyMembers, IsDebugRun
+                           IsPraetorium, WasSuccessful, PartySize, PartyMembers, IsDebugRun, Outcome, AbortReason
                     FROM RunRecords
                     ORDER BY Timestamp DESC
                     LIMIT 1000
@@ -190,6 +194,7 @@ public class SqliteRunRecordRepository : IRunRecordRepository
                     var partyMembers = DeserializePartyMembers(reader.GetString(8));
                     var storedPartySize = reader.GetInt32(7);
 
+                    var outcome = ParseOutcome(reader.IsDBNull(10) ? null : reader.GetString(10));
                     var record = new RunRecord
                     {
                         ContentId = (ulong)reader.GetInt64(0),
@@ -198,10 +203,12 @@ public class SqliteRunRecordRepository : IRunRecordRepository
                         CompletionTime = (float)reader.GetDouble(3),
                         MogtomesEarned = reader.GetInt32(4),
                         IsPraetorium = reader.GetBoolean(5),
-                        WasSuccessful = reader.GetBoolean(6),
+                        WasSuccessful = outcome == RunOutcome.Successful,
                         PartySize = (byte)Math.Clamp(storedPartySize > 0 ? storedPartySize : partyMembers.Count, 0, byte.MaxValue),
                         PartyMembers = partyMembers,
-                        IsDebugRun = reader.GetBoolean(9)
+                        IsDebugRun = reader.GetBoolean(9),
+                        Outcome = outcome,
+                        AbortReason = reader.IsDBNull(11) ? string.Empty : reader.GetString(11)
                     };
                     records.Add(record);
                 }
@@ -230,8 +237,8 @@ public class SqliteRunRecordRepository : IRunRecordRepository
 
                 using var cmd = connection.CreateCommand();
                 cmd.CommandText = @"
-                    INSERT INTO RunRecords (ContentId, Timestamp, TerritoryId, CompletionTime, MogtomesEarned, IsPraetorium, WasSuccessful, PartySize, PartyMembers, IsDebugRun)
-                    VALUES (@ContentId, @Timestamp, @TerritoryId, @CompletionTime, @MogtomesEarned, @IsPraetorium, @WasSuccessful, @PartySize, @PartyMembers, @IsDebugRun)
+                    INSERT INTO RunRecords (ContentId, Timestamp, TerritoryId, CompletionTime, MogtomesEarned, IsPraetorium, WasSuccessful, PartySize, PartyMembers, IsDebugRun, Outcome, AbortReason)
+                    VALUES (@ContentId, @Timestamp, @TerritoryId, @CompletionTime, @MogtomesEarned, @IsPraetorium, @WasSuccessful, @PartySize, @PartyMembers, @IsDebugRun, @Outcome, @AbortReason)
                 ";
 
                 cmd.Parameters.AddWithValue("@ContentId", record.ContentId);
@@ -240,10 +247,12 @@ public class SqliteRunRecordRepository : IRunRecordRepository
                 cmd.Parameters.AddWithValue("@CompletionTime", record.CompletionTime);
                 cmd.Parameters.AddWithValue("@MogtomesEarned", record.MogtomesEarned);
                 cmd.Parameters.AddWithValue("@IsPraetorium", record.IsPraetorium);
-                cmd.Parameters.AddWithValue("@WasSuccessful", record.WasSuccessful);
+                cmd.Parameters.AddWithValue("@WasSuccessful", record.Outcome == RunOutcome.Successful);
                 cmd.Parameters.AddWithValue("@PartySize", record.PartySize);
                 cmd.Parameters.AddWithValue("@PartyMembers", JsonSerializer.Serialize(record.PartyMembers ?? []));
                 cmd.Parameters.AddWithValue("@IsDebugRun", record.IsDebugRun);
+                cmd.Parameters.AddWithValue("@Outcome", record.Outcome.ToString());
+                cmd.Parameters.AddWithValue("@AbortReason", record.AbortReason ?? string.Empty);
 
                 cmd.ExecuteNonQuery();
                 log.Debug($"[SqliteRepository] Added run record for account {accountId}");
@@ -328,4 +337,9 @@ public class SqliteRunRecordRepository : IRunRecordRepository
             return [];
         }
     }
+
+    private static RunOutcome ParseOutcome(string? value)
+        => Enum.TryParse<RunOutcome>(value, ignoreCase: true, out var outcome)
+            ? outcome
+            : RunOutcome.Successful;
 }
