@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -24,6 +25,7 @@ public enum EngineState
 
 public class MogtomeEngine
 {
+    private const string PhantomGaiusName = "Phantom Gaius";
     private readonly record struct StartupSnapshot(bool StartingInsideDuty, bool IsPartyLeader);
     private readonly record struct StartupPreparationResult(bool EnteredRepairMode);
 
@@ -43,7 +45,6 @@ public class MogtomeEngine
     private readonly AutoDutyPathService autoDutyPath;
     private readonly ConflictPluginService conflictPluginService;
     private readonly RunHistoryService runHistoryService; // NEW
-    private readonly DeathTrackingService deathTrackingService;
     private readonly AutoDutyIPC autoDutyIPC;
     private readonly YesAlreadyIPC yesAlreadyIPC;
     private readonly ICondition condition;
@@ -61,8 +62,11 @@ public class MogtomeEngine
     private bool autoDutyStartedInDuty = false;
     private DateTime dutyEnteredUtc = DateTime.MinValue;
     private DateTime lastPraetoriumReadyWaitLogUtc = DateTime.MinValue;
+    private DateTime lastRotationRefreshUtc = DateTime.MinValue;
     private const float PraetoriumDutyReadyFallbackSeconds = 20.0f;
     private const int AdsInsideStartDelayMilliseconds = 250;
+    private const float RotationRefreshIntervalSeconds = 10.0f;
+    private const float PraetoriumAggressiveRefreshSeconds = 3.0f;
 
     // Duty exit tracking
     private bool dutyCompleted = false;
@@ -115,6 +119,9 @@ public class MogtomeEngine
     private const int BoundByDuty56ConditionIndex = 56;
     private const float DutyTerritorySettleSeconds = 12.0f;
     private const float RecentQueueAcceptanceEvidenceSeconds = 20.0f;
+	
+	//RSR refresh counter
+	private int rsrcounter = 0;
 
     public enum RequeueState
     {
@@ -136,7 +143,6 @@ public class MogtomeEngine
         StuckDetectionService stuckDetection, DialogHandlerService dialogHandler,
         DutyAutomationService dutyAutomationService,
         AutoDutyPathService autoDutyPath, ConflictPluginService conflictPluginService, RunHistoryService runHistoryService, // NEW
-        DeathTrackingService deathTrackingService,
         AutoDutyIPC autoDutyIPC, YesAlreadyIPC yesAlreadyIPC,
         ICondition condition, IClientState clientState, ICommandManager commandManager)
     {
@@ -156,7 +162,6 @@ public class MogtomeEngine
         this.autoDutyPath = autoDutyPath;
         this.conflictPluginService = conflictPluginService;
         this.runHistoryService = runHistoryService; // NEW
-        this.deathTrackingService = deathTrackingService;
         this.autoDutyIPC = autoDutyIPC;
         this.yesAlreadyIPC = yesAlreadyIPC;
         this.condition = condition;
@@ -186,7 +191,6 @@ public class MogtomeEngine
         state.DutyStartTerritory = territoryId;
         if (dutyEnteredUtc == DateTime.MinValue)
             dutyEnteredUtc = DateTime.UtcNow;
-        rotationService.ResetDutyRotationState($"duty started territory {territoryId}");
 
         if (!dutyAutomationService.UseAdsExperimental)
             return;
@@ -221,7 +225,6 @@ public class MogtomeEngine
         if (ShouldIgnoreEarlyDutyCompleted(territoryId, now))
             return;
 
-        rotationService.DisableRotationForDutyEnd($"duty completed territory {territoryId}");
         dutyCompleted = true;
         dutyCompletedTime = now;
         ResetLeaveTracking();
@@ -378,10 +381,9 @@ public class MogtomeEngine
         {
             dutyAutomationService.StopDuty();
             dialogHandler.Stop();
-            rotationService.DisableRotationForDutyEnd("engine stop");
+            rotationService.DisableRotation();
             dutyQueue.ClearRepairQueuePauseOnStop();
             ResetLeaveTracking();
-            deathTrackingService.Clear("engine stop");
             ResetRepairRequestState();
             ResetRepairRecoveryWatchdog();
             ResetQueueRegistrationWatchdog();
@@ -454,11 +456,11 @@ public class MogtomeEngine
 
         log.Warning("[MOGTOME][Engine] Clearing stale in-duty state before startup because the client is currently outside duty");
         state.Reset();
-        deathTrackingService.Clear("stale duty state");
         dutyCompleted = false;
         autoDutyStartedInDuty = false;
         dutyEnteredUtc = DateTime.MinValue;
         lastPraetoriumReadyWaitLogUtc = DateTime.MinValue;
+        lastRotationRefreshUtc = DateTime.MinValue;
         ResetRepairRecoveryWatchdog();
         dutyAutomationService.InvalidateAdsQueueOperations("duty entered");
         ResetQueueRecoveryState();
@@ -471,7 +473,7 @@ public class MogtomeEngine
         dutyEnteredUtc = DateTime.UtcNow;
         ResetLeaveTracking();
         lastPraetoriumReadyWaitLogUtc = DateTime.MinValue;
-        rotationService.ResetDutyRotationState("resume current duty");
+        lastRotationRefreshUtc = DateTime.MinValue;
         ResetRepairRecoveryWatchdog();
         ResetQueueRecoveryState();
         requeueInProgress = false;
@@ -490,9 +492,7 @@ public class MogtomeEngine
 
         state.IsInDuty = true;
         state.IsInCombat = condition[26];
-        var knownTerritory = GetKnownDutyTerritory();
-        if (IsMogtomeDutyTerritory(knownTerritory))
-            deathTrackingService.Start(knownTerritory);
+        rotationService.ForceRotation();
         CurrentState = EngineState.InDuty;
         StatusMessage = $"In Duty - #{state.DutyCounter + 1} ({dutyTracker.GetCurrentDutyName()})";
         log.Information($"[MOGTOME][Engine] Resuming current duty without re-counting start (HasEnteredDuty={state.HasEnteredDuty}, DutyCounter={state.DutyCounter})");
@@ -626,7 +626,12 @@ public class MogtomeEngine
                     UpdateQueueing();
                     break;
                 case EngineState.InDuty:
-                    UpdateInDuty();
+					rsrcounter++;
+					if (rsrcounter > 10)
+					{
+						UpdateInDuty();
+						rsrcounter = 0;
+					}
                     break;
                 case EngineState.RepairingOutside:
                     UpdateRepairing();
@@ -653,8 +658,7 @@ public class MogtomeEngine
             dutyTerritoryWaitStartedUtc = dutyEnteredUtc;
             lastDutyTerritoryWaitLogUtc = DateTime.MinValue;
             lastPraetoriumReadyWaitLogUtc = DateTime.MinValue;
-            if (!backendAlreadyStarted)
-                rotationService.ResetDutyRotationState("entered duty");
+            lastRotationRefreshUtc = DateTime.MinValue;
             ResetRepairRecoveryWatchdog();
             ResetQueueRecoveryState();
 
@@ -680,8 +684,8 @@ public class MogtomeEngine
         }
 
         ResetDutyEntryTerritoryWait();
-        deathTrackingService.Start(enteredTerritory);
         dutyTracker.OnDutyStarted();
+        rotationService.ForceRotation();
         
         CurrentState = EngineState.InDuty;
         StatusMessage = $"In Duty - #{state.DutyCounter + 1} ({dutyTracker.GetCurrentDutyName()})";
@@ -852,7 +856,6 @@ public class MogtomeEngine
     {
         log.Warning($"[MOGTOME][Engine] BoundByDuty ended before MOGTOME duty territory resolved. Diagnostics: {BuildDutyEntryDiagnostics()}");
         state.Reset();
-        deathTrackingService.Clear("pending duty entry cancelled");
         outsideDutyTicks = 0;
         autoDutyStartedInDuty = false;
         dutyCompleted = false;
@@ -973,7 +976,6 @@ public class MogtomeEngine
     private void ResetAfterConfirmedDutyExit(string reason)
     {
         state.IsInDuty = false;
-        deathTrackingService.Clear(reason);
         outsideDutyTicks = 0;
         autoDutyStartedInDuty = false;
         dutyCompleted = false;
@@ -1044,18 +1046,11 @@ public class MogtomeEngine
             return false;
 
         var territoryName = GameHelpers.GetTerritoryName(territoryId);
-        var message = $"Left {territoryName} ({territoryId}) after {elapsed:F1}s without valid completion; treating run as aborted. No successful stats recorded and no requeue will start.";
+        var message = $"Left {territoryName} ({territoryId}) after {elapsed:F1}s without valid completion; treating run as aborted. No stats recorded and no requeue will start.";
         log.Warning($"[MOGTOME][Engine] {message}");
         Plugin.ChatGui.Print($"[MOGTOME] {message}");
 
-        if (IsMogtomeDutyTerritory(territoryId))
-            state.DutyStartTerritory = territoryId;
-
-        runHistoryService.RecordRun(RunOutcome.Aborted, $"Early exit from {territoryName}", (float)Math.Max(0, elapsed));
-        log.Warning($"[MOGTOME][Engine] Recorded aborted run after early duty exit: elapsed={elapsed:F1}s, territory={territoryId}");
-
         state.Reset();
-        deathTrackingService.Clear("early aborted duty exit");
         state.IsInDuty = false;
         state.DutyStartTerritory = 0;
         outsideDutyTicks = 0;
@@ -1418,6 +1413,7 @@ public class MogtomeEngine
     private void UpdateInDuty()
     {
         dutyTracker.ObserveRemainingTime();
+        RefreshInDutyRotationIfNeeded();
 
         // Start selected automation backend if not already started (handles the case where we're already in duty)
         if (!autoDutyStartedInDuty)
@@ -1630,6 +1626,36 @@ public class MogtomeEngine
         }
 
         return true;
+    }
+
+    private void RefreshInDutyRotationIfNeeded()
+    {
+        if (!state.IsInDuty || dutyCompleted)
+            return;
+
+        var now = DateTime.UtcNow;
+        var currentTarget = Plugin.TargetManager.Target as IBattleChara;
+        var targetName = currentTarget?.Name.TextValue ?? string.Empty;
+        var aggressiveRefresh =
+            state.DutyStartTerritory == DutyState.PraetoriumTerritoryId &&
+            (!condition[ConditionFlag.InCombat] ||
+             currentTarget == null ||
+             currentTarget.CurrentHp <= 1 ||
+             targetName.Contains(PhantomGaiusName, StringComparison.OrdinalIgnoreCase));
+
+        var refreshInterval = aggressiveRefresh
+            ? PraetoriumAggressiveRefreshSeconds
+            : RotationRefreshIntervalSeconds;
+
+        if ((now - lastRotationRefreshUtc).TotalSeconds < refreshInterval)
+            return;
+
+        lastRotationRefreshUtc = now;
+        rotationService.EnableRotation();
+        log.Debug("[MOGTOME][Engine] Refreshed BossMod AI + RSR inside duty ({Mode}, target={Target}, hp={Hp})",
+            aggressiveRefresh ? "aggressive" : "normal",
+            targetName.Length > 0 ? targetName : "none",
+            currentTarget?.CurrentHp ?? 0);
     }
 
     private void UpdateRepairing()

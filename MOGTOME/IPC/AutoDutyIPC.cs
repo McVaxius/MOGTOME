@@ -87,7 +87,7 @@ public class AutoDutyIPC : IDisposable
         try
         {
             log.Information("[MOGTOME][AutoDuty] Starting via /ad start");
-            
+
             // Capture party snapshot before starting AutoDuty
             // This ensures we have the full party composition before anyone leaves
             try
@@ -99,18 +99,18 @@ public class AutoDutyIPC : IDisposable
             {
                 log.Error(ex, "[MOGTOME][AutoDuty] Failed to capture party snapshot before /ad start");
             }
-            
+
             commandManager.ProcessCommand("/ad start");
-            
-            // Refresh the combat stack after starting AutoDuty.
+
+            // Enable the selected combat provider after AutoDuty starts.
             try
             {
-                rotationService.ForceRotation();
-                log.Information("[MOGTOME][AutoDuty] Selected combat provider refreshed after /ad start");
+                rotationService.EnableRotationOncePerDuty("AutoDuty after /ad start");
+                log.Information("[MOGTOME][AutoDuty] Duty-scoped combat provider enable requested after /ad start");
             }
             catch (Exception ex)
             {
-                log.Error(ex, "[MOGTOME][AutoDuty] Failed to refresh selected combat provider after /ad start");
+                log.Error(ex, "[MOGTOME][AutoDuty] Failed to enable selected combat provider after /ad start");
             }
         }
         catch (Exception ex)

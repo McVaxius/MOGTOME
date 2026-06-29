@@ -504,6 +504,12 @@ public class StatsWindow : Window, IDisposable
             : $"{ts.Minutes}m {ts.Seconds:D2}s";
     }
 
+    private static int GetTotalDeaths(RunRecord run)
+    {
+        var splitTotal = run.SelfDeathCount + run.OtherDeathCount;
+        return run.DeathCount > 0 ? run.DeathCount : splitTotal;
+    }
+
     public string GetPartyComposition()
     {
         var party = Plugin.PartyList;
@@ -681,7 +687,7 @@ public class StatsWindow : Window, IDisposable
             ImGui.TableSetupColumn("Duty", ImGuiTableColumnFlags.WidthFixed, 50);
             ImGui.TableSetupColumn("Time", ImGuiTableColumnFlags.WidthFixed, 50);
             ImGui.TableSetupColumn("Party", ImGuiTableColumnFlags.WidthFixed, 180);
-            ImGui.TableSetupColumn("Deaths", ImGuiTableColumnFlags.WidthFixed, 50);
+            ImGui.TableSetupColumn("Deaths", ImGuiTableColumnFlags.WidthFixed, 70);
             ImGui.TableSetupColumn("Status", ImGuiTableColumnFlags.WidthFixed, 180);
             ImGui.TableHeadersRow();
             
@@ -728,7 +734,9 @@ public class StatsWindow : Window, IDisposable
                 }
                 
                 ImGui.TableSetColumnIndex(6);
-                ImGui.Text(run.DeathCount.ToString());
+                ImGui.Text($"{run.SelfDeathCount}/{run.OtherDeathCount}/{GetTotalDeaths(run)}");
+                if (ImGui.IsItemHovered())
+                    ImGui.SetTooltip("Self / Others / All");
                 
                 ImGui.TableSetColumnIndex(7);
                 var successful = RunHistoryService.IsSuccessful(run);
@@ -767,8 +775,8 @@ public class StatsWindow : Window, IDisposable
         ImGui.Text($"Average Completion Time (Last 50): {FormatTime(last50.DefaultIfEmpty().Average(x => x?.CompletionTime ?? 0f))}");
         ImGui.Text($"Average Completion Time (All time): {FormatTime(allRuns.Average(x => x?.CompletionTime ?? 0f))}");
         
-        var deathRate10 = last10.Any() ? (float)last10.Count(x => x.DeathCount > 0) / last10.Count() * 100 : 0;
-        var deathRateAll = (float)allRuns.Count(x => x.DeathCount > 0) / allRuns.Count * 100;
+        var deathRate10 = last10.Any() ? (float)last10.Count(x => GetTotalDeaths(x) > 0) / last10.Count() * 100 : 0;
+        var deathRateAll = (float)allRuns.Count(x => GetTotalDeaths(x) > 0) / allRuns.Count * 100;
         
         ImGui.Text($"Death Rate (Last 10): {deathRate10:F1}%");
         ImGui.Text($"Death Rate (All time): {deathRateAll:F1}%");

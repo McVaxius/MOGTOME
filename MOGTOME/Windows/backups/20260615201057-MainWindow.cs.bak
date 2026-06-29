@@ -252,12 +252,6 @@ public class MainWindow : Window, IDisposable
         if (state.IsInDuty)
             ImGui.Text($"Time in Duty: {state.TimeInDuty:F0}s");
 
-        if (plugin.DeathTrackingService.IsActive)
-        {
-            var deaths = plugin.DeathTrackingService.CurrentSnapshot;
-            ImGui.Text($"Deaths this run: Self {deaths.SelfDeathCount} | Others {deaths.OtherDeathCount} | All {deaths.TotalDeathCount}");
-        }
-
         ImGui.Unindent();
         ImGui.Separator();
 

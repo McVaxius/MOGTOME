@@ -19,7 +19,6 @@ public class RunHistoryService : IDisposable
     private readonly IPlayerState playerState;
     private readonly ConfigManager configManager;
     private readonly DatabaseService databaseService;
-    private readonly DeathTrackingService deathTrackingService;
     private readonly List<RunRecord> runHistory = new();
     private readonly List<RunRecord> recentRuns = new();
     private readonly object runHistoryLock = new object();
@@ -33,14 +32,7 @@ public class RunHistoryService : IDisposable
     private bool hasPartySnapshot = false;
     private DateTime snapshotTimestamp = DateTime.MinValue;
 
-    public RunHistoryService(
-        IPluginLog log,
-        Configuration config,
-        DutyState state,
-        IPlayerState playerState,
-        ConfigManager configManager,
-        DatabaseService databaseService,
-        DeathTrackingService deathTrackingService)
+    public RunHistoryService(IPluginLog log, Configuration config, DutyState state, IPlayerState playerState, ConfigManager configManager, DatabaseService databaseService)
     {
         this.log = log;
         this.config = config;
@@ -48,7 +40,6 @@ public class RunHistoryService : IDisposable
         this.playerState = playerState;
         this.configManager = configManager;
         this.databaseService = databaseService;
-        this.deathTrackingService = deathTrackingService;
         
         // Note: Database operations moved to Plugin.OnFrameworkUpdate after initialization
         // Constructor is now clean - no database operations here
@@ -241,12 +232,7 @@ public class RunHistoryService : IDisposable
                 config.PraeBestTime = praeRecords.Min(r => r.CompletionTime);
                 config.PraeLongestRun = praeRecords.Max(r => r.CompletionTime);
                 config.PraeMogtomesEarned = praeRecords.Sum(r => r.MogtomesEarned);
-                config.PraeTotalDeathsSelf = praeRecords.Sum(r => r.SelfDeathCount);
-                config.PraeTotalDeathsOthers = praeRecords.Sum(r => r.OtherDeathCount);
-                config.PraeTotalDeathsAll = praeRecords.Sum(GetTotalDeaths);
-                config.PraeMostDeathsSelf = praeRecords.Max(r => r.SelfDeathCount);
-                config.PraeMostDeathsOthers = praeRecords.Max(r => r.OtherDeathCount);
-                config.PraeMostDeathsAll = praeRecords.Max(GetTotalDeaths);
+                config.PraeTotalDeathsSelf = praeRecords.Sum(r => r.DeathCount);
                 
                 // Praetorium best run details
                 var bestPraeRun = praeRecords.OrderBy(r => r.CompletionTime).First();
@@ -265,12 +251,7 @@ public class RunHistoryService : IDisposable
                 config.DecuBestTime = decuRecords.Min(r => r.CompletionTime);
                 config.DecuLongestRun = decuRecords.Max(r => r.CompletionTime);
                 config.DecuMogtomesEarned = decuRecords.Sum(r => r.MogtomesEarned);
-                config.DecuTotalDeathsSelf = decuRecords.Sum(r => r.SelfDeathCount);
-                config.DecuTotalDeathsOthers = decuRecords.Sum(r => r.OtherDeathCount);
-                config.DecuTotalDeathsAll = decuRecords.Sum(GetTotalDeaths);
-                config.DecuMostDeathsSelf = decuRecords.Max(r => r.SelfDeathCount);
-                config.DecuMostDeathsOthers = decuRecords.Max(r => r.OtherDeathCount);
-                config.DecuMostDeathsAll = decuRecords.Max(GetTotalDeaths);
+                config.DecuTotalDeathsSelf = decuRecords.Sum(r => r.DeathCount);
                 
                 // Decumana best run details
                 var bestDecuRun = decuRecords.OrderBy(r => r.CompletionTime).First();
@@ -289,12 +270,7 @@ public class RunHistoryService : IDisposable
                 config.BestTimeEver = visibleRecords.Min(r => r.CompletionTime);
                 config.LongestRunEver = visibleRecords.Max(r => r.CompletionTime);
                 config.TotalMogtomesEarned = visibleRecords.Sum(r => r.MogtomesEarned);
-                config.TotalDeathsSelf = visibleRecords.Sum(r => r.SelfDeathCount);
-                config.TotalDeathsOthers = visibleRecords.Sum(r => r.OtherDeathCount);
-                config.TotalDeathsAll = visibleRecords.Sum(GetTotalDeaths);
-                config.MostDeathsSelf = visibleRecords.Max(r => r.SelfDeathCount);
-                config.MostDeathsOthers = visibleRecords.Max(r => r.OtherDeathCount);
-                config.MostDeathsAll = visibleRecords.Max(GetTotalDeaths);
+                config.TotalDeathsSelf = visibleRecords.Sum(r => r.DeathCount);
                 
                 // Best time details
                 var bestRun = visibleRecords.OrderBy(r => r.CompletionTime).First();
@@ -364,12 +340,6 @@ public class RunHistoryService : IDisposable
         config.DecuTotalDeathsOthers = 0;
         config.DecuTotalDeathsAll = 0;
         config.DecuMogtomesEarned = 0;
-    }
-
-    private static int GetTotalDeaths(RunRecord record)
-    {
-        var splitTotal = record.SelfDeathCount + record.OtherDeathCount;
-        return record.DeathCount > 0 ? record.DeathCount : splitTotal;
     }
     
     /// <summary>
@@ -708,8 +678,6 @@ public class RunHistoryService : IDisposable
         {
             recordedPartySize = 1;
         }
-
-        var deathSnapshot = deathTrackingService.CaptureSnapshot($"{outcome} run record");
         
         return new RunRecord
         {
@@ -721,9 +689,7 @@ public class RunHistoryService : IDisposable
             Level = (byte)(localPlayer?.Level ?? 0),
             TerritoryId = state.DutyStartTerritory,
             CompletionTime = completionTime ?? state.LastCompletionDuration,
-            DeathCount = deathSnapshot.TotalDeathCount,
-            SelfDeathCount = deathSnapshot.SelfDeathCount,
-            OtherDeathCount = deathSnapshot.OtherDeathCount,
+            DeathCount = 0, // TODO: Implement death tracking
             MogtomesEarned = outcome == RunOutcome.Successful ? (isPrae ? 7 : 3) : 0,
             IsPraetorium = isPrae,
             WasSuccessful = outcome == RunOutcome.Successful,
@@ -781,7 +747,7 @@ public class RunHistoryService : IDisposable
                     AverageTime = g.Average(x => x.CompletionTime),
                     BestTime = g.Min(x => x.CompletionTime),
                     WorstTime = g.Max(x => x.CompletionTime),
-                    TotalDeaths = g.Sum(GetTotalDeaths),
+                    TotalDeaths = g.Sum(x => x.DeathCount),
                     SuccessfulRuns = g.Count(),
                     PraetoriumRuns = g.Count(x => x.IsPraetorium),
                     DecumanaRuns = g.Count(x => !x.IsPraetorium),
@@ -811,7 +777,7 @@ public class RunHistoryService : IDisposable
                     DecumanaRuns = g.Count(x => !x.IsPraetorium),
                     AverageTime = g.Average(x => x.CompletionTime),
                     BestTime = g.Min(x => x.CompletionTime),
-                    TotalDeaths = g.Sum(GetTotalDeaths),
+                    TotalDeaths = g.Sum(x => x.DeathCount),
                     BestStreak = CalculateBestStreak(g.ToList()),
                     CurrentStreak = CalculateCurrentStreak(g.ToList()),
                     LastRun = g.Max(x => x.Timestamp),

@@ -65,7 +65,6 @@ public sealed class Plugin : IDalamudPlugin
     public VNavIPC VNavIPC { get; init; }
     public AutoDutyIPC AutoDutyIPC { get; init; }
     public BossModIPC BossModIPC { get; init; }
-    public MogtomeDadIpcService DadIpcService { get; init; }
 
     // Services
     public DatabaseService DatabaseService { get; private set; }
@@ -81,7 +80,6 @@ public sealed class Plugin : IDalamudPlugin
     public AutoDutyPathService AutoDutyPathService { get; private set; }
     public ConflictPluginService ConflictPluginService { get; private set; }
     public RunHistoryService RunHistoryService { get; private set; }
-    public DeathTrackingService DeathTrackingService { get; private set; }
     public DutyAutomationService DutyAutomationService { get; private set; }
     public MogtomeEngine Engine { get; private set; }
 
@@ -120,8 +118,7 @@ public sealed class Plugin : IDalamudPlugin
 
         // Initialize Services (needed before IPC)
         DatabaseService = new DatabaseService(Log, PluginInterface, ConfigManager);
-        DeathTrackingService = new DeathTrackingService(Log, Framework, ObjectTable, PartyList, PlayerState, Condition, ClientState);
-        RunHistoryService = new RunHistoryService(Log, Configuration, State, PlayerState, ConfigManager, DatabaseService, DeathTrackingService);
+        RunHistoryService = new RunHistoryService(Log, Configuration, State, PlayerState, ConfigManager, DatabaseService);
 
         // Initialize IPC that RotationService needs
         BossModIPC = new BossModIPC(PluginInterface, Log, CommandManager);
@@ -129,7 +126,6 @@ public sealed class Plugin : IDalamudPlugin
         VNavIPC = new VNavIPC(Log, CommandManager);
         RotationService = new RotationService(Log, ConfigManager, BossModIPC);
         AutoDutyIPC = new AutoDutyIPC(Log, CommandManager, RunHistoryService, RotationService);
-        DadIpcService = new MogtomeDadIpcService(PluginInterface, this);
 
         // Initialize Services (needs RotationService)
         DutyTrackerService = new DutyTrackerService(Log, Configuration, State, ConfigManager, RunHistoryService);
@@ -224,7 +220,6 @@ public sealed class Plugin : IDalamudPlugin
         }
 
         RunHistoryService.Dispose();
-        DeathTrackingService.Dispose();
 
         // Save current account configuration before disposing everything
         ConfigManager.SaveCurrentAccount();
@@ -240,7 +235,6 @@ public sealed class Plugin : IDalamudPlugin
         VNavIPC.Dispose();
         AutoDutyIPC.Dispose();
         BossModIPC.Dispose();
-        DadIpcService.Dispose();
         configDirectoryLock?.Dispose();
         configDirectoryLock = null;
 
@@ -549,7 +543,6 @@ public sealed class Plugin : IDalamudPlugin
                     StuckDetectionService, DialogHandlerService,
                     DutyAutomationService,
                     AutoDutyPathService, ConflictPluginService, RunHistoryService,
-                    DeathTrackingService,
                     AutoDutyIPC, YesAlreadyIPC,
                     Condition, ClientState, CommandManager);
                 
@@ -607,7 +600,6 @@ public sealed class Plugin : IDalamudPlugin
         {
             Engine.Update();
         }
-        DadIpcService.Update();
     }
 
     private void TryConsumeQueuedEngineStart()

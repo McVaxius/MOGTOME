@@ -63,19 +63,9 @@ public class RunRecord
     public float CompletionTime { get; set; } = 0f;
     
     /// <summary>
-    /// Total number of deaths during the run
+    /// Number of deaths during the run
     /// </summary>
     public int DeathCount { get; set; } = 0;
-
-    /// <summary>
-    /// Number of local-player deaths during the run
-    /// </summary>
-    public int SelfDeathCount { get; set; } = 0;
-
-    /// <summary>
-    /// Number of party-member deaths during the run, excluding the local player
-    /// </summary>
-    public int OtherDeathCount { get; set; } = 0;
     
     /// <summary>
     /// Number of mogtomes earned

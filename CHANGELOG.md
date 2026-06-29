@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rebound duty tracking and run history to the active account configuration after login, fixing duty counters being incremented on a temporary pre-login config.
 - Reloaded run history after account selection instead of only during pre-login database migration, so persisted SQLite records hydrate the current session.
 - Persisted duty counters and recalculated JSON stats immediately when runs are counted/recorded to reduce data loss if the client exits around duty completion.
+- Persisted real per-run death counts from duty polling, split into self, others, and all totals for successful and aborted SQLite run records.
 
 ### Changed
 - Added SQLite backfill for missing `IsDebugRun` metadata and missing party sizes on existing run records

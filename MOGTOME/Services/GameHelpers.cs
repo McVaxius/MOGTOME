@@ -393,18 +393,16 @@ public static class GameHelpers
     /// <summary>
     /// Set the Duty Finder Level Sync setting.
     /// Primary mechanism: AutoDuty IPC SetConfig("LevelSync", value) called by the engine.
-    /// Direct manipulation via AgentContentsFinder is not available in this FFXIVClientStructs version
-    /// (no LevelSync field exposed). If AutoDuty IPC doesn't work for level sync, this method
-    /// will need to be updated with direct memory manipulation once the correct offset is found.
+    /// Keep level sync on the existing IPC/callback path because the current
+    /// AgentContentsFinder ClientStructs surface does not expose that setting directly.
     /// Duty Finder settings positions (from top): 1st=JoinInProgress, 2nd=Unsync, 3rd=LevelSync
     /// </summary>
     public static unsafe void SetDutyFinderLevelSync(bool enable)
     {
         try
         {
-            // AgentContentsFinder doesn't expose LevelSync as a named field in current FFXIVClientStructs.
+            // AgentContentsFinder exposes queue registration state, but not the LevelSync setting.
             // Relying on AutoDuty IPC SetConfig("LevelSync", value) as primary mechanism.
-            // If that doesn't work, we'll need to find the byte offset in the agent for direct manipulation.
             Plugin.Log.Information($"[MOGTOME][GameHelpers] SetDutyFinderLevelSync={enable} (via AutoDuty IPC, no direct agent access available)");
         }
         catch (Exception ex)

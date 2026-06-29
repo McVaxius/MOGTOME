@@ -282,7 +282,7 @@ public sealed class DutyAutomationService
 
         CancelAdsRepairHandoff("duty entry");
         CapturePartySnapshot("ADS");
-        RefreshCombatStack("ADS");
+        EnableCombatProviderOncePerDuty("ADS", $"before {AdsStartInsideCommand}");
 
         if (isLeader)
         {
@@ -1221,16 +1221,16 @@ public sealed class DutyAutomationService
         }
     }
 
-    private void RefreshCombatStack(string backendName)
+    private void EnableCombatProviderOncePerDuty(string backendName, string timing)
     {
         try
         {
-            rotationService.ForceRotation();
-            log.Information($"[MOGTOME][{backendName}] Selected combat provider refreshed after duty start");
+            rotationService.EnableRotationOncePerDuty($"{backendName} duty start {timing}");
+            log.Information($"[MOGTOME][{backendName}] Duty-scoped combat provider enable requested {timing}");
         }
         catch (Exception ex)
         {
-            log.Error(ex, $"[MOGTOME][{backendName}] Failed to refresh selected combat provider after duty start");
+            log.Error(ex, $"[MOGTOME][{backendName}] Failed to enable selected combat provider {timing}");
         }
     }
 

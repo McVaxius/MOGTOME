@@ -88,9 +88,6 @@ public class SqliteRunRecordRepository : IRunRecordRepository
                 Timestamp TEXT NOT NULL,
                 TerritoryId INTEGER NOT NULL,
                 CompletionTime REAL NOT NULL,
-                DeathCount INTEGER NOT NULL DEFAULT 0,
-                SelfDeathCount INTEGER NOT NULL DEFAULT 0,
-                OtherDeathCount INTEGER NOT NULL DEFAULT 0,
                 MogtomesEarned INTEGER NOT NULL,
                 IsPraetorium INTEGER NOT NULL,
                 WasSuccessful INTEGER NOT NULL,
@@ -110,9 +107,6 @@ public class SqliteRunRecordRepository : IRunRecordRepository
         EnsureColumnExists(connection, "RunRecords", "IsDebugRun", "INTEGER NOT NULL DEFAULT 0");
         EnsureColumnExists(connection, "RunRecords", "Outcome", "TEXT NOT NULL DEFAULT 'Successful'");
         EnsureColumnExists(connection, "RunRecords", "AbortReason", "TEXT NOT NULL DEFAULT ''");
-        EnsureColumnExists(connection, "RunRecords", "DeathCount", "INTEGER NOT NULL DEFAULT 0");
-        EnsureColumnExists(connection, "RunRecords", "SelfDeathCount", "INTEGER NOT NULL DEFAULT 0");
-        EnsureColumnExists(connection, "RunRecords", "OtherDeathCount", "INTEGER NOT NULL DEFAULT 0");
         RepairStoredPartySizes(connection);
     }
 
@@ -187,9 +181,8 @@ public class SqliteRunRecordRepository : IRunRecordRepository
 
                 using var cmd = connection.CreateCommand();
                 cmd.CommandText = @"
-                    SELECT ContentId, Timestamp, TerritoryId, CompletionTime, DeathCount,
-                           SelfDeathCount, OtherDeathCount, MogtomesEarned, IsPraetorium,
-                           WasSuccessful, PartySize, PartyMembers, IsDebugRun, Outcome, AbortReason
+                    SELECT ContentId, Timestamp, TerritoryId, CompletionTime, MogtomesEarned,
+                           IsPraetorium, WasSuccessful, PartySize, PartyMembers, IsDebugRun, Outcome, AbortReason
                     FROM RunRecords
                     ORDER BY Timestamp DESC
                     LIMIT 1000
@@ -198,33 +191,24 @@ public class SqliteRunRecordRepository : IRunRecordRepository
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
-                    var partyMembers = DeserializePartyMembers(reader.GetString(11));
-                    var storedPartySize = reader.GetInt32(10);
+                    var partyMembers = DeserializePartyMembers(reader.GetString(8));
+                    var storedPartySize = reader.GetInt32(7);
 
-                    var selfDeaths = reader.GetInt32(5);
-                    var otherDeaths = reader.GetInt32(6);
-                    var totalDeaths = reader.GetInt32(4);
-                    if (totalDeaths == 0 && selfDeaths + otherDeaths > 0)
-                        totalDeaths = selfDeaths + otherDeaths;
-
-                    var outcome = ParseOutcome(reader.IsDBNull(13) ? null : reader.GetString(13));
+                    var outcome = ParseOutcome(reader.IsDBNull(10) ? null : reader.GetString(10));
                     var record = new RunRecord
                     {
                         ContentId = (ulong)reader.GetInt64(0),
                         Timestamp = DateTime.Parse(reader.GetString(1)),
                         TerritoryId = (ushort)reader.GetInt32(2),
                         CompletionTime = (float)reader.GetDouble(3),
-                        DeathCount = totalDeaths,
-                        SelfDeathCount = selfDeaths,
-                        OtherDeathCount = otherDeaths,
-                        MogtomesEarned = reader.GetInt32(7),
-                        IsPraetorium = reader.GetBoolean(8),
+                        MogtomesEarned = reader.GetInt32(4),
+                        IsPraetorium = reader.GetBoolean(5),
                         WasSuccessful = outcome == RunOutcome.Successful,
                         PartySize = (byte)Math.Clamp(storedPartySize > 0 ? storedPartySize : partyMembers.Count, 0, byte.MaxValue),
                         PartyMembers = partyMembers,
-                        IsDebugRun = reader.GetBoolean(12),
+                        IsDebugRun = reader.GetBoolean(9),
                         Outcome = outcome,
-                        AbortReason = reader.IsDBNull(14) ? string.Empty : reader.GetString(14)
+                        AbortReason = reader.IsDBNull(11) ? string.Empty : reader.GetString(11)
                     };
                     records.Add(record);
                 }
@@ -253,17 +237,14 @@ public class SqliteRunRecordRepository : IRunRecordRepository
 
                 using var cmd = connection.CreateCommand();
                 cmd.CommandText = @"
-                    INSERT INTO RunRecords (ContentId, Timestamp, TerritoryId, CompletionTime, DeathCount, SelfDeathCount, OtherDeathCount, MogtomesEarned, IsPraetorium, WasSuccessful, PartySize, PartyMembers, IsDebugRun, Outcome, AbortReason)
-                    VALUES (@ContentId, @Timestamp, @TerritoryId, @CompletionTime, @DeathCount, @SelfDeathCount, @OtherDeathCount, @MogtomesEarned, @IsPraetorium, @WasSuccessful, @PartySize, @PartyMembers, @IsDebugRun, @Outcome, @AbortReason)
+                    INSERT INTO RunRecords (ContentId, Timestamp, TerritoryId, CompletionTime, MogtomesEarned, IsPraetorium, WasSuccessful, PartySize, PartyMembers, IsDebugRun, Outcome, AbortReason)
+                    VALUES (@ContentId, @Timestamp, @TerritoryId, @CompletionTime, @MogtomesEarned, @IsPraetorium, @WasSuccessful, @PartySize, @PartyMembers, @IsDebugRun, @Outcome, @AbortReason)
                 ";
 
                 cmd.Parameters.AddWithValue("@ContentId", record.ContentId);
                 cmd.Parameters.AddWithValue("@Timestamp", record.Timestamp.ToUniversalTime().ToString("O"));
                 cmd.Parameters.AddWithValue("@TerritoryId", record.TerritoryId);
                 cmd.Parameters.AddWithValue("@CompletionTime", record.CompletionTime);
-                cmd.Parameters.AddWithValue("@DeathCount", record.DeathCount);
-                cmd.Parameters.AddWithValue("@SelfDeathCount", record.SelfDeathCount);
-                cmd.Parameters.AddWithValue("@OtherDeathCount", record.OtherDeathCount);
                 cmd.Parameters.AddWithValue("@MogtomesEarned", record.MogtomesEarned);
                 cmd.Parameters.AddWithValue("@IsPraetorium", record.IsPraetorium);
                 cmd.Parameters.AddWithValue("@WasSuccessful", record.Outcome == RunOutcome.Successful);

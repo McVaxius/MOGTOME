@@ -10,6 +10,8 @@ public class RotationService
     private readonly IPluginLog log;
     private readonly ConfigManager configManager;
     private readonly BossModIPC bossModIPC;
+    private bool rotationEnableSentForDuty;
+    private bool rotationDisableSentForDuty;
 
     public RotationService(
         IPluginLog log, ConfigManager configManager,
@@ -41,6 +43,45 @@ public class RotationService
         => EnableSelectedProvider();
 
     public void DisableRotation()
+        => DisableSelectedProvider();
+
+    public void ResetDutyRotationState(string reason)
+    {
+        rotationEnableSentForDuty = false;
+        rotationDisableSentForDuty = false;
+        log.Debug($"[MOGTOME][Rotation] Reset duty rotation lifecycle state ({reason})");
+    }
+
+    public void EnableRotationOncePerDuty(string reason)
+    {
+        if (rotationEnableSentForDuty)
+        {
+            log.Debug($"[MOGTOME][Rotation] Skipped selected combat provider enable; already enabled for this duty ({reason})");
+            return;
+        }
+
+        var provider = configManager.GetActiveConfig().CombatProvider;
+        EnableSelectedProvider();
+        rotationEnableSentForDuty = true;
+        rotationDisableSentForDuty = false;
+        log.Information($"[MOGTOME][Rotation] enabled selected combat provider once per duty: {provider} ({reason})");
+    }
+
+    public void DisableRotationForDutyEnd(string reason)
+    {
+        if (rotationDisableSentForDuty)
+        {
+            log.Debug($"[MOGTOME][Rotation] Skipped selected combat provider disable; already disabled for this duty ({reason})");
+            return;
+        }
+
+        var provider = configManager.GetActiveConfig().CombatProvider;
+        DisableSelectedProvider();
+        rotationDisableSentForDuty = true;
+        log.Information($"[MOGTOME][Rotation] disabled selected combat provider for duty end: {provider} ({reason})");
+    }
+
+    private void DisableSelectedProvider()
     {
         var provider = configManager.GetActiveConfig().CombatProvider;
         switch (provider)
