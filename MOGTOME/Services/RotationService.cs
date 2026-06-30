@@ -12,6 +12,18 @@ public class RotationService
     private readonly BossModIPC bossModIPC;
     private bool rotationEnableSentForDuty;
     private bool rotationDisableSentForDuty;
+    private static readonly TimeSpan RsrHealthProbeInterval = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan RsrReviveProbeDelay = TimeSpan.FromSeconds(2);
+    private static readonly TimeSpan RsrRecoveryCommandSuppression = TimeSpan.FromSeconds(10);
+    private static readonly TimeSpan RsrReflectionFailureLogInterval = TimeSpan.FromSeconds(60);
+    private DateTime lastRsrHealthProbeUtc = DateTime.MinValue;
+    private DateTime rsrRecoveryCommandSuppressedUntilUtc = DateTime.MinValue;
+    private DateTime rsrLocalPlayerRevivedUtc = DateTime.MinValue;
+    private DateTime lastRsrReflectionFailureLogUtc = DateTime.MinValue;
+    private bool rsrLocalPlayerWasDead;
+    private bool rsrReviveRecoveryPending;
+    private bool rsrFallbackUnavailableLoggedForDuty;
+    private bool rsrFallbackRecoverySentForDuty;
 
     public RotationService(
         IPluginLog log, ConfigManager configManager,
@@ -49,6 +61,7 @@ public class RotationService
     {
         rotationEnableSentForDuty = false;
         rotationDisableSentForDuty = false;
+        ResetRsrHealthState();
         log.Debug($"[MOGTOME][Rotation] Reset duty rotation lifecycle state ({reason})");
     }
 
@@ -81,6 +94,69 @@ public class RotationService
         log.Information($"[MOGTOME][Rotation] disabled selected combat provider for duty end: {provider} ({reason})");
     }
 
+    public void UpdateDutyRotationHealth(uint territoryId, bool backendStarted, bool dutyCompleted, bool localPlayerDead, string reason)
+    {
+        var provider = configManager.GetActiveConfig().CombatProvider;
+        if (provider != CombatProvider.Rsr ||
+            !DutyState.IsMogtomeDutyTerritory(territoryId) ||
+            !backendStarted ||
+            dutyCompleted ||
+            rotationDisableSentForDuty)
+        {
+            return;
+        }
+
+        var now = DateTime.UtcNow;
+        if (localPlayerDead)
+        {
+            rsrLocalPlayerWasDead = true;
+            rsrLocalPlayerRevivedUtc = DateTime.MinValue;
+            return;
+        }
+
+        if (rsrLocalPlayerWasDead)
+        {
+            rsrLocalPlayerWasDead = false;
+            rsrReviveRecoveryPending = true;
+            rsrLocalPlayerRevivedUtc = now;
+        }
+
+        if (rsrLocalPlayerRevivedUtc != DateTime.MinValue &&
+            now - rsrLocalPlayerRevivedUtc < RsrReviveProbeDelay)
+        {
+            return;
+        }
+
+        if (lastRsrHealthProbeUtc != DateTime.MinValue &&
+            now - lastRsrHealthProbeUtc < RsrHealthProbeInterval)
+        {
+            return;
+        }
+
+        lastRsrHealthProbeUtc = now;
+
+        if (!bossModIPC.TryGetRsrOperatingMode(out var mode, out var detail))
+        {
+            LogRsrReflectionFailure(detail, now, reason);
+            TrySendRsrReviveFallbackRecovery(now, reason, detail);
+            return;
+        }
+
+        if (mode != RsrOperatingMode.Off)
+        {
+            rsrReviveRecoveryPending = false;
+            return;
+        }
+
+        if (now < rsrRecoveryCommandSuppressedUntilUtc)
+            return;
+
+        EnableSelectedProvider();
+        rsrRecoveryCommandSuppressedUntilUtc = now + RsrRecoveryCommandSuppression;
+        rsrReviveRecoveryPending = false;
+        log.Warning($"[MOGTOME][Rotation] RSR health check recovered confirmed Off state: {detail} ({reason})");
+    }
+
     private void DisableSelectedProvider()
     {
         var provider = configManager.GetActiveConfig().CombatProvider;
@@ -99,6 +175,46 @@ public class RotationService
                 bossModIPC.SendCommand("/wrath auto off", "disable Wrath");
                 break;
         }
+    }
+
+    private void TrySendRsrReviveFallbackRecovery(DateTime now, string reason, string detail)
+    {
+        if (!rsrReviveRecoveryPending ||
+            rsrFallbackRecoverySentForDuty ||
+            now < rsrRecoveryCommandSuppressedUntilUtc)
+        {
+            return;
+        }
+
+        EnableSelectedProvider();
+        rsrFallbackRecoverySentForDuty = true;
+        rsrReviveRecoveryPending = false;
+        rsrRecoveryCommandSuppressedUntilUtc = now + RsrRecoveryCommandSuppression;
+        log.Warning($"[MOGTOME][Rotation] RSR state reflection unavailable; sent one revive fallback recovery ({reason}). Detail: {detail}");
+    }
+
+    private void LogRsrReflectionFailure(string detail, DateTime now, string reason)
+    {
+        if (!rsrFallbackUnavailableLoggedForDuty ||
+            lastRsrReflectionFailureLogUtc == DateTime.MinValue ||
+            now - lastRsrReflectionFailureLogUtc >= RsrReflectionFailureLogInterval)
+        {
+            rsrFallbackUnavailableLoggedForDuty = true;
+            lastRsrReflectionFailureLogUtc = now;
+            log.Warning($"[MOGTOME][Rotation] RSR live state reflection unavailable; confirmed-off health recovery is degraded ({reason}). Detail: {detail}");
+        }
+    }
+
+    private void ResetRsrHealthState()
+    {
+        lastRsrHealthProbeUtc = DateTime.MinValue;
+        rsrRecoveryCommandSuppressedUntilUtc = DateTime.MinValue;
+        rsrLocalPlayerRevivedUtc = DateTime.MinValue;
+        lastRsrReflectionFailureLogUtc = DateTime.MinValue;
+        rsrLocalPlayerWasDead = false;
+        rsrReviveRecoveryPending = false;
+        rsrFallbackUnavailableLoggedForDuty = false;
+        rsrFallbackRecoverySentForDuty = false;
     }
 
     private void EnableSelectedProvider()

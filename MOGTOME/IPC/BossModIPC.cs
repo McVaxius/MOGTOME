@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Ipc;
 using Dalamud.Plugin.Services;
@@ -8,6 +9,19 @@ using MOGTOME.Models;
 using MOGTOME.Services;
 
 namespace MOGTOME.IPC;
+
+internal enum RsrOperatingMode
+{
+    Unknown,
+    Off,
+    Auto,
+    TargetOnly,
+    Manual,
+    AutoDuty,
+    Henched,
+    PvP,
+    Active,
+}
 
 public class BossModIPC : IDisposable
 {
@@ -40,6 +54,7 @@ public class BossModIPC : IDisposable
     private readonly IDalamudPluginInterface pluginInterface;
     private readonly IPluginLog log;
     private readonly ICommandManager commandManager;
+    private static readonly BindingFlags RsrStaticFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
 
     public BossModIPC(IDalamudPluginInterface pluginInterface, IPluginLog log, ICommandManager commandManager)
     {
@@ -95,6 +110,105 @@ public class BossModIPC : IDisposable
         catch (Exception ex)
         {
             log.Debug($"[MOGTOME][Rotation] RSR mode IPC unavailable; command fallback will be used: {ex.Message}");
+            return false;
+        }
+    }
+
+    internal bool TryGetRsrOperatingMode(out RsrOperatingMode mode, out string detail)
+    {
+        mode = RsrOperatingMode.Unknown;
+        detail = string.Empty;
+
+        try
+        {
+            if (!TryFindRsrPluginInstance(out var rsrPlugin, out var internalName, out detail) || rsrPlugin == null)
+                return false;
+
+            var dataCenterType = ResolveRsrDataCenterType(rsrPlugin.GetType().Assembly);
+            if (dataCenterType == null)
+            {
+                detail = $"RSR DataCenter type was not found from {internalName}";
+                return false;
+            }
+
+            if (!TryReadStaticBool(dataCenterType, "State", out var state, out var stateDetail))
+            {
+                detail = $"RSR DataCenter.State unavailable from {internalName}: {stateDetail}";
+                return false;
+            }
+
+            if (!state)
+            {
+                mode = RsrOperatingMode.Off;
+                detail = $"RSR {internalName} DataCenter.State=false";
+                return true;
+            }
+
+            var readAnyModeFlag = false;
+            if (TryReadStaticBool(dataCenterType, "IsAutoDuty", out var isAutoDuty, out _))
+            {
+                readAnyModeFlag = true;
+                if (isAutoDuty)
+                {
+                    mode = RsrOperatingMode.AutoDuty;
+                    detail = $"RSR {internalName} DataCenter.State=true, IsAutoDuty=true";
+                    return true;
+                }
+            }
+
+            if (TryReadStaticBool(dataCenterType, "IsHenched", out var isHenched, out _))
+            {
+                readAnyModeFlag = true;
+                if (isHenched)
+                {
+                    mode = RsrOperatingMode.Henched;
+                    detail = $"RSR {internalName} DataCenter.State=true, IsHenched=true";
+                    return true;
+                }
+            }
+
+            if (TryReadStaticBool(dataCenterType, "IsPvPStateEnabled", out var isPvp, out _))
+            {
+                readAnyModeFlag = true;
+                if (isPvp)
+                {
+                    mode = RsrOperatingMode.PvP;
+                    detail = $"RSR {internalName} DataCenter.State=true, IsPvPStateEnabled=true";
+                    return true;
+                }
+            }
+
+            if (TryReadStaticBool(dataCenterType, "IsManual", out var isManual, out _))
+            {
+                readAnyModeFlag = true;
+                if (isManual)
+                {
+                    mode = RsrOperatingMode.Manual;
+                    detail = $"RSR {internalName} DataCenter.State=true, IsManual=true";
+                    return true;
+                }
+            }
+
+            if (TryReadStaticBool(dataCenterType, "IsTargetOnly", out var isTargetOnly, out _))
+            {
+                readAnyModeFlag = true;
+                if (isTargetOnly)
+                {
+                    mode = RsrOperatingMode.TargetOnly;
+                    detail = $"RSR {internalName} DataCenter.State=true, IsTargetOnly=true";
+                    return true;
+                }
+            }
+
+            mode = readAnyModeFlag ? RsrOperatingMode.Auto : RsrOperatingMode.Active;
+            detail = readAnyModeFlag
+                ? $"RSR {internalName} DataCenter.State=true, mode flags clear"
+                : $"RSR {internalName} DataCenter.State=true, mode flags unavailable";
+            return true;
+        }
+        catch (Exception ex)
+        {
+            detail = $"RSR operating mode probe failed: {ex.Message}";
             return false;
         }
     }
@@ -326,6 +440,142 @@ public class BossModIPC : IDisposable
             log.Warning($"[MOGTOME][BossMod] No BossMod-compatible preset IPC responded while setting preset '{presetName}' active");
 
         return handled;
+    }
+
+    private bool TryFindRsrPluginInstance(out object? pluginInstance, out string internalName, out string detail)
+    {
+        foreach (var candidate in new[] { "RotationSolverReborn", "RotationSolver" })
+        {
+            pluginInstance = FindDalamudPluginInstance(candidate, out detail);
+            if (pluginInstance != null)
+            {
+                internalName = candidate;
+                return true;
+            }
+        }
+
+        pluginInstance = null;
+        internalName = string.Empty;
+        detail = "RSR plugin instance was not found (checked RotationSolverReborn, RotationSolver)";
+        return false;
+    }
+
+    private object? FindDalamudPluginInstance(string internalName, out string detail)
+    {
+        detail = string.Empty;
+
+        try
+        {
+            var serviceType = typeof(IDalamudPluginInterface).Assembly.GetType("Dalamud.Service`1");
+            var pluginManagerType = typeof(IDalamudPluginInterface).Assembly.GetType("Dalamud.Plugin.Internal.PluginManager");
+
+            if (serviceType == null || pluginManagerType == null)
+            {
+                detail = "Dalamud PluginManager reflection types were unavailable";
+                return null;
+            }
+
+            var pluginManager = serviceType
+                .MakeGenericType(pluginManagerType)
+                .GetMethod("Get")
+                ?.Invoke(null, null);
+
+            var installedPlugins = pluginManager?.GetType()
+                .GetProperty("InstalledPlugins")
+                ?.GetValue(pluginManager) as System.Collections.IList;
+
+            if (installedPlugins == null)
+            {
+                detail = "Dalamud installed plugin list was unavailable";
+                return null;
+            }
+
+            foreach (var installedPlugin in installedPlugins)
+            {
+                if (installedPlugin == null)
+                    continue;
+
+                var discoveredInternalName = installedPlugin.GetType()
+                    .GetProperty("InternalName")
+                    ?.GetValue(installedPlugin)
+                    ?.ToString();
+
+                if (!string.Equals(discoveredInternalName, internalName, StringComparison.Ordinal))
+                    continue;
+
+                var wrapperType = installedPlugin.GetType().Name == "LocalDevPlugin"
+                    ? installedPlugin.GetType().BaseType
+                    : installedPlugin.GetType();
+
+                var instanceField = wrapperType?.GetField("instance", BindingFlags.NonPublic | BindingFlags.Instance);
+                var instance = instanceField?.GetValue(installedPlugin);
+                if (instance == null)
+                    detail = $"Dalamud plugin {internalName} was installed but its live instance was unavailable";
+                return instance;
+            }
+
+            detail = $"Dalamud plugin {internalName} was not installed";
+            return null;
+        }
+        catch (Exception ex)
+        {
+            detail = $"FindDalamudPluginInstance({internalName}) failed: {ex.Message}";
+            return null;
+        }
+    }
+
+    private static Type? ResolveRsrDataCenterType(Assembly pluginAssembly)
+    {
+        const string dataCenterTypeName = "RotationSolver.Basic.DataCenter";
+
+        var directType = pluginAssembly.GetType(dataCenterTypeName, throwOnError: false);
+        if (directType != null)
+            return directType;
+
+        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            var assemblyName = assembly.GetName().Name;
+            if (assemblyName == null ||
+                (!assemblyName.StartsWith("RotationSolver", StringComparison.OrdinalIgnoreCase) &&
+                 !string.Equals(assemblyName, "RotationSolver.Basic", StringComparison.OrdinalIgnoreCase)))
+                continue;
+
+            var type = assembly.GetType(dataCenterTypeName, throwOnError: false);
+            if (type != null)
+                return type;
+        }
+
+        return null;
+    }
+
+    private static bool TryReadStaticBool(Type type, string propertyName, out bool value, out string detail)
+    {
+        value = false;
+        detail = string.Empty;
+
+        try
+        {
+            var property = type.GetProperty(propertyName, RsrStaticFlags);
+            if (property == null)
+            {
+                detail = $"property {propertyName} not found";
+                return false;
+            }
+
+            if (property.PropertyType != typeof(bool))
+            {
+                detail = $"property {propertyName} was {property.PropertyType.FullName}, not bool";
+                return false;
+            }
+
+            value = (bool)(property.GetValue(null) ?? false);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            detail = $"property {propertyName} read failed: {ex.Message}";
+            return false;
+        }
     }
 
     private bool? TryBoolIpc<TArg>(string channel, TArg arg)

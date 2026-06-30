@@ -1458,6 +1458,13 @@ public class MogtomeEngine
             return;
         }
 
+        rotationService.UpdateDutyRotationHealth(
+            GetKnownDutyTerritory(),
+            autoDutyStartedInDuty,
+            dutyCompleted,
+            Plugin.ObjectTable.LocalPlayer?.IsDead == true,
+            "in-duty update");
+
         // Boss combat handler
         bossHandler.Update();
 
