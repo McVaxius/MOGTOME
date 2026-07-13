@@ -87,7 +87,7 @@ public class DutyQueueService
     private bool IsLeaderQueueEligible()
     {
         var config = configManager.GetActiveConfig();
-        if (!config.OnlyQueueWithFourPeople || config.TestingModeUnsynced || config.IsCrossWorldParty)
+        if (!config.OnlyQueueWithFourPeople || config.TestingModeUnsynced)
             return true;
 
         VisiblePartyMemberCount = 0;

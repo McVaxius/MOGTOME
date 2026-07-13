@@ -606,7 +606,7 @@ public class ConfigWindow : Window, IDisposable
             config.OnlyQueueWithFourPeople = onlyQueueWithFour;
             changed = true;
         }
-        ImGui.TextDisabled("Applies only to same-world leaders in synced modes because cross-world roster visibility is unreliable. Unsynced testing mode is exempt.");
+        ImGui.TextDisabled("Applies to leaders in all synced modes, including cross-world parties. Unsynced testing mode is exempt.");
 
         if (changed)
         {
