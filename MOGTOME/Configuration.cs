@@ -51,6 +51,8 @@ public class Configuration
     public bool AutoDutyPathInstalled { get; set; } = false;
     public string PraetoriumPathFileName { get; set; } = "(1044) The Praetorium - W2W 20250716 phecda.json";
     public bool UseAdsExperimental { get; set; } = true; //default is now to use ADS for new users
+    public bool ExperimentalFirstRoomSkip { get; set; } = false;
+    public int SetupWizardCompletedVersion { get; set; } = 0;
 
     // --- Combat Provider ---
     public CombatProvider CombatProvider { get; set; } = CombatProvider.Rsr;

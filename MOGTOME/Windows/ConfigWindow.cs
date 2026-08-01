@@ -28,10 +28,14 @@ public class ConfigWindow : Window, IDisposable
 
     // Dependency check cache
     private DateTime lastDepCheck = DateTime.MinValue;
-    private bool depRsr, depBmr, depVbm, depWrath, depVnav, depTextAdv, depXaSlave, depAutoDuty, depAds, depLifestream;
+    private bool depRsr, depBmr, depVbm, depWrath, depVnav, depYesAlready, depTextAdv, depXaSlave, depAutoDuty, depAds, depLifestream;
     private bool depCustomRes, depChillframes, depKrangler, depDps, depTtsl;
     private bool depTwistOfFayteInstalled, depTwistOfFayteEnabled;
     private bool allDepsGreen = false;
+    private const int SetupWizardVersion = 1;
+    private int setupWizardStep;
+    private string setupWizardAccountId = string.Empty;
+    private bool setupWizardAutoSelectPending = true;
 
     // Plugin repo URLs for clipboard
     private static readonly Dictionary<string, string> PluginRepos = new()
@@ -134,6 +138,26 @@ public class ConfigWindow : Window, IDisposable
 
         if (ImGui.BeginTabBar("ConfigTabs"))
         {
+            var currentAccountId = plugin.ConfigManager.CurrentAccountId;
+            if (!string.Equals(setupWizardAccountId, currentAccountId, StringComparison.Ordinal))
+            {
+                setupWizardAccountId = currentAccountId;
+                setupWizardStep = 0;
+                setupWizardAutoSelectPending = true;
+            }
+
+            var wizardIncomplete = config.SetupWizardCompletedVersion < SetupWizardVersion;
+            if (ImGui.BeginTabItem(
+                    "Setup Wizard",
+                    wizardIncomplete && setupWizardAutoSelectPending
+                        ? ImGuiTabItemFlags.SetSelected
+                        : ImGuiTabItemFlags.None))
+            {
+                setupWizardAutoSelectPending = false;
+                changed |= DrawSetupWizardTab(config);
+                ImGui.EndTabItem();
+            }
+
             // Dependency Check tab - force user here if not all green
             var depColor = allDepsGreen ? new Vector4(0, 1, 0, 1) : new Vector4(1, 0, 0, 1);
             ImGui.PushStyleColor(ImGuiCol.Text, depColor);
@@ -143,12 +167,6 @@ public class ConfigWindow : Window, IDisposable
             {
                 DrawDependencyCheckTab(config);
                 ImGui.EndTabItem();
-            }
-
-            // Only show other tabs if deps are green
-            if (!allDepsGreen)
-            {
-                ImGui.BeginDisabled();
             }
 
             if (ImGui.BeginTabItem("Party"))
@@ -181,11 +199,6 @@ public class ConfigWindow : Window, IDisposable
                 ImGui.EndTabItem();
             }
 
-            if (!allDepsGreen)
-            {
-                ImGui.EndDisabled();
-            }
-
             ImGui.EndTabBar();
         }
 
@@ -208,6 +221,7 @@ public class ConfigWindow : Window, IDisposable
             depVbm = false;
             depWrath = false;
             depVnav = false;
+            depYesAlready = false;
             depTextAdv = false;
             depXaSlave = false;
             depAutoDuty = false;
@@ -235,6 +249,7 @@ public class ConfigWindow : Window, IDisposable
                     case "BossModReborn": depBmr = true; break;
                     case "BossMod": depVbm = true; break;
                     case "vnavmesh": depVnav = true; break;
+                    case "YesAlready": depYesAlready = true; break;
                     case "TextAdvance": depTextAdv = true; break;
                     case "AutoDuty": depAutoDuty = true; break;
                     case "ADS": depAds = true; break;
@@ -283,7 +298,7 @@ public class ConfigWindow : Window, IDisposable
                 CombatProvider.Wrath => depWrath,
                 _ => false,
             };
-            allDepsGreen = providerReady && depVnav && depLifestream && depTextAdv && depXaSlave && backendReady;
+            allDepsGreen = providerReady && depVnav && depYesAlready && depXaSlave && backendReady;
         }
         catch (Exception ex)
         {
@@ -295,14 +310,14 @@ public class ConfigWindow : Window, IDisposable
     {
         ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Backend Mode");
         var useAdsExperimental = config.UseAdsExperimental;
-        if (ImGui.Checkbox("AI Duty Solver (ADS)", ref useAdsExperimental))
+        if (ImGui.Checkbox("Use ADS (primary backend)", ref useAdsExperimental))
         {
             ToggleAdsExperimental(useAdsExperimental);
             config = plugin.Configuration;
         }
         ImGui.TextDisabled(config.UseAdsExperimental
-            ? "ADS handles duty automation and inn return."
-            : "AutoDuty handles duty automation. ADS is optional and only used when /mog inn is requested.");
+            ? "ADS handles duty automation and inn return. AutoDuty is an alternative backend."
+            : "AutoDuty is the alternative duty backend. ADS is required only when ADS mode is selected or /mog inn is requested.");
         ImGui.Spacing();
 
         ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Combat Provider");
@@ -354,7 +369,7 @@ public class ConfigWindow : Window, IDisposable
         ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Required Plugins");
         if (!allDepsGreen)
         {
-            ImGui.TextColored(new Vector4(1, 0, 0, 1), "All required dependencies must be green before other tabs are accessible.");
+            ImGui.TextColored(new Vector4(1, 0, 0, 1), "Setup requirements are incomplete. The wizard is advisory and does not block Start.");
         }
         ImGui.Separator();
 
@@ -377,15 +392,11 @@ public class ConfigWindow : Window, IDisposable
         // VNAV
         DrawDepLine("vnavmesh", depVnav, depVnav ? "Installed" : "NOT FOUND", "vnavmesh");
 
-        // Lifestream
-        DrawDepLine("Lifestream", depLifestream, depLifestream ? "Installed" : "NOT FOUND", "Lifestream");
-
-        // TextAdvance
-        DrawDepLine("TextAdvance", depTextAdv, depTextAdv ? "Installed" : "NOT FOUND", "TextAdvance");
-
         // XA Slave
         DrawDepLine("XA Slave", depXaSlave, depXaSlave ? "Installed" : "NOT FOUND", "XASlave");
         ImGui.TextDisabled("MOGTOME runs /xa skipcutscenes on before every manual start.");
+
+        DrawDepLine("YesAlready", depYesAlready, depYesAlready ? "Installed" : "NOT FOUND", null);
 
         if (config.UseAdsExperimental)
         {
@@ -401,6 +412,8 @@ public class ConfigWindow : Window, IDisposable
         ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Optional Plugins");
         ImGui.Separator();
 
+        DrawDepLineOptional("Lifestream", depLifestream, "Optional. Not required by MOGTOME.");
+        DrawDepLineOptional("TextAdvance", depTextAdv, "Optional. Not required by MOGTOME.");
         DrawDepLineOptional("Krangler", depKrangler, "Recommended. Appearance/nameplate randomizer.");
         DrawDepLineOptional("CustomResolution (1pp by 0x0ade)", depCustomRes, "Experimental and not recommended. Low Spec Helper.",
 		"Maybe Crashy with 2+ clients");
@@ -548,6 +561,204 @@ public class ConfigWindow : Window, IDisposable
             return;
 
         _ = Task.Run(async () => await plugin.DutyAutomationService.EnsureAutoDutyDisabledForAdsAsync("ADS config toggle"));
+    }
+
+    private bool DrawSetupWizardTab(Configuration config)
+    {
+        var changed = false;
+        var isComplete = config.SetupWizardCompletedVersion >= SetupWizardVersion;
+
+        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Setup Wizard");
+        ImGui.TextWrapped("This guide is advisory. It never installs, enables, disables, or configures another plugin. It only saves MOGTOME settings when you choose them.");
+        ImGui.Separator();
+
+        if (isComplete)
+        {
+            ImGui.TextColored(new Vector4(0, 1, 0, 1), $"Completed for this account (wizard version {config.SetupWizardCompletedVersion}).");
+            if (ImGui.Button("Run Setup Wizard Again"))
+            {
+                config.SetupWizardCompletedVersion = 0;
+                setupWizardStep = 0;
+                changed = true;
+            }
+
+            return changed;
+        }
+
+        var steps = new[]
+        {
+            "Backend",
+            "Combat provider",
+            "Required plugins",
+            "Party setup",
+            "Optional settings",
+            "Review",
+        };
+        ImGui.Text($"Step {setupWizardStep + 1} of {steps.Length}: {steps[setupWizardStep]}");
+        ImGui.Separator();
+
+        switch (setupWizardStep)
+        {
+            case 0:
+                ImGui.TextWrapped("ADS is the primary MOGTOME backend. AutoDuty remains an alternative. This choice changes only MOGTOME's saved backend selection.");
+                var useAds = config.UseAdsExperimental;
+                if (ImGui.RadioButton("ADS (primary backend)##Wizard", useAds))
+                {
+                    config.UseAdsExperimental = true;
+                    lastDepCheck = DateTime.MinValue;
+                    changed = true;
+                }
+
+                if (ImGui.RadioButton("AutoDuty (alternative backend)##Wizard", !useAds))
+                {
+                    config.UseAdsExperimental = false;
+                    lastDepCheck = DateTime.MinValue;
+                    changed = true;
+                }
+
+                ImGui.TextDisabled(config.UseAdsExperimental
+                    ? "ADS must be loaded for this selection."
+                    : "AutoDuty and the selected Praetorium path must be available for this selection.");
+                break;
+            case 1:
+                ImGui.TextWrapped("Choose the combat provider MOGTOME should request for the selected backend.");
+                if (ImGui.BeginCombo("Selected Provider##Wizard", config.CombatProvider.ToString()))
+                {
+                    foreach (var provider in Enum.GetValues<CombatProvider>())
+                    {
+                        var selected = config.CombatProvider == provider;
+                        if (ImGui.Selectable(provider.ToString(), selected))
+                        {
+                            config.CombatProvider = provider;
+                            lastDepCheck = DateTime.MinValue;
+                            changed = true;
+                        }
+
+                        if (selected)
+                            ImGui.SetItemDefaultFocus();
+                    }
+
+                    ImGui.EndCombo();
+                }
+
+                DrawWizardRequirement("Selected combat provider", IsCombatProviderReady(config), "Choose and load the selected provider.", null);
+                break;
+            case 2:
+                DrawWizardRequiredPluginChecks(config);
+                break;
+            case 3:
+                ImGui.TextWrapped("Mark the client that queues duties as the party leader. Every participating client should independently review its own setup.");
+                var isLeader = config.IsPartyLeader;
+                if (ImGui.Checkbox("I am the Party Leader##Wizard", ref isLeader))
+                {
+                    config.IsPartyLeader = isLeader;
+                    plugin.State.IsPartyLeader = isLeader;
+                    changed = true;
+                }
+
+                var crossWorld = config.IsCrossWorldParty;
+                if (ImGui.Checkbox("Cross-World Party##Wizard", ref crossWorld))
+                {
+                    config.IsCrossWorldParty = crossWorld;
+                    changed = true;
+                }
+
+                ImGui.TextDisabled("Use Party settings for the full queue policy and the one-time outside-duty party-state refresh.");
+                break;
+            case 4:
+                ImGui.TextWrapped("Food, potions, and repair are optional. Configure them in their tabs when wanted; leaving them unset is supported.");
+                DrawDepLineOptional("Lifestream", depLifestream, "Optional. Not required by MOGTOME.");
+                DrawDepLineOptional("TextAdvance", depTextAdv, "Optional. Not required by MOGTOME.");
+                ImGui.TextDisabled("Food & Pots and Repair remain available after this wizard; no outside plugin settings are changed here.");
+                break;
+            case 5:
+                DrawSetupWizardReview(config);
+                if (ImGui.Button("Finish Setup"))
+                {
+                    config.SetupWizardCompletedVersion = SetupWizardVersion;
+                    changed = true;
+                }
+
+                break;
+        }
+
+        ImGui.Spacing();
+        if (setupWizardStep > 0 && ImGui.Button("Back##SetupWizard"))
+            setupWizardStep--;
+
+        if (setupWizardStep > 0)
+            ImGui.SameLine();
+
+        if (setupWizardStep < steps.Length - 1 && ImGui.Button("Next##SetupWizard"))
+            setupWizardStep++;
+
+        return changed;
+    }
+
+    private void DrawWizardRequiredPluginChecks(Configuration config)
+    {
+        var backendReady = config.UseAdsExperimental
+            ? depAds
+            : depAutoDuty && plugin.AutoDutyPathService.PathExists(config.PraetoriumPathFileName);
+
+        DrawWizardRequirement(
+            config.UseAdsExperimental ? "ADS (selected backend)" : "AutoDuty plus selected Praetorium path",
+            backendReady,
+            config.UseAdsExperimental ? "Load ADS." : "Load AutoDuty and install the selected Praetorium path.",
+            config.UseAdsExperimental ? "ADS" : "AutoDuty");
+        DrawWizardRequirement("Selected combat provider", IsCombatProviderReady(config), "Load the provider selected in step 2.", null);
+        DrawWizardRequirement("vnavmesh", depVnav, "Load vnavmesh.", "vnavmesh");
+        DrawWizardRequirement("XA Slave", depXaSlave, "Load XA Slave for /xa skipcutscenes on.", "XASlave");
+        DrawWizardRequirement("YesAlready", depYesAlready, "Load YesAlready for dialogs.", null);
+
+        if (!config.UseAdsExperimental)
+        {
+            if (ImGui.Button("Install Bundled Praetorium Paths##Wizard"))
+                _ = Task.Run(async () => await plugin.AutoDutyPathService.EnsurePathExists());
+            ImGui.TextDisabled("Operator-clicked only: copies MOGTOME's bundled files into AutoDuty's paths folder.");
+        }
+
+        ImGui.TextDisabled("Lifestream and TextAdvance are optional and do not affect this checklist.");
+    }
+
+    private void DrawSetupWizardReview(Configuration config)
+    {
+        var backendReady = config.UseAdsExperimental
+            ? depAds
+            : depAutoDuty && plugin.AutoDutyPathService.PathExists(config.PraetoriumPathFileName);
+
+        ImGui.Text($"Backend: {(config.UseAdsExperimental ? "ADS (primary)" : "AutoDuty (alternative)")}");
+        ImGui.Text($"Combat provider: {config.CombatProvider}");
+        ImGui.Text($"Required checks: {(backendReady && IsCombatProviderReady(config) && depVnav && depXaSlave && depYesAlready ? "ready" : "incomplete")}");
+        ImGui.Text($"Party role: {(config.IsPartyLeader ? "leader" : "participant")}");
+        ImGui.Text($"Optional food: {(config.FoodItemId > 0 ? config.FoodItemName : "not configured")}");
+        ImGui.Text($"Optional repair threshold: {config.RepairThreshold}%");
+        ImGui.TextWrapped("Finish records only that this account completed this wizard version. It does not gate Start or alter another plugin.");
+    }
+
+    private bool IsCombatProviderReady(Configuration config)
+        => config.CombatProvider switch
+        {
+            CombatProvider.Bmr => depBmr,
+            CombatProvider.Vbm => depVbm,
+            CombatProvider.Rsr => depRsr,
+            CombatProvider.Wrath => depWrath,
+            _ => false,
+        };
+
+    private static void DrawWizardRequirement(string name, bool ready, string missingDetail, string? repoKey)
+    {
+        var color = ready ? new Vector4(0, 1, 0, 1) : new Vector4(1, 0, 0, 1);
+        ImGui.TextColored(color, $"[{(ready ? "OK" : "!!")}] {name}");
+        ImGui.SameLine();
+        ImGui.TextDisabled(ready ? "Ready" : missingDetail);
+
+        if (!ready && repoKey != null && PluginRepos.TryGetValue(repoKey, out var repo))
+        {
+            ImGui.SameLine();
+            if (ImGui.SmallButton($"Copy Repo##Wizard{repoKey}"))
+                ImGui.SetClipboardText(repo);
+        }
     }
 
     private void QueueWindowPosition(Vector2 position)
@@ -966,6 +1177,21 @@ public class ConfigWindow : Window, IDisposable
     private bool DrawAdvancedTab(Configuration config)
     {
         var changed = false;
+
+        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Experimental ADS");
+        ImGui.Separator();
+        var firstRoomSkip = config.ExperimentalFirstRoomSkip;
+        ImGui.BeginDisabled(!config.UseAdsExperimental);
+        if (ImGui.Checkbox("Experimental first room skip (Praetorium)##FirstRoomSkip", ref firstRoomSkip))
+        {
+            config.ExperimentalFirstRoomSkip = firstRoomSkip;
+            changed = true;
+        }
+        ImGui.EndDisabled();
+        ImGui.TextDisabled(config.UseAdsExperimental
+            ? "ADS/Praetorium only. Every participating client must opt in locally. MOGTOME falls back to ADS after success or any failure."
+            : "Available only when ADS is the selected backend; the saved option is inactive in AutoDuty mode.");
+        ImGui.Spacing();
 
         ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Debug");
         ImGui.Separator();

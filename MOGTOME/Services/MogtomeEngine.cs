@@ -49,6 +49,7 @@ public class MogtomeEngine
     private readonly ICondition condition;
     private readonly IClientState clientState;
     private readonly ICommandManager commandManager;
+    private readonly PraetoriumFirstRoomSkipService firstRoomSkip;
 
     public EngineState CurrentState { get; private set; } = EngineState.Idle;
     public bool IsRunning => CurrentState != EngineState.Idle && CurrentState != EngineState.Stopped;
@@ -137,7 +138,7 @@ public class MogtomeEngine
         DutyAutomationService dutyAutomationService,
         AutoDutyPathService autoDutyPath, ConflictPluginService conflictPluginService, RunHistoryService runHistoryService, // NEW
         DeathTrackingService deathTrackingService,
-        AutoDutyIPC autoDutyIPC, YesAlreadyIPC yesAlreadyIPC,
+        AutoDutyIPC autoDutyIPC, YesAlreadyIPC yesAlreadyIPC, VNavIPC vnavIPC,
         ICondition condition, IClientState clientState, ICommandManager commandManager)
     {
         this.log = log;
@@ -162,6 +163,14 @@ public class MogtomeEngine
         this.condition = condition;
         this.clientState = clientState;
         this.commandManager = commandManager;
+        firstRoomSkip = new PraetoriumFirstRoomSkipService(
+            log,
+            Plugin.Framework,
+            condition,
+            clientState,
+            Plugin.ObjectTable,
+            vnavIPC,
+            OnFirstRoomSkipFinished);
 
         // Hook duty events
         Plugin.DutyStateService.DutyStarted += OnDutyStarted;
@@ -171,6 +180,7 @@ public class MogtomeEngine
 
     public void Dispose()
     {
+        firstRoomSkip.Dispose();
         Plugin.DutyStateService.DutyCompleted -= OnDutyCompleted;
         Plugin.DutyStateService.DutyStarted -= OnDutyStarted;
     }
@@ -191,6 +201,17 @@ public class MogtomeEngine
         if (!dutyAutomationService.UseAdsExperimental)
             return;
 
+        if (territoryId == DutyState.PraetoriumTerritoryId && config.ExperimentalFirstRoomSkip)
+        {
+            log.Information("[MOGTOME][Engine] Queueing the experimental ADS Praetorium opener on the framework thread");
+            GameHelpers.QueueFrameworkAction(
+                "Engine duty started",
+                "start experimental Praetorium opener",
+                TimeSpan.Zero,
+                () => StartFirstRoomSkipFromDutyStarted(territoryId));
+            return;
+        }
+
         log.Information($"[MOGTOME][Engine] DutyStarted for MOGTOME territory {territoryId}; scheduling ADS inside start");
         GameHelpers.QueueFrameworkAction(
             "Engine duty started",
@@ -208,6 +229,47 @@ public class MogtomeEngine
             state.DutyStartTerritory = territoryId;
 
         StartDutyBackendInsideDuty($"DutyStarted territory {territoryId}");
+    }
+
+    private void StartFirstRoomSkipFromDutyStarted(uint territoryId)
+    {
+        if (!IsRunning ||
+            !dutyAutomationService.UseAdsExperimental ||
+            !config.ExperimentalFirstRoomSkip ||
+            territoryId != DutyState.PraetoriumTerritoryId)
+        {
+            return;
+        }
+
+        if (clientState.TerritoryType != territoryId || !condition[ConditionFlag.BoundByDuty])
+        {
+            log.Warning("[MOGTOME][Engine] Experimental opener duty context was unavailable; handing off immediately");
+            StartDutyBackendInsideDuty("experimental opener duty context unavailable");
+            return;
+        }
+
+        if (firstRoomSkip.TryStart())
+        {
+            log.Information("[MOGTOME][Engine] Experimental ADS Praetorium opener owns the initial inside hand-off");
+            return;
+        }
+
+        log.Warning("[MOGTOME][Engine] Experimental ADS Praetorium opener could not start; handing off immediately");
+        StartDutyBackendInsideDuty("experimental opener unavailable at duty start");
+    }
+
+    private void OnFirstRoomSkipFinished(string reason)
+    {
+        if (!IsRunning ||
+            !dutyAutomationService.UseAdsExperimental ||
+            clientState.TerritoryType != DutyState.PraetoriumTerritoryId ||
+            !condition[ConditionFlag.BoundByDuty])
+        {
+            log.Information($"[MOGTOME][Engine] Suppressed experimental opener ADS hand-off after {reason}; engine or duty context changed");
+            return;
+        }
+
+        StartDutyBackendInsideDuty($"experimental Praetorium opener: {reason}");
     }
 
     private void OnDutyCompleted(Dalamud.Game.DutyState.IDutyStateEventArgs args)
@@ -376,6 +438,7 @@ public class MogtomeEngine
 
         try
         {
+            firstRoomSkip.Cancel("engine stop");
             dutyAutomationService.StopDuty();
             dialogHandler.Stop();
             rotationService.DisableRotationForDutyEnd("engine stop");
@@ -851,6 +914,7 @@ public class MogtomeEngine
     private void HandlePendingDutyEntryCancelled()
     {
         log.Warning($"[MOGTOME][Engine] BoundByDuty ended before MOGTOME duty territory resolved. Diagnostics: {BuildDutyEntryDiagnostics()}");
+        firstRoomSkip.Cancel("duty entry cancelled before territory resolved");
         state.Reset();
         deathTrackingService.Clear("pending duty entry cancelled");
         outsideDutyTicks = 0;
@@ -972,6 +1036,7 @@ public class MogtomeEngine
 
     private void ResetAfterConfirmedDutyExit(string reason)
     {
+        firstRoomSkip.Cancel(reason);
         state.IsInDuty = false;
         deathTrackingService.Clear(reason);
         outsideDutyTicks = 0;

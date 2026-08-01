@@ -550,7 +550,7 @@ public sealed class Plugin : IDalamudPlugin
                     DutyAutomationService,
                     AutoDutyPathService, ConflictPluginService, RunHistoryService,
                     DeathTrackingService,
-                    AutoDutyIPC, YesAlreadyIPC,
+                    AutoDutyIPC, YesAlreadyIPC, VNavIPC,
                     Condition, ClientState, CommandManager);
                 
                 Log.Information("[Plugin] Engine initialized successfully with proper config");

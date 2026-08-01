@@ -40,6 +40,7 @@ bld/
 
 # Backup files
 backup/
+backups/
 
 # User configuration (contains personal settings)
 **/pluginConfigs/MOGTOME.json

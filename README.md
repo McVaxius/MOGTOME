@@ -36,19 +36,22 @@ MOGTOME automates farming of The Praetorium (99 runs) and The Porta Decumana (un
 - ✅ **Stuck Detection**: Auto-recovery from stuck states
 - ✅ **Boss Mechanics**: Tank mitigation, potion usage, limit breaks
 - ✅ **Per-Character Configuration**: Separate settings for each character
+- ✅ **ADS-primary setup wizard**: Per-account guided setup with an explicit AutoDuty alternative
+- ⚠️ **Experimental Praetorium first-room opener**: Optional ADS-only local terminal sequence with immediate ADS fallback
 
 ---
 
 ## Requirements
 
 ### Required Plugins
-- **Selected duty backend** - ADS, or AutoDuty plus the selected Praetorium path
+- **Selected duty backend** - **ADS is the primary backend**, or AutoDuty plus the selected Praetorium path as the alternative
 - **Selected combat provider** - BMR, VBM, Rotation Solver Reborn, or Wrath Combo
 - **vnavmesh** - Navigation and pathfinding
 - **XA Slave** - Provides `/xa skipcutscenes on` startup control
 - **YesAlready** - Auto-confirm dialogs
 ### Optional Plugins
 - **ADS (AI Duty Solver)** - Optional in AutoDuty mode; enables `/mog inn` delegation
+- **Lifestream** and **TextAdvance** - Optional; neither is required for MOGTOME setup
 
 ### Game Configuration (MANDATORY)
 - **NOT in controller mode** (causes chat spam)
@@ -95,9 +98,19 @@ See [how-to-import-plugins.md](how-to-import-plugins.md) for detailed setup inst
 ### Configuration
 
 1. Open config: `/mogtome config`
-2. Configure settings per character:
-   - Duty counter, repair threshold, food, potions, etc.
-3. Settings save automatically
+2. Complete the per-account **Setup Wizard**. It guides backend, combat provider, required checks, party setup, optional settings, and review.
+3. Configure any remaining duty counter, repair threshold, food, and potion settings.
+4. Settings save automatically. The wizard is advisory and does not block Start or install/configure other plugins.
+
+### Experimental first-room skip
+
+In **Advanced**, `Experimental first room skip` is off by default and is active only with ADS in The Praetorium. Each participating party client must enable it locally; no party synchronization is performed.
+
+- Tanks move through the opening pull, use the mapped AoE and invulnerability, then use Magitek Terminal `2012811`.
+- Non-tanks wait one second, then move to that terminal.
+- MOGTOME retries the terminal until the local player descends, for up to ten seconds total. On success or any unavailable action, missing target/terminal, movement failure, or timeout, it stops only MOGTOME's vnavmesh movement and immediately hands the duty to ADS.
+
+This sequence is experimental and has not been live-duty validated by this implementation pass.
 
 ### Commands
 
@@ -113,7 +126,7 @@ See [how-to-import-plugins.md](how-to-import-plugins.md) for detailed setup inst
 ## How It Works
 
 1. **Queue Phase**: Queues for The Praetorium (runs 1-99) or The Porta Decumana (runs 100+)
-2. **Duty Phase**: The selected duty backend handles navigation and the selected combat provider handles combat
+2. **Duty Phase**: ADS is the primary selected duty backend; AutoDuty remains an alternative. The selected combat provider handles combat.
 3. **Boss Mechanics**: Automatic tank mitigation, potion usage, limit breaks
 4. **Completion**: Calculates completion time, leaves duty, increments counter
 5. **Maintenance**: Auto-repair when threshold reached, auto-consume food when buff expires

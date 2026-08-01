@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Added an ADS-only, opt-in experimental Praetorium first-room opener. It maps PLD/WAR/DRK/GNB AoE and invulnerability actions, retries Magitek Terminal `2012811` until local descent, and falls back to ADS within ten seconds on any experimental failure.
+- Added a per-account advisory Setup Wizard with ADS as the primary backend, AutoDuty as an alternative, README-aligned required checks, optional settings guidance, completion-version persistence, and a rerun entry point.
+
+### Changed
+- Made dependency labels consistent with the ADS-primary workflow: YesAlready is required; Lifestream and TextAdvance are optional.
+- Added the Advanced `Experimental first room skip` setting, defaulting to off and inactive outside ADS/Praetorium.
+
 ### Fixed
 - Excluded unsynced testing/debug runs from summary and detailed statistics unless `Show debug runs` is enabled
 - Recomputed JSON summary stats from the same filtered run set used by the stats UI to prevent hidden runs from leaking back in

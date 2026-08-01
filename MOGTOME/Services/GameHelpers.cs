@@ -480,6 +480,38 @@ public static class GameHelpers
         }
     }
 
+    /// <summary>
+    /// Use a combat action from the framework thread. The caller must select a target first when the action needs one.
+    /// </summary>
+    public static unsafe bool TryUseCombatAction(uint actionId)
+    {
+        if (!Plugin.Framework.IsInFrameworkUpdateThread)
+        {
+            Plugin.Log.Warning($"[MOGTOME][Combat] Action {actionId} blocked off the framework thread");
+            return false;
+        }
+
+        try
+        {
+            var player = Plugin.ObjectTable.LocalPlayer;
+            if (player == null || player.IsCasting)
+                return false;
+
+            var actionManager = ActionManager.Instance();
+            if (actionManager == null || actionManager->GetActionStatus(ActionType.Action, actionId) != 0)
+                return false;
+
+            var result = actionManager->UseAction(ActionType.Action, actionId);
+            Plugin.Log.Information($"[MOGTOME][Combat] Action {actionId} result={result}");
+            return result;
+        }
+        catch (Exception ex)
+        {
+            Plugin.Log.Warning($"[MOGTOME][Combat] Action {actionId} failed: {ex.Message}");
+            return false;
+        }
+    }
+
     public static unsafe int GetInventoryItemCount(uint itemId, bool highQuality)
     {
         try
