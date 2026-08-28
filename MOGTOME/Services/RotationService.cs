@@ -36,6 +36,8 @@ public class RotationService
 
     public void Initialize()
     {
+        bossModIPC.RefreshPackagedPresets();
+
         var config = configManager.GetActiveConfig();
         if (config.CombatProvider is CombatProvider.Bmr or CombatProvider.Vbm)
         {

@@ -312,6 +312,7 @@ public class MogtomeEngine
 
         try
         {
+            await GameHelpers.RunOnFrameworkThreadAsync(rotationService.Initialize).ConfigureAwait(false);
             await GameHelpers.RunOnFrameworkThreadAsync(ClearStaleDutyStateIfNeeded).ConfigureAwait(false);
 
             StatusMessage = "Checking conflicting plugins...";
@@ -373,7 +374,6 @@ public class MogtomeEngine
                     return new StartupPreparationResult(EnteredRepairMode: true);
                 }
 
-                rotationService.Initialize();
                 dialogHandler.Start();
 
                 consumableInventoryService.Refresh(force: true);

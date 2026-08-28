@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added the Advanced `Experimental first room skip` setting, defaulting to off and inactive outside ADS/Praetorium.
 
 ### Fixed
+- Force-refreshed all packaged passive BossMod presets once at the start of every accepted engine start, including manual-preset, non-BossMod-provider, repair, and later-abort paths
 - Excluded unsynced testing/debug runs from summary and detailed statistics unless `Show debug runs` is enabled
 - Recomputed JSON summary stats from the same filtered run set used by the stats UI to prevent hidden runs from leaking back in
 - Repaired party-size persistence so grouped runs keep their stored party count even after leaving duty

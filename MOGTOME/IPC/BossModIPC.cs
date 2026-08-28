@@ -63,6 +63,18 @@ public class BossModIPC : IDisposable
         this.commandManager = commandManager;
     }
 
+    internal void RefreshPackagedPresets()
+    {
+        try
+        {
+            InstallPassivePresets(forceRecreate: true);
+        }
+        catch (Exception ex)
+        {
+            log.Warning($"[MOGTOME][BossMod] Packaged preset refresh failed; continuing start: {ex.Message}");
+        }
+    }
+
     public void PreparePresetForStart(CombatProvider provider, bool useManualPreset, string manualPresetName)
     {
         try
@@ -71,9 +83,6 @@ public class BossModIPC : IDisposable
             var presetName = manualPresetSelected
                 ? manualPresetName.Trim()
                 : SelectPassivePresetForCurrentJob();
-
-            if (!manualPresetSelected)
-                InstallPassivePresets(forceRecreate: true);
 
             SetActivePresetViaIpc(presetName);
             SendProviderPresetCommand(provider, presetName);
