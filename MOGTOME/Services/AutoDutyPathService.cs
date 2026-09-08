@@ -190,7 +190,7 @@ public class AutoDutyPathService
                     || TrySetModeValue(config, "CurrentMode", "Looping");
                 log.Information($"[MOGTOME][AutoDutyPath] Set Mode=Looping: {modeSet}");
                 if (!modeSet)
-                    log.Warning("[MOGTOME][AutoDutyPath] Failed to set AutoDuty mode to Looping.");
+                    throw new InvalidOperationException("Failed to set AutoDuty mode to Looping.");
 
                 // Step 3b: Set DutyMode to Regular
                 var dutyModeSet = TrySetModeValue(config, "DutyModeEnum", "Regular")
@@ -200,11 +200,11 @@ public class AutoDutyPathService
                     || TrySetModeValue(config, "SelectedDutyMode", "Regular");
                 log.Information($"[MOGTOME][AutoDutyPath] Set DutyMode=Regular: {dutyModeSet}");
                 if (!dutyModeSet)
-                    log.Warning("[MOGTOME][AutoDutyPath] Failed to set DutyMode=Regular. AutoDuty defaults to Support, so queue behavior may be wrong.");
+                    throw new InvalidOperationException("Failed to set AutoDuty duty mode to Regular.");
             }
             else
             {
-                log.Warning("[MOGTOME][AutoDutyPath] Could not find config object - will try plugin-level members");
+                throw new InvalidOperationException("AutoDuty configuration is unavailable.");
             }
 
             // Step 4: Try to set path-related properties directly on plugin instance
@@ -215,60 +215,23 @@ public class AutoDutyPathService
             var territorySet = SetMemberValue(instanceType, pluginInstance, "currentTerritoryType", (uint)TargetTerritoryType)
                 || SetMemberValue(instanceType, pluginInstance, "CurrentTerritoryType", (uint)TargetTerritoryType);
             log.Information($"[MOGTOME][AutoDutyPath] Set territory type={TargetTerritoryType}: {territorySet}");
+            if (!territorySet)
+                throw new InvalidOperationException("Could not set AutoDuty territory selection.");
 
-            // Try setting currentPath by finding the target path index using the FILE DATE method
+            // Only AutoDuty's loaded path list establishes a valid runtime index.
             var pathIndex = FindPathIndexFromDictionaryPaths(pluginInstance, selectedPathName);
-            var pathSet = false;
-            if (pathIndex >= 0)
-            {
-                pathSet = SetAutoDutyCurrentPath(instanceType, pluginInstance, pathIndex);
-                log.Information($"[MOGTOME][AutoDutyPath] Set current path={pathIndex} for '{selectedPathName}' (DICTIONARY PATHS METHOD): {pathSet}");
-                if (pathSet)
-                {
-                    LastForceResult = $"OK: Territory={TargetTerritoryType}, Path={pathIndex} ({selectedPathName}) [DictionaryPaths]";
-                }
-            }
-            else
-            {
-                log.Warning($"[MOGTOME][AutoDutyPath] Could not find path index for '{selectedPathName}' using DictionaryPaths; trying file date fallback");
-                
-                var fallbackIndex = FindPathIndexByFileDate(selectedPathFileName);
-                if (fallbackIndex >= 0)
-                {
-                    pathSet = SetAutoDutyCurrentPath(instanceType, pluginInstance, fallbackIndex);
-                    log.Information($"[MOGTOME][AutoDutyPath] Set current path={fallbackIndex} (FILE DATE FALLBACK) for '{selectedPathName}': {pathSet}");
-                    if (pathSet)
-                    {
-                        LastForceResult = $"OK: Territory={TargetTerritoryType}, Path={fallbackIndex} ({selectedPathName}) [FileDateFallback]";
-                    }
-                }
-                else
-                {
-                    log.Information("[MOGTOME][AutoDutyPath] Trying final fallback method (PathSelectionsByPath)...");
-                    fallbackIndex = FindPathIndexByName(pluginInstance, selectedPathName);
-                    if (fallbackIndex >= 0)
-                    {
-                        pathSet = SetAutoDutyCurrentPath(instanceType, pluginInstance, fallbackIndex);
-                        log.Information($"[MOGTOME][AutoDutyPath] Set current path={fallbackIndex} (PATHSELECTIONS FALLBACK) for '{selectedPathName}': {pathSet}");
-                        if (pathSet)
-                        {
-                            LastForceResult = $"OK: Territory={TargetTerritoryType}, Path={fallbackIndex} ({selectedPathName}) [PathSelectionsFallback]";
-                        }
-                    }
-
-                    if (!pathSet)
-                        LastForceResult = $"FAILED: Could not find path index for '{selectedPathName}'";
-                }
-            }
+            if (pathIndex < 0 || !SetAutoDutyCurrentPath(instanceType, pluginInstance, pathIndex))
+                throw new InvalidOperationException($"Could not select loaded path '{selectedPathName}'.");
 
             // Step 5: Get Content from ContentHelper.DictionaryContent (already populated by AutoDuty init)
             // CRITICAL: DictionaryContent is a static PROPERTY, not a field! Must use GetProperty().
             // CRITICAL: Do NOT call StartNavigation() - it uses Svc.ClientState.TerritoryType (real game territory, not our field)
             // CRITICAL: Do NOT call ClientState_TerritoryChanged() - it's for zone transitions
-            // Instead: Get Content → Set CurrentTerritoryContent → Set pathFile → Call LoadPath()
+            // Select content and save the path assignment; AutoDuty loads runtime actions on duty entry.
             log.Information("[MOGTOME][AutoDutyPath] === CONTENT & PATH SETUP (direct approach) ===");
             
             object? territoryContent = null;
+            var pathSelectionSaved = false;
             try
             {
                 // Step 5a: Get ContentHelper.DictionaryContent (static PROPERTY)
@@ -350,48 +313,12 @@ public class AutoDutyPathService
                 // Step 5b: Set CurrentTerritoryContent directly on plugin instance
                 if (territoryContent != null)
                 {
-                    // Set via backing field (most reliable for properties with custom getters)
-                    var ctcBackingField = instanceType.GetField("<CurrentTerritoryContent>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic);
-                    if (ctcBackingField != null)
-                    {
-                        // Actually the backing field is 'currentTerritoryContent' (lowercase, private field)
-                        var ctcField = instanceType.GetField("currentTerritoryContent", BindingFlags.Instance | BindingFlags.NonPublic);
-                        if (ctcField != null)
-                        {
-                            ctcField.SetValue(pluginInstance, territoryContent);
-                            log.Information("[MOGTOME][AutoDutyPath] Set currentTerritoryContent (private field) directly");
-                        }
-                        else
-                        {
-                            ctcBackingField.SetValue(pluginInstance, territoryContent);
-                            log.Information("[MOGTOME][AutoDutyPath] Set <CurrentTerritoryContent>k__BackingField directly");
-                        }
-                    }
-                    else
-                    {
-                        // Try the private field directly
-                        var ctcField = instanceType.GetField("currentTerritoryContent", BindingFlags.Instance | BindingFlags.NonPublic);
-                        if (ctcField != null)
-                        {
-                            ctcField.SetValue(pluginInstance, territoryContent);
-                            log.Information("[MOGTOME][AutoDutyPath] Set currentTerritoryContent (private field) directly");
-                        }
-                        else
-                        {
-                            // Try property setter
-                            var ctcProp = instanceType.GetProperty("CurrentTerritoryContent", AllFlags);
-                            if (ctcProp != null && ctcProp.CanWrite)
-                            {
-                                ctcProp.SetValue(pluginInstance, territoryContent);
-                                log.Information("[MOGTOME][AutoDutyPath] Set CurrentTerritoryContent via property setter");
-                            }
-                            else
-                            {
-                                log.Error("[MOGTOME][AutoDutyPath] Could not find any way to set CurrentTerritoryContent!");
-                            }
-                        }
-                    }
-                    
+                    var contentSet = SetMemberValue(instanceType, pluginInstance, "currentTerritoryContent", territoryContent)
+                        || SetMemberValue(instanceType, pluginInstance, "CurrentTerritoryContent", territoryContent)
+                        || SetMemberValue(instanceType, pluginInstance, "<CurrentTerritoryContent>k__BackingField", territoryContent);
+                    if (!contentSet)
+                        throw new InvalidOperationException("Could not set AutoDuty content selection.");
+
                     // Step 5c: Set Config.PathSelectionsByPath[1044] to map W2W path to ALL jobs
                     // This is how AutoDuty persists path selection (MainTab.cs lines 102-118).
                     // When entering dungeon, ClientState_TerritoryChanged resets CurrentPath=-1,
@@ -447,15 +374,7 @@ public class AutoDutyPathService
                                 log.Information($"[MOGTOME][AutoDutyPath] Found JobWithRole type: {jobWithRoleType.FullName}");
                                 
                                 // Get "All" enum value
-                                object? jobWithRoleAll = null;
-                                try { jobWithRoleAll = Enum.Parse(jobWithRoleType, "All"); }
-                                catch { }
-                                
-                                if (jobWithRoleAll == null)
-                                {
-                                    // Fallback: set all bits
-                                    jobWithRoleAll = Enum.ToObject(jobWithRoleType, unchecked((long)-1));
-                                }
+                                var jobWithRoleAll = Enum.Parse(jobWithRoleType, "All");
                                 log.Information($"[MOGTOME][AutoDutyPath] JobWithRole.All = {jobWithRoleAll}");
                                 
                                 // Get or create the inner dictionary for territory 1044
@@ -501,10 +420,17 @@ public class AutoDutyPathService
                                     log.Information($"[MOGTOME][AutoDutyPath] Set PathSelectionsByPath[{TargetTerritoryType}][{selectedPathFileName}] = All jobs");
                                     
                                     // Call Config.Save() to persist
-                                    var saveMethod = configType.GetMethod("Save", AllFlags);
-                                    if (saveMethod != null && saveMethod.GetParameters().Length == 0)
+                                    var saveMethod = configType.GetMethod("Save", AllFlags, null, Type.EmptyTypes, null);
+                                    if (saveMethod != null)
                                     {
-                                        saveMethod.Invoke(config, null);
+                                        if (saveMethod.Invoke(config, null) is false)
+                                            throw new InvalidOperationException("AutoDuty Config.Save() reported failure.");
+                                        var savedSelections = GetMemberValue(configType, config, "PathSelectionsByPath") as IDictionary;
+                                        var savedPaths = savedSelections?[(uint)TargetTerritoryType] as IDictionary;
+                                        pathSelectionSaved = savedPaths != null
+                                            && Equals(savedPaths[selectedPathFileName], jobWithRoleAll)
+                                            && savedPaths.Cast<DictionaryEntry>().All(entry =>
+                                                Equals(entry.Key, selectedPathFileName) || Equals(entry.Value, jobWithRoleNone));
                                         log.Information("[MOGTOME][AutoDutyPath] Called Config.Save() to persist path selection");
                                     }
                                     else
@@ -525,8 +451,11 @@ public class AutoDutyPathService
                     }
                     catch (Exception ex)
                     {
-                        log.Warning($"[MOGTOME][AutoDutyPath] PathSelectionsByPath setup failed: {ex.Message}");
+                        throw new InvalidOperationException("AutoDuty path assignment could not be saved.", ex);
                     }
+
+                    if (!pathSelectionSaved)
+                        throw new InvalidOperationException("AutoDuty path assignment was not saved or its readback did not match.");
                     
                     // Step 5d: Set MainTab.DutySelected and MainListClicked for UI
                     try
@@ -573,7 +502,7 @@ public class AutoDutyPathService
                 }
                 else
                 {
-                    log.Error("[MOGTOME][AutoDutyPath] Could not get Content for territory - cannot set CurrentTerritoryContent");
+                    throw new InvalidOperationException("Could not get AutoDuty content for the selected territory.");
                 }
                 
                 // Step 5f: Verify final state
@@ -581,6 +510,19 @@ public class AutoDutyPathService
                 var finalPath = GetMemberValue(instanceType, pluginInstance, "currentPath") ?? GetMemberValue(instanceType, pluginInstance, "CurrentPath");
                 var finalPathFile = GetMemberValue(instanceType, pluginInstance, "pathFile") ?? GetMemberValue(instanceType, pluginInstance, "PathFile");
                 var finalActions = GetMemberValue(instanceType, pluginInstance, "Actions");
+                var finalTerritory = GetMemberValue(instanceType, pluginInstance, "currentTerritoryType")
+                    ?? GetMemberValue(instanceType, pluginInstance, "CurrentTerritoryType");
+
+                if (!Equals(finalTerritory, (uint)TargetTerritoryType)
+                    || !Equals(finalContent, territoryContent)
+                    || !Equals(finalPath, pathIndex))
+                    throw new InvalidOperationException("AutoDuty territory, content or path readback did not match the requested selection.");
+
+                // Outside duty these runtime fields are populated only after AutoDuty loads the path.
+                if (Plugin.ClientState.TerritoryType == TargetTerritoryType
+                    && (!string.Equals(Path.GetFileName(finalPathFile?.ToString()), selectedPathFileName, StringComparison.OrdinalIgnoreCase)
+                        || finalActions is not IList { Count: > 0 }))
+                    throw new InvalidOperationException("AutoDuty has not loaded the selected path and actions inside the duty.");
                 
                 log.Information($"[MOGTOME][AutoDutyPath] === VERIFICATION ===");
                 log.Information($"[MOGTOME][AutoDutyPath] CurrentTerritoryContent: {finalContent?.ToString() ?? "null"}");
@@ -590,16 +532,16 @@ public class AutoDutyPathService
             }
             catch (Exception ex)
             {
-                log.Warning($"[MOGTOME][AutoDutyPath] Content/path setup failed: {ex.Message}\n{ex.StackTrace}");
+                throw new InvalidOperationException($"AutoDuty content/path setup failed: {ex.Message}", ex);
             }
 
-            LastForceResult = $"[MOGTOME]OK: Reflection completed (territory={territorySet}, path={pathSet}, content={territoryContent != null})";
+            LastForceResult = $"OK: Territory={TargetTerritoryType}, Path={pathIndex} ({selectedPathName}); selection saved and verified";
             log.Information($"[MOGTOME][AutoDutyPath] === FORCE PATH SELECTION COMPLETE: {LastForceResult} ===");
             return true;
         }
         catch (Exception ex)
         {
-            LastForceResult = $"[MOGTOME]EXCEPTION: {ex.Message}";
+            LastForceResult = $"FAILED: {ex.Message}";
             log.Error($"[MOGTOME][AutoDutyPath] ForcePathSelection failed: {ex}");
             return false;
         }
@@ -1183,7 +1125,7 @@ public class AutoDutyPathService
                 {
                     // Try to get the path name - check common properties
                     var pathType = pathObj.GetType();
-                    var nameProp = pathType.GetProperty("Name") ?? pathType.GetProperty("PathName") ?? pathType.GetProperty("FileName");
+                    var nameProp = pathType.GetProperty("FileName") ?? pathType.GetProperty("Name") ?? pathType.GetProperty("PathName");
                     
                     if (nameProp != null)
                     {
@@ -1192,7 +1134,7 @@ public class AutoDutyPathService
                         {
                             log.Information($"[MOGTOME][AutoDutyPath] Path[{i}]: {pathName}");
                             
-                            if (IsTargetPath(pathName, targetPathName))
+                            if (string.Equals(Path.GetFileNameWithoutExtension(pathName), Path.GetFileNameWithoutExtension(targetPathName), StringComparison.OrdinalIgnoreCase))
                             {
                                 log.Information($"[MOGTOME][AutoDutyPath] *** FOUND TARGET PATH at index {i}: {pathName} ***");
                                 return i;
@@ -2146,7 +2088,8 @@ public class AutoDutyPathService
         if (field != null)
         {
             return TrySetEnumOrString(field.FieldType, enumValueName, val =>
-                field.SetValue(field.IsStatic ? null : target, val));
+                field.SetValue(field.IsStatic ? null : target, val))
+                && string.Equals(field.GetValue(field.IsStatic ? null : target)?.ToString(), enumValueName, StringComparison.OrdinalIgnoreCase);
         }
 
         // Try property
@@ -2154,7 +2097,8 @@ public class AutoDutyPathService
         if (prop?.GetSetMethod(true) != null)
         {
             return TrySetEnumOrString(prop.PropertyType, enumValueName, val =>
-                prop.SetValue(prop.GetSetMethod(true)!.IsStatic ? null : target, val));
+                prop.SetValue(prop.GetSetMethod(true)!.IsStatic ? null : target, val))
+                && string.Equals(GetMemberValue(targetType, target, memberName)?.ToString(), enumValueName, StringComparison.OrdinalIgnoreCase);
         }
 
         return false;

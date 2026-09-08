@@ -217,14 +217,20 @@ public sealed class DutyAutomationService
             return false;
         }
 
-        await GameHelpers.RunOnFrameworkThreadAsync(() =>
+        var pathSelectionReady = await GameHelpers.RunOnFrameworkThreadAsync(() =>
         {
             autoDutyIPC.StopDuty();
             autoDutyIPC.ConfigureForMogtome(isLeader);
 
-            if (!startingInsideDuty)
-                autoDutyPathService.ForcePathSelection(Config.PraetoriumPathFileName);
+            return startingInsideDuty || autoDutyPathService.ForcePathSelection(Config.PraetoriumPathFileName);
         }).ConfigureAwait(false);
+
+        if (!pathSelectionReady)
+        {
+            log.Warning($"[MOGTOME][Automation] AutoDuty preparation failed: {autoDutyPathService.LastForceResult}");
+            Plugin.ChatGui.Print($"[MOGTOME] AutoDuty preparation failed: {autoDutyPathService.LastForceResult}");
+            return false;
+        }
 
         log.Information("[MOGTOME][Automation] AutoDuty backend ready");
         return true;
