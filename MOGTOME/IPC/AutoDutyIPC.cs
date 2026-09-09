@@ -10,16 +10,14 @@ public class AutoDutyIPC : IDisposable
     private readonly IPluginLog log;
     private readonly ICommandManager commandManager;
     private readonly RunHistoryService runHistoryService;
-    private readonly RotationService rotationService;
 
     private ICallGateSubscriber<string, string, object>? setConfig;
 
-    public AutoDutyIPC(IPluginLog log, ICommandManager commandManager, RunHistoryService runHistoryService, RotationService rotationService)
+    public AutoDutyIPC(IPluginLog log, ICommandManager commandManager, RunHistoryService runHistoryService)
     {
         this.log = log;
         this.commandManager = commandManager;
         this.runHistoryService = runHistoryService;
-        this.rotationService = rotationService;
 
         try
         {
@@ -106,8 +104,9 @@ public class AutoDutyIPC : IDisposable
                 return false;
             }
 
-            // Enable the selected combat provider after AutoDuty starts.
-            return rotationService.EnableRotationOncePerDuty("AutoDuty after /ad start");
+            // The shared duty startup flow activates combat separately, so a
+            // combat failure cannot resend an already accepted /ad start.
+            return true;
         }
         catch (Exception ex)
         {

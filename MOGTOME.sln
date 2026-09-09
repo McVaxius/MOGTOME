@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MOGTOME", "MOGTOME\MOGTOME.csproj", "{B1C2D3E4-F5A6-7890-BCDE-123456789ABC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MOGTOME.Tests", "MOGTOME.Tests\MOGTOME.Tests.csproj", "{95B64063-741D-4B7F-9FCE-B77C78905552}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -15,5 +17,9 @@ Global
 		{B1C2D3E4-F5A6-7890-BCDE-123456789ABC}.Debug|x64.Build.0 = Debug|x64
 		{B1C2D3E4-F5A6-7890-BCDE-123456789ABC}.Release|x64.ActiveCfg = Release|x64
 		{B1C2D3E4-F5A6-7890-BCDE-123456789ABC}.Release|x64.Build.0 = Release|x64
+		{95B64063-741D-4B7F-9FCE-B77C78905552}.Debug|x64.ActiveCfg = Debug|x64
+		{95B64063-741D-4B7F-9FCE-B77C78905552}.Debug|x64.Build.0 = Debug|x64
+		{95B64063-741D-4B7F-9FCE-B77C78905552}.Release|x64.ActiveCfg = Release|x64
+		{95B64063-741D-4B7F-9FCE-B77C78905552}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 EndGlobal

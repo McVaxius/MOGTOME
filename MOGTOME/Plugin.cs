@@ -128,7 +128,7 @@ public sealed class Plugin : IDalamudPlugin
         YesAlreadyIPC = new YesAlreadyIPC(Log);
         VNavIPC = new VNavIPC(Log, CommandManager);
         RotationService = new RotationService(Log, ConfigManager, BossModIPC);
-        AutoDutyIPC = new AutoDutyIPC(Log, CommandManager, RunHistoryService, RotationService);
+        AutoDutyIPC = new AutoDutyIPC(Log, CommandManager, RunHistoryService);
         DadIpcService = new MogtomeDadIpcService(PluginInterface, this);
 
         // Initialize Services (needs RotationService)
@@ -142,8 +142,7 @@ public sealed class Plugin : IDalamudPlugin
             AutoDutyPathService,
             ConflictPluginService,
             CommandManager,
-            RunHistoryService,
-            RotationService);
+            RunHistoryService);
         DutyQueueService = new DutyQueueService(Log, State, DutyAutomationService, Condition, ConfigManager);
         RepairService = new RepairService(Log, Configuration, State, DutyAutomationService, Condition);
         ConsumableInventoryService = new ConsumableInventoryService(Log, Configuration, State);

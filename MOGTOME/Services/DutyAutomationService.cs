@@ -27,7 +27,6 @@ public sealed class DutyAutomationService
     private const string AdsInternalName = "ADS";
     private const string AdsCommand = "/ads";
     private const string AdsStartOutsideCommand = "/ads outside";
-    private const string AdsStartInsideCommand = "/ads inside";
     private const string AdsLeaveCommand = "/ads leave";
     private const string AdsStopCommand = "/ads stop";
     private const string AdsEnterInnCommand = "/ads enterinn";
@@ -79,7 +78,6 @@ public sealed class DutyAutomationService
     private readonly ConflictPluginService conflictPluginService;
     private readonly ICommandManager commandManager;
     private readonly RunHistoryService runHistoryService;
-    private readonly RotationService rotationService;
     private readonly object adsQueueStateLock = new();
     private readonly object adsRepairStateLock = new();
     private int adsQueueOperationId = 0;
@@ -126,8 +124,7 @@ public sealed class DutyAutomationService
         AutoDutyPathService autoDutyPathService,
         ConflictPluginService conflictPluginService,
         ICommandManager commandManager,
-        RunHistoryService runHistoryService,
-        RotationService rotationService)
+        RunHistoryService runHistoryService)
     {
         this.log = log;
         this.configManager = configManager;
@@ -136,7 +133,6 @@ public sealed class DutyAutomationService
         this.conflictPluginService = conflictPluginService;
         this.commandManager = commandManager;
         this.runHistoryService = runHistoryService;
-        this.rotationService = rotationService;
     }
 
     public bool UseAdsExperimental
@@ -278,38 +274,21 @@ public sealed class DutyAutomationService
             isPraetorium ? SelectedMogtomeDuty.Praetorium : SelectedMogtomeDuty.Decumana);
     }
 
-    public bool StartDutyInside(bool isLeader)
+    internal void ConfirmAdsDutyInside(bool isLeader)
     {
-        if (!UseAdsExperimental)
-        {
-            return autoDutyIPC.StartDuty();
-        }
+        if (!UseAdsExperimental || adsLeaderInsideOwned || adsFollowerState == AdsFollowerState.InsideObserved)
+            return;
 
         CancelAdsRepairHandoff("duty entry");
         CapturePartySnapshot("ADS");
-        if (!EnableCombatProviderOncePerDuty("ADS", $"before {AdsStartInsideCommand}"))
-            return false;
-
-        if (isLeader)
-        {
-            adsRuntimeRole = AdsRuntimeRole.QueueLeader;
-            adsLeaderOutsideOwned = false;
-            adsLeaderInsideOwned = true;
-            ResetAdsLeaveTracking();
-            log.Information($"[MOGTOME][ADS] Leader entered duty; taking inside ownership via {AdsStartInsideCommand}");
-            var started = commandManager.ProcessCommand(AdsStartInsideCommand);
-            adsStartingInsideDutyRecovery = false;
-            return started;
-        }
-
-        adsRuntimeRole = AdsRuntimeRole.Follower;
-        var previousState = adsFollowerState;
-        adsFollowerState = AdsFollowerState.InsideObserved;
+        adsRuntimeRole = isLeader ? AdsRuntimeRole.QueueLeader : AdsRuntimeRole.Follower;
+        adsLeaderOutsideOwned = false;
+        adsLeaderInsideOwned = isLeader;
+        if (!isLeader)
+            adsFollowerState = AdsFollowerState.InsideObserved;
         ResetAdsLeaveTracking();
-        log.Information($"[MOGTOME][ADS] Follower entered duty; taking inside ownership via {AdsStartInsideCommand} after /ads outside pre-arm (previous state: {previousState}, startingInsideDuty={adsStartingInsideDutyRecovery})");
-        var followerStarted = commandManager.ProcessCommand(AdsStartInsideCommand);
         adsStartingInsideDutyRecovery = false;
-        return followerStarted;
+        log.Information("[MOGTOME][ADS] Authoritative inside-duty ownership confirmed");
     }
 
     public void StopDuty()
@@ -731,7 +710,7 @@ public sealed class DutyAutomationService
         }
 
         adsFollowerState = AdsFollowerState.Recovered;
-        log.Information($"[MOGTOME][ADS] ADS mode choice: follower uses {AdsStartOutsideCommand} before duty, then {AdsStartInsideCommand} after DutyStarted (startingInsideDuty={startingInsideDuty})");
+        log.Information($"[MOGTOME][ADS] ADS mode choice: follower uses {AdsStartOutsideCommand} before duty, then the shared readiness and ownership handoff (startingInsideDuty={startingInsideDuty})");
     }
 
     private void ResetAdsLeaveTracking()
@@ -1225,19 +1204,6 @@ public sealed class DutyAutomationService
         catch (Exception ex)
         {
             log.Error(ex, $"[MOGTOME][{backendName}] Failed to capture party snapshot before duty start");
-        }
-    }
-
-    private bool EnableCombatProviderOncePerDuty(string backendName, string timing)
-    {
-        try
-        {
-            return rotationService.EnableRotationOncePerDuty($"{backendName} duty start {timing}");
-        }
-        catch (Exception ex)
-        {
-            log.Error(ex, $"[MOGTOME][{backendName}] Failed to enable selected combat provider {timing}");
-            return false;
         }
     }
 

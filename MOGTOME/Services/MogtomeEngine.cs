@@ -51,6 +51,9 @@ public class MogtomeEngine
     private readonly IClientState clientState;
     private readonly ICommandManager commandManager;
     private readonly PraetoriumFirstRoomSkipService firstRoomSkip;
+    private readonly DutyStartupService dutyStartup;
+    private bool firstRoomSkipAttempted;
+    private bool confirmedDutyExitPending;
 
     public EngineState CurrentState { get; private set; } = EngineState.Idle;
     public bool IsRunning => CurrentState != EngineState.Idle && CurrentState != EngineState.Stopped;
@@ -64,9 +67,6 @@ public class MogtomeEngine
     private const float LoopInterval = 2.0f;
     private bool autoDutyStartedInDuty = false;
     private DateTime dutyEnteredUtc = DateTime.MinValue;
-    private DateTime lastPraetoriumReadyWaitLogUtc = DateTime.MinValue;
-    private const float PraetoriumDutyReadyFallbackSeconds = 20.0f;
-    private const int AdsInsideStartDelayMilliseconds = 250;
 
     // Duty exit tracking
     private bool dutyCompleted = false;
@@ -166,6 +166,15 @@ public class MogtomeEngine
         this.condition = condition;
         this.clientState = clientState;
         this.commandManager = commandManager;
+        dutyStartup = new DutyStartupService(
+            new AdsDutyIpcService(Plugin.PluginInterface, log),
+            () => dutyAutomationService.UseAdsExperimental,
+            autoDutyIPC.StartDuty,
+            () => rotationService.EnableRotationOncePerDuty("ready in-duty startup"),
+            () => rotationService.LastFailureReason,
+            commandManager.ProcessCommand,
+            GameHelpers.GetDutyRemainingTime,
+            message => log.Information(message), message => log.Warning(message));
         firstRoomSkip = new PraetoriumFirstRoomSkipService(
             log,
             Plugin.Framework,
@@ -183,6 +192,7 @@ public class MogtomeEngine
 
     public void Dispose()
     {
+        dutyStartup.Cancel();
         firstRoomSkip.Dispose();
         Plugin.DutyStateService.DutyCompleted -= OnDutyCompleted;
         Plugin.DutyStateService.DutyStarted -= OnDutyStarted;
@@ -193,86 +203,39 @@ public class MogtomeEngine
 
     private void OnDutyStarted(uint territoryId)
     {
-        if (!IsRunning || CurrentState == EngineState.Initializing || !IsMogtomeDutyTerritory(territoryId) || dutyCompleted || autoDutyStartedInDuty)
+        if (!IsRunning || !IsMogtomeDutyTerritory(territoryId) || dutyCompleted)
             return;
 
+        dutyStartup.OnDutyStarted(territoryId, DateTime.UtcNow);
         state.DutyStartTerritory = territoryId;
         if (dutyEnteredUtc == DateTime.MinValue)
             dutyEnteredUtc = DateTime.UtcNow;
 
-        if (!dutyAutomationService.UseAdsExperimental)
-            return;
-
-        if (territoryId == DutyState.PraetoriumTerritoryId && config.ExperimentalFirstRoomSkip)
-        {
-            log.Information("[MOGTOME][Engine] Queueing the experimental ADS Praetorium opener on the framework thread");
-            GameHelpers.QueueFrameworkAction(
-                "Engine duty started",
-                "start experimental Praetorium opener",
-                TimeSpan.Zero,
-                () => StartFirstRoomSkipFromDutyStarted(territoryId));
-            return;
-        }
-
-        log.Information($"[MOGTOME][Engine] DutyStarted for MOGTOME territory {territoryId}; scheduling ADS inside start");
-        GameHelpers.QueueFrameworkAction(
-            "Engine duty started",
-            "start ADS inside",
-            TimeSpan.FromMilliseconds(AdsInsideStartDelayMilliseconds),
-            () => StartAdsInsideFromDutyStarted(territoryId));
-    }
-
-    private void StartAdsInsideFromDutyStarted(uint territoryId)
-    {
-        if (!IsRunning || !dutyAutomationService.UseAdsExperimental || !IsMogtomeDutyTerritory(territoryId) ||
-            clientState.TerritoryType != territoryId || !condition[ConditionFlag.BoundByDuty])
-            return;
-
-        if (state.DutyStartTerritory == 0)
-            state.DutyStartTerritory = territoryId;
-
+        // All events use the same flow as normal entry/resume. No delayed action
+        // can outlive Stop, completion, or a subsequent duty session.
         StartDutyBackendInsideDuty($"DutyStarted territory {territoryId}");
     }
 
-    private void StartFirstRoomSkipFromDutyStarted(uint territoryId)
+    private bool TryStartFirstRoomSkip()
     {
-        if (!IsRunning ||
-            !dutyAutomationService.UseAdsExperimental ||
+        if (firstRoomSkipAttempted || !dutyAutomationService.UseAdsExperimental ||
             !config.ExperimentalFirstRoomSkip ||
-            territoryId != DutyState.PraetoriumTerritoryId)
-        {
-            return;
-        }
+            clientState.TerritoryType != DutyState.PraetoriumTerritoryId)
+            return false;
 
-        if (clientState.TerritoryType != territoryId || !condition[ConditionFlag.BoundByDuty])
-        {
-            log.Warning("[MOGTOME][Engine] Experimental opener duty context was unavailable; handing off immediately");
-            StartDutyBackendInsideDuty("experimental opener duty context unavailable");
-            return;
-        }
-
-        if (firstRoomSkip.TryStart())
-        {
-            log.Information("[MOGTOME][Engine] Experimental ADS Praetorium opener owns the initial inside hand-off");
-            return;
-        }
-
-        log.Warning("[MOGTOME][Engine] Experimental ADS Praetorium opener could not start; handing off immediately");
-        StartDutyBackendInsideDuty("experimental opener unavailable at duty start");
+        firstRoomSkipAttempted = true;
+        return firstRoomSkip.TryStart();
     }
 
     private void OnFirstRoomSkipFinished(string reason)
     {
-        if (!IsRunning ||
-            !dutyAutomationService.UseAdsExperimental ||
-            clientState.TerritoryType != DutyState.PraetoriumTerritoryId ||
-            !condition[ConditionFlag.BoundByDuty])
-        {
-            log.Information($"[MOGTOME][Engine] Suppressed experimental opener ADS hand-off after {reason}; engine or duty context changed");
+        if (!IsRunning || dutyCompleted)
             return;
-        }
 
-        StartDutyBackendInsideDuty($"experimental Praetorium opener: {reason}");
+        // The opener can finish synchronously from TryStart. Resume on the next
+        // engine update instead of re-entering the handoff in its callback.
+        StatusMessage = $"Duty startup pending after experimental opener: {reason}";
+        lastTick = DateTime.MinValue;
     }
 
     private void OnDutyCompleted(Dalamud.Game.DutyState.IDutyStateEventArgs args)
@@ -280,15 +243,17 @@ public class MogtomeEngine
 
     private void OnDutyCompleted(uint territoryId)
     {
-        if (!IsRunning) return;
+        if (!IsRunning || dutyCompleted) return;
         dutyTracker.CaptureCompletionRemainingTime();
         var now = DateTime.UtcNow;
         if (ShouldIgnoreEarlyDutyCompleted(territoryId, now))
             return;
 
-        rotationService.DisableRotationForDutyEnd($"duty completed territory {territoryId}");
         dutyCompleted = true;
         dutyCompletedTime = now;
+        dutyStartup.OnDutyCompleted(territoryId, now);
+        firstRoomSkip.Cancel("duty completed");
+        rotationService.DisableRotationForDutyEnd($"duty completed territory {territoryId}");
         dialogHandler.ResetReturnPromptWait();
         ResetLeaveTracking();
         PauseLeaderQueueBeforeExitIfRepairNeeded($"Duty completed in territory {territoryId}");
@@ -304,6 +269,9 @@ public class MogtomeEngine
         }
 
         log.Information("[MOGTOME][Engine] Starting MOGTOME engine");
+        dutyStartup.ResetSession();
+        confirmedDutyExitPending = false;
+        firstRoomSkipAttempted = false;
         CurrentState = EngineState.Initializing;
         StatusMessage = "Initializing...";
 
@@ -357,7 +325,7 @@ public class MogtomeEngine
 
             var startupSnapshot = await GameHelpers.RunOnFrameworkThreadAsync(() =>
             {
-                var startingInsideDuty = condition[34];
+                var startingInsideDuty = DutyStartupService.IsInDuty();
                 return new StartupSnapshot(startingInsideDuty, state.IsPartyLeader);
             }).ConfigureAwait(false);
 
@@ -467,6 +435,7 @@ public class MogtomeEngine
         log.Information("[MOGTOME][Engine] Stopping MOGTOME engine");
         ClearStopAfterNextSuccessfulRun();
         CurrentState = EngineState.Stopping;
+        dutyStartup.Cancel();
         StatusMessage = "Stopping...";
 
         try
@@ -519,7 +488,7 @@ public class MogtomeEngine
         ResetDutyEntryTerritoryWait();
         var liveTerritory = clientState.TerritoryType;
 
-        if (condition[34])
+        if (DutyStartupService.IsInDuty())
         {
             state.CurrentTerritory = liveTerritory;
 
@@ -557,7 +526,6 @@ public class MogtomeEngine
         dutyCompleted = false;
         autoDutyStartedInDuty = false;
         dutyEnteredUtc = DateTime.MinValue;
-        lastPraetoriumReadyWaitLogUtc = DateTime.MinValue;
         ResetRepairRecoveryWatchdog();
         dutyAutomationService.InvalidateAdsQueueOperations("duty entered");
         ResetQueueRecoveryState();
@@ -565,12 +533,14 @@ public class MogtomeEngine
 
     private void ResumeOrEnterCurrentDuty()
     {
-        dutyCompleted = false;
-        autoDutyStartedInDuty = false;
-        dutyEnteredUtc = DateTime.UtcNow;
+        CurrentState = EngineState.InDuty;
+        // Completion and already successful stages can arrive during initialization.
+        autoDutyStartedInDuty = dutyStartup.IsConfirmed;
+        if (dutyEnteredUtc == DateTime.MinValue)
+            dutyEnteredUtc = DateTime.UtcNow;
         ResetLeaveTracking();
-        lastPraetoriumReadyWaitLogUtc = DateTime.MinValue;
-        rotationService.ResetDutyRotationState("resume current duty");
+        if (!dutyCompleted && !dutyStartup.CombatActivated)
+            rotationService.ResetDutyRotationState("resume current duty");
         ResetRepairRecoveryWatchdog();
         ResetQueueRecoveryState();
         requeueInProgress = false;
@@ -582,7 +552,7 @@ public class MogtomeEngine
             if (!OnEnteredDuty())
                 return;
 
-            if (dutyAutomationService.UseAdsExperimental && CurrentState == EngineState.InDuty)
+            if (CurrentState == EngineState.InDuty)
                 StartDutyBackendInsideDuty($"startup inside territory {state.DutyStartTerritory}");
             return;
         }
@@ -596,8 +566,7 @@ public class MogtomeEngine
         StatusMessage = $"In Duty - #{state.DutyCounter + 1} ({dutyTracker.GetCurrentDutyName()})";
         log.Information($"[MOGTOME][Engine] Resuming current duty without re-counting start (HasEnteredDuty={state.HasEnteredDuty}, DutyCounter={state.DutyCounter})");
 
-        if (dutyAutomationService.UseAdsExperimental)
-            StartDutyBackendInsideDuty($"resuming territory {state.DutyStartTerritory}");
+        StartDutyBackendInsideDuty($"resuming territory {state.DutyStartTerritory}");
     }
 
     private static async Task<bool> WaitForAddonVisibleAsync(string addonName, TimeSpan timeout, TimeSpan pollInterval)
@@ -657,7 +626,14 @@ public class MogtomeEngine
 
     public void Update()
     {
-        if (!IsRunning || CurrentState == EngineState.Initializing) return;
+        if (!IsRunning || CurrentState == EngineState.Stopping) return;
+
+        var inDuty = DutyStartupService.IsInDuty();
+        var identity = DutyStartupService.ReadLiveDutyIdentity();
+        var readiness = DutyStartupService.ReadReadinessConditions();
+        confirmedDutyExitPending |= dutyStartup.ObserveReadiness(inDuty, identity, readiness, DateTime.UtcNow);
+
+        if (CurrentState == EngineState.Initializing) return;
         if (!clientState.IsLoggedIn) return;
 
         // Throttle based on loop interval (hardcoded 2s)
@@ -681,8 +657,21 @@ public class MogtomeEngine
             state.CurrentTerritory = clientState.TerritoryType;
             consumableInventoryService.Refresh();
 
-            // Condition[34] = BoundByDuty
-            var inDuty = condition[34];
+            // A confirmed outside frame can occur between throttled updates.
+            // Finish the previous session before processing any subsequent entry.
+            if (confirmedDutyExitPending)
+            {
+                confirmedDutyExitPending = false;
+                if (state.IsInDuty)
+                {
+                    if (state.HasEnteredDuty)
+                        OnLeftDuty();
+                    else
+                        HandlePendingDutyEntryCancelled();
+                    if (!IsRunning)
+                        return;
+                }
+            }
 
             if (inDuty && (!state.IsInDuty || !state.HasEnteredDuty))
             {
@@ -691,13 +680,8 @@ public class MogtomeEngine
             }
             else if (!inDuty && state.IsInDuty)
             {
-                if (!state.HasEnteredDuty)
-                {
-                    HandlePendingDutyEntryCancelled();
-                    return;
-                }
-
-                OnLeftDuty();
+                StatusMessage = "Duty transition - waiting for confirmed duty context...";
+                return;
             }
 
             // Condition[26] = InCombat
@@ -749,17 +733,14 @@ public class MogtomeEngine
     {
         if (!state.IsInDuty)
         {
-            var backendAlreadyStarted = autoDutyStartedInDuty;
             state.IsInDuty = true;
             state.IsInCombat = condition[26];
-            autoDutyStartedInDuty = backendAlreadyStarted;
-            dutyCompleted = false;
             ResetLeaveTracking();
-            dutyEnteredUtc = DateTime.UtcNow;
+            if (dutyEnteredUtc == DateTime.MinValue)
+                dutyEnteredUtc = DateTime.UtcNow;
             dutyTerritoryWaitStartedUtc = dutyEnteredUtc;
             lastDutyTerritoryWaitLogUtc = DateTime.MinValue;
-            lastPraetoriumReadyWaitLogUtc = DateTime.MinValue;
-            if (!backendAlreadyStarted)
+            if (!dutyCompleted && !dutyStartup.CombatActivated)
                 rotationService.ResetDutyRotationState("entered duty");
             ResetRepairRecoveryWatchdog();
             ResetQueueRecoveryState();
@@ -798,32 +779,17 @@ public class MogtomeEngine
 
     private uint ResolveEnteredDutyTerritory()
     {
-        if (IsMogtomeDutyTerritory(state.DutyStartTerritory))
-            return state.DutyStartTerritory;
+        var identity = DutyStartupService.ReadLiveDutyIdentity();
+        if (identity.TerritoryTypeId == 0 || identity.ContentFinderConditionId == 0)
+            return 0;
 
-        if (state.DutyStartTerritory != 0)
+        if (IsMogtomeDutyTerritory(identity.TerritoryTypeId))
         {
-            log.Warning($"[MOGTOME][Engine] Ignoring cached non-MOGTOME DutyStartTerritory {state.DutyStartTerritory} during duty entry resolution");
-            state.DutyStartTerritory = 0;
+            state.CurrentTerritory = identity.TerritoryTypeId;
+            state.DutyStartTerritory = identity.TerritoryTypeId;
         }
 
-        var liveTerritory = clientState.TerritoryType;
-        if (IsMogtomeDutyTerritory(liveTerritory))
-        {
-            state.CurrentTerritory = liveTerritory;
-            state.DutyStartTerritory = liveTerritory;
-            log.Warning($"[MOGTOME][Engine] DutyStartTerritory resolved from live client territory {liveTerritory}");
-            return liveTerritory;
-        }
-
-        if (IsMogtomeDutyTerritory(state.CurrentTerritory))
-        {
-            state.DutyStartTerritory = state.CurrentTerritory;
-            log.Warning($"[MOGTOME][Engine] DutyStartTerritory resolved from MOGTOME CurrentTerritory {state.CurrentTerritory}");
-            return state.CurrentTerritory;
-        }
-
-        return 0;
+        return identity.TerritoryTypeId;
     }
 
     private uint GetKnownDutyTerritory(uint eventTerritoryId = 0)
@@ -860,6 +826,14 @@ public class MogtomeEngine
             dutyTerritoryWaitStartedUtc = now;
 
         var elapsed = (now - dutyTerritoryWaitStartedUtc).TotalSeconds;
+        var identity = DutyStartupService.ReadLiveDutyIdentity();
+        if (identity.TerritoryTypeId == 0 || identity.ContentFinderConditionId == 0 ||
+            AdsIntegrationPolicy.GetHandoffReadinessBlocker(DutyStartupService.ReadReadinessConditions()) is not null)
+        {
+            StatusMessage = "Entering duty - waiting for ready duty context...";
+            LogDutyTerritoryWait(now, elapsed);
+            return true;
+        }
         if (elapsed >= DutyTerritorySettleSeconds)
             return false;
 
@@ -956,6 +930,9 @@ public class MogtomeEngine
 
     private void HandlePendingDutyEntryCancelled()
     {
+        dutyStartup.ResetSession();
+        confirmedDutyExitPending = false;
+        firstRoomSkipAttempted = false;
         log.Warning($"[MOGTOME][Engine] BoundByDuty ended before MOGTOME duty territory resolved. Diagnostics: {BuildDutyEntryDiagnostics()}");
         firstRoomSkip.Cancel("duty entry cancelled before territory resolved");
         state.Reset();
@@ -1092,6 +1069,9 @@ public class MogtomeEngine
 
     private void ResetAfterConfirmedDutyExit(string reason)
     {
+        dutyStartup.ResetSession();
+        confirmedDutyExitPending = false;
+        firstRoomSkipAttempted = false;
         firstRoomSkip.Cancel(reason);
         rotationService.ResetDutyRotationState(reason);
         state.IsInDuty = false;
@@ -1541,15 +1521,16 @@ public class MogtomeEngine
     {
         dutyTracker.ObserveRemainingTime();
 
-        // Start selected automation backend if not already started (handles the case where we're already in duty)
-        if (!autoDutyStartedInDuty)
+        if (state.BailoutRequested && !dutyCompleted)
         {
-            if (!IsReadyToStartDutyBackendInsideDuty())
-                return;
-
-            StartDutyBackendInsideDuty("in-duty update");
-            if (!IsRunning)
-                return;
+            dutyCompleted = true;
+            dutyCompletedTime = DateTime.UtcNow;
+            dutyStartup.OnDutyCompleted(GetKnownDutyTerritory(), dutyCompletedTime);
+            firstRoomSkip.Cancel("bailout requested");
+            dialogHandler.ResetReturnPromptWait();
+            ResetLeaveTracking();
+            PauseLeaderQueueBeforeExitIfRepairNeeded("Bailout requested");
+            log.Warning($"[MOGTOME][Engine] Consuming bailout request: {state.BailoutReason}");
         }
 
         // Duty completion exit logic
@@ -1582,6 +1563,13 @@ public class MogtomeEngine
             return;
         }
 
+        if (!autoDutyStartedInDuty)
+        {
+            StartDutyBackendInsideDuty("in-duty update");
+            if (!autoDutyStartedInDuty)
+                return;
+        }
+
         rotationService.UpdateDutyRotationHealth(
             GetKnownDutyTerritory(),
             autoDutyStartedInDuty,
@@ -1598,6 +1586,8 @@ public class MogtomeEngine
         {
             dutyCompleted = true;
             dutyCompletedTime = DateTime.UtcNow;
+            dutyStartup.OnDutyCompleted(GetKnownDutyTerritory(), dutyCompletedTime);
+            firstRoomSkip.Cancel("bailout requested");
             dialogHandler.ResetReturnPromptWait();
             ResetLeaveTracking();
             PauseLeaderQueueBeforeExitIfRepairNeeded("Bailout requested");
@@ -1611,24 +1601,31 @@ public class MogtomeEngine
 
     private void StartDutyBackendInsideDuty(string reason)
     {
-        if (!IsRunning || CurrentState == EngineState.Initializing || dutyCompleted || autoDutyStartedInDuty)
+        if (!IsRunning || CurrentState != EngineState.InDuty || dutyCompleted ||
+            state.BailoutRequested || autoDutyStartedInDuty || dutyTracker.ShouldQuit())
             return;
 
-        log.Information($"[MOGTOME][Engine] Starting {dutyAutomationService.ActiveBackendDisplayName} inside duty ({reason})");
         try
         {
-            if (!dutyAutomationService.StartDutyInside(state.IsPartyLeader))
+            var result = dutyStartup.Update(DutyStartupService.IsInDuty(),
+                DutyStartupService.ReadLiveDutyIdentity(), DutyStartupService.ReadReadinessConditions(),
+                DateTime.UtcNow, firstRoomSkip.IsActive, TryStartFirstRoomSkip);
+            if (dutyStartup.BackendConfirmed && dutyAutomationService.UseAdsExperimental)
+                dutyAutomationService.ConfirmAdsDutyInside(state.IsPartyLeader);
+            if (result == DutyStartupResult.Confirmed)
             {
-                StopWithCombatFailure(string.IsNullOrEmpty(rotationService.LastFailureReason)
-                    ? $"{dutyAutomationService.ActiveBackendDisplayName} duty start command failed."
-                    : rotationService.LastFailureReason);
-                return;
+                autoDutyStartedInDuty = true;
+                log.Information($"[MOGTOME][Engine] Combat and {dutyAutomationService.ActiveBackendDisplayName} startup confirmed ({reason})");
             }
-            autoDutyStartedInDuty = true;
+            else
+            {
+                StatusMessage = dutyStartup.StatusText;
+            }
         }
         catch (Exception ex)
         {
-            StopWithCombatFailure(ex.Message);
+            dutyStartup.DeferFailure(DateTime.UtcNow, ex.Message);
+            StatusMessage = dutyStartup.StatusText;
         }
     }
 
@@ -1736,54 +1733,6 @@ public class MogtomeEngine
         lastLeaveBlocker = string.Empty;
         lastLeaveAttemptTime = DateTime.MinValue;
         leaveAttemptCount = 0;
-    }
-
-    private bool IsReadyToStartDutyBackendInsideDuty()
-    {
-        if (dutyAutomationService.UseAdsExperimental)
-            return true;
-
-        if (state.DutyStartTerritory != DutyState.PraetoriumTerritoryId)
-            return true;
-
-        var remainingTime = GameHelpers.GetDutyRemainingTime();
-        if (remainingTime > 0f && remainingTime < DutyState.PraetoriumTimeLimit)
-            return true;
-
-        var now = DateTime.UtcNow;
-        var secondsSinceEnter = dutyEnteredUtc == DateTime.MinValue
-            ? double.MaxValue
-            : (now - dutyEnteredUtc).TotalSeconds;
-
-        if (remainingTime > 0f)
-        {
-            StatusMessage = $"In Duty - waiting for Praetorium timer ({remainingTime:F0}s)";
-            if ((now - lastPraetoriumReadyWaitLogUtc).TotalSeconds >= 5.0)
-            {
-                lastPraetoriumReadyWaitLogUtc = now;
-                log.Information($"[MOGTOME][Engine] Praetorium duty entered but timer is still at {remainingTime:F0}s; waiting before starting {dutyAutomationService.ActiveBackendDisplayName}");
-            }
-            return false;
-        }
-
-        if (secondsSinceEnter < PraetoriumDutyReadyFallbackSeconds)
-        {
-            StatusMessage = $"In Duty - waiting for Praetorium timer ({PraetoriumDutyReadyFallbackSeconds - secondsSinceEnter:F0}s fallback)";
-            if ((now - lastPraetoriumReadyWaitLogUtc).TotalSeconds >= 5.0)
-            {
-                lastPraetoriumReadyWaitLogUtc = now;
-                log.Information($"[MOGTOME][Engine] Praetorium duty timer not visible yet; waiting {PraetoriumDutyReadyFallbackSeconds - secondsSinceEnter:F0}s more before fallback start");
-            }
-            return false;
-        }
-
-        if ((now - lastPraetoriumReadyWaitLogUtc).TotalSeconds >= 5.0)
-        {
-            lastPraetoriumReadyWaitLogUtc = now;
-            log.Warning($"[MOGTOME][Engine] Praetorium duty timer never appeared; allowing {dutyAutomationService.ActiveBackendDisplayName} start after fallback wait");
-        }
-
-        return true;
     }
 
     private void UpdateRepairing()

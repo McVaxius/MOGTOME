@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- Ported FrenRider's continuous duty readiness, live ADS ownership validation, and confirmed-exit handling. ADS and AutoDuty startup now remain pending through loading or combat activation failures and recover without resetting the run or restarting a confirmed backend. Stop, completion, and the experimental opener take precedence over pending startup.
 - Fixed AutoDuty path-selection readback throwing an invalid cast for generic dictionaries, preserving selected-path All and other-path None verification.
 - Wait 300 seconds before accepting a return-to-start prompt while dead in an active duty, preserving immediate raises, sealed-area moves, and existing completed-duty leave checks. Combat cleanup failures after duty exit now warn in Echo chat, toast, and log, then continue run recording and requeue handling.
 - BST (43) uses the melee role mapping for automatic active and passive BossMod presets. Manual BMR/VBM preset overrides remain in control.

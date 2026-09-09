@@ -18,6 +18,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="MOGTOME.Tests" />
     <Compile Remove="backups\**" />
     <None Remove="backups\**" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.9" />
