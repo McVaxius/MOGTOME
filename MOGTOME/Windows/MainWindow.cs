@@ -222,6 +222,8 @@ public class MainWindow : Window, IDisposable
         {
             ImGui.SetTooltip("Duty backend selector.\nEnabling ADS immediately sends /xldisableplugin AutoDuty.\nADS is optional in AutoDuty mode and is used only when /mog inn is requested.");
         }
+        ImGui.SameLine();
+        plugin.ConfigWindow.DrawCombatRotationSelector("Main");
         ImGui.TextDisabled(config.UseAdsExperimental
             ? "ADS duty backend active. ADS also handles inn entry."
             : "AutoDuty duty backend active. ADS is optional for /mog inn.");

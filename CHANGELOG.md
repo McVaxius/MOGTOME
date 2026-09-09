@@ -10,9 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- BST (43) uses the melee role mapping for automatic active and passive BossMod presets. Manual BMR/VBM preset overrides remain in control.
+- Restored RSR with automatic passive BossMod support and active role presets for BMR/VBM, preserving manual BMR/VBM preset selection. All six packaged presets are installed after BossMod conflict cleanup, and the selected preset is applied before AI activation in each duty.
+- When both BossMod variants are loaded, startup disables VBM and sequentially reloads BMR through native temporary commands, waiting for each completed transition to restore shared IPC. VBM selection changes to BMR and is saved; RSR selection is retained. Cleanup or readiness failure stops startup with a clear reason.
+- Combat activation and backend helpers now propagate failures, track enabled components for completion/Stop cleanup, and preserve activation across a later DutyStarted event for the same duty.
 - AutoDuty path preparation now requires verified configuration modes, territory/content selection, a valid loaded path index, and a saved job assignment with matching readback. Preparation failure prevents startup from reporting the backend ready; empty runtime path/actions remain valid outside the duty.
 
 ### Added
+- Added Combat rotation beside the main-window backend setting and above the configuration tabs, sharing the selector and preset controls with the setup wizard. Combat editing is disabled while running, and RSR dependency readiness includes BMR or VBM passive support.
 - Added an ADS-only, opt-in experimental Praetorium first-room opener. It maps PLD/WAR/DRK/GNB AoE and invulnerability actions, retries Magitek Terminal `2012811` until local descent, and falls back to ADS within ten seconds on any experimental failure.
 - Added a per-account advisory Setup Wizard with ADS as the primary backend, AutoDuty as an alternative, README-aligned required checks, optional settings guidance, completion-version persistence, and a rerun entry point.
 
@@ -21,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added the Advanced `Experimental first room skip` setting, defaulting to off and inactive outside ADS/Praetorium.
 
 ### Fixed
-- Force-refreshed all packaged passive BossMod presets once at the start of every accepted engine start, including manual-preset, non-BossMod-provider, repair, and later-abort paths
+- Refresh all six packaged BossMod presets for BossMod-backed rotations after conflict cleanup at engine startup, including manual-preset selection. Wrath retains its existing combat behavior.
 - Excluded unsynced testing/debug runs from summary and detailed statistics unless `Show debug runs` is enabled
 - Recomputed JSON summary stats from the same filtered run set used by the stats UI to prevent hidden runs from leaking back in
 - Repaired party-size persistence so grouped runs keep their stored party count even after leaving duty

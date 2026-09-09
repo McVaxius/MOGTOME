@@ -136,6 +136,9 @@ public class ConfigWindow : Window, IDisposable
             lastDepCheck = now;
         }
 
+        DrawCombatRotationSelector("ConfigHeader");
+        ImGui.Separator();
+
         if (ImGui.BeginTabBar("ConfigTabs"))
         {
             var currentAccountId = plugin.ConfigManager.CurrentAccountId;
@@ -294,7 +297,7 @@ public class ConfigWindow : Window, IDisposable
             {
                 CombatProvider.Bmr => depBmr,
                 CombatProvider.Vbm => depVbm,
-                CombatProvider.Rsr => depRsr,
+                CombatProvider.Rsr => depRsr && (depBmr || depVbm),
                 CombatProvider.Wrath => depWrath,
                 _ => false,
             };
@@ -320,13 +323,54 @@ public class ConfigWindow : Window, IDisposable
             : "AutoDuty is the alternative duty backend. ADS is required only when ADS mode is selected or /mog inn is requested.");
         ImGui.Spacing();
 
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Combat Provider");
-        if (ImGui.BeginCombo("Selected Provider", config.CombatProvider.ToString()))
+        DrawCombatRotationSelector("Dependencies");
+        ImGui.Spacing();
+
+        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Required Plugins");
+        if (!allDepsGreen)
+        {
+            ImGui.TextColored(new Vector4(1, 0, 0, 1), "Setup requirements are incomplete. The wizard is advisory and does not block Start.");
+        }
+        ImGui.Separator();
+
+        switch (config.CombatProvider)
+        {
+            case CombatProvider.Rsr:
+                DrawDepLine("RSR (RotationSolverReborn)", depRsr, depRsr ? "Installed" : "NOT FOUND", "RSR");
+                DrawDepLine("BossMod passive support (BMR or VBM)", depBmr || depVbm,
+                    depBmr ? "BMR loaded" : depVbm ? "VBM loaded" : "NOT FOUND", "BMR");
+                break;
+            case CombatProvider.Bmr:
+                DrawDepLine("BossModReborn (BMR)", depBmr, depBmr ? "Installed" : "NOT FOUND", "BMR");
+                break;
+            case CombatProvider.Vbm:
+                DrawDepLine("BossMod (VBM)", depVbm, depVbm ? "Installed" : "NOT FOUND", "VBM");
+                break;
+            case CombatProvider.Wrath:
+                DrawDepLine("Wrath Combo", depWrath, depWrath ? "Installed" : "NOT FOUND", null);
+                break;
+        }
+
+        DrawRemainingDependencies(config);
+    }
+
+    public void DrawCombatRotationSelector(string id)
+    {
+        if ((DateTime.UtcNow - lastDepCheck).TotalSeconds > 5)
+        {
+            CheckDependencies();
+            lastDepCheck = DateTime.UtcNow;
+        }
+        var config = plugin.Configuration;
+        ImGui.PushID(id);
+        ImGui.BeginDisabled(plugin.Engine?.IsRunning == true || plugin.Engine?.IsStartupPending == true);
+        ImGui.SetNextItemWidth(80 * ImGuiHelpers.GlobalScale);
+        if (ImGui.BeginCombo("Combat rotation", config.CombatProvider.ToString().ToUpperInvariant()))
         {
             foreach (var provider in Enum.GetValues<CombatProvider>())
             {
                 var selected = config.CombatProvider == provider;
-                if (ImGui.Selectable(provider.ToString(), selected))
+                if (ImGui.Selectable(provider.ToString().ToUpperInvariant(), selected))
                 {
                     config.CombatProvider = provider;
                     plugin.ConfigManager.SaveCurrentAccount();
@@ -340,6 +384,14 @@ public class ConfigWindow : Window, IDisposable
 
             ImGui.EndCombo();
         }
+
+        ImGui.TextWrapped(config.CombatProvider switch
+        {
+            CombatProvider.Rsr => "RSR handles attacks; the loaded BossMod variant uses passive - tank/melee/ranged automatically.",
+            CombatProvider.Bmr => "BMR handles attacks and movement with FRENRIDER - TANK/MELEE/RANGED, or your manual preset.",
+            CombatProvider.Vbm => "VBM handles attacks and movement with FRENRIDER - TANK/MELEE/RANGED, or your manual preset.",
+            _ => "Wrath handles attacks using its current settings.",
+        });
 
         if (config.CombatProvider is CombatProvider.Bmr or CombatProvider.Vbm)
         {
@@ -358,37 +410,22 @@ public class ConfigWindow : Window, IDisposable
                     config.ManualBossModPresetName = presetName;
                     plugin.ConfigManager.SaveCurrentAccount();
                 }
+                if (string.IsNullOrWhiteSpace(config.ManualBossModPresetName))
+                    ImGui.TextWrapped("Enter an existing preset name before starting.");
             }
             else
             {
-                ImGui.TextDisabled("MOGTOME selects its packaged passive preset by current role.");
+                ImGui.TextWrapped("MOGTOME selects its packaged active preset by current role at each duty start.");
             }
         }
-        ImGui.Spacing();
+        ImGui.EndDisabled();
+        if (depBmr && depVbm)
+            ImGui.TextWrapped("Both BossMod variants are loaded. Start disables VBM and reloads BMR; VBM selection changes to BMR, while RSR stays selected.");
+        ImGui.PopID();
+    }
 
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Required Plugins");
-        if (!allDepsGreen)
-        {
-            ImGui.TextColored(new Vector4(1, 0, 0, 1), "Setup requirements are incomplete. The wizard is advisory and does not block Start.");
-        }
-        ImGui.Separator();
-
-        switch (config.CombatProvider)
-        {
-            case CombatProvider.Rsr:
-                DrawDepLine("RSR (RotationSolverReborn)", depRsr, depRsr ? "Installed" : "NOT FOUND", "RSR");
-                break;
-            case CombatProvider.Bmr:
-                DrawDepLine("BossModReborn (BMR)", depBmr, depBmr ? "Installed" : "NOT FOUND", "BMR");
-                break;
-            case CombatProvider.Vbm:
-                DrawDepLine("BossMod (VBM)", depVbm, depVbm ? "Installed" : "NOT FOUND", "VBM");
-                break;
-            case CombatProvider.Wrath:
-                DrawDepLine("Wrath Combo", depWrath, depWrath ? "Installed" : "NOT FOUND", null);
-                break;
-        }
-
+    private void DrawRemainingDependencies(Configuration config)
+    {
         // VNAV
         DrawDepLine("vnavmesh", depVnav, depVnav ? "Installed" : "NOT FOUND", "vnavmesh");
 
@@ -622,26 +659,9 @@ public class ConfigWindow : Window, IDisposable
                 break;
             case 1:
                 ImGui.TextWrapped("Choose the combat provider MOGTOME should request for the selected backend.");
-                if (ImGui.BeginCombo("Selected Provider##Wizard", config.CombatProvider.ToString()))
-                {
-                    foreach (var provider in Enum.GetValues<CombatProvider>())
-                    {
-                        var selected = config.CombatProvider == provider;
-                        if (ImGui.Selectable(provider.ToString(), selected))
-                        {
-                            config.CombatProvider = provider;
-                            lastDepCheck = DateTime.MinValue;
-                            changed = true;
-                        }
+                DrawCombatRotationSelector("Wizard");
 
-                        if (selected)
-                            ImGui.SetItemDefaultFocus();
-                    }
-
-                    ImGui.EndCombo();
-                }
-
-                DrawWizardRequirement("Selected combat provider", IsCombatProviderReady(config), "Choose and load the selected provider.", null);
+                DrawWizardRequirement("Selected combat provider", IsCombatProviderReady(config), "Load the selected provider; RSR also requires BMR or VBM for passive support.", null);
                 break;
             case 2:
                 DrawWizardRequiredPluginChecks(config);
@@ -706,7 +726,7 @@ public class ConfigWindow : Window, IDisposable
             backendReady,
             config.UseAdsExperimental ? "Load ADS." : "Load AutoDuty and install the selected Praetorium path.",
             config.UseAdsExperimental ? "ADS" : "AutoDuty");
-        DrawWizardRequirement("Selected combat provider", IsCombatProviderReady(config), "Load the provider selected in step 2.", null);
+        DrawWizardRequirement("Selected combat provider", IsCombatProviderReady(config), "Load the provider selected in step 2; RSR also requires BMR or VBM.", null);
         DrawWizardRequirement("vnavmesh", depVnav, "Load vnavmesh.", "vnavmesh");
         DrawWizardRequirement("XA Slave", depXaSlave, "Load XA Slave for /xa skipcutscenes on.", "XASlave");
         DrawWizardRequirement("YesAlready", depYesAlready, "Load YesAlready for dialogs.", null);
@@ -741,7 +761,7 @@ public class ConfigWindow : Window, IDisposable
         {
             CombatProvider.Bmr => depBmr,
             CombatProvider.Vbm => depVbm,
-            CombatProvider.Rsr => depRsr,
+            CombatProvider.Rsr => depRsr && (depBmr || depVbm),
             CombatProvider.Wrath => depWrath,
             _ => false,
         };

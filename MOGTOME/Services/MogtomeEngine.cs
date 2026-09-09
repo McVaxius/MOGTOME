@@ -54,6 +54,8 @@ public class MogtomeEngine
     public EngineState CurrentState { get; private set; } = EngineState.Idle;
     public bool IsRunning => CurrentState != EngineState.Idle && CurrentState != EngineState.Stopped;
     public string StatusMessage { get; private set; } = "Idle";
+    private Task? startupTask;
+    public bool IsStartupPending => startupTask is { IsCompleted: false };
     public bool StopAfterNextSuccessfulRunArmed { get; private set; }
 
     private DateTime lastTick = DateTime.MinValue;
@@ -190,13 +192,12 @@ public class MogtomeEngine
 
     private void OnDutyStarted(uint territoryId)
     {
-        if (!IsRunning || !IsMogtomeDutyTerritory(territoryId))
+        if (!IsRunning || CurrentState == EngineState.Initializing || !IsMogtomeDutyTerritory(territoryId) || dutyCompleted || autoDutyStartedInDuty)
             return;
 
         state.DutyStartTerritory = territoryId;
         if (dutyEnteredUtc == DateTime.MinValue)
             dutyEnteredUtc = DateTime.UtcNow;
-        rotationService.ResetDutyRotationState($"duty started territory {territoryId}");
 
         if (!dutyAutomationService.UseAdsExperimental)
             return;
@@ -222,7 +223,8 @@ public class MogtomeEngine
 
     private void StartAdsInsideFromDutyStarted(uint territoryId)
     {
-        if (!IsRunning || !dutyAutomationService.UseAdsExperimental || !IsMogtomeDutyTerritory(territoryId))
+        if (!IsRunning || !dutyAutomationService.UseAdsExperimental || !IsMogtomeDutyTerritory(territoryId) ||
+            clientState.TerritoryType != territoryId || !condition[ConditionFlag.BoundByDuty])
             return;
 
         if (state.DutyStartTerritory == 0)
@@ -293,9 +295,9 @@ public class MogtomeEngine
 
     public void Start()
     {
-        if (IsRunning)
+        if (IsRunning || IsStartupPending)
         {
-            log.Warning("[MOGTOME][Engine] Already running");
+            log.Warning("[MOGTOME][Engine] Already running or finishing previous startup cleanup");
             return;
         }
 
@@ -303,7 +305,7 @@ public class MogtomeEngine
         CurrentState = EngineState.Initializing;
         StatusMessage = "Initializing...";
 
-        _ = StartCoreAsync();
+        startupTask = StartCoreAsync();
     }
 
     private async Task StartCoreAsync()
@@ -312,8 +314,31 @@ public class MogtomeEngine
 
         try
         {
-            await GameHelpers.RunOnFrameworkThreadAsync(rotationService.Initialize).ConfigureAwait(false);
             await GameHelpers.RunOnFrameworkThreadAsync(ClearStaleDutyStateIfNeeded).ConfigureAwait(false);
+
+            StatusMessage = "Preparing BossMod support...";
+            var bossModReady = await conflictPluginService.EnsureBossModReadyAsync(() => CurrentState == EngineState.Initializing).ConfigureAwait(false);
+            if (!bossModReady.Ready)
+            {
+                await GameHelpers.RunOnFrameworkThreadAsync(() => StopWithCombatFailure(bossModReady.Reason)).ConfigureAwait(false);
+                return;
+            }
+            if (CurrentState != EngineState.Initializing)
+                return;
+
+            var rotationReady = await GameHelpers.RunOnFrameworkThreadAsync(() =>
+            {
+                if (CurrentState != EngineState.Initializing)
+                    return false;
+                return rotationService.Initialize(bossModReady.PreferBmr);
+            }).ConfigureAwait(false);
+            if (CurrentState != EngineState.Initializing)
+                return;
+            if (!rotationReady)
+            {
+                await GameHelpers.RunOnFrameworkThreadAsync(() => StopWithCombatFailure(rotationService.LastFailureReason)).ConfigureAwait(false);
+                return;
+            }
 
             StatusMessage = "Checking conflicting plugins...";
             var conflictingPluginsReady = await conflictPluginService.EnsureTwistOfFayteDisabledAsync("MOGTOME start", showPopup: true);
@@ -356,6 +381,8 @@ public class MogtomeEngine
 
             var preparationResult = await GameHelpers.RunOnFrameworkThreadAsync(() =>
             {
+                if (CurrentState != EngineState.Initializing)
+                    return new StartupPreparationResult(EnteredRepairMode: false);
                 log.Information("[MOGTOME][Engine] Sending /at enable as part of startup command prep");
                 GameHelpers.SendCommand("/at enable");
 
@@ -390,6 +417,8 @@ public class MogtomeEngine
                 return new StartupPreparationResult(EnteredRepairMode: false);
             }).ConfigureAwait(false);
 
+            if (CurrentState != EngineState.Initializing && !preparationResult.EnteredRepairMode)
+                return;
             if (preparationResult.EnteredRepairMode)
                 return;
 
@@ -398,6 +427,8 @@ public class MogtomeEngine
                 log.Information("[MOGTOME][Engine] Start requested while already inside duty - skipping duty finder setup");
                 await GameHelpers.RunOnFrameworkThreadAsync(() =>
                 {
+                    if (CurrentState != EngineState.Initializing)
+                        return;
                     StatusMessage = "Resuming inside duty...";
                     ResumeOrEnterCurrentDuty();
                 }).ConfigureAwait(false);
@@ -425,7 +456,7 @@ public class MogtomeEngine
         catch (Exception ex)
         {
             log.Error($"[MOGTOME][Engine] Initialization failed: {ex.Message}");
-            await GameHelpers.RunOnFrameworkThreadAsync(Stop).ConfigureAwait(false);
+            await GameHelpers.RunOnFrameworkThreadAsync(() => StopWithCombatFailure(ex.Message)).ConfigureAwait(false);
         }
     }
 
@@ -441,7 +472,6 @@ public class MogtomeEngine
             firstRoomSkip.Cancel("engine stop");
             dutyAutomationService.StopDuty();
             dialogHandler.Stop();
-            rotationService.DisableRotationForDutyEnd("engine stop");
             dutyQueue.ClearRepairQueuePauseOnStop();
             ResetLeaveTracking();
             deathTrackingService.Clear("engine stop");
@@ -454,10 +484,14 @@ public class MogtomeEngine
             log.Error($"[MOGTOME][Engine] Error during stop: {ex.Message}");
         }
 
+        var combatStopped = rotationService.DisableRotationForDutyEnd("engine stop");
+        autoDutyStartedInDuty = false;
+        dutyCompleted = false;
+        dutyEnteredUtc = DateTime.MinValue;
         ResetDutyEntryTerritoryWait();
         state.Reset();
         CurrentState = EngineState.Idle;
-        StatusMessage = "Idle";
+        StatusMessage = combatStopped ? "Idle" : rotationService.LastFailureReason;
         log.Information("[MOGTOME][Engine] Stopped");
     }
 
@@ -621,7 +655,7 @@ public class MogtomeEngine
 
     public void Update()
     {
-        if (!IsRunning) return;
+        if (!IsRunning || CurrentState == EngineState.Initializing) return;
         if (!clientState.IsLoggedIn) return;
 
         // Throttle based on loop interval (hardcoded 2s)
@@ -936,6 +970,11 @@ public class MogtomeEngine
 
     private void OnLeftDuty()
     {
+        if (!rotationService.DisableRotationForDutyEnd("left duty"))
+        {
+            StopWithCombatFailure(rotationService.LastFailureReason);
+            return;
+        }
         if (state.BailoutRequested)
         {
             HandleBailoutDutyExit();
@@ -1037,6 +1076,7 @@ public class MogtomeEngine
     private void ResetAfterConfirmedDutyExit(string reason)
     {
         firstRoomSkip.Cancel(reason);
+        rotationService.ResetDutyRotationState(reason);
         state.IsInDuty = false;
         deathTrackingService.Clear(reason);
         outsideDutyTicks = 0;
@@ -1491,6 +1531,8 @@ public class MogtomeEngine
                 return;
 
             StartDutyBackendInsideDuty("in-duty update");
+            if (!IsRunning)
+                return;
         }
 
         // Duty completion exit logic
@@ -1551,12 +1593,34 @@ public class MogtomeEngine
 
     private void StartDutyBackendInsideDuty(string reason)
     {
-        if (autoDutyStartedInDuty)
+        if (!IsRunning || CurrentState == EngineState.Initializing || dutyCompleted || autoDutyStartedInDuty)
             return;
 
-        autoDutyStartedInDuty = true;
         log.Information($"[MOGTOME][Engine] Starting {dutyAutomationService.ActiveBackendDisplayName} inside duty ({reason})");
-        dutyAutomationService.StartDutyInside(state.IsPartyLeader);
+        try
+        {
+            if (!dutyAutomationService.StartDutyInside(state.IsPartyLeader))
+            {
+                StopWithCombatFailure(string.IsNullOrEmpty(rotationService.LastFailureReason)
+                    ? $"{dutyAutomationService.ActiveBackendDisplayName} duty start command failed."
+                    : rotationService.LastFailureReason);
+                return;
+            }
+            autoDutyStartedInDuty = true;
+        }
+        catch (Exception ex)
+        {
+            StopWithCombatFailure(ex.Message);
+        }
+    }
+
+    private void StopWithCombatFailure(string reason)
+    {
+        Stop();
+        var cleanupFailure = StatusMessage == "Idle" ? string.Empty : $" Cleanup: {StatusMessage}";
+        StatusMessage = $"Combat startup stopped: {reason}{cleanupFailure}";
+        log.Error($"[MOGTOME][Engine] {StatusMessage}");
+        Plugin.ChatGui.PrintError($"[MOGTOME] {StatusMessage}");
     }
 
     private bool IsLeaveBlocked(out string blocker)

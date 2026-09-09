@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Ipc;
@@ -40,20 +41,28 @@ public class BossModIPC : IDisposable
     private const string PassiveMeleePreset = "passive - melee";
     private const string PassiveRangedPreset = "passive - ranged";
 
-    private static readonly string[] PassivePresetNames =
+    private const string ActiveTankPreset = "FRENRIDER - TANK";
+    private const string ActiveMeleePreset = "FRENRIDER - MELEE";
+    private const string ActiveRangedPreset = "FRENRIDER - RANGED";
+
+    private static readonly string[] PackagedPresetNames =
     [
         PassiveTankPreset,
         PassiveMeleePreset,
         PassiveRangedPreset,
+        ActiveTankPreset,
+        ActiveMeleePreset,
+        ActiveRangedPreset,
     ];
 
     private static readonly HashSet<uint> TankJobRows = [1, 3, 19, 21, 32, 37];
-    private static readonly HashSet<uint> MeleeJobRows = [2, 4, 20, 22, 29, 30, 34, 39, 41];
+    private static readonly HashSet<uint> MeleeJobRows = [2, 4, 20, 22, 29, 30, 34, 39, 41, 43];
     private static readonly HashSet<uint> RangedJobRows = [5, 6, 7, 23, 24, 25, 26, 27, 28, 31, 33, 35, 36, 38, 40, 42];
 
     private readonly IDalamudPluginInterface pluginInterface;
     private readonly IPluginLog log;
     private readonly ICommandManager commandManager;
+    private bool presetActivatedByMogtome;
     private static readonly BindingFlags RsrStaticFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
 
     public BossModIPC(IDalamudPluginInterface pluginInterface, IPluginLog log, ICommandManager commandManager)
@@ -63,47 +72,82 @@ public class BossModIPC : IDisposable
         this.commandManager = commandManager;
     }
 
-    internal void RefreshPackagedPresets()
+    public bool IsPluginLoaded(string internalName)
+        => pluginInterface.InstalledPlugins.Any(p => p.IsLoaded && p.InternalName == internalName);
+
+    internal bool RefreshPackagedPresets()
     {
         try
         {
-            InstallPassivePresets(forceRecreate: true);
+            return InstallPackagedPresets(forceRecreate: true) == PackagedPresetNames.Length;
         }
         catch (Exception ex)
         {
-            log.Warning($"[MOGTOME][BossMod] Packaged preset refresh failed; continuing start: {ex.Message}");
+            log.Error($"[MOGTOME][BossMod] Packaged preset refresh failed: {ex.Message}");
+            return false;
         }
     }
 
-    public void PreparePresetForStart(CombatProvider provider, bool useManualPreset, string manualPresetName)
+    public bool PreparePresetForStart(CombatProvider provider, bool passive, bool useManualPreset, string manualPresetName)
     {
         try
         {
-            var manualPresetSelected = useManualPreset && !string.IsNullOrWhiteSpace(manualPresetName);
+            var manualPresetSelected = !passive && useManualPreset;
+            if (manualPresetSelected && string.IsNullOrWhiteSpace(manualPresetName))
+            {
+                log.Error("[MOGTOME][BossMod] Manual preset is enabled but its name is empty");
+                return false;
+            }
             var presetName = manualPresetSelected
                 ? manualPresetName.Trim()
-                : SelectPassivePresetForCurrentJob();
+                : SelectPresetForCurrentJob(passive);
 
-            SetActivePresetViaIpc(presetName);
-            SendProviderPresetCommand(provider, presetName);
-            log.Information($"[MOGTOME][BossMod] Prepared {(manualPresetSelected ? "manual" : "role-based passive")} preset '{presetName}' for {provider}");
+            if (!SetActivePresetViaIpc(presetName))
+            {
+                log.Error($"[MOGTOME][BossMod] Could not prepare preset '{presetName}' for {provider}");
+                return false;
+            }
+            presetActivatedByMogtome = true;
+            if (!SendProviderPresetCommand(provider, presetName))
+                return false;
+            log.Information($"[MOGTOME][BossMod] Prepared {(manualPresetSelected ? "manual" : passive ? "role-based passive" : "role-based active")} preset '{presetName}' for {provider}");
+            return true;
         }
         catch (Exception ex)
         {
-            log.Warning($"[MOGTOME][BossMod] Preset startup prep failed; continuing start: {ex.Message}");
+            log.Error($"[MOGTOME][BossMod] Preset startup prep failed: {ex.Message}");
+            return false;
         }
     }
 
-    private void SendProviderPresetCommand(CombatProvider provider, string presetName)
+    public bool ClearActivePreset()
+    {
+        if (!presetActivatedByMogtome)
+            return true;
+        try
+        {
+            // False means it was already clear (for example, BMR cleared it while stopping AI).
+            pluginInterface.GetIpcSubscriber<bool>("BossMod.Presets.ClearActive").InvokeFunc();
+            presetActivatedByMogtome = false;
+            return true;
+        }
+        catch (Exception ex)
+        {
+            log.Error($"[MOGTOME][BossMod] Could not clear the preset activated by MogTome: {ex.Message}");
+            return false;
+        }
+    }
+
+    private bool SendProviderPresetCommand(CombatProvider provider, string presetName)
     {
         switch (provider)
         {
             case CombatProvider.Bmr:
-                SendCommand($"/bmrai setpresetname {presetName}", "set BMR preset");
-                break;
+                return SendCommand($"/bmrai setpresetname {presetName}", "set BMR preset");
             case CombatProvider.Vbm:
-                SendCommand($"/vbm ar set {presetName}", "set VBM preset");
-                break;
+                return SendCommand($"/vbm ar set {presetName}", "set VBM preset");
+            default:
+                return false;
         }
     }
 
@@ -222,12 +266,15 @@ public class BossModIPC : IDisposable
         }
     }
 
-    public void SendCommand(string command, string purpose)
+    public bool SendCommand(string command, string purpose)
     {
         try
         {
             if (commandManager.ProcessCommand(command))
+            {
                 log.Debug($"[MOGTOME][Rotation] {purpose}: {command}");
+                return true;
+            }
             else
                 log.Warning($"[MOGTOME][Rotation] Command was not handled while attempting to {purpose}: {command}");
         }
@@ -235,15 +282,16 @@ public class BossModIPC : IDisposable
         {
             log.Warning($"[MOGTOME][Rotation] Failed to {purpose} with {command}: {ex.Message}");
         }
+        return false;
     }
 
-    private int InstallPassivePresets(bool forceRecreate)
+    private int InstallPackagedPresets(bool forceRecreate)
     {
         var createdCount = 0;
 
-        foreach (var presetName in PassivePresetNames)
+        foreach (var presetName in PackagedPresetNames)
         {
-            var json = ReadPassivePresetJson(presetName);
+            var json = ReadPackagedPresetJson(presetName);
             if (json == null)
                 continue;
 
@@ -253,18 +301,15 @@ public class BossModIPC : IDisposable
                 continue;
             }
 
-            log.Warning($"[MOGTOME][BossMod] Failed to install passive preset '{presetName}' via BossMod-compatible IPC");
+            log.Warning($"[MOGTOME][BossMod] Failed to install packaged preset '{presetName}' via BossMod-compatible IPC");
         }
 
-        if (createdCount == 0)
-            log.Warning("[MOGTOME][BossMod] No passive presets were installed; startup will continue");
-        else
-            log.Information($"[MOGTOME][BossMod] Installed {createdCount}/{PassivePresetNames.Length} passive presets");
+        log.Information($"[MOGTOME][BossMod] Installed {createdCount}/{PackagedPresetNames.Length} packaged presets");
 
         return createdCount;
     }
 
-    private string? ReadPassivePresetJson(string presetName)
+    private string? ReadPackagedPresetJson(string presetName)
     {
         try
         {
@@ -278,7 +323,7 @@ public class BossModIPC : IDisposable
             var path = Path.Combine(assemblyDirectory, "data", "bm", $"{presetName}.json");
             if (!File.Exists(path))
             {
-                log.Warning($"[MOGTOME][BossMod] Passive preset file missing: {path}");
+                log.Warning($"[MOGTOME][BossMod] Packaged preset file missing: {path}");
                 return null;
             }
 
@@ -286,58 +331,50 @@ public class BossModIPC : IDisposable
         }
         catch (Exception ex)
         {
-            log.Warning($"[MOGTOME][BossMod] Failed to read passive preset '{presetName}': {ex.Message}");
+            log.Warning($"[MOGTOME][BossMod] Failed to read packaged preset '{presetName}': {ex.Message}");
             return null;
         }
     }
 
-    private string SelectPassivePresetForCurrentJob()
+    private string SelectPresetForCurrentJob(bool passive)
     {
         try
         {
             var player = Plugin.ObjectTable.LocalPlayer;
             if (player == null)
             {
-                log.Warning($"[MOGTOME][BossMod] LocalPlayer is null while choosing passive preset; defaulting to '{PassiveRangedPreset}'");
-                return PassiveRangedPreset;
+                throw new InvalidOperationException("LocalPlayer is unavailable while choosing the combat preset");
             }
 
             if (!player.ClassJob.IsValid)
             {
-                log.Warning($"[MOGTOME][BossMod] LocalPlayer ClassJob is invalid while choosing passive preset; defaulting to '{PassiveRangedPreset}'");
-                return PassiveRangedPreset;
+                throw new InvalidOperationException("LocalPlayer ClassJob is invalid while choosing the combat preset");
             }
 
             var job = player.ClassJob.Value;
             var rowId = job.RowId;
             var abbreviation = job.Abbreviation.ToString();
 
-            if (TankJobRows.Contains(rowId))
-            {
-                log.Information($"[MOGTOME][BossMod] Selected passive preset '{PassiveTankPreset}' for job {abbreviation} ({rowId})");
-                return PassiveTankPreset;
-            }
-
-            if (MeleeJobRows.Contains(rowId))
-            {
-                log.Information($"[MOGTOME][BossMod] Selected passive preset '{PassiveMeleePreset}' for job {abbreviation} ({rowId})");
-                return PassiveMeleePreset;
-            }
-
-            if (RangedJobRows.Contains(rowId))
-            {
-                log.Information($"[MOGTOME][BossMod] Selected passive preset '{PassiveRangedPreset}' for job {abbreviation} ({rowId})");
-                return PassiveRangedPreset;
-            }
-
-            log.Warning($"[MOGTOME][BossMod] Unknown job {abbreviation} ({rowId}) while choosing passive preset; defaulting to '{PassiveRangedPreset}'");
-            return PassiveRangedPreset;
+            var preset = SelectPresetForJob(rowId, passive);
+            log.Information($"[MOGTOME][BossMod] Selected preset '{preset}' for job {abbreviation} ({rowId})");
+            return preset;
         }
         catch (Exception ex)
         {
-            log.Warning($"[MOGTOME][BossMod] Failed to choose passive preset; defaulting to '{PassiveRangedPreset}': {ex.Message}");
-            return PassiveRangedPreset;
+            log.Error($"[MOGTOME][BossMod] Failed to choose combat preset: {ex.Message}");
+            throw;
         }
+    }
+
+    internal static string SelectPresetForJob(uint rowId, bool passive)
+    {
+        if (TankJobRows.Contains(rowId))
+            return passive ? PassiveTankPreset : ActiveTankPreset;
+        if (MeleeJobRows.Contains(rowId))
+            return passive ? PassiveMeleePreset : ActiveMeleePreset;
+        if (RangedJobRows.Contains(rowId))
+            return passive ? PassiveRangedPreset : ActiveRangedPreset;
+        throw new InvalidOperationException($"Unsupported combat job {rowId}");
     }
 
     private bool TryCreatePreset(string name, string json, bool forceRecreate)
@@ -390,14 +427,14 @@ public class BossModIPC : IDisposable
         if (legacyResult != null)
         {
             LogLegacyPresetResult("BossMod.Presets.Create", name, legacyResult);
-            return true;
+            return legacyResult.Length == 0;
         }
 
         legacyResult = TryStringIpc("BossModReborn.Presets.Create", json);
         if (legacyResult != null)
         {
             LogLegacyPresetResult("BossModReborn.Presets.Create", name, legacyResult);
-            return true;
+            return legacyResult.Length == 0;
         }
 
         return false;
@@ -405,18 +442,16 @@ public class BossModIPC : IDisposable
 
     private bool SetActivePresetViaIpc(string presetName)
     {
-        var handled = false;
-
         var result = TryBoolIpc("BossMod.Presets.SetActive", presetName);
         if (result.HasValue)
         {
             if (result.Value)
             {
                 log.Information($"[MOGTOME][BossMod] Preset '{presetName}' set active via BossMod IPC");
-                handled = true;
             }
             else
                 log.Warning($"[MOGTOME][BossMod] BossMod.Presets.SetActive returned false for preset '{presetName}'");
+            return result.Value;
         }
 
         result = TryBoolIpc("BossModReborn.Presets.SetActive", presetName);
@@ -425,30 +460,28 @@ public class BossModIPC : IDisposable
             if (result.Value)
             {
                 log.Information($"[MOGTOME][BossMod] Preset '{presetName}' set active via BossModReborn IPC");
-                handled = true;
             }
             else
                 log.Warning($"[MOGTOME][BossMod] BossModReborn.Presets.SetActive returned false for preset '{presetName}'");
+            return result.Value;
         }
 
         var legacyResult = TryStringIpc("BossMod.Presets.ForceSet", presetName);
         if (legacyResult != null)
         {
             LogLegacyPresetResult("BossMod.Presets.ForceSet", presetName, legacyResult);
-            handled = true;
+            return legacyResult.Length == 0;
         }
 
         legacyResult = TryStringIpc("BossModReborn.Presets.ForceSet", presetName);
         if (legacyResult != null)
         {
             LogLegacyPresetResult("BossModReborn.Presets.ForceSet", presetName, legacyResult);
-            handled = true;
+            return legacyResult.Length == 0;
         }
 
-        if (!handled)
-            log.Warning($"[MOGTOME][BossMod] No BossMod-compatible preset IPC responded while setting preset '{presetName}' active");
-
-        return handled;
+        log.Warning($"[MOGTOME][BossMod] No BossMod-compatible preset IPC responded while setting preset '{presetName}' active");
+        return false;
     }
 
     private bool TryFindRsrPluginInstance(out object? pluginInstance, out string internalName, out string detail)
@@ -470,6 +503,21 @@ public class BossModIPC : IDisposable
     }
 
     private object? FindDalamudPluginInstance(string internalName, out string detail)
+    {
+        var installedPlugin = FindDalamudPlugin(internalName, out detail);
+        if (installedPlugin == null)
+            return null;
+
+        var wrapperType = installedPlugin.GetType().Name == "LocalDevPlugin"
+            ? installedPlugin.GetType().BaseType
+            : installedPlugin.GetType();
+        var instance = wrapperType?.GetField("instance", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(installedPlugin);
+        if (instance == null)
+            detail = $"Dalamud plugin {internalName} was installed but its live instance was unavailable";
+        return instance;
+    }
+
+    internal static object? FindDalamudPlugin(string internalName, out string detail)
     {
         detail = string.Empty;
 
@@ -512,15 +560,7 @@ public class BossModIPC : IDisposable
                 if (!string.Equals(discoveredInternalName, internalName, StringComparison.Ordinal))
                     continue;
 
-                var wrapperType = installedPlugin.GetType().Name == "LocalDevPlugin"
-                    ? installedPlugin.GetType().BaseType
-                    : installedPlugin.GetType();
-
-                var instanceField = wrapperType?.GetField("instance", BindingFlags.NonPublic | BindingFlags.Instance);
-                var instance = instanceField?.GetValue(installedPlugin);
-                if (instance == null)
-                    detail = $"Dalamud plugin {internalName} was installed but its live instance was unavailable";
-                return instance;
+                return installedPlugin;
             }
 
             detail = $"Dalamud plugin {internalName} was not installed";

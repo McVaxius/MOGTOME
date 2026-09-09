@@ -82,7 +82,7 @@ public class AutoDutyIPC : IDisposable
         }
     }
 
-    public void StartDuty()
+    public bool StartDuty()
     {
         try
         {
@@ -100,22 +100,19 @@ public class AutoDutyIPC : IDisposable
                 log.Error(ex, "[MOGTOME][AutoDuty] Failed to capture party snapshot before /ad start");
             }
 
-            commandManager.ProcessCommand("/ad start");
+            if (!commandManager.ProcessCommand("/ad start"))
+            {
+                log.Error("[MOGTOME][AutoDuty] /ad start was not handled");
+                return false;
+            }
 
             // Enable the selected combat provider after AutoDuty starts.
-            try
-            {
-                rotationService.EnableRotationOncePerDuty("AutoDuty after /ad start");
-                log.Information("[MOGTOME][AutoDuty] Duty-scoped combat provider enable requested after /ad start");
-            }
-            catch (Exception ex)
-            {
-                log.Error(ex, "[MOGTOME][AutoDuty] Failed to enable selected combat provider after /ad start");
-            }
+            return rotationService.EnableRotationOncePerDuty("AutoDuty after /ad start");
         }
         catch (Exception ex)
         {
             log.Error($"[MOGTOME][AutoDuty] Start failed: {ex.Message}");
+            return false;
         }
     }
 

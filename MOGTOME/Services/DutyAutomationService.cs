@@ -278,17 +278,17 @@ public sealed class DutyAutomationService
             isPraetorium ? SelectedMogtomeDuty.Praetorium : SelectedMogtomeDuty.Decumana);
     }
 
-    public void StartDutyInside(bool isLeader)
+    public bool StartDutyInside(bool isLeader)
     {
         if (!UseAdsExperimental)
         {
-            autoDutyIPC.StartDuty();
-            return;
+            return autoDutyIPC.StartDuty();
         }
 
         CancelAdsRepairHandoff("duty entry");
         CapturePartySnapshot("ADS");
-        EnableCombatProviderOncePerDuty("ADS", $"before {AdsStartInsideCommand}");
+        if (!EnableCombatProviderOncePerDuty("ADS", $"before {AdsStartInsideCommand}"))
+            return false;
 
         if (isLeader)
         {
@@ -297,9 +297,9 @@ public sealed class DutyAutomationService
             adsLeaderInsideOwned = true;
             ResetAdsLeaveTracking();
             log.Information($"[MOGTOME][ADS] Leader entered duty; taking inside ownership via {AdsStartInsideCommand}");
-            commandManager.ProcessCommand(AdsStartInsideCommand);
+            var started = commandManager.ProcessCommand(AdsStartInsideCommand);
             adsStartingInsideDutyRecovery = false;
-            return;
+            return started;
         }
 
         adsRuntimeRole = AdsRuntimeRole.Follower;
@@ -307,8 +307,9 @@ public sealed class DutyAutomationService
         adsFollowerState = AdsFollowerState.InsideObserved;
         ResetAdsLeaveTracking();
         log.Information($"[MOGTOME][ADS] Follower entered duty; taking inside ownership via {AdsStartInsideCommand} after /ads outside pre-arm (previous state: {previousState}, startingInsideDuty={adsStartingInsideDutyRecovery})");
-        commandManager.ProcessCommand(AdsStartInsideCommand);
+        var followerStarted = commandManager.ProcessCommand(AdsStartInsideCommand);
         adsStartingInsideDutyRecovery = false;
+        return followerStarted;
     }
 
     public void StopDuty()
@@ -1227,16 +1228,16 @@ public sealed class DutyAutomationService
         }
     }
 
-    private void EnableCombatProviderOncePerDuty(string backendName, string timing)
+    private bool EnableCombatProviderOncePerDuty(string backendName, string timing)
     {
         try
         {
-            rotationService.EnableRotationOncePerDuty($"{backendName} duty start {timing}");
-            log.Information($"[MOGTOME][{backendName}] Duty-scoped combat provider enable requested {timing}");
+            return rotationService.EnableRotationOncePerDuty($"{backendName} duty start {timing}");
         }
         catch (Exception ex)
         {
             log.Error(ex, $"[MOGTOME][{backendName}] Failed to enable selected combat provider {timing}");
+            return false;
         }
     }
 
