@@ -429,8 +429,8 @@ public class AutoDutyPathService
                                         var savedPaths = savedSelections?[(uint)TargetTerritoryType] as IDictionary;
                                         pathSelectionSaved = savedPaths != null
                                             && Equals(savedPaths[selectedPathFileName], jobWithRoleAll)
-                                            && savedPaths.Cast<DictionaryEntry>().All(entry =>
-                                                Equals(entry.Key, selectedPathFileName) || Equals(entry.Value, jobWithRoleNone));
+                                            && savedPaths.Keys.Cast<object>().All(key =>
+                                                Equals(key, selectedPathFileName) || Equals(savedPaths[key], jobWithRoleNone));
                                         log.Information("[MOGTOME][AutoDutyPath] Called Config.Save() to persist path selection");
                                     }
                                     else
