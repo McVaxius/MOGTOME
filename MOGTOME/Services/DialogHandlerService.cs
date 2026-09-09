@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Dalamud.Plugin.Services;
 using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Client.UI;
@@ -23,6 +24,11 @@ public class DialogHandlerService
         "Would you like to be raised",
         "Accept Raise",
     ];
+    private const string ReturnToStartPromptPattern = "Return to the starting point";
+    private static readonly IReadOnlyList<string> ReturnToStartPatterns = [ReturnToStartPromptPattern];
+    private static readonly TimeSpan ReturnPromptDelay = TimeSpan.FromSeconds(300);
+    private string returnPromptText = string.Empty;
+    private long? returnPromptFirstSeenAt;
 
     private DateTime lastDialogCheck = DateTime.MinValue;
     private const float DialogCheckCooldown = 0.5f;
@@ -42,50 +48,86 @@ public class DialogHandlerService
 
     public void Start()
     {
+        ResetReturnPromptWait();
         yesAlreadyIPC.Pause();
         log.Information("[MOGTOME][DialogHandler] Started - YesAlready paused");
     }
 
     public void Stop()
     {
+        ResetReturnPromptWait();
         yesAlreadyIPC.Unpause();
         log.Information("[MOGTOME][DialogHandler] Stopped - YesAlready unpaused");
     }
 
-    public void Update()
+    public void ResetReturnPromptWait()
     {
+        returnPromptText = string.Empty;
+        returnPromptFirstSeenAt = null;
+    }
+
+    public void Update(bool returnToStartEligible)
+    {
+        if (!returnToStartEligible)
+            ResetReturnPromptWait();
+
         var now = DateTime.UtcNow;
         if ((now - lastDialogCheck).TotalSeconds < DialogCheckCooldown) return;
         lastDialogCheck = now;
 
         try
         {
-            TryAcceptRecognizedYesNoPrompt();
+            TryAcceptRecognizedYesNoPrompt(returnToStartEligible);
         }
         catch (Exception ex)
         {
+            ResetReturnPromptWait();
             log.Error($"[MOGTOME][DialogHandler] Update failed: {ex.Message}");
         }
     }
 
-    private unsafe void TryAcceptRecognizedYesNoPrompt()
+    private unsafe void TryAcceptRecognizedYesNoPrompt(bool returnToStartEligible)
     {
         nint addonPtr = gameGui.GetAddonByName("SelectYesno", 1);
         if (addonPtr == 0)
+        {
+            ResetReturnPromptWait();
             return;
+        }
 
         var addon = (AddonSelectYesno*)addonPtr;
         if (addon == null || !addon->AtkUnitBase.IsVisible)
+        {
+            ResetReturnPromptWait();
             return;
+        }
 
         var promptNode = addon->PromptText;
         if (promptNode == null || !promptNode->NodeText.StringPtr.HasValue)
+        {
+            ResetReturnPromptWait();
             return;
+        }
 
         var promptSeString = MemoryHelper.ReadSeStringNullTerminated(new IntPtr(promptNode->NodeText.StringPtr));
         var dialogText = promptSeString.TextValue?.Trim() ?? string.Empty;
         if (string.IsNullOrWhiteSpace(dialogText))
+        {
+            ResetReturnPromptWait();
             return;
+        }
+
+        var isReturnPrompt = returnToStartEligible &&
+            dialogText.Contains(ReturnToStartPromptPattern, StringComparison.OrdinalIgnoreCase);
+        if (!isReturnPrompt)
+        {
+            ResetReturnPromptWait();
+        }
+        else if (!string.Equals(dialogText, returnPromptText, StringComparison.Ordinal))
+        {
+            returnPromptText = dialogText;
+            returnPromptFirstSeenAt = Stopwatch.GetTimestamp();
+        }
 
         var now = DateTime.UtcNow;
         if (string.Equals(dialogText, lastHandledDialog, StringComparison.OrdinalIgnoreCase) &&
@@ -99,7 +141,16 @@ public class DialogHandlerService
             return;
         }
 
-        TryAcceptPrompt(dialogText, now, SealedAreaOfferPatterns, "sealed-area move");
+        if (TryAcceptPrompt(dialogText, now, SealedAreaOfferPatterns, "sealed-area move"))
+        {
+            return;
+        }
+
+        if (isReturnPrompt && returnPromptFirstSeenAt is { } firstSeenAt &&
+            Stopwatch.GetElapsedTime(firstSeenAt) >= ReturnPromptDelay)
+        {
+            TryAcceptPrompt(dialogText, now, ReturnToStartPatterns, "return to starting point");
+        }
     }
 
     private bool TryAcceptPrompt(

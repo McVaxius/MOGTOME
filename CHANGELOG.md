@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- Wait 300 seconds before accepting a return-to-start prompt while dead in an active duty, preserving immediate raises, sealed-area moves, and existing completed-duty leave checks. Combat cleanup failures after duty exit now warn in Echo chat, toast, and log, then continue run recording and requeue handling.
 - BST (43) uses the melee role mapping for automatic active and passive BossMod presets. Manual BMR/VBM preset overrides remain in control.
 - Restored RSR with automatic passive BossMod support and active role presets for BMR/VBM, preserving manual BMR/VBM preset selection. All six packaged presets are installed after BossMod conflict cleanup, and the selected preset is applied before AI activation in each duty.
 - When both BossMod variants are loaded, startup disables VBM and sequentially reloads BMR through native temporary commands, waiting for each completed transition to restore shared IPC. VBM selection changes to BMR and is saved; RSR selection is retained. Cleanup or readiness failure stops startup with a clear reason.

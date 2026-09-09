@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Game.Text;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -288,6 +289,7 @@ public class MogtomeEngine
         rotationService.DisableRotationForDutyEnd($"duty completed territory {territoryId}");
         dutyCompleted = true;
         dutyCompletedTime = now;
+        dialogHandler.ResetReturnPromptWait();
         ResetLeaveTracking();
         PauseLeaderQueueBeforeExitIfRepairNeeded($"Duty completed in territory {territoryId}");
         log.Information($"[MOGTOME][Engine] Duty completed event in territory {territoryId} - leave will request at first safe seam");
@@ -706,10 +708,17 @@ public class MogtomeEngine
             if (!repairFlowBlockingDutyPop)
             {
                 // Handle dialogs always unless repair is actively protecting an inn/NPC repair flow.
-                dialogHandler.Update();
+                dialogHandler.Update(returnToStartEligible:
+                    CurrentState == EngineState.InDuty && inDuty && !dutyCompleted &&
+                    IsMogtomeDutyTerritory(state.CurrentTerritory) &&
+                    Plugin.ObjectTable.LocalPlayer?.IsDead == true);
 
                 // Auto-accept duty pop for non-leaders
                 dutyQueue.AutoAcceptDuty();
+            }
+            else
+            {
+                dialogHandler.ResetReturnPromptWait();
             }
 
             HandleQueueConditionTransitions(inDuty);
@@ -970,10 +979,18 @@ public class MogtomeEngine
 
     private void OnLeftDuty()
     {
+        dialogHandler.ResetReturnPromptWait();
         if (!rotationService.DisableRotationForDutyEnd("left duty"))
         {
-            StopWithCombatFailure(rotationService.LastFailureReason);
-            return;
+            const string message = "Combat cleanup failed after duty exit; continuing.";
+            var reason = rotationService.LastFailureReason;
+            log.Warning($"[MOGTOME][Engine] {message} {reason}");
+            Plugin.ChatGui.Print(new XivChatEntry
+            {
+                Type = XivChatType.Echo,
+                Message = $"[MOGTOME] {message} {reason}",
+            });
+            Plugin.ToastGui.ShowNormal(message);
         }
         if (state.BailoutRequested)
         {
@@ -1581,6 +1598,7 @@ public class MogtomeEngine
         {
             dutyCompleted = true;
             dutyCompletedTime = DateTime.UtcNow;
+            dialogHandler.ResetReturnPromptWait();
             ResetLeaveTracking();
             PauseLeaderQueueBeforeExitIfRepairNeeded("Bailout requested");
             log.Warning($"[MOGTOME][Engine] Consuming bailout request: {state.BailoutReason}");
