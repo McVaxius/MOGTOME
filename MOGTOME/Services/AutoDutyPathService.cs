@@ -115,12 +115,12 @@ public class AutoDutyPathService
         }
     }
 
-    public async Task<bool> WaitForAutoDutyInitializationAsync(TimeSpan timeout, TimeSpan pollInterval)
+    public async Task<bool> WaitForAutoDutyInitializationAsync(TimeSpan timeout, TimeSpan pollInterval, Func<bool>? isCurrent = null)
     {
         var deadline = DateTime.UtcNow + timeout;
         var lastStatus = "Unknown";
 
-        while (DateTime.UtcNow < deadline)
+        while (isCurrent?.Invoke() != false && DateTime.UtcNow < deadline)
         {
             if (IsAutoDutyInitialized(out lastStatus))
             {
@@ -130,7 +130,8 @@ public class AutoDutyPathService
             await Task.Delay(pollInterval);
         }
 
-        log.Warning($"[MOGTOME][AutoDutyPath] AutoDuty readiness wait timed out after {timeout.TotalSeconds:F0}s: {lastStatus}");
+        if (isCurrent?.Invoke() != false)
+            log.Warning($"[MOGTOME][AutoDutyPath] AutoDuty readiness wait timed out after {timeout.TotalSeconds:F0}s: {lastStatus}");
         return false;
     }
 

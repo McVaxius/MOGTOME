@@ -81,6 +81,21 @@ public static class GameHelpers
     /// Click Yes on SelectYesno dialog if visible.
     /// Uses AtkUnitBase.FireCallback with proper AtkValue array.
     /// </summary>
+    public static unsafe bool IsLeaveDutyPromptVisible()
+    {
+        var addon = (AddonSelectYesno*)Plugin.GameGui.GetAddonByName("SelectYesno", 1).Address;
+        if (addon == null || !addon->AtkUnitBase.IsVisible || addon->PromptText == null)
+            return false;
+        return IsLeaveDutyPrompt(addon->PromptText->NodeText.ToString());
+    }
+
+    internal static bool IsLeaveDutyPrompt(string text)
+        => text.Contains("leave the duty?", StringComparison.OrdinalIgnoreCase)
+           || text.Contains("abandon the duty?", StringComparison.OrdinalIgnoreCase);
+
+    public static bool ClickLeaveDutyYesIfVisible()
+        => IsLeaveDutyPromptVisible() && ClickYesIfVisible();
+
     public static unsafe bool ClickYesIfVisible()
     {
         const string addonName = "SelectYesno";

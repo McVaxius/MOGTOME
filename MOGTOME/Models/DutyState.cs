@@ -23,6 +23,10 @@ public class DutyState
         => territoryId == PraetoriumTerritoryId ||
            territoryId == DecumanaTerritoryId;
 
+    public static bool IsSupportedDutyIdentity(uint territoryId, uint contentFinderConditionId)
+        => territoryId == PraetoriumTerritoryId && contentFinderConditionId == 16
+           || territoryId == DecumanaTerritoryId && contentFinderConditionId == DecumanaDutyId;
+
     // --- Duty Time Limits (in seconds) ---
     public const float PraetoriumTimeLimit = 7200f; // 120 minutes
     public const float DecumanaTimeLimit = 3600f;   // 60 minutes
@@ -70,6 +74,21 @@ public class DutyState
         if (timedilation <= 0) timedilation = 2.0f;
         MaxJiggle = (int)Math.Floor(2.0f / timedilation * 30);
         MaxRes = (int)Math.Floor(2.0f / timedilation * 15);
+    }
+
+    internal bool CheckBailout(DateTime nowUtc, float timeoutSeconds)
+    {
+        if (!HasEnteredDuty || !DutyStartTime.HasValue)
+            return false;
+
+        TimeInDuty = (float)Math.Max(0, (nowUtc - DutyStartTime.Value.ToUniversalTime()).TotalSeconds);
+        if (BailoutRequested || TimeInDuty <= timeoutSeconds)
+            return false;
+
+        BailoutElapsedTime = TimeInDuty;
+        BailoutReason = $"Bailout triggered after {TimeInDuty:F0}s (configured: {timeoutSeconds}s)";
+        BailoutRequested = true;
+        return true;
     }
 
     public void Reset()

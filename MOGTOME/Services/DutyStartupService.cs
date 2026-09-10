@@ -23,7 +23,8 @@ internal sealed class DutyStartupService(
     Func<string, bool> processCommand,
     Func<float> getDutyRemainingTime,
     Action<string> logInformation,
-    Action<string> logWarning)
+    Action<string> logWarning,
+    Action? invalidateCombat = null)
 {
     private const double PraetoriumReadyFallbackSeconds = 15.0;
     private readonly AdsHandoffState handoffState = new();
@@ -36,6 +37,8 @@ internal sealed class DutyStartupService(
     private uint trackedDutyContentFinderConditionId;
     private bool trackedInDuty;
     private bool cancelled;
+    private bool exitRequested;
+    private int generation;
 
     internal AdsDutySession DutySession { get; private set; } = new();
     internal bool CombatActivated { get; private set; }
@@ -43,18 +46,28 @@ internal sealed class DutyStartupService(
     internal bool IsConfirmed => CombatActivated && BackendConfirmed;
     internal string StatusText { get; private set; } = "Waiting for duty readiness.";
 
-    internal void ResetSession()
+    internal void ResetSession(bool resumedInsideDuty = false)
     {
-        DutySession = new AdsDutySession();
+        ++generation;
+        DutySession = new AdsDutySession { ResumedInsideDuty = resumedInsideDuty };
         cancelled = false;
+        exitRequested = false;
         ResetDutyTracking();
     }
 
     internal void Cancel()
     {
+        ++generation;
         cancelled = true;
         ResetHandoff();
         nextCombatAttemptUtc = DateTime.MinValue;
+    }
+
+    internal void HoldForExit()
+    {
+        ++generation;
+        exitRequested = true;
+        ResetHandoff();
     }
 
     internal void DeferFailure(DateTime now, string reason)
@@ -70,11 +83,14 @@ internal sealed class DutyStartupService(
         DutySession.Start(territoryId, nowUtc);
     }
 
-    internal void OnDutyCompleted(uint territoryId, DateTime nowUtc)
+    internal bool OnDutyCompleted(uint territoryId, DateTime nowUtc)
     {
-        DutySession.Complete(territoryId, nowUtc);
+        if (cancelled || !DutySession.Complete(territoryId, nowUtc))
+            return false;
+        ++generation;
         ResetHandoff();
         nextCombatAttemptUtc = DateTime.MinValue;
+        return true;
     }
 
     // Called on every framework frame, before Mogtome's two-second throttle.
@@ -94,10 +110,21 @@ internal sealed class DutyStartupService(
         if (!inDuty)
             trackedInDuty = false;
 
-        if (cancelled || !inDuty || DutySession.IsCompleted)
+        if (cancelled || exitRequested || !inDuty || DutySession.IsCompleted)
             ResetHandoff();
         else
+        {
+            // Missing LocalPlayer during loading is not evidence of death.
+            if (CombatActivated && conditions.IsLoggedIn &&
+                (conditions.IsUnconscious || conditions.HasLocalPlayer && !conditions.IsPlayerAlive))
+            {
+                CombatActivated = false;
+                handoffState.ResetCountdown();
+                invalidateCombat?.Invoke();
+                Pending("combat recovery after death; waiting for continuous readiness");
+            }
             handoffState.ObserveReadiness(conditions);
+        }
 
         return ended && conditions.IsLoggedIn && !inDuty;
     }
@@ -108,7 +135,8 @@ internal sealed class DutyStartupService(
         Func<bool>? tryStartOpener = null)
     {
         ObserveReadiness(inDuty, identity, conditions, now);
-        if (cancelled || DutySession.IsCompleted)
+        var operation = generation;
+        if (cancelled || exitRequested || DutySession.IsCompleted)
         {
             StatusText = "Duty startup cancelled.";
             return DutyStartupResult.Cancelled;
@@ -135,8 +163,7 @@ internal sealed class DutyStartupService(
             return Pending("experimental opener active");
         }
 
-        if (!DutyState.IsMogtomeDutyTerritory(identity.TerritoryTypeId)
-            || identity.ContentFinderConditionId == 0)
+        if (!DutyState.IsSupportedDutyIdentity(identity.TerritoryTypeId, identity.ContentFinderConditionId))
         {
             ResetHandoff();
             return Pending("waiting for live duty territory/CFC identity");
@@ -235,7 +262,9 @@ internal sealed class DutyStartupService(
         {
             if (!ads)
             {
-                if (!startAutoDuty())
+                var accepted = startAutoDuty();
+                if (!IsCurrent(operation)) return DutyStartupResult.Cancelled;
+                if (!accepted)
                     return BackoffFailedHandoff(now, "/ad start was not handled");
 
                 // AutoDuty's existing command adapter has no ownership endpoint.
@@ -244,6 +273,7 @@ internal sealed class DutyStartupService(
             }
 
             var request = adsDutyIpcService.RequestStartDutyFromInside();
+            if (!IsCurrent(operation)) return DutyStartupResult.Cancelled;
             if (request.EndpointAvailable)
             {
                 if (request.Accepted)
@@ -252,19 +282,24 @@ internal sealed class DutyStartupService(
                 return BackoffFailedHandoff(now, "ADS.StartDutyFromInside rejected; command fallback suppressed");
             }
 
-            if (processCommand("/ads inside"))
+            var handled = processCommand("/ads inside");
+            if (!IsCurrent(operation)) return DutyStartupResult.Cancelled;
+            if (handled)
                 return AwaitHandoffConfirmation(now, "typed endpoint unavailable; sent /ads inside fallback");
 
             return BackoffFailedHandoff(now, "typed endpoint unavailable and /ads inside fallback failed");
         }
         catch (Exception ex)
         {
+            if (!IsCurrent(operation)) return DutyStartupResult.Cancelled;
             return BackoffFailedHandoff(now, $"duty startup failed: {ex.Message}");
         }
     }
 
     private bool TryActivateCombat(DateTime now)
     {
+        var operation = generation;
+        if (!IsCurrent(operation)) return false;
         if (CombatActivated)
             return true;
         if (now < nextCombatAttemptUtc)
@@ -276,7 +311,9 @@ internal sealed class DutyStartupService(
         string failure;
         try
         {
-            if (enableCombat())
+            var activated = enableCombat();
+            if (!IsCurrent(operation)) return false;
+            if (activated)
             {
                 CombatActivated = true;
                 return true;
@@ -285,6 +322,7 @@ internal sealed class DutyStartupService(
         }
         catch (Exception ex)
         {
+            if (!IsCurrent(operation)) return false;
             failure = ex.Message;
         }
 
@@ -294,6 +332,9 @@ internal sealed class DutyStartupService(
         logWarning($"[MOGTOME][Startup] {StatusText}");
         return false;
     }
+
+    private bool IsCurrent(int operation)
+        => operation == generation && !cancelled && !exitRequested && !DutySession.IsCompleted;
 
     private DutyStartupResult AwaitHandoffConfirmation(DateTime now, string reason)
     {
@@ -358,7 +399,8 @@ internal sealed class DutyStartupService(
             Plugin.Condition[ConditionFlag.WatchingCutscene],
             Plugin.Condition[ConditionFlag.OccupiedInCutSceneEvent],
             Plugin.Condition[ConditionFlag.WatchingCutscene78],
-            Plugin.Condition[ConditionFlag.BetweenAreas51]);
+            Plugin.Condition[ConditionFlag.BetweenAreas51],
+            localPlayer?.ClassJob.RowId > 0);
     }
 
     internal static unsafe (uint TerritoryTypeId, uint ContentFinderConditionId) ReadLiveDutyIdentity()

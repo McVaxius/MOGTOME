@@ -66,7 +66,7 @@ public sealed class MogtomeDadIpcService : IDisposable
 
         if (status.CompletedAttempts >= status.AttemptLimit)
         {
-            plugin.Engine.Stop();
+            plugin.Engine.Stop("DAD attempt limit reached after confirmed successful exits.");
             status.IsRunning = false;
             status.IsTerminal = true;
             status.Success = true;
@@ -148,8 +148,7 @@ public sealed class MogtomeDadIpcService : IDisposable
             return Serialize(Reject("MOGTOME will only stop the matching DAD-owned session."));
         }
 
-        if (plugin.Engine?.IsRunning == true)
-            plugin.Engine.Stop();
+        plugin.StopEngine(string.IsNullOrWhiteSpace(request.Reason) ? "Matching DAD Stop." : $"DAD Stop: {request.Reason}");
         status.IsRunning = false;
         status.IsTerminal = true;
         status.Success = false;

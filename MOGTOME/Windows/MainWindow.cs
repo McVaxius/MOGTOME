@@ -135,7 +135,7 @@ public class MainWindow : Window, IDisposable
         ImGui.Separator();
 
         // Controls Row 1
-        if (!engine.IsRunning)
+        if (!engine.IsRunning && !plugin.IsEngineStartQueued)
         {
             if (ImGui.Button("Start", new Vector2(80, 30)))
             {
@@ -146,7 +146,7 @@ public class MainWindow : Window, IDisposable
         {
             if (ImGui.Button("Stop", new Vector2(80, 30)))
             {
-                engine.Stop();
+                plugin.StopEngine();
             }
         }
 
@@ -233,7 +233,7 @@ public class MainWindow : Window, IDisposable
         // Duty Info
         ImGui.Text("Duty Information");
         ImGui.Indent();
-        ImGui.Text($"Counter: {state.DutyCounter} / {config.PraetoriumThreshold} Prae | {config.MaxRuns} Total");
+        ImGui.Text($"Counter: {state.DutyCounter} / {config.PraetoriumThreshold} Prae | Daily Praetorium limit: {config.MaxRuns}");
         ImGui.Text($"Daily Decu: {state.DecumanaCounter} runs today");
 
         var currentDuty = state.DutyCounter < config.PraetoriumThreshold

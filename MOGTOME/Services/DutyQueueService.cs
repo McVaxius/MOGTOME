@@ -31,6 +31,7 @@ public class DutyQueueService
     private const float PartyEligibilityLogIntervalSeconds = 15.0f;
 
     public bool LastQueueBlockedForPartySize { get; private set; }
+    public bool LastQueueBlockedForPartyDuty { get; private set; }
     public int VisiblePartyMemberCount { get; private set; }
 
     private enum RepairCancelStage
@@ -50,6 +51,8 @@ public class DutyQueueService
         this.dutyAutomationService = dutyAutomationService;
         this.condition = condition;
         this.configManager = configManager;
+        dutyAutomationService.QueueEligibility = () =>
+            !state.IsInDuty && state.IsPartyLeader && !state.QueuePausedForRepair && IsLeaderQueueEligible();
     }
 
     public bool TryQueue(bool isPraetorium)
@@ -61,7 +64,9 @@ public class DutyQueueService
     private bool TryQueueInternal(bool isPraetorium, bool ignoreCooldown)
     {
         LastQueueBlockedForPartySize = false;
+        LastQueueBlockedForPartyDuty = false;
         if (state.IsInDuty) return false;
+        if (state.QueuePausedForRepair || !Plugin.ClientState.IsLoggedIn || DutyStartupService.IsInDuty()) return false;
         if (!state.IsPartyLeader) return false;
         if (!IsLeaderQueueEligible())
             return false;
@@ -86,6 +91,17 @@ public class DutyQueueService
 
     private bool IsLeaderQueueEligible()
     {
+        LastQueueBlockedForPartyDuty = false;
+        for (var index = 0; index < Plugin.PartyList.Length; index++)
+        {
+            var member = Plugin.PartyList[index];
+            if (DutyState.IsMogtomeDutyTerritory(member?.Territory.RowId ?? 0))
+            {
+                LastQueueBlockedForPartyDuty = true;
+                return false;
+            }
+        }
+
         var config = configManager.GetActiveConfig();
         if (!config.OnlyQueueWithFourPeople || config.TestingModeUnsynced || config.IsCrossWorldParty)
             return true;
@@ -287,7 +303,8 @@ public class DutyQueueService
     }
 
     private bool IsCurrentRepairCancelSequence(int sequenceId)
-        => repairCancelStage != RepairCancelStage.None && sequenceId == repairCancelSequenceId;
+        => repairCancelStage != RepairCancelStage.None && sequenceId == repairCancelSequenceId
+           && state.QueuePausedForRepair && Plugin.ClientState.IsLoggedIn && !DutyStartupService.IsInDuty();
 
     private void CompleteRepairCancelSequence(int sequenceId)
     {

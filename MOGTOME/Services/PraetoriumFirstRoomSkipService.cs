@@ -51,6 +51,7 @@ internal sealed class PraetoriumFirstRoomSkipService : IDisposable
     private readonly IObjectTable objectTable;
     private readonly VNavIPC vnav;
     private readonly Action<string> handoffToAds;
+    private readonly Func<int> getSessionId;
 
     private SkipState state;
     private TankActionMap tankActions;
@@ -70,7 +71,7 @@ internal sealed class PraetoriumFirstRoomSkipService : IDisposable
         IClientState clientState,
         IObjectTable objectTable,
         VNavIPC vnav,
-        Action<string> handoffToAds)
+        Action<string> handoffToAds, Func<int> getSessionId)
     {
         this.log = log;
         this.framework = framework;
@@ -79,6 +80,7 @@ internal sealed class PraetoriumFirstRoomSkipService : IDisposable
         this.objectTable = objectTable;
         this.vnav = vnav;
         this.handoffToAds = handoffToAds;
+        this.getSessionId = getSessionId;
         framework.Update += OnFrameworkUpdate;
     }
 
@@ -377,7 +379,12 @@ internal sealed class PraetoriumFirstRoomSkipService : IDisposable
             return;
         }
 
-        _ = framework.RunOnTick(() => vnav.Stop());
+        var session = getSessionId();
+        _ = framework.RunOnTick(() =>
+        {
+            if (session == getSessionId() && !active)
+                vnav.Stop();
+        });
         log.Debug($"[MOGTOME][FirstRoomSkip] Queued vnav stop: {reason}");
     }
 }

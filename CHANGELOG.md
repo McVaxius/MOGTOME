@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- Recover the full selected combat setup after death, raises, and entrance respawns using continuous readiness and the existing retry delay, while preserving confirmed ADS/AutoDuty ownership and run counters.
+- Treat timed-out and incomplete duty exits as aborted attempts, keep Mogtome running through party departure and requeue, and count success only after a matching verified completion and confirmed exit. Stop-after-next survives failures; the daily limit and its Quit Command apply only to successful Praetorium clears.
+- Cancel queued starts and obsolete startup, repair, queue, and leave callbacks on Stop or session changes. Cleanup continues after individual failures, leave confirmation requires the actual leave-duty prompt, and duty registration rejects additional or mismatched selections.
+- Keep uncertain duty identity and logout pending, preserve an in-memory stop reason in status/chat, and label the Praetorium daily limit explicitly.
 - Ported FrenRider's continuous duty readiness, live ADS ownership validation, and confirmed-exit handling. ADS and AutoDuty startup now remain pending through loading or combat activation failures and recover without resetting the run or restarting a confirmed backend. Stop, completion, and the experimental opener take precedence over pending startup.
 - Fixed AutoDuty path-selection readback throwing an invalid cast for generic dictionaries, preserving selected-path All and other-path None verification.
 - Wait 300 seconds before accepting a return-to-start prompt while dead in an active duty, preserving immediate raises, sealed-area moves, and existing completed-duty leave checks. Combat cleanup failures after duty exit now warn in Echo chat, toast, and log, then continue run recording and requeue handling.

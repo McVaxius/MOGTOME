@@ -261,6 +261,7 @@ public sealed class DutyStartupTests
     public void StopOrCompletionCancelsPendingStartupBeforeAnyRetry(bool stop)
     {
         var run = new Run();
+        run.Startup.DutySession.ResumedInsideDuty = true;
         run.Frame(0);
         run.Frame(2);
         if (stop)
@@ -281,6 +282,7 @@ public sealed class DutyStartupTests
     public void CompletionOrStopBeforeReadyDoesNotActivateCombat(bool stop)
     {
         var run = new Run();
+        run.Startup.DutySession.ResumedInsideDuty = true;
         run.Frame(0, Ready with { HasLocalPlayer = false });
         if (stop)
             run.Startup.Cancel();
@@ -301,6 +303,7 @@ public sealed class DutyStartupTests
     public void MissingDutyInformationDuringLoadingIsNotAnExit(string blocker)
     {
         var run = new Run();
+        run.Startup.DutySession.ResumedInsideDuty = true;
         run.Frame(0);
         run.Frame(2);
         run.Owned = true;
@@ -333,8 +336,9 @@ public sealed class DutyStartupTests
             run.Frame(start + 3);
             run.Startup.OnDutyStarted(run.Territory, run.Now);
             Assert.Equal(DutyStartupResult.Confirmed, run.Frame(start + 10));
-            run.Startup.OnDutyCompleted(run.Territory, run.Now);
-            Assert.Equal(DutyStartupResult.Cancelled, run.Frame(start + 30));
+            run.Frame(start + 60);
+            Assert.True(run.Startup.OnDutyCompleted(run.Territory, run.Now));
+            Assert.Equal(DutyStartupResult.Cancelled, run.Frame(start + 70));
             Assert.True(run.Startup.ObserveReadiness(false, (999, 0), Ready, run.Now.AddSeconds(1)));
         }
         Assert.Equal(3, run.BackendRequests);
@@ -389,6 +393,151 @@ public sealed class DutyStartupTests
         Assert.Equal(DutyStartupResult.Confirmed, run.Frame(8));
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void RepeatedDeathRaiseAndEntranceRespawnRestoreCombatWithoutBackendRestart(bool ads)
+    {
+        var run = new Run(ads);
+        run.Frame(0);
+        run.Frame(2);
+        run.Owned = true;
+        run.Frame(3);
+        var entered = run.Startup.DutySession.EnteredAtUtc;
+        for (var death = 0; death < 3; death++)
+        {
+            var time = 10 + death * 20;
+            // Observe only, as a death may be shorter than the engine throttle.
+            run.Startup.ObserveReadiness(true, run.Identity, Ready with { IsUnconscious = true }, run.Now.AddSeconds(1));
+            Assert.False(run.Startup.CombatActivated);
+            Assert.True(run.Startup.BackendConfirmed);
+            run.Frame(time, Ready with { IsBetweenAreas51 = true, HasLocalPlayer = false });
+            run.Frame(time + 1);
+            run.Frame(time + 2.999);
+            Assert.Equal(death + 1, run.CombatAttempts);
+            Assert.Equal(DutyStartupResult.Confirmed, run.Frame(time + 3));
+            Assert.Equal(entered, run.Startup.DutySession.EnteredAtUtc);
+            Assert.False(run.Startup.DutySession.IsCompleted);
+        }
+        Assert.Equal(4, run.CombatAttempts);
+        Assert.Equal(3, run.CombatInvalidations);
+        Assert.Equal(1, run.BackendRequests);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void MissingPlayerIsNotDeathAndFailedRestorationRetainsAcceptedBackend(bool ads)
+    {
+        var run = new Run(ads);
+        run.Frame(0);
+        run.Frame(2);
+        run.Owned = true;
+        run.Frame(3);
+        run.Frame(4, Ready with { HasLocalPlayer = false, IsPlayerAlive = false });
+        Assert.True(run.Startup.CombatActivated);
+        Assert.Equal(0, run.CombatInvalidations);
+        run.Frame(5, Ready with { IsPlayerAlive = false });
+        run.Frame(6, Ready with { HasJob = false });
+        Assert.Contains("job", run.Startup.StatusText);
+        run.CombatSucceeds = false;
+        run.Frame(7);
+        run.Frame(9);
+        Assert.Equal(2, run.CombatAttempts);
+        run.Frame(10);
+        run.Startup.ObserveReadiness(true, run.Identity, Ready with { IsWatchingCutscene78 = true }, run.Now.AddSeconds(1));
+        run.Frame(12);
+        run.CombatSucceeds = true;
+        run.Frame(13.999);
+        Assert.Equal(2, run.CombatAttempts);
+        Assert.Equal(DutyStartupResult.Confirmed, run.Frame(14));
+        Assert.Equal(1, run.BackendRequests);
+        Assert.Equal(3, run.CombatAttempts);
+    }
+
+    [Fact]
+    public void CompletionMustMatchSupportedAttemptAndFreshEntryGuardButAllowsResume()
+    {
+        var run = new Run();
+        Assert.False(run.Startup.OnDutyCompleted(1044, run.Now));
+        run.Frame(0);
+        run.Frame(2);
+        Assert.False(run.Startup.OnDutyCompleted(1044, run.Now));
+        Assert.False(run.Startup.OnDutyCompleted(1048, run.Now.AddSeconds(100)));
+        Assert.False(run.Startup.OnDutyCompleted(999, run.Now.AddSeconds(100)));
+        Assert.True(run.Startup.CombatActivated);
+        Assert.False(run.Startup.DutySession.IsCompleted);
+        Assert.True(run.Startup.OnDutyCompleted(1044, run.Now.AddSeconds(60)));
+        Assert.False(run.Startup.OnDutyCompleted(1044, run.Now.AddSeconds(61)));
+        run.Startup.ResetSession(resumedInsideDuty: true);
+        run.Frame(100);
+        Assert.True(run.Startup.OnDutyCompleted(1044, run.Now.AddSeconds(1)));
+    }
+
+    [Fact]
+    public void BailoutHoldsRecoveryButCanStillAcceptVerifiedCompletion()
+    {
+        var run = new Run();
+        run.Frame(0);
+        run.Frame(2);
+        run.Startup.HoldForExit();
+        Assert.Equal(DutyStartupResult.Cancelled, run.Frame(30, Ready with { IsPlayerAlive = false }));
+        Assert.False(run.Startup.DutySession.IsCompleted);
+        Assert.True(run.Startup.OnDutyCompleted(1044, run.Now.AddSeconds(60)));
+        Assert.Equal(1, run.CombatAttempts);
+        Assert.Equal(1, run.BackendRequests);
+    }
+
+    [Fact]
+    public void LogoutDoesNotEraseAttemptOrEstablishSuccess()
+    {
+        var run = new Run();
+        run.Frame(0);
+        run.Frame(2);
+        var entered = run.Startup.DutySession.EnteredAtUtc;
+        Assert.False(run.Startup.ObserveReadiness(false, (0, 0), Ready with { IsLoggedIn = false }, run.Now.AddSeconds(10)));
+        Assert.Equal(entered, run.Startup.DutySession.EnteredAtUtc);
+        Assert.False(run.Startup.DutySession.IsCompleted);
+        Assert.True(run.Startup.ObserveReadiness(false, (129, 0), Ready, run.Now.AddSeconds(20)));
+    }
+
+    [Fact]
+    public void StopDuringCombatActivationCannotConfirmOrStartBackend()
+    {
+        var run = new Run();
+        run.DuringCombat = () => run.Startup.Cancel();
+        run.Frame(0);
+        run.Frame(2);
+        Assert.False(run.Startup.CombatActivated);
+        Assert.Equal(0, run.BackendRequests);
+        Assert.Equal(DutyStartupResult.Cancelled, run.Frame(20));
+    }
+
+    [Fact]
+    public void StopDuringRecoveryPreventsLaterActivation()
+    {
+        var run = new Run { Owned = true };
+        run.Frame(0);
+        run.Frame(2);
+        run.Frame(3, Ready with { IsPlayerAlive = false });
+        run.Frame(4);
+        run.Startup.Cancel();
+        run.Frame(20);
+        Assert.Equal(1, run.CombatAttempts);
+        Assert.Equal(0, run.BackendRequests);
+    }
+
+    [Fact]
+    public void SupportedTerritoryWithWrongCfcRemainsPending()
+    {
+        var run = new Run { Territory = 1044, Cfc = 830 };
+        run.Frame(0);
+        Assert.Equal(DutyStartupResult.Pending, run.Frame(200));
+        Assert.Equal(0, run.CombatAttempts);
+        Assert.Equal(0, run.BackendRequests);
+        Assert.False(run.Startup.OnDutyCompleted(1044, run.Now));
+    }
+
     private static AdsHandoffReadinessConditions Blocked(string blocker) => blocker switch
     {
         "missing player" => Ready with { HasLocalPlayer = false },
@@ -424,6 +573,8 @@ public sealed class DutyStartupTests
         internal Func<bool>? TryStartOpener;
         internal int BackendRequests;
         internal int CombatAttempts;
+        internal int CombatInvalidations;
+        internal Action? DuringCombat;
         internal List<string> Commands = [];
         internal DutyStartupService Startup;
         internal (uint TerritoryTypeId, uint ContentFinderConditionId) Identity => (Territory, Cfc);
@@ -455,6 +606,7 @@ public sealed class DutyStartupTests
                 () =>
                 {
                     CombatAttempts++;
+                    DuringCombat?.Invoke();
                     return CombatThrows ? throw new InvalidOperationException("combat unavailable") : CombatSucceeds;
                 },
                 () => "job unavailable",
@@ -463,7 +615,7 @@ public sealed class DutyStartupTests
                     Commands.Add(command);
                     return CommandThrows ? throw new InvalidOperationException("command unavailable") : CommandAccepted;
                 },
-                () => Timer, _ => { }, _ => { });
+                () => Timer, _ => { }, _ => { }, () => CombatInvalidations++);
         }
 
         internal DutyStartupResult Frame(double seconds, AdsHandoffReadinessConditions? conditions = null)

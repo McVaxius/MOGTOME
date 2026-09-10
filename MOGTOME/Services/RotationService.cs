@@ -18,17 +18,12 @@ public class RotationService
     private CombatProvider? preparedBossMod;
     public string LastFailureReason { get; private set; } = string.Empty;
     private static readonly TimeSpan RsrHealthProbeInterval = TimeSpan.FromSeconds(5);
-    private static readonly TimeSpan RsrReviveProbeDelay = TimeSpan.FromSeconds(2);
     private static readonly TimeSpan RsrRecoveryCommandSuppression = TimeSpan.FromSeconds(10);
     private static readonly TimeSpan RsrReflectionFailureLogInterval = TimeSpan.FromSeconds(60);
     private DateTime lastRsrHealthProbeUtc = DateTime.MinValue;
     private DateTime rsrRecoveryCommandSuppressedUntilUtc = DateTime.MinValue;
-    private DateTime rsrLocalPlayerRevivedUtc = DateTime.MinValue;
     private DateTime lastRsrReflectionFailureLogUtc = DateTime.MinValue;
-    private bool rsrLocalPlayerWasDead;
-    private bool rsrReviveRecoveryPending;
     private bool rsrFallbackUnavailableLoggedForDuty;
-    private bool rsrFallbackRecoverySentForDuty;
 
     public RotationService(
         IPluginLog log, ConfigManager configManager,
@@ -94,6 +89,15 @@ public class RotationService
         log.Debug($"[MOGTOME][Rotation] Reset duty rotation lifecycle state ({reason})");
     }
 
+    internal void InvalidateCombatActivation()
+    {
+        if (rotationDisableSentForDuty)
+            return;
+
+        rotationEnableSentForDuty = false;
+        ResetRsrHealthState();
+    }
+
     public bool EnableRotationOncePerDuty(string reason)
     {
         if (rotationDisableSentForDuty)
@@ -107,7 +111,7 @@ public class RotationService
         var provider = configManager.GetActiveConfig().CombatProvider;
         try
         {
-            if (!EnableSelectedProvider())
+            if (!EnableSelectedProvider() || rotationDisableSentForDuty)
             {
                 DisableEnabledComponents();
                 return false;
@@ -120,6 +124,9 @@ public class RotationService
         }
         rotationEnableSentForDuty = true;
         rotationDisableSentForDuty = false;
+        // Full activation also restored RSR; suppress its independent Off probe
+        // while the provider applies that command.
+        rsrRecoveryCommandSuppressedUntilUtc = DateTime.UtcNow + RsrRecoveryCommandSuppression;
         LastFailureReason = string.Empty;
         log.Information($"[MOGTOME][Rotation] enabled selected combat provider once per duty: {provider} ({reason})");
         return true;
@@ -127,15 +134,11 @@ public class RotationService
 
     public bool DisableRotationForDutyEnd(string reason)
     {
-        if (rotationDisableSentForDuty)
-        {
-            log.Debug($"[MOGTOME][Rotation] Skipped selected combat provider disable; already disabled for this duty ({reason})");
-            return true;
-        }
-
+        // Terminal even when cleanup fails. A later Stop may retry cleanup,
+        // but pending activation can never reopen this duty.
+        rotationDisableSentForDuty = true;
         if (!DisableEnabledComponents())
             return Fail($"Could not disable all MogTome combat components ({reason}); see the failed command in the log.");
-        rotationDisableSentForDuty = true;
         log.Information($"[MOGTOME][Rotation] MogTome combat components are disabled ({reason})");
         return true;
     }
@@ -154,25 +157,8 @@ public class RotationService
         }
 
         var now = DateTime.UtcNow;
-        if (localPlayerDead)
-        {
-            rsrLocalPlayerWasDead = true;
-            rsrLocalPlayerRevivedUtc = DateTime.MinValue;
+        if (localPlayerDead || now < rsrRecoveryCommandSuppressedUntilUtc)
             return;
-        }
-
-        if (rsrLocalPlayerWasDead)
-        {
-            rsrLocalPlayerWasDead = false;
-            rsrReviveRecoveryPending = true;
-            rsrLocalPlayerRevivedUtc = now;
-        }
-
-        if (rsrLocalPlayerRevivedUtc != DateTime.MinValue &&
-            now - rsrLocalPlayerRevivedUtc < RsrReviveProbeDelay)
-        {
-            return;
-        }
 
         if (lastRsrHealthProbeUtc != DateTime.MinValue &&
             now - lastRsrHealthProbeUtc < RsrHealthProbeInterval)
@@ -185,13 +171,11 @@ public class RotationService
         if (!bossModIPC.TryGetRsrOperatingMode(out var mode, out var detail))
         {
             LogRsrReflectionFailure(detail, now, reason);
-            TrySendRsrReviveFallbackRecovery(now, reason, detail);
             return;
         }
 
         if (mode != RsrOperatingMode.Off)
         {
-            rsrReviveRecoveryPending = false;
             return;
         }
 
@@ -205,7 +189,6 @@ public class RotationService
             return;
         }
         rsrRecoveryCommandSuppressedUntilUtc = now + RsrRecoveryCommandSuppression;
-        rsrReviveRecoveryPending = false;
         log.Warning($"[MOGTOME][Rotation] RSR health check recovered confirmed Off state: {detail} ({reason})");
     }
 
@@ -213,40 +196,28 @@ public class RotationService
     {
         foreach (var component in enabledComponents.ToArray())
         {
-            var command = component switch
+            try
             {
-                CombatProvider.Rsr => "/rotation cancel",
-                CombatProvider.Bmr => "/bmrai off",
-                CombatProvider.Vbm => "/vbmai off",
-                CombatProvider.Wrath => "/wrath auto off",
-                _ => throw new InvalidOperationException($"Unknown combat component {component}"),
-            };
-            if (bossModIPC.SendCommand(command, $"disable {component}"))
-                enabledComponents.Remove(component);
+                var command = component switch
+                {
+                    CombatProvider.Rsr => "/rotation cancel",
+                    CombatProvider.Bmr => "/bmrai off",
+                    CombatProvider.Vbm => "/vbmai off",
+                    CombatProvider.Wrath => "/wrath auto off",
+                    _ => throw new InvalidOperationException($"Unknown combat component {component}"),
+                };
+                if (bossModIPC.SendCommand(command, $"disable {component}"))
+                    enabledComponents.Remove(component);
+            }
+            catch (Exception ex)
+            {
+                log.Warning($"[MOGTOME][Rotation] Could not disable {component}: {ex.Message}");
+            }
         }
-        var presetCleared = bossModIPC.ClearActivePreset();
+        var presetCleared = false;
+        try { presetCleared = bossModIPC.ClearActivePreset(); }
+        catch (Exception ex) { log.Warning($"[MOGTOME][Rotation] Could not clear preset: {ex.Message}"); }
         return enabledComponents.Count == 0 && presetCleared;
-    }
-
-    private void TrySendRsrReviveFallbackRecovery(DateTime now, string reason, string detail)
-    {
-        if (!rsrReviveRecoveryPending ||
-            rsrFallbackRecoverySentForDuty ||
-            now < rsrRecoveryCommandSuppressedUntilUtc)
-        {
-            return;
-        }
-
-        if (!EnableRsr())
-        {
-            Fail($"RSR revive recovery failed ({reason}).");
-            rsrRecoveryCommandSuppressedUntilUtc = now + RsrRecoveryCommandSuppression;
-            return;
-        }
-        rsrFallbackRecoverySentForDuty = true;
-        rsrReviveRecoveryPending = false;
-        rsrRecoveryCommandSuppressedUntilUtc = now + RsrRecoveryCommandSuppression;
-        log.Warning($"[MOGTOME][Rotation] RSR state reflection unavailable; sent one revive fallback recovery ({reason}). Detail: {detail}");
     }
 
     private void LogRsrReflectionFailure(string detail, DateTime now, string reason)
@@ -265,12 +236,8 @@ public class RotationService
     {
         lastRsrHealthProbeUtc = DateTime.MinValue;
         rsrRecoveryCommandSuppressedUntilUtc = DateTime.MinValue;
-        rsrLocalPlayerRevivedUtc = DateTime.MinValue;
         lastRsrReflectionFailureLogUtc = DateTime.MinValue;
-        rsrLocalPlayerWasDead = false;
-        rsrReviveRecoveryPending = false;
         rsrFallbackUnavailableLoggedForDuty = false;
-        rsrFallbackRecoverySentForDuty = false;
     }
 
     private bool EnableSelectedProvider()
@@ -292,6 +259,8 @@ public class RotationService
                 return Fail($"{preparedBossMod} preset preparation failed; combat was not enabled.");
         }
 
+        if (rotationDisableSentForDuty) return false;
+
         if (provider == CombatProvider.Rsr && !EnableRsr())
             return Fail("RSR Auto IPC and /rotation auto both failed.");
 
@@ -303,18 +272,22 @@ public class RotationService
             CombatProvider.Wrath => "/wrath auto on",
             _ => string.Empty,
         };
+        if (rotationDisableSentForDuty) return false;
+        enabledComponents.Add(aiProvider);
         if (command.Length == 0 || !bossModIPC.SendCommand(command, $"enable {aiProvider}"))
             return Fail($"Could not enable {aiProvider} using {command}.");
-        enabledComponents.Add(aiProvider);
-        return true;
+        return !rotationDisableSentForDuty;
     }
 
     private bool EnableRsr()
     {
-        if (!bossModIPC.TrySetRsrAutoViaIpc() && !bossModIPC.SendCommand("/rotation auto", "enable RSR fallback"))
-            return false;
+        if (rotationDisableSentForDuty) return false;
         enabledComponents.Add(CombatProvider.Rsr);
-        return true;
+        var accepted = bossModIPC.TrySetRsrAutoViaIpc();
+        if (rotationDisableSentForDuty) return false;
+        if (!accepted && !bossModIPC.SendCommand("/rotation auto", "enable RSR fallback"))
+            return false;
+        return !rotationDisableSentForDuty;
     }
 
     private bool Fail(string reason)

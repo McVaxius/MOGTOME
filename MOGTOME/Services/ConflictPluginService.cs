@@ -59,21 +59,22 @@ public sealed class ConflictPluginService
         if (!isStarting())
             return (false, false, "Startup was stopped before BossMod cleanup.");
 
-        var disabledVbm = await EnsurePluginDisabledAsync("MOGTOME start", "VBM", "/xldisableplugin BossMod", MatchesVbm).ConfigureAwait(false);
+        var disabledVbm = await EnsurePluginDisabledAsync("MOGTOME start", "VBM", "/xldisableplugin BossMod", MatchesVbm, isStarting).ConfigureAwait(false);
+        if (!isStarting()) return (false, false, "Startup cancelled during VBM cleanup.");
         if (disabledVbm.FinalStatus.LoadState != "Unloaded")
             return (false, false, "VBM could not be disabled while both BossMod variants were loaded.");
 
         // VBM disposal unregisters the shared BossMod IPC gates. Reload BMR once to restore them.
-        // Once VBM has unloaded, finish this cleanup even if Stop was pressed; BMR must remain usable.
-        var disabledBmr = await EnsurePluginDisabledAsync("BossMod IPC recovery", "BMR", "/xldisableplugintemp BossModReborn", MatchesBmr).ConfigureAwait(false);
+        var disabledBmr = await EnsurePluginDisabledAsync("BossMod IPC recovery", "BMR", "/xldisableplugintemp BossModReborn", MatchesBmr, isStarting).ConfigureAwait(false);
+        if (!isStarting()) return (false, false, "Startup cancelled during BMR cleanup.");
         if (disabledBmr.FinalStatus.LoadState != "Unloaded")
             return (false, false, "BMR could not be temporarily disabled to restore its shared IPC registrations.");
 
-        // Finish the temporary reload even if Stop was pressed while BMR was unloading.
-        if (!await GameHelpers.RunOnFrameworkThreadAsync(() => commandManager.ProcessCommand("/xlenableplugintemp BossModReborn")).ConfigureAwait(false))
+        if (!await GameHelpers.RunOnFrameworkThreadAsync(() => isStarting() && commandManager.ProcessCommand("/xlenableplugintemp BossModReborn")).ConfigureAwait(false))
             return (false, false, "The native temporary BMR enable command was not handled.");
 
-        var readyBmr = await WaitForPluginStateAsync(MatchesBmr, loaded: true).ConfigureAwait(false);
+        var readyBmr = await WaitForPluginStateAsync(MatchesBmr, loaded: true, isStarting).ConfigureAwait(false);
+        if (!isStarting()) return (false, false, "Startup cancelled during BMR readiness.");
         if (readyBmr.LoadState != "Loaded" || GetPluginStatus(MatchesVbm).LoadState != "Unloaded")
             return (false, false, "BMR did not become ready after its reload, or VBM loaded again.");
 
@@ -84,13 +85,14 @@ public sealed class ConflictPluginService
     private static bool MatchesBmr(string? internalName, string? displayName) => internalName == "BossModReborn";
     private static bool MatchesVbm(string? internalName, string? displayName) => internalName == "BossMod";
 
-    public async Task<bool> EnsureTwistOfFayteDisabledAsync(string triggerSource, bool showPopup)
+    public async Task<bool> EnsureTwistOfFayteDisabledAsync(string triggerSource, bool showPopup, Func<bool>? isCurrent = null)
     {
         var result = await EnsurePluginDisabledAsync(
             triggerSource,
             TwistOfFayteDisplayName,
             TwistOfFayteDisableCommand,
-            MatchesTwistOfFayte).ConfigureAwait(false);
+            MatchesTwistOfFayte, isCurrent).ConfigureAwait(false);
+        if (isCurrent?.Invoke() == false) return false;
         if (!result.InitialStatus.IsInstalled)
         {
             ClearPendingWarning();
@@ -133,13 +135,14 @@ public sealed class ConflictPluginService
         return false;
     }
 
-    public async Task<bool> EnsureAutoDutyDisabledAsync(string triggerSource, bool showPopup)
+    public async Task<bool> EnsureAutoDutyDisabledAsync(string triggerSource, bool showPopup, Func<bool>? isCurrent = null)
     {
         var result = await EnsurePluginDisabledAsync(
             triggerSource,
             AutoDutyDisplayName,
             AutoDutyDisableCommand,
-            MatchesAutoDuty).ConfigureAwait(false);
+            MatchesAutoDuty, isCurrent).ConfigureAwait(false);
+        if (isCurrent?.Invoke() == false) return false;
         if (!result.InitialStatus.IsInstalled)
         {
             log.Information($"[MOGTOME][Conflict] {AutoDutyDisplayName} check during {triggerSource}: no matching installed plugin entry was found; popup suppressed.");
@@ -210,7 +213,7 @@ public sealed class ConflictPluginService
         string triggerSource,
         string displayName,
         string disableCommand,
-        Func<string?, string?, bool> matcher)
+        Func<string?, string?, bool> matcher, Func<bool>? isCurrent = null)
     {
         var initialStatus = GetPluginStatus(matcher);
         if (!initialStatus.IsLoaded)
@@ -230,7 +233,7 @@ public sealed class ConflictPluginService
         if (shouldSendDisable)
         {
             log.Warning($"[MOGTOME][Conflict] {displayName} is enabled during {triggerSource}; matched {DescribePluginStatus(initialStatus)}; sending {disableCommand}");
-            if (!await GameHelpers.RunOnFrameworkThreadAsync(() => commandManager.ProcessCommand(disableCommand)).ConfigureAwait(false))
+            if (!await GameHelpers.RunOnFrameworkThreadAsync(() => isCurrent?.Invoke() != false && commandManager.ProcessCommand(disableCommand)).ConfigureAwait(false))
             {
                 log.Error($"[MOGTOME][Conflict] Native plugin command was not handled: {disableCommand}");
                 return new PluginDisableResult(initialStatus, initialStatus, true);
@@ -241,14 +244,14 @@ public sealed class ConflictPluginService
             log.Warning($"[MOGTOME][Conflict] {displayName} is still enabled during {triggerSource}; matched {DescribePluginStatus(initialStatus)}; waiting for recent disable attempt");
         }
 
-        var finalStatus = await WaitForPluginStateAsync(matcher, loaded: false).ConfigureAwait(false);
+        var finalStatus = await WaitForPluginStateAsync(matcher, loaded: false, isCurrent).ConfigureAwait(false);
         return new PluginDisableResult(initialStatus, finalStatus, shouldSendDisable);
     }
 
-    private async Task<PluginStatus> WaitForPluginStateAsync(Func<string?, string?, bool> matcher, bool loaded)
+    private async Task<PluginStatus> WaitForPluginStateAsync(Func<string?, string?, bool> matcher, bool loaded, Func<bool>? isCurrent = null)
     {
         var deadline = DateTime.UtcNow + DisableWaitTimeout;
-        while (DateTime.UtcNow < deadline)
+        while (isCurrent?.Invoke() != false && DateTime.UtcNow < deadline)
         {
             var status = GetPluginStatus(matcher);
             var isBossMod = status.InternalName is "BossMod" or "BossModReborn";

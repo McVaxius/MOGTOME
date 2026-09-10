@@ -97,6 +97,8 @@ public sealed class Plugin : IDalamudPlugin
     private readonly object externalExceptionLogLock = new();
     private readonly Dictionary<string, ExternalExceptionLogState> externalExceptionLogStates = new(StringComparer.Ordinal);
     private bool pendingEngineStartRequest;
+    public bool IsEngineStartQueued => pendingEngineStartRequest || deferredSharedConfigStartRequest;
+    private string stopReasonBeforeInitialization = "Has not been started since loading.";
     private string pendingEngineStartSource = string.Empty;
     private bool pendingEngineStartNotifyChat;
     private bool pendingEngineStartDuplicateNotified;
@@ -200,6 +202,7 @@ public sealed class Plugin : IDalamudPlugin
 
     public void Dispose()
     {
+        CancelQueuedEngineStart();
         DutyStateService.DutyCompleted -= OnDutyCompleted;
         DutyStateService.DutyStarted -= OnDutyStarted;
         Framework.Update -= OnFrameworkUpdate;
@@ -217,8 +220,6 @@ public sealed class Plugin : IDalamudPlugin
         // Stop engine if running and dispose if initialized
         if (Engine != null)
         {
-            if (Engine.IsRunning)
-                Engine.Stop();
             Engine.Dispose();
         }
 
@@ -264,24 +265,10 @@ public sealed class Plugin : IDalamudPlugin
                 break;
 
             case "stop":
-                if (Engine == null)
-                {
-                    ChatGui.Print("[MOGTOME] Engine is still initializing.");
-                    break;
-                }
-
-                var stoppedSomething = false;
-                if (Engine.IsRunning)
-                {
-                    Engine.Stop();
-                    stoppedSomething = true;
-                }
-                else if (Engine.ClearStopAfterNextSuccessfulRun())
-                {
-                    stoppedSomething = true;
-                }
-
-                ChatGui.Print(stoppedSomething ? "[MOGTOME] Stopped and cleared pending stop-after-next state" : "[MOGTOME] Already stopped");
+                var stoppedSomething = StopEngine();
+                ChatGui.Print(stoppedSomething
+                    ? "[MOGTOME] Stopped and cleared pending Start and stop-after-next state."
+                    : $"[MOGTOME] Already stopped: {Engine?.LastStopReason ?? stopReasonBeforeInitialization}");
                 break;
 
             case "stopnext":
@@ -444,6 +431,33 @@ public sealed class Plugin : IDalamudPlugin
         QueueEngineStartCore(source, notifyChat);
     }
 
+    internal void CancelQueuedEngineStart()
+    {
+        pendingEngineStartRequest = false;
+        pendingEngineStartSource = string.Empty;
+        pendingEngineStartNotifyChat = false;
+        pendingEngineStartDuplicateNotified = false;
+        CancelDeferredSharedConfigStart();
+    }
+
+    public bool StopEngine(string reason = "Manual Stop.")
+    {
+        var stopped = IsEngineStartQueued;
+        CancelQueuedEngineStart();
+        if (Engine?.IsRunning == true)
+        {
+            Engine.Stop(reason);
+            return true;
+        }
+        stopped |= Engine?.ClearStopAfterNextSuccessfulRun() == true;
+        if (stopped)
+        {
+            stopReasonBeforeInitialization = reason;
+            Engine?.RecordStopReason(reason);
+        }
+        return stopped;
+    }
+
     private void QueueEngineStartCore(string source, bool notifyChat)
     {
         if (pendingEngineStartRequest)
@@ -550,7 +564,8 @@ public sealed class Plugin : IDalamudPlugin
                     AutoDutyPathService, ConflictPluginService, RunHistoryService,
                     DeathTrackingService,
                     AutoDutyIPC, YesAlreadyIPC, VNavIPC,
-                    Condition, ClientState, CommandManager);
+                    Condition, ClientState, CommandManager, CancelQueuedEngineStart);
+                Engine.RecordStopReason(stopReasonBeforeInitialization);
                 
                 Log.Information("[Plugin] Engine initialized successfully with proper config");
             }
@@ -706,14 +721,7 @@ public sealed class Plugin : IDalamudPlugin
     private void OnDutyStarted(uint territoryId)
     {
         Log.Information($"[Plugin] DutyStarted event: territory={territoryId}");
-        if (DutyState.IsMogtomeDutyTerritory(territoryId))
-        {
-            State.DutyStartTerritory = territoryId;
-            Log.Debug($"[Plugin] Stored MOGTOME DutyStartTerritory={territoryId}");
-            return;
-        }
-
-        Log.Debug($"[Plugin] Ignored non-MOGTOME DutyStarted territory={territoryId}");
+        // The engine validates live territory/CFC before binding its attempt.
     }
 
     private void OnDutyCompleted(Dalamud.Game.DutyState.IDutyStateEventArgs args)

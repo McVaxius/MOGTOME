@@ -933,12 +933,12 @@ public class ConfigWindow : Window, IDisposable
         ImGui.TextDisabled("Switch to Decumana after this many Praetorium runs.");
 
         var maxRuns = config.MaxRuns;
-        if (ImGui.InputInt("Max Runs", ref maxRuns))
+        if (ImGui.InputInt("Praetorium Daily Limit", ref maxRuns))
         {
             config.MaxRuns = Math.Clamp(maxRuns, 0, 9999);
             changed = true;
         }
-        ImGui.TextDisabled("Maximum total runs before stopping.");
+        ImGui.TextDisabled("Stop after this many successful Praetorium clears today. Decumana and aborted runs do not count.");
 
         var quitCommand = config.QuitCommand;
         if (ImGui.InputText("Quit Command", ref quitCommand, 50))
@@ -946,7 +946,7 @@ public class ConfigWindow : Window, IDisposable
             config.QuitCommand = quitCommand;
             changed = true;
         }
-        ImGui.TextDisabled("Command to run when MaxRuns reached.");
+        ImGui.TextDisabled("Runs once when the Praetorium daily limit is reached, after leaving duty.");
 
         // Sync counters if duty counter changed
         if (dutyCounterChanged)

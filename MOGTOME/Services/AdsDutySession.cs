@@ -1,4 +1,5 @@
 using System;
+using MOGTOME.Models;
 
 namespace MOGTOME.Services;
 
@@ -6,6 +7,7 @@ namespace MOGTOME.Services;
 internal sealed class AdsDutySession
 {
     private uint dutyTerritoryId;
+    internal bool ResumedInsideDuty { get; set; }
 
     public DateTime EnteredAtUtc { get; private set; } = DateTime.MinValue;
     public DateTime CompletedAtUtc { get; private set; } = DateTime.MinValue;
@@ -21,7 +23,10 @@ internal sealed class AdsDutySession
         var confirmedExit = !inDuty && territoryId != 0 && territoryId != dutyTerritoryId
                             && contentFinderConditionId == 0
                             && AdsIntegrationPolicy.GetHandoffReadinessBlocker(conditions) is null;
-        if (!conditions.IsLoggedIn || confirmedExit)
+        if (!conditions.IsLoggedIn)
+            return false;
+
+        if (confirmedExit)
         {
             var hadSession = EnteredAtUtc != DateTime.MinValue || IsCompleted;
             Reset();
@@ -31,7 +36,7 @@ internal sealed class AdsDutySession
         if (inDuty)
         {
             ObserveEntry(nowUtc);
-            if (dutyTerritoryId == 0)
+            if (dutyTerritoryId == 0 && DutyState.IsSupportedDutyIdentity(territoryId, contentFinderConditionId))
                 dutyTerritoryId = territoryId;
         }
 
@@ -51,13 +56,15 @@ internal sealed class AdsDutySession
         EnteredAtUtc = nowUtc;
     }
 
-    public void Complete(uint territoryId, DateTime nowUtc)
+    public bool Complete(uint territoryId, DateTime nowUtc)
     {
-        if (IsCompleted)
-            return;
+        if (IsCompleted || EnteredAtUtc == DateTime.MinValue || territoryId != dutyTerritoryId
+            || !DutyState.IsMogtomeDutyTerritory(territoryId)
+            || (!ResumedInsideDuty && (nowUtc - EnteredAtUtc).TotalSeconds < 60))
+            return false;
 
-        dutyTerritoryId = territoryId;
         CompletedAtUtc = nowUtc;
+        return true;
     }
 
     public void ObserveAdsControl() => HadAdsControl = true;
@@ -79,5 +86,6 @@ internal sealed class AdsDutySession
         HadAdsControl = false;
         ExitTakeoverActive = false;
         LeaveIssued = false;
+        ResumedInsideDuty = false;
     }
 }

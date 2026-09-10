@@ -61,8 +61,6 @@ public class StuckDetectionService
             }
         }
 
-        // Bailout check
-        CheckBailout();
     }
 
     private void HandleStuck()
@@ -83,21 +81,4 @@ public class StuckDetectionService
         }
     }
 
-    private void CheckBailout()
-    {
-        if (!state.DutyStartTime.HasValue) return;
-
-        var elapsed = (float)(DateTime.UtcNow - state.DutyStartTime.Value).TotalSeconds;
-        state.TimeInDuty = elapsed;
-        var config = configManager.GetActiveConfig();
-
-        // Condition[26] = InCombat
-        if (elapsed > config.BailoutTimeout && !condition[26] && !state.BailoutRequested)
-        {
-            state.BailoutElapsedTime = elapsed;
-            state.BailoutReason = $"Bailout triggered after {elapsed:F0}s (configured: {config.BailoutTimeout}s)";
-            state.BailoutRequested = true;
-            log.Warning($"[MOGTOME][StuckDetection] Queued bailout request: {state.BailoutReason}");
-        }
-    }
 }

@@ -1,4 +1,5 @@
 using System;
+using MOGTOME.Models;
 
 namespace MOGTOME.Services;
 
@@ -11,7 +12,8 @@ internal readonly record struct AdsHandoffReadinessConditions(
     bool IsWatchingCutscene,
     bool IsOccupiedInCutSceneEvent,
     bool IsWatchingCutscene78 = false,
-    bool IsBetweenAreas51 = false);
+    bool IsBetweenAreas51 = false,
+    bool HasJob = true);
 
 internal readonly record struct AdsHandoffCountdownState(
     uint TerritoryTypeId,
@@ -65,6 +67,22 @@ internal sealed class AdsHandoffState
 public static class AdsIntegrationPolicy
 {
     public static readonly TimeSpan HandoffConfirmationTimeout = TimeSpan.FromSeconds(5);
+
+    internal static string? GetDutyLeaveBlocker(uint activeTerritory, bool inDuty,
+        (uint TerritoryTypeId, uint ContentFinderConditionId) identity,
+        AdsHandoffReadinessConditions conditions, bool inCombat, bool occupied)
+    {
+        if (!conditions.IsLoggedIn || !inDuty || identity.TerritoryTypeId != activeTerritory
+            || !DutyState.IsSupportedDutyIdentity(identity.TerritoryTypeId, identity.ContentFinderConditionId))
+            return "waiting for matching duty identity";
+        if (!conditions.HasLocalPlayer || conditions.IsBetweenAreas || conditions.IsBetweenAreas51)
+            return "loading";
+        if (inCombat) return "combat";
+        if (conditions.IsWatchingCutscene || conditions.IsWatchingCutscene78 || conditions.IsOccupiedInCutSceneEvent)
+            return "cutscene";
+        if (occupied) return "occupied transition";
+        return null;
+    }
 
     public static bool ShouldPauseDutySystems(bool handoffPending, bool runtimeOwned, bool exitTakeoverActive)
         => handoffPending || runtimeOwned || exitTakeoverActive;
@@ -122,6 +140,8 @@ public static class AdsIntegrationPolicy
             return "waiting for login";
         if (!conditions.HasLocalPlayer)
             return "waiting for local player";
+        if (!conditions.HasJob)
+            return "waiting for local player job";
         if (conditions.IsUnconscious)
             return "waiting for unconscious state to clear";
         if (!conditions.IsPlayerAlive)

@@ -150,16 +150,23 @@ public sealed class DutyAutomationService
     public bool IsAutoDutyLoaded()
         => IsPluginLoaded("AutoDuty");
 
-    public async Task<bool> PrepareForStartAsync(bool isLeader, bool startingInsideDuty)
+    public string LastPreparationFailure { get; private set; } = string.Empty;
+    internal Func<bool>? QueueEligibility { get; set; }
+
+    public async Task<bool> PrepareForStartAsync(bool isLeader, bool startingInsideDuty, Func<bool> isCurrent)
     {
+        if (!isCurrent()) return false;
+        LastPreparationFailure = string.Empty;
         if (UseAdsExperimental)
         {
             log.Information("[MOGTOME][Automation] Preparing ADS backend");
-            await conflictPluginService.EnsureAutoDutyDisabledAsync("MOGTOME ADS start", showPopup: true).ConfigureAwait(false);
+            await conflictPluginService.EnsureAutoDutyDisabledAsync("MOGTOME ADS start", showPopup: true, isCurrent).ConfigureAwait(false);
+            if (!isCurrent()) return false;
 
             if (!IsAdsLoaded())
             {
                 const string message = "AI Duty Solver (ADS) experimental mode is enabled, but ADS is not loaded.";
+                LastPreparationFailure = message;
                 log.Warning($"[MOGTOME][Automation] {message}");
                 Plugin.ChatGui.Print($"[MOGTOME] {message}");
                 return false;
@@ -168,6 +175,7 @@ public sealed class DutyAutomationService
             var sentStartupStop = false;
             await GameHelpers.RunOnFrameworkThreadAsync(() =>
             {
+                if (!isCurrent()) return;
                 SetAdsRuntimeRole(isLeader, startingInsideDuty);
                 CancelAdsRepairHandoff("ads startup reset");
                 InvalidateAdsQueueOperations("ads startup reset");
@@ -191,23 +199,27 @@ public sealed class DutyAutomationService
                 await Task.Delay(AdsStartupStopSettleDelayMs).ConfigureAwait(false);
 
             log.Information("[MOGTOME][Automation] ADS backend ready");
-            return true;
+            return isCurrent();
         }
 
         log.Information("[MOGTOME][Automation] Preparing AutoDuty backend");
-        var autoDutyReady = await autoDutyPathService.WaitForAutoDutyInitializationAsync(TimeSpan.FromSeconds(20), TimeSpan.FromMilliseconds(500)).ConfigureAwait(false);
+        var autoDutyReady = await autoDutyPathService.WaitForAutoDutyInitializationAsync(TimeSpan.FromSeconds(20), TimeSpan.FromMilliseconds(500), isCurrent).ConfigureAwait(false);
+        if (!isCurrent()) return false;
         if (!autoDutyReady)
         {
             const string startupFailure = "AutoDuty is still initializing or faulted; retry MOGTOME after login settles";
+            LastPreparationFailure = startupFailure;
             log.Warning($"[MOGTOME][Automation] {startupFailure}");
             Plugin.ChatGui.Print($"[MOGTOME] {startupFailure}");
             return false;
         }
 
         var bundledPathsReady = await autoDutyPathService.EnsurePathExists().ConfigureAwait(false);
+        if (!isCurrent()) return false;
         if (!bundledPathsReady)
         {
             const string pathFailure = "Bundled Praetorium paths could not be installed into AutoDuty.";
+            LastPreparationFailure = pathFailure;
             log.Warning($"[MOGTOME][Automation] {pathFailure}");
             Plugin.ChatGui.Print($"[MOGTOME] {pathFailure}");
             return false;
@@ -215,6 +227,7 @@ public sealed class DutyAutomationService
 
         var pathSelectionReady = await GameHelpers.RunOnFrameworkThreadAsync(() =>
         {
+            if (!isCurrent()) return false;
             autoDutyIPC.StopDuty();
             autoDutyIPC.ConfigureForMogtome(isLeader);
 
@@ -223,13 +236,15 @@ public sealed class DutyAutomationService
 
         if (!pathSelectionReady)
         {
+            if (!isCurrent()) return false;
+            LastPreparationFailure = $"AutoDuty preparation failed: {autoDutyPathService.LastForceResult}";
             log.Warning($"[MOGTOME][Automation] AutoDuty preparation failed: {autoDutyPathService.LastForceResult}");
             Plugin.ChatGui.Print($"[MOGTOME] AutoDuty preparation failed: {autoDutyPathService.LastForceResult}");
             return false;
         }
 
         log.Information("[MOGTOME][Automation] AutoDuty backend ready");
-        return true;
+        return isCurrent();
     }
 
     public async Task EnsureAutoDutyDisabledForAdsAsync(string triggerSource)
@@ -293,7 +308,7 @@ public sealed class DutyAutomationService
 
     public void StopDuty()
     {
-        InvalidateAdsQueueOperations("backend stop");
+        CancelPendingOperations("backend stop");
         if (!UseAdsExperimental)
         {
             autoDutyIPC.StopDuty();
@@ -312,6 +327,7 @@ public sealed class DutyAutomationService
 
     public void RequestDutyLeave(string reason, DateTime dutyCompletedUtc, int attemptNumber)
     {
+        CancelPendingOperations("duty exit requested");
         if (!UseAdsExperimental)
             return;
 
@@ -651,6 +667,12 @@ public sealed class DutyAutomationService
             log.Debug($"[MOGTOME][DutyQueue] Queue callback invalidation requested with no active operation ({reason})");
     }
 
+    internal void CancelPendingOperations(string reason)
+    {
+        InvalidateAdsQueueOperations(reason);
+        CancelAdsRepairHandoff(reason);
+    }
+
     public PraetoriumSelectionInfo GetPraetoriumSelectionInfo()
     {
         var unlocks = PraetoriumOptionalUnlocks
@@ -859,7 +881,8 @@ public sealed class DutyAutomationService
 
     private unsafe bool RegisterSelectedDutiesDirect(int operationId, SelectedMogtomeDuty targetDuty, string dutyName)
     {
-        if (!IsCurrentAdsQueueOperation(operationId))
+        if (!IsCurrentAdsQueueOperation(operationId) || !Plugin.ClientState.IsLoggedIn
+            || DutyStartupService.IsInDuty() || QueueEligibility?.Invoke() == false)
             return false;
 
         var agent = AgentContentsFinder.Instance();
@@ -888,7 +911,7 @@ public sealed class DutyAutomationService
         var interfaceSelectedDutyId = agent->InterfaceSub.SelectedDutyId;
         var selectedContent = agent->SelectedContent;
         var selectedCount = selectedContent.Count;
-        if (selectedCount <= 0 || selectedCount > 5 || selectedContent.First == null)
+        if (selectedCount != 1 || selectedContent.First == null)
         {
             log.Error($"[MOGTOME][DutyQueue] Operation {operationId}: invalid selected-content collection for {dutyName}; count={selectedCount}, first=0x{(nuint)selectedContent.First:X}");
             return false;
@@ -904,7 +927,7 @@ public sealed class DutyAutomationService
         for (var index = 0; index < selectedCount; index++)
         {
             var selected = selectedContent[index];
-            if (selected.ContentType != ContentsType.Regular || selected.Id == 0)
+            if (!IsIntendedSelection(expectedDutyId, selectedCount, selected.ContentType == ContentsType.Regular, selected.Id))
             {
                 log.Error($"[MOGTOME][DutyQueue] Operation {operationId}: invalid selected content at index {index} for {dutyName}; type={selected.ContentType}, id={selected.Id}");
                 return false;
@@ -917,6 +940,9 @@ public sealed class DutyAutomationService
         log.Information($"[MOGTOME][DutyQueue] Operation {operationId}: QueueDuties registered {selectedCount} selected content entries for {dutyName}; selected={string.Join(",", new ReadOnlySpan<uint>(entries, selectedCount).ToArray())}");
         return true;
     }
+
+    internal static bool IsIntendedSelection(uint expectedDutyId, int count, bool regular, uint selectedId)
+        => count == 1 && regular && selectedId == expectedDutyId && (expectedDutyId == 16 || expectedDutyId == DutyState.DecumanaDutyId);
 
     private async Task<bool> WaitForContentsFinderStableVisibleAsync(int operationId, string dutyName, string gateName, int maxPolls)
     {
@@ -993,7 +1019,9 @@ public sealed class DutyAutomationService
         }
 
         log.Information($"[MOGTOME][DutyQueue] Operation {operationId}: {stepName} for {dutyName} via ContentsFinder true {arg1} {arg2}");
-        if (!await GameHelpers.RunOnFrameworkThreadAsync(() => GameHelpers.TryFireAdsAddonCallback(operationId, "ContentsFinder", true, arg1, arg2)).ConfigureAwait(false))
+        if (!await GameHelpers.RunOnFrameworkThreadAsync(() =>
+                IsCurrentAdsQueueOperation(operationId) && Plugin.ClientState.IsLoggedIn && !DutyStartupService.IsInDuty()
+                && GameHelpers.TryFireAdsAddonCallback(operationId, "ContentsFinder", true, arg1, arg2)).ConfigureAwait(false))
         {
             MarkAdsQueueAttemptFailed(operationId, $"selection callback failed: ContentsFinder true {arg1} {arg2}", invalidateOperation: true);
             return false;
@@ -1056,7 +1084,8 @@ public sealed class DutyAutomationService
 
             await GameHelpers.RunOnFrameworkThreadAsync(() =>
             {
-                commandManager.ProcessCommand(AdsStopCommand);
+                if (IsCurrentAdsRepairOperation(operationId) && Plugin.ClientState.IsLoggedIn && !DutyStartupService.IsInDuty())
+                    commandManager.ProcessCommand(AdsStopCommand);
             }).ConfigureAwait(false);
 
             await Task.Delay(AdsRepairStopSettleDelayMs).ConfigureAwait(false);
@@ -1066,7 +1095,8 @@ public sealed class DutyAutomationService
 
             await GameHelpers.RunOnFrameworkThreadAsync(() =>
             {
-                commandManager.ProcessCommand(repairCommand);
+                if (IsCurrentAdsRepairOperation(operationId) && Plugin.ClientState.IsLoggedIn && !DutyStartupService.IsInDuty())
+                    commandManager.ProcessCommand(repairCommand);
             }).ConfigureAwait(false);
 
             if (!IsCurrentAdsRepairOperation(operationId))
