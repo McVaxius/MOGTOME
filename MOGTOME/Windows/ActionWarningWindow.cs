@@ -1,3 +1,4 @@
+using MOGTOME.Localization;
 using System;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
@@ -7,11 +8,11 @@ namespace MOGTOME.Windows;
 
 public sealed class ActionWarningWindow : Window, IDisposable
 {
-    private string warningTitle = "MOGTOME Warning";
-    private string warningMessage = string.Empty;
-    private string? primaryLabel;
-    private string dismissLabel = "Dismiss";
-    private string? acknowledgeLabel;
+    private UiText warningTitle = Ui.M("Warning_Title");
+    private UiText warningMessage = string.Empty;
+    private UiText? primaryLabel;
+    private UiText dismissLabel = Ui.M("Warning_Dismiss");
+    private UiText? acknowledgeLabel;
     private Action? primaryAction;
     private Action? dismissAction;
     private Action? acknowledgementAction;
@@ -19,13 +20,13 @@ public sealed class ActionWarningWindow : Window, IDisposable
     private bool choiceMade;
 
     public ActionWarningWindow()
-        : base("MOGTOME Warning##MOGTOMEActionWarning", ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse)
+        : base(Ui.T("Warning_Title") + "###MOGTOMEActionWarning", ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse)
     {
         RespectCloseHotkey = false;
         SizeConstraints = new WindowSizeConstraints
         {
             MinimumSize = new Vector2(420f, 180f),
-            MaximumSize = new Vector2(560f, 380f),
+            MaximumSize = new Vector2(760f, 500f),
         };
     }
 
@@ -34,29 +35,31 @@ public sealed class ActionWarningWindow : Window, IDisposable
     }
 
     public void ShowWarning(
-        string title,
-        string message,
-        string? primaryButtonLabel = null,
+        UiText title,
+        UiText message,
+        UiText? primaryButtonLabel = null,
         Action? onPrimary = null,
-        string dismissButtonLabel = "Dismiss",
+        UiText? dismissButtonLabel = null,
         Action? onDismiss = null,
-        string? acknowledgeButtonLabel = null,
+        UiText? acknowledgeButtonLabel = null,
         Action? onAcknowledged = null,
         bool explicitChoiceRequired = false)
     {
-        warningTitle = string.IsNullOrWhiteSpace(title) ? "MOGTOME Warning" : title.Trim();
-        warningMessage = string.IsNullOrWhiteSpace(message) ? "MOGTOME requires your attention." : message.Trim();
+        warningTitle = title;
+        warningMessage = message;
         primaryLabel = primaryButtonLabel;
         primaryAction = onPrimary;
-        dismissLabel = string.IsNullOrWhiteSpace(dismissButtonLabel) ? "Dismiss" : dismissButtonLabel;
+        dismissLabel = dismissButtonLabel ?? Ui.M("Warning_Dismiss");
         dismissAction = onDismiss;
         acknowledgeLabel = acknowledgeButtonLabel;
         acknowledgementAction = onAcknowledged;
         requireExplicitChoice = explicitChoiceRequired;
         choiceMade = false;
-        WindowName = $"{warningTitle}##MOGTOMEActionWarning";
+        WindowName = warningTitle.Render() + "###MOGTOMEActionWarning";
         IsOpen = true;
     }
+
+    public override void PreDraw() => WindowName = warningTitle.Render() + "###MOGTOMEActionWarning";
 
     public override void Draw()
     {
@@ -68,30 +71,30 @@ public sealed class ActionWarningWindow : Window, IDisposable
             ImGui.SetWindowPos(new Vector2(MathF.Max(1f, posX), MathF.Max(1f, posY)));
         }
 
-        ImGui.TextColored(new Vector4(1f, 0.55f, 0.2f, 1f), warningTitle);
+        ImGui.TextColored(new Vector4(1f, 0.55f, 0.2f, 1f), warningTitle.Render());
         ImGui.Spacing();
-        ImGui.TextWrapped(warningMessage);
+        ImGui.TextWrapped(warningMessage.Render());
         ImGui.Spacing();
 
-        if (!string.IsNullOrWhiteSpace(primaryLabel) && primaryAction != null)
+        if (primaryLabel != null && primaryAction != null)
         {
-            if (ImGui.Button(primaryLabel, new Vector2(170f, 30f)))
+            if (UiLayout.Button(primaryLabel.Render() + "###primaryLabel", new Vector2(170f, 30f)))
                 primaryAction();
-            ImGui.SameLine();
+            ImGui.Spacing();
         }
 
-        if (!string.IsNullOrWhiteSpace(acknowledgeLabel) && acknowledgementAction != null)
+        if (acknowledgeLabel != null && acknowledgementAction != null)
         {
-            if (ImGui.Button(acknowledgeLabel, new Vector2(170f, 30f)))
+            if (UiLayout.Button(acknowledgeLabel.Render() + "###acknowledgeLabel", new Vector2(170f, 30f)))
             {
                 choiceMade = true;
                 IsOpen = false;
                 acknowledgementAction();
             }
-            ImGui.SameLine();
+            ImGui.Spacing();
         }
 
-        if (ImGui.Button(dismissLabel, new Vector2(150f, 30f)))
+        if (UiLayout.Button(dismissLabel.Render() + "###dismissLabel", new Vector2(150f, 30f)))
         {
             choiceMade = true;
             IsOpen = false;

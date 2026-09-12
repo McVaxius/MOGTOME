@@ -23,21 +23,6 @@ namespace MOGTOME.Services;
 /// </summary>
 public static class GameHelpers
 {
-    private static readonly HashSet<string> KnownInnTerritoryNames = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "The Mizzenmast",
-        "Mizzenmast Inn",
-        "The Roost",
-        "The Hourglass",
-        "The Forgotten Knight",
-        "Cloud Nine",
-        "Bokairo Inn",
-        "The Pendants",
-        "The Andron",
-        "The Baldesion Annex",
-        "The For'ard Cabins",
-    };
-
     /// <summary>
     /// Run work on the framework thread immediately or on a future tick after a delay.
     /// </summary>
@@ -84,17 +69,24 @@ public static class GameHelpers
     public static unsafe bool IsLeaveDutyPromptVisible()
     {
         var addon = (AddonSelectYesno*)Plugin.GameGui.GetAddonByName("SelectYesno", 1).Address;
-        if (addon == null || !addon->AtkUnitBase.IsVisible || addon->PromptText == null)
+        if (addon == null || !addon->AtkUnitBase.IsVisible || addon->PromptText == null ||
+            !addon->PromptText->NodeText.StringPtr.HasValue)
             return false;
-        return IsLeaveDutyPrompt(addon->PromptText->NodeText.ToString());
+        return IsLeaveDutyPrompt(GameText.ReadVisibleText(addon->PromptText->NodeText.AsSpan()));
     }
 
     internal static bool IsLeaveDutyPrompt(string text)
-        => text.Contains("leave the duty?", StringComparison.OrdinalIgnoreCase)
-           || text.Contains("abandon the duty?", StringComparison.OrdinalIgnoreCase);
+        => GameText.MatchesPrompt(text, GamePrompt.LeaveDuty);
 
     public static bool ClickLeaveDutyYesIfVisible()
         => IsLeaveDutyPromptVisible() && ClickYesIfVisible();
+
+    public static unsafe void OpenDutyFinder()
+    {
+        if (!Plugin.Framework.IsInFrameworkUpdateThread) return;
+        var agent = AgentContentsFinder.Instance();
+        if (agent != null) agent->Show();
+    }
 
     public static unsafe bool ClickYesIfVisible()
     {
@@ -371,13 +363,11 @@ public static class GameHelpers
 
     public static bool IsInnTerritory(uint territoryId)
     {
-        var territoryName = GetTerritoryName(territoryId);
-        if (territoryName.StartsWith("Territory ", StringComparison.OrdinalIgnoreCase))
-            return false;
-
-        return territoryName.Contains("Inn", StringComparison.OrdinalIgnoreCase)
-            || KnownInnTerritoryNames.Contains(territoryName);
+        var territory = Plugin.DataManager.GetExcelSheet<TerritoryType>().GetRowOrDefault(territoryId);
+        return territory.HasValue && IsInnIntendedUse(territory.Value.TerritoryIntendedUse.RowId);
     }
+
+    internal static bool IsInnIntendedUse(uint intendedUse) => intendedUse == 2;
 
     /// <summary>
     /// Get remaining time for current duty.
@@ -498,7 +488,7 @@ public static class GameHelpers
     /// <summary>
     /// Use a combat action from the framework thread. The caller must select a target first when the action needs one.
     /// </summary>
-    public static unsafe bool TryUseCombatAction(uint actionId)
+    public static unsafe bool TryUseCombatAction(uint actionId, ActionType actionType = ActionType.Action)
     {
         if (!Plugin.Framework.IsInFrameworkUpdateThread)
         {
@@ -513,10 +503,10 @@ public static class GameHelpers
                 return false;
 
             var actionManager = ActionManager.Instance();
-            if (actionManager == null || actionManager->GetActionStatus(ActionType.Action, actionId) != 0)
+            if (actionManager == null || actionManager->GetActionStatus(actionType, actionId) != 0)
                 return false;
 
-            var result = actionManager->UseAction(ActionType.Action, actionId);
+            var result = actionManager->UseAction(actionType, actionId);
             Plugin.Log.Information($"[MOGTOME][Combat] Action {actionId} result={result}");
             return result;
         }

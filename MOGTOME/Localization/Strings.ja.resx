@@ -1,0 +1,1987 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <data name="Config_SetupWizard" xml:space="preserve">
+    <value>セットアップ</value>
+  </data>
+  <data name="Config_DependencyCheck" xml:space="preserve">
+    <value>依存プラグインの確認</value>
+  </data>
+  <data name="Config_Party" xml:space="preserve">
+    <value>パーティ</value>
+  </data>
+  <data name="Config_Duty" xml:space="preserve">
+    <value>コンテンツ</value>
+  </data>
+  <data name="Config_FoodPots" xml:space="preserve">
+    <value>食事・薬品</value>
+  </data>
+  <data name="Config_Repair" xml:space="preserve">
+    <value>修理</value>
+  </data>
+  <data name="Config_Advanced" xml:space="preserve">
+    <value>詳細設定</value>
+  </data>
+  <data name="Config_BackendMode" xml:space="preserve">
+    <value>自動化モード</value>
+  </data>
+  <data name="Config_UseADSPrimaryBackend" xml:space="preserve">
+    <value>ADSを使用（標準）</value>
+  </data>
+  <data name="Config_ADSHandlesDutyAutomationAndInnReturn" xml:space="preserve">
+    <value>ADSがコンテンツの進行と宿屋への帰還を担当します。AutoDutyも選択できます。</value>
+  </data>
+  <data name="Config_AutoDutyIsTheAlternativeDutyBackendADS" xml:space="preserve">
+    <value>AutoDutyは代替の進行システムです。ADSモードまたは /mog inn の使用時のみADSが必要です。</value>
+  </data>
+  <data name="Config_RequiredPlugins" xml:space="preserve">
+    <value>必須プラグイン</value>
+  </data>
+  <data name="Config_SetupRequirementsAreIncompleteTheWizardIs" xml:space="preserve">
+    <value>設定が完了していません。このガイドは参考用で、開始を制限しません。</value>
+  </data>
+  <data name="Config_RSRRotationSolverReborn" xml:space="preserve">
+    <value>RSR (RotationSolverReborn)</value>
+  </data>
+  <data name="Config_Installed" xml:space="preserve">
+    <value>インストール済み</value>
+  </data>
+  <data name="Config_NOTFOUND" xml:space="preserve">
+    <value>見つかりません</value>
+  </data>
+  <data name="Config_BossModPassiveSupportBMROrVBM" xml:space="preserve">
+    <value>BossModのパッシブ支援（BMRまたはVBM）</value>
+  </data>
+  <data name="Config_BMRLoaded" xml:space="preserve">
+    <value>BMR読み込み済み</value>
+  </data>
+  <data name="Config_VBMLoaded" xml:space="preserve">
+    <value>VBM読み込み済み</value>
+  </data>
+  <data name="Config_BossModRebornBMR" xml:space="preserve">
+    <value>BossModReborn (BMR)</value>
+  </data>
+  <data name="Config_BossModVBM" xml:space="preserve">
+    <value>BossMod (VBM)</value>
+  </data>
+  <data name="Config_RSRHandlesAttacksTheLoadedBossModVariant" xml:space="preserve">
+    <value>RSRが攻撃を担当し、読み込み中のBossModが passive - tank/melee/ranged を自動で使用します。</value>
+  </data>
+  <data name="Config_BMRHandlesAttacksAndMovementWithFRENRIDER" xml:space="preserve">
+    <value>BMRが FRENRIDER - TANK/MELEE/RANGED または手動プリセットで攻撃と移動を担当します。</value>
+  </data>
+  <data name="Config_VBMHandlesAttacksAndMovementWithFRENRIDER" xml:space="preserve">
+    <value>VBMが FRENRIDER - TANK/MELEE/RANGED または手動プリセットで攻撃と移動を担当します。</value>
+  </data>
+  <data name="Config_WrathHandlesAttacksUsingItsCurrentSettings" xml:space="preserve">
+    <value>Wrathが現在の設定で攻撃を担当します。</value>
+  </data>
+  <data name="Config_UseManualBossModPreset" xml:space="preserve">
+    <value>BossModプリセットを手動指定</value>
+  </data>
+  <data name="Config_PresetName" xml:space="preserve">
+    <value>プリセット名</value>
+  </data>
+  <data name="Config_EnterAnExistingPresetNameBeforeStarting" xml:space="preserve">
+    <value>開始前に既存のプリセット名を入力してください。</value>
+  </data>
+  <data name="Config_MOGTOMESelectsItsPackagedActivePresetBy" xml:space="preserve">
+    <value>各コンテンツの開始時に、現在のロールに応じた同梱のアクティブプリセットを選択します。</value>
+  </data>
+  <data name="Config_BothBossModVariantsAreLoadedStartDisables" xml:space="preserve">
+    <value>BossModの両方の版が読み込まれています。開始時にVBMを無効化してBMRを再読み込みします。VBM選択はBMRに切り替わり、RSR選択は維持されます。</value>
+  </data>
+  <data name="Config_MOGTOMERunsXaSkipcutscenesOnBeforeEvery" xml:space="preserve">
+    <value>手動で開始するたびに /xa skipcutscenes on を実行します。</value>
+  </data>
+  <data name="Config_OptionalEnablesMogInnDelegation" xml:space="preserve">
+    <value>任意。/mog inn の処理を委譲できます。</value>
+  </data>
+  <data name="Config_OptionalPlugins" xml:space="preserve">
+    <value>任意のプラグイン</value>
+  </data>
+  <data name="Config_OptionalNotRequiredByMOGTOME" xml:space="preserve">
+    <value>任意。MOGTOMEの動作には不要です。</value>
+  </data>
+  <data name="Config_RecommendedAppearanceNameplateRandomizer" xml:space="preserve">
+    <value>推奨。外見とネームプレートをランダム化します。</value>
+  </data>
+  <data name="Config_CustomResolutionPpByX0ade" xml:space="preserve">
+    <value>CustomResolution（0x0adeによる1pp）</value>
+  </data>
+  <data name="Config_ExperimentalAndNotRecommendedLowSpecHelper" xml:space="preserve">
+    <value>実験的・非推奨。低スペック環境向けの補助です。</value>
+  </data>
+  <data name="Config_MaybeCrashyWithClients" xml:space="preserve">
+    <value>2クライアント以上でクラッシュする可能性があります</value>
+  </data>
+  <data name="Config_WillCauseSomeIssuesSometimes" xml:space="preserve">
+    <value>問題が発生することがあります。</value>
+  </data>
+  <data name="Config_DPSDhogPotatoSystem" xml:space="preserve">
+    <value>DPS (Dhog Potato System)</value>
+  </data>
+  <data name="Config_MayHavePathingIssues" xml:space="preserve">
+    <value>経路探索に問題が発生する可能性があります。</value>
+  </data>
+  <data name="Config_ExperimentalAndNotRecommendedRemoteHUDControl" xml:space="preserve">
+    <value>実験的・非推奨。リモートHUDと操作機能です。</value>
+  </data>
+  <data name="Config_VeryNewPluginUnknownIssues" xml:space="preserve">
+    <value>非常に新しいプラグインで、問題はまだ不明です。</value>
+  </data>
+  <data name="Config_ConflictingPlugins" xml:space="preserve">
+    <value>競合するプラグイン</value>
+  </data>
+  <data name="Config_AutoDutyPath" xml:space="preserve">
+    <value>AutoDuty経路</value>
+  </data>
+  <data name="Config_PraetoriumPathINSTALLED" xml:space="preserve">
+    <value>プラエトリウム経路：インストール済み（{0}）</value>
+  </data>
+  <data name="Config_PraetoriumPathNOTFOUND" xml:space="preserve">
+    <value>プラエトリウム経路：見つかりません（{0}）</value>
+  </data>
+  <data name="Config_InstallBundledPraetoriumPaths" xml:space="preserve">
+    <value>同梱のプラエトリウム経路をインストール</value>
+  </data>
+  <data name="Config_ThisCopiesTheBundledW2WPraetoriumPath" xml:space="preserve">
+    <value>MOGTOMEのdataフォルダーからAutoDutyのpathsフォルダーへ、同梱のW2Wプラエトリウム経路をコピーします。</value>
+  </data>
+  <data name="Config_ADSIsOptionalInAutoDutyModeMog" xml:space="preserve">
+    <value>AutoDutyモードではADSは任意ですが、/mog inn を使う場合はADSが必要です。</value>
+  </data>
+  <data name="Config_ADSModeNotes" xml:space="preserve">
+    <value>ADSモードの説明</value>
+  </data>
+  <data name="Config_ADSModeDisablesAutoDutyImmediatelyAndAgain" xml:space="preserve">
+    <value>ADSモードはAutoDutyを即座に無効化し、開始時にも再度無効化します。申請にはADSの管理状態とコンテンツファインダーへの直接登録を使います。</value>
+  </data>
+  <data name="Config_RepairInnLeaveSwitchToAdsNpcrepair" xml:space="preserve">
+    <value>修理・宿屋・退出には /ads npcrepair、/ads selfrepair、/ads enterinn、/ads leave を使用します。</value>
+  </data>
+  <data name="Config_TheCheckboxChangesTheDutyBackendADS" xml:space="preserve">
+    <value>このチェック項目で進行システムを切り替えます。ADSモード選択時のみADSが必要です。</value>
+  </data>
+  <data name="Config_OK" xml:space="preserve">
+    <value>[OK]</value>
+  </data>
+  <data name="Config_CopyRepo" xml:space="preserve">
+    <value>リポジトリをコピー</value>
+  </data>
+  <data name="Config_CopyRepoURLToClipboardThenAdd" xml:space="preserve">
+    <value>リポジトリURLをコピーし、次の場所に追加します：
+Dalamud設定 &gt; 試験的機能 &gt; カスタムプラグインリポジトリ</value>
+  </data>
+  <data name="Config_NotInstalledOptional" xml:space="preserve">
+    <value>未インストール（任意）</value>
+  </data>
+  <data name="Config_EnabledKnownMOGTOMEConflict" xml:space="preserve">
+    <value>有効：MOGTOMEとの既知の競合</value>
+  </data>
+  <data name="Config_InstalledButDisabled" xml:space="preserve">
+    <value>インストール済み・無効</value>
+  </data>
+  <data name="Config_NotInstalled" xml:space="preserve">
+    <value>未インストール</value>
+  </data>
+  <data name="Config_DisableNow" xml:space="preserve">
+    <value>今すぐ無効化</value>
+  </data>
+  <data name="Config_MOGTOMETriesXldisablepluginTwistOfFayteWhenYouStart" xml:space="preserve">
+    <value>開始時に /xldisableplugin TwistOfFayte を試みますが、起動は制限しません。</value>
+  </data>
+  <data name="Config_ThisGuideIsAdvisoryItNeverInstalls" xml:space="preserve">
+    <value>このガイドは参考用です。他のプラグインのインストール・有効化・無効化・設定変更は行いません。選択したMOGTOMEの設定だけを保存します。</value>
+  </data>
+  <data name="Config_CompletedForThisAccountWizardVersion" xml:space="preserve">
+    <value>このプロファイルで完了済み（セットアップ版 {0}）。</value>
+  </data>
+  <data name="Config_RunSetupWizardAgain" xml:space="preserve">
+    <value>セットアップをやり直す</value>
+  </data>
+  <data name="Config_Backend" xml:space="preserve">
+    <value>進行システム</value>
+  </data>
+  <data name="Config_CombatProvider" xml:space="preserve">
+    <value>戦闘プラグイン</value>
+  </data>
+  <data name="Config_RequiredPlugins2" xml:space="preserve">
+    <value>必須プラグイン</value>
+  </data>
+  <data name="Config_PartySetup" xml:space="preserve">
+    <value>パーティ設定</value>
+  </data>
+  <data name="Config_OptionalSettings" xml:space="preserve">
+    <value>任意の設定</value>
+  </data>
+  <data name="Config_Review" xml:space="preserve">
+    <value>確認</value>
+  </data>
+  <data name="Config_StepOf" xml:space="preserve">
+    <value>手順 {0}/{1}：{2}</value>
+  </data>
+  <data name="Config_ADSIsThePrimaryMOGTOMEBackendAutoDuty" xml:space="preserve">
+    <value>MOGTOMEの標準進行システムはADSです。AutoDutyも選べます。この選択ではMOGTOMEに保存される進行システムのみを変更します。</value>
+  </data>
+  <data name="Config_ADSPrimaryBackend" xml:space="preserve">
+    <value>ADS（標準）</value>
+  </data>
+  <data name="Config_AutoDutyAlternativeBackend" xml:space="preserve">
+    <value>AutoDuty（代替）</value>
+  </data>
+  <data name="Config_ADSMustBeLoadedForThisSelection" xml:space="preserve">
+    <value>この選択にはADSの読み込みが必要です。</value>
+  </data>
+  <data name="Config_AutoDutyAndTheSelectedPraetoriumPathMust" xml:space="preserve">
+    <value>AutoDutyと選択したプラエトリウム経路が必要です。</value>
+  </data>
+  <data name="Config_ChooseTheCombatProviderMOGTOMEShouldRequest" xml:space="preserve">
+    <value>選択した進行システムで使用する戦闘プラグインを選んでください。</value>
+  </data>
+  <data name="Config_SelectedCombatProvider" xml:space="preserve">
+    <value>選択中の戦闘プラグイン</value>
+  </data>
+  <data name="Config_LoadTheSelectedProviderRSRAlsoRequires" xml:space="preserve">
+    <value>選択したプラグインを読み込んでください。RSRにはパッシブ支援用のBMRまたはVBMも必要です。</value>
+  </data>
+  <data name="Config_MarkTheClientThatQueuesDutiesAs" xml:space="preserve">
+    <value>申請を行うクライアントをパーティリーダーに指定してください。参加する各クライアントで個別に設定を確認してください。</value>
+  </data>
+  <data name="Config_IAmThePartyLeader" xml:space="preserve">
+    <value>自分がパーティリーダー</value>
+  </data>
+  <data name="Config_CrossWorldParty" xml:space="preserve">
+    <value>クロスワールドパーティ</value>
+  </data>
+  <data name="Config_UsePartySettingsForTheFullQueue" xml:space="preserve">
+    <value>申請条件やコンテンツ外でのパーティ状態の単発更新は、パーティ設定で行えます。</value>
+  </data>
+  <data name="Config_FoodPotionsAndRepairAreOptionalConfigure" xml:space="preserve">
+    <value>食事・薬品・修理は任意です。必要に応じて各タブで設定してください。未設定のままでも使用できます。</value>
+  </data>
+  <data name="Config_FoodPotsAndRepairRemainAvailableAfter" xml:space="preserve">
+    <value>セットアップ後も食事・薬品と修理の設定を変更できます。ここでは他のプラグインの設定は変更しません。</value>
+  </data>
+  <data name="Config_FinishSetup" xml:space="preserve">
+    <value>設定を完了</value>
+  </data>
+  <data name="Config_Back" xml:space="preserve">
+    <value>戻る</value>
+  </data>
+  <data name="Config_Next" xml:space="preserve">
+    <value>次へ</value>
+  </data>
+  <data name="Config_ADSSelectedBackend" xml:space="preserve">
+    <value>ADS（選択中）</value>
+  </data>
+  <data name="Config_AutoDutyPlusSelectedPraetoriumPath" xml:space="preserve">
+    <value>AutoDutyと選択したプラエトリウム経路</value>
+  </data>
+  <data name="Config_LoadADS" xml:space="preserve">
+    <value>ADSを読み込んでください。</value>
+  </data>
+  <data name="Config_LoadAutoDutyAndInstallTheSelectedPraetorium" xml:space="preserve">
+    <value>AutoDutyを読み込み、選択したプラエトリウム経路をインストールしてください。</value>
+  </data>
+  <data name="Config_LoadTheProviderSelectedInStepRSR" xml:space="preserve">
+    <value>手順2で選択したプラグインを読み込んでください。RSRにはBMRまたはVBMも必要です。</value>
+  </data>
+  <data name="Config_LoadVnavmesh" xml:space="preserve">
+    <value>vnavmeshを読み込んでください。</value>
+  </data>
+  <data name="Config_LoadXASlaveForXaSkipcutscenesOn" xml:space="preserve">
+    <value>/xa skipcutscenes on のためにXA Slaveを読み込んでください。</value>
+  </data>
+  <data name="Config_LoadYesAlreadyForDialogs" xml:space="preserve">
+    <value>ダイアログ処理用にYesAlreadyを読み込んでください。</value>
+  </data>
+  <data name="Config_OperatorClickedOnlyCopiesMOGTOMESBundled" xml:space="preserve">
+    <value>クリック時のみ、MOGTOMEの同梱ファイルをAutoDutyのpathsフォルダーへコピーします。</value>
+  </data>
+  <data name="Config_LifestreamAndTextAdvanceAreOptionalAndDo" xml:space="preserve">
+    <value>LifestreamとTextAdvanceは任意で、この確認には影響しません。</value>
+  </data>
+  <data name="Config_ADSPrimary" xml:space="preserve">
+    <value>ADS（標準）</value>
+  </data>
+  <data name="Config_AutoDutyAlternative" xml:space="preserve">
+    <value>AutoDuty（代替）</value>
+  </data>
+  <data name="Config_Backend2" xml:space="preserve">
+    <value>進行システム：{0}</value>
+  </data>
+  <data name="Config_Ready" xml:space="preserve">
+    <value>準備完了</value>
+  </data>
+  <data name="Config_Incomplete" xml:space="preserve">
+    <value>未完了</value>
+  </data>
+  <data name="Config_RequiredChecks" xml:space="preserve">
+    <value>必須項目の確認：{0}</value>
+  </data>
+  <data name="Config_Leader" xml:space="preserve">
+    <value>リーダー</value>
+  </data>
+  <data name="Config_Participant" xml:space="preserve">
+    <value>参加者</value>
+  </data>
+  <data name="Config_PartyRole" xml:space="preserve">
+    <value>パーティ内の役割：{0}</value>
+  </data>
+  <data name="Config_OptionalRepairThreshold" xml:space="preserve">
+    <value>任意の修理しきい値：{0}%</value>
+  </data>
+  <data name="Config_FinishRecordsOnlyThatThisAccountCompleted" xml:space="preserve">
+    <value>完了ボタンは、このプロファイルでこの版のセットアップを完了したことだけを記録します。開始の制限や他のプラグインの変更は行いません。</value>
+  </data>
+  <data name="Config_Ready2" xml:space="preserve">
+    <value>準備完了</value>
+  </data>
+  <data name="Config_PartySettings" xml:space="preserve">
+    <value>パーティ設定</value>
+  </data>
+  <data name="Config_RuntimeRoleFollowsThisSavedSettingUse" xml:space="preserve">
+    <value>動作中の役割は保存された設定に従います。コンテンツ外でパーティ状態を更新すると、同一ワールドのリーダーを一度だけ検出します。</value>
+  </data>
+  <data name="Config_EnableIfYouReInACross" xml:space="preserve">
+    <value>クロスワールドパーティの場合は有効にしてください。</value>
+  </data>
+  <data name="Config_OnlyQueueWithExactlyVisiblePeople" xml:space="preserve">
+    <value>表示されているメンバーが4人の場合のみ申請</value>
+  </data>
+  <data name="Config_AppliesOnlyToSameWorldLeadersIn" xml:space="preserve">
+    <value>クロスワールドではメンバー一覧が不確実なため、同一ワールドのリーダーによるレベルシンク時のみ適用します。制限解除テストモードは対象外です。</value>
+  </data>
+  <data name="Config_RuntimePartyState" xml:space="preserve">
+    <value>現在のパーティ状態：</value>
+  </data>
+  <data name="Config_Yes" xml:space="preserve">
+    <value>はい</value>
+  </data>
+  <data name="Config_No" xml:space="preserve">
+    <value>いいえ</value>
+  </data>
+  <data name="Config_LeaderRightNow" xml:space="preserve">
+    <value>現在リーダー：{0}</value>
+  </data>
+  <data name="Config_SourceConfiguredCrossWorldRole" xml:space="preserve">
+    <value>判定元：設定したクロスワールドでの役割。</value>
+  </data>
+  <data name="Config_SourceConfiguredRoleRefreshPartyStateOnly" xml:space="preserve">
+    <value>判定元：設定した役割。状態更新では現在の同一ワールドのパーティ一覧を一度だけ確認します。</value>
+  </data>
+  <data name="Config_RefreshPartyState" xml:space="preserve">
+    <value>パーティ状態を更新</value>
+  </data>
+  <data name="Config_OneTimeSameWorldLeaderDetectionUse" xml:space="preserve">
+    <value>同一ワールドのリーダーを一度だけ検出します。コンテンツ外で全員が表示されてから使用してください。</value>
+  </data>
+  <data name="Config_PartyBehaviour" xml:space="preserve">
+    <value>パーティの動作：</value>
+  </data>
+  <data name="Config_LeaderQueuesDutiesAndControlsTheMOGTOME" xml:space="preserve">
+    <value>- リーダー：コンテンツを申請し、MOGTOMEの周回進行を管理します。</value>
+  </data>
+  <data name="Config_NonLeaderWaitsForPartyQueuePops" xml:space="preserve">
+    <value>- リーダー以外：突入確認を待ち、各自で修理します。</value>
+  </data>
+  <data name="Config_RepairMOGTOMEPausesItsOwnManualQueue" xml:space="preserve">
+    <value>- 修理：修理中はMOGTOME自身の申請を中断し、完了後に再開します。</value>
+  </data>
+  <data name="Config_DetectionRefreshPartyStateIsManualOnly" xml:space="preserve">
+    <value>- 検出：状態更新は手動のみです。ソロや不完全なメンバー情報から自動でリーダーに昇格させません。</value>
+  </data>
+  <data name="Config_DutySettings" xml:space="preserve">
+    <value>コンテンツ設定</value>
+  </data>
+  <data name="Config_DutyCounter" xml:space="preserve">
+    <value>周回カウンター</value>
+  </data>
+  <data name="Config_CurrentPraetoriumRunCountSetToFor" xml:space="preserve">
+    <value>現在のプラエトリウム周回数です。その日の最初の周回は0に設定してください。</value>
+  </data>
+  <data name="Config_PraetoriumAutoDutyPath" xml:space="preserve">
+    <value>プラエトリウムのAutoDuty経路</value>
+  </data>
+  <data name="Config_BundledWithMOGTOMEAndCopiedIntoAutoDuty" xml:space="preserve">
+    <value>MOGTOMEに同梱され、開始・インストール時にAutoDutyのpathsフォルダーへコピーされます。初期値：phecda。</value>
+  </data>
+  <data name="Config_ADSModeIgnoresAutoDutyPathSelection" xml:space="preserve">
+    <value>ADSモードではAutoDutyの経路選択は使用しません。</value>
+  </data>
+  <data name="Config_PraetoriumThreshold" xml:space="preserve">
+    <value>プラエトリウムの切替回数</value>
+  </data>
+  <data name="Config_SwitchToDecumanaAfterThisManyPraetorium" xml:space="preserve">
+    <value>この回数のプラエトリウム周回後、デクマーナに切り替えます。</value>
+  </data>
+  <data name="Config_PraetoriumDailyLimit" xml:space="preserve">
+    <value>プラエトリウムの1日上限</value>
+  </data>
+  <data name="Config_StopAfterThisManySuccessfulPraetoriumClears" xml:space="preserve">
+    <value>本日のプラエトリウム成功回数がこの値に達すると停止します。デクマーナと中断した周回は含みません。</value>
+  </data>
+  <data name="Config_QuitCommand" xml:space="preserve">
+    <value>終了コマンド</value>
+  </data>
+  <data name="Config_RunsOnceWhenThePraetoriumDailyLimit" xml:space="preserve">
+    <value>プラエトリウムの1日上限に達した際、コンテンツ退出後に一度だけ実行します。</value>
+  </data>
+  <data name="Config_TestingModeUnsyncedUncheckLevelSyncYourself" xml:space="preserve">
+    <value>テストモード：制限解除（レベルシンクは自分で解除してください。統計は記録されません）</value>
+  </data>
+  <data name="Config_WARNINGRunningUnsyncedWithoutLevelSyncTesting" xml:space="preserve">
+    <value>注意：レベルシンクなしの制限解除で実行中です（テストモード・統計なし）。</value>
+  </data>
+  <data name="Config_DefaultUnsyncLevelSyncSyncLevelSync" xml:space="preserve">
+    <value>初期設定：制限解除＋レベルシンク（他プレイヤーとのマッチング防止用）。</value>
+  </data>
+  <data name="Config_TestingModeActiveEnableDebugToChange" xml:space="preserve">
+    <value>［テストモード有効：変更するにはデバッグを有効にしてください］</value>
+  </data>
+  <data name="Config_Food" xml:space="preserve">
+    <value>食事</value>
+  </data>
+  <data name="Config_UseHQFood" xml:space="preserve">
+    <value>HQの食事を使用</value>
+  </data>
+  <data name="Config_UsesTheSelectedMealAsHQWhen" xml:space="preserve">
+    <value>有効時は選択した食事のHQ品を使用します。NQ品を使う場合は無効にしてください。</value>
+  </data>
+  <data name="Config_ClearFood" xml:space="preserve">
+    <value>食事の選択を解除</value>
+  </data>
+  <data name="Config_NoFoodSelectedFoodIsOptional" xml:space="preserve">
+    <value>  食事は未選択です。設定は任意です。</value>
+  </data>
+  <data name="Config_Potions" xml:space="preserve">
+    <value>薬品</value>
+  </data>
+  <data name="Config_UseHQPotion" xml:space="preserve">
+    <value>HQの薬品を使用</value>
+  </data>
+  <data name="Config_UsesTheSelectedMedicineAsHQWhen" xml:space="preserve">
+    <value>有効時は選択した薬品のHQ品を使用します。NQ品を使う場合は無効にしてください。</value>
+  </data>
+  <data name="Config_ClearPotion" xml:space="preserve">
+    <value>薬品の選択を解除</value>
+  </data>
+  <data name="Config_PotOnGaius" xml:space="preserve">
+    <value>ガイウスで薬品を使用</value>
+  </data>
+  <data name="Config_PotOnPhantomGaius" xml:space="preserve">
+    <value>幻影ガイウスで薬品を使用</value>
+  </data>
+  <data name="Config_NoPotionSelectedPotionsAreOptional" xml:space="preserve">
+    <value>  薬品は未選択です。設定は任意です。</value>
+  </data>
+  <data name="Config_Select" xml:space="preserve">
+    <value>{0}を選択…</value>
+  </data>
+  <data name="Config_Search" xml:space="preserve">
+    <value>検索</value>
+  </data>
+  <data name="Config_NoResultsTryADifferentSearchTerm" xml:space="preserve">
+    <value>見つかりません。別の検索語をお試しください。</value>
+  </data>
+  <data name="Config_TypeAtLeastCharactersToSearch" xml:space="preserve">
+    <value>2文字以上入力してください…</value>
+  </data>
+  <data name="Config_RepairSettings" xml:space="preserve">
+    <value>修理設定</value>
+  </data>
+  <data name="Config_RepairThreshold" xml:space="preserve">
+    <value>修理しきい値（%）</value>
+  </data>
+  <data name="Config_RepairWhenEquipmentDurabilityFallsBelowThis" xml:space="preserve">
+    <value>装備の耐久度がこの割合を下回ると修理します。0にすると自動修理を無効にします。</value>
+  </data>
+  <data name="Config_UseSelfRepair" xml:space="preserve">
+    <value>自分で修理</value>
+  </data>
+  <data name="Config_CheckedAdsSelfrepairUncheckedAdsNpcrepair" xml:space="preserve">
+    <value>有効：/ads selfrepair　無効：/ads npcrepair</value>
+  </data>
+  <data name="Config_RepairBehavior" xml:space="preserve">
+    <value>修理の動作：</value>
+  </data>
+  <data name="Config_LeaderRepairsAutomaticallyBetweenDutiesWhenThreshold" xml:space="preserve">
+    <value>- リーダー：しきい値に達するとコンテンツ間で自動修理します</value>
+  </data>
+  <data name="Config_NonLeaderRepairsIndependentlyAfterSecondOutside" xml:space="preserve">
+    <value>- リーダー以外：コンテンツ外に出て1秒後に各自で修理します</value>
+  </data>
+  <data name="Config_SoloTreatedAsLeaderAutomatically" xml:space="preserve">
+    <value>- ソロ：自動でリーダーとして扱います</value>
+  </data>
+  <data name="Config_ADSModeCurrentlyUsesAndAdsEnterinn" xml:space="preserve">
+    <value>- ADSモード：現在は {0} と /ads enterinn を使用します</value>
+  </data>
+  <data name="Config_AutoDutyModeRepairMETHODSelfNPCIs" xml:space="preserve">
+    <value>- AutoDutyモード：修理方法（自分/NPC）はAutoDutyで設定します。宿屋への帰還は /ads enterinn を使用します</value>
+  </data>
+  <data name="Config_Status" xml:space="preserve">
+    <value>状態：</value>
+  </data>
+  <data name="Config_CurrentThreshold" xml:space="preserve">
+    <value>  現在のしきい値：{0}%</value>
+  </data>
+  <data name="Config_Enabled" xml:space="preserve">
+    <value>有効</value>
+  </data>
+  <data name="Config_Disabled" xml:space="preserve">
+    <value>無効</value>
+  </data>
+  <data name="Config_AutoRepair" xml:space="preserve">
+    <value>  自動修理：{0}</value>
+  </data>
+  <data name="Config_Self" xml:space="preserve">
+    <value>自分</value>
+  </data>
+  <data name="Config_NPC" xml:space="preserve">
+    <value>NPC</value>
+  </data>
+  <data name="Config_ADSRepairMethod" xml:space="preserve">
+    <value>  ADSの修理方法：{0}</value>
+  </data>
+  <data name="Config_ExperimentalADS" xml:space="preserve">
+    <value>ADSの実験的機能</value>
+  </data>
+  <data name="Config_ExperimentalFirstRoomSkipPraetorium" xml:space="preserve">
+    <value>最初の部屋のスキップ（プラエトリウム・実験的）</value>
+  </data>
+  <data name="Config_ADSPraetoriumOnlyEveryParticipatingClientMust" xml:space="preserve">
+    <value>ADS・プラエトリウム専用です。参加する各クライアントで個別に有効化してください。成功・失敗にかかわらず処理後はADSへ引き継ぎます。</value>
+  </data>
+  <data name="Config_AvailableOnlyWhenADSIsTheSelected" xml:space="preserve">
+    <value>ADS選択時のみ利用できます。AutoDutyモードでは保存された設定は動作しません。</value>
+  </data>
+  <data name="Config_Debug" xml:space="preserve">
+    <value>デバッグ</value>
+  </data>
+  <data name="Config_DebugCounter" xml:space="preserve">
+    <value>デバッグカウンター</value>
+  </data>
+  <data name="Config_CrashRecoveryOffsetIfYouRestartedMid" xml:space="preserve">
+    <value>クラッシュ後の復旧用補正値です。途中で再起動した場合は最後に確認した周回数を設定し、
+本日の記録を正しく継続してください。</value>
+  </data>
+  <data name="Config_BailoutTimeoutSec" xml:space="preserve">
+    <value>脱出タイムアウト（秒）</value>
+  </data>
+  <data name="Config_LeaveDutyIfStuckForThisMany" xml:space="preserve">
+    <value>この秒数以上進行できない場合に退出します。初期値：1200秒（20分）。</value>
+  </data>
+  <data name="Main_V" xml:space="preserve">
+    <value>v{0}</value>
+  </data>
+  <data name="Main_KoFi" xml:space="preserve">
+    <value>♡ Ko-fi ♡</value>
+  </data>
+  <data name="Main_SupportDevelopmentOnKoFi" xml:space="preserve">
+    <value>Ko-fiで開発を支援</value>
+  </data>
+  <data name="Main_StateInitializing" xml:space="preserve">
+    <value>状態：初期化中</value>
+  </data>
+  <data name="Main_StatusWaitingForAccountAndEngineInitialization" xml:space="preserve">
+    <value>状況：プロファイルとエンジンの初期化を待機中。</value>
+  </data>
+  <data name="Main_Config" xml:space="preserve">
+    <value>設定</value>
+  </data>
+  <data name="Main_Stats" xml:space="preserve">
+    <value>統計</value>
+  </data>
+  <data name="Main_Reset" xml:space="preserve">
+    <value>リセット</value>
+  </data>
+  <data name="Main_State" xml:space="preserve">
+    <value>状態：{0}</value>
+  </data>
+  <data name="Main_Status" xml:space="preserve">
+    <value>状況：{0}</value>
+  </data>
+  <data name="Main_Start" xml:space="preserve">
+    <value>開始</value>
+  </data>
+  <data name="Main_Stop" xml:space="preserve">
+    <value>停止</value>
+  </data>
+  <data name="Main_UnKrangle" xml:space="preserve">
+    <value>名前を元に戻す</value>
+  </data>
+  <data name="Main_Krangle" xml:space="preserve">
+    <value>名前を隠す</value>
+  </data>
+  <data name="Main_ObfuscateNamesWithMilitaryExerciseWordsUseful" xml:space="preserve">
+    <value>名前を軍事・運動用語に置き換えます。
+スクリーンショットに便利です。</value>
+  </data>
+  <data name="Main_CancelStopAfterNext" xml:space="preserve">
+    <value>次の成功後の停止を取り消す</value>
+  </data>
+  <data name="Main_StopAfterNextSuccess" xml:space="preserve">
+    <value>次の成功後に停止</value>
+  </data>
+  <data name="Main_ArmedStopsAfterASuccessfulRunIs" xml:space="preserve">
+    <value>予約済み：成功した周回の記録と退出確認後に停止します。</value>
+  </data>
+  <data name="Main_RuntimeOnlyAbortedRunsDoNotConsume" xml:space="preserve">
+    <value>今回のセッションのみ有効です。中断した周回ではこの予約は解除されません。</value>
+  </data>
+  <data name="Main_HELP" xml:space="preserve">
+    <value>-&gt; ヘルプ &lt;-</value>
+  </data>
+  <data name="Main_MainWindowSettings" xml:space="preserve">
+    <value>メインウィンドウの設定</value>
+  </data>
+  <data name="Main_AIDutySolverADS" xml:space="preserve">
+    <value>AI Duty Solver (ADS)</value>
+  </data>
+  <data name="Main_DutyBackendSelectorEnablingADSImmediatelySends" xml:space="preserve">
+    <value>進行システムを選びます。
+ADSを有効にすると即座に /xldisableplugin AutoDuty を送信します。
+AutoDutyモードではADSは任意で、/mog inn の使用時だけ使われます。</value>
+  </data>
+  <data name="Main_ADSDutyBackendActiveADSAlsoHandles" xml:space="preserve">
+    <value>ADSで進行中です。宿屋への入室もADSが担当します。</value>
+  </data>
+  <data name="Main_AutoDutyDutyBackendActiveADSIsOptional" xml:space="preserve">
+    <value>AutoDutyで進行中です。/mog inn 用のADSは任意です。</value>
+  </data>
+  <data name="Main_DutyInformation" xml:space="preserve">
+    <value>コンテンツ情報</value>
+  </data>
+  <data name="Main_CounterPraeDailyPraetoriumLimit" xml:space="preserve">
+    <value>周回数：{0} / {1}（プラエトリウム）　1日上限：{2}</value>
+  </data>
+  <data name="Main_DailyDecuRunsToday" xml:space="preserve">
+    <value>本日のデクマーナ：{0}周</value>
+  </data>
+  <data name="Main_Current" xml:space="preserve">
+    <value>現在：{0}</value>
+  </data>
+  <data name="Main_DailyReset" xml:space="preserve">
+    <value>日次リセット：{0}（{1}）</value>
+  </data>
+  <data name="Main_TESTINGMODEUnsynced" xml:space="preserve">
+    <value>［テストモード：制限解除］</value>
+  </data>
+  <data name="Main_LastClearS" xml:space="preserve">
+    <value>前回のクリア：{0:F0}秒</value>
+  </data>
+  <data name="Main_TimeInDutyS" xml:space="preserve">
+    <value>コンテンツ内の時間：{0:F0}秒</value>
+  </data>
+  <data name="Main_DeathsThisRunSelfOthersAll" xml:space="preserve">
+    <value>今回の戦闘不能：自分 {0}　他 {1}　合計 {2}</value>
+  </data>
+  <data name="Main_DebugTools" xml:space="preserve">
+    <value>デバッグツール</value>
+  </data>
+  <data name="Main_FORCEPATHSELECTION" xml:space="preserve">
+    <value>経路選択を強制</value>
+  </data>
+  <data name="Main_Result" xml:space="preserve">
+    <value>結果：{0}</value>
+  </data>
+  <data name="Main_TESTPATHINDEX" xml:space="preserve">
+    <value>経路インデックスをテスト</value>
+  </data>
+  <data name="Main_LogADStructure" xml:space="preserve">
+    <value>AD構造をログ出力</value>
+  </data>
+  <data name="Main_DumpAutoDutyPluginStructureToDalamudLog" xml:space="preserve">
+    <value>調査用にAutoDutyの構造をDalamudログへ出力します。</value>
+  </data>
+  <data name="Main_LogConfig" xml:space="preserve">
+    <value>設定をログ出力</value>
+  </data>
+  <data name="Main_LogActions" xml:space="preserve">
+    <value>アクションをログ出力</value>
+  </data>
+  <data name="Main_DumpAutoDutyActionsListCurrentlyEmptyBut" xml:space="preserve">
+    <value>AutoDutyのActions一覧を出力します（現在は空ですが構造を確認できます）。</value>
+  </data>
+  <data name="Main_LogManager" xml:space="preserve">
+    <value>マネージャーをログ出力</value>
+  </data>
+  <data name="Main_DumpAutoDutyActionsManagerContainsActionsListWithCommand" xml:space="preserve">
+    <value>AutoDutyのActionsManagerを出力します（コマンド定義を含むactionsListを持ちます）。</value>
+  </data>
+  <data name="Main_ExplorePaths" xml:space="preserve">
+    <value>経路を調査</value>
+  </data>
+  <data name="Main_ExploreDifferentLocationsForPathDataConfiguration" xml:space="preserve">
+    <value>経路データの格納先を調べます（Configuration、MainWindowなど）。</value>
+  </data>
+  <data name="Main_LogTuples" xml:space="preserve">
+    <value>タプルをログ出力</value>
+  </data>
+  <data name="Main_IterateThroughActionsListAndLogEachTuple" xml:space="preserve">
+    <value>actionsListの各タプルの内容（コマンド定義）をログへ出力します。</value>
+  </data>
+  <data name="Main_PathSelections" xml:space="preserve">
+    <value>経路の選択状態</value>
+  </data>
+  <data name="Main_ExplorePathSelectionsByPathDictionaryTerritoryPathMappings" xml:space="preserve">
+    <value>PathSelectionsByPath（エリア→経路の対応）を調べます。</value>
+  </data>
+  <data name="Main_CheckCurrent" xml:space="preserve">
+    <value>現在の選択を確認</value>
+  </data>
+  <data name="Main_CheckWhatPathAutoDutyCurrentlyHasSelected" xml:space="preserve">
+    <value>AutoDutyが現在選択している経路を確認します。</value>
+  </data>
+  <data name="Main_FindMethods" xml:space="preserve">
+    <value>メソッドを検索</value>
+  </data>
+  <data name="Main_FindSaveApplyLoadMethodsInAutoDuty" xml:space="preserve">
+    <value>AutoDutyのSave/Apply/Loadメソッドを検索します。</value>
+  </data>
+  <data name="Main_ConfigFields" xml:space="preserve">
+    <value>設定フィールド</value>
+  </data>
+  <data name="Main_FindActualConfigFieldNamesForPath" xml:space="preserve">
+    <value>経路選択の設定フィールド名を確認します。</value>
+  </data>
+  <data name="Main_CheckRepair" xml:space="preserve">
+    <value>修理状態を確認</value>
+  </data>
+  <data name="Main_Item" xml:space="preserve">
+    <value>アイテム {0}</value>
+  </data>
+  <data name="Main_CheckEquipmentDurabilityAndRepairStatus" xml:space="preserve">
+    <value>装備の耐久度と修理状態を確認します。</value>
+  </data>
+  <data name="Main_TestingModeUnsyncedNoStats" xml:space="preserve">
+    <value>テストモード：制限解除（統計なし）</value>
+  </data>
+  <data name="Main_WARNINGRunningUnsyncedWithoutLevelSync" xml:space="preserve">
+    <value>注意：レベルシンクなしの制限解除で実行中です。</value>
+  </data>
+  <data name="Main_TESTPRAEINDEX" xml:space="preserve">
+    <value>プラエトリウムのインデックスをテスト</value>
+  </data>
+  <data name="Main_LogsPraetoriumCallbackIndexAndMissingOptional" xml:space="preserve">
+    <value>プラエトリウムのコールバック番号と未開放の任意項目をログへ出力します。申請は行いません。</value>
+  </data>
+  <data name="Main_PraetoriumCallback" xml:space="preserve">
+    <value>プラエトリウムのコールバック：{0}</value>
+  </data>
+  <data name="Main_MissingOptionalUnlocks" xml:space="preserve">
+    <value>未開放の任意項目：{0}</value>
+  </data>
+  <data name="Main_Unlocked" xml:space="preserve">
+    <value>開放済み</value>
+  </data>
+  <data name="Main_Missing" xml:space="preserve">
+    <value>未開放</value>
+  </data>
+  <data name="Main_QuestIDs" xml:space="preserve">
+    <value>クエストID：{0}</value>
+  </data>
+  <data name="Main_ADSModeActiveAutoDutyReflectionPathDebug" xml:space="preserve">
+    <value>ADSモード有効。AutoDutyのリフレクション・経路デバッグツールは非表示です。</value>
+  </data>
+  <data name="Main_LeaderRuntime" xml:space="preserve">
+    <value>リーダー（現在）：{0}</value>
+  </data>
+  <data name="Main_CrossWorld" xml:space="preserve">
+    <value>クロスワールド：{0}</value>
+  </data>
+  <data name="Main_SourceConfiguredCrossWorldRole" xml:space="preserve">
+    <value>判定元：設定したクロスワールドでの役割</value>
+  </data>
+  <data name="Main_Subsystems" xml:space="preserve">
+    <value>各機能の状態</value>
+  </data>
+  <data name="Main_PausedByMOGTOME" xml:space="preserve">
+    <value>MOGTOMEにより一時停止</value>
+  </data>
+  <data name="Main_DutyBackend" xml:space="preserve">
+    <value>進行システム</value>
+  </data>
+  <data name="Main_LogAllConfiguration" xml:space="preserve">
+    <value>全設定をログ出力</value>
+  </data>
+  <data name="Main_LogConfigPath" xml:space="preserve">
+    <value>設定パスをログ出力</value>
+  </data>
+  <data name="Main_QueueRole" xml:space="preserve">
+    <value>申請の役割</value>
+  </data>
+  <data name="Main_ADSRuntime" xml:space="preserve">
+    <value>ADSの実行状態</value>
+  </data>
+  <data name="Main_Bailout" xml:space="preserve">
+    <value>自動脱出</value>
+  </data>
+  <data name="Main_S" xml:space="preserve">
+    <value>{0}秒</value>
+  </data>
+  <data name="Main_NotConfigured" xml:space="preserve">
+    <value>未設定</value>
+  </data>
+  <data name="Main_HQ" xml:space="preserve">
+    <value>HQ</value>
+  </data>
+  <data name="Main_NQ" xml:space="preserve">
+    <value>NQ</value>
+  </data>
+  <data name="Main_X" xml:space="preserve">
+    <value>{0}［{1}］×{2}</value>
+  </data>
+  <data name="Stats_DutyStatistics" xml:space="preserve">
+    <value>コンテンツ統計</value>
+  </data>
+  <data name="Stats_OpenConfig" xml:space="preserve">
+    <value>設定を開く</value>
+  </data>
+  <data name="Stats_OpenMOGTOMEConfigurationFolder" xml:space="preserve">
+    <value>MOGTOMEの設定フォルダーを開く</value>
+  </data>
+  <data name="Stats_KrangleNames" xml:space="preserve">
+    <value>名前を隠す</value>
+  </data>
+  <data name="Stats_Summary" xml:space="preserve">
+    <value>概要</value>
+  </data>
+  <data name="Stats_Detailed" xml:space="preserve">
+    <value>詳細</value>
+  </data>
+  <data name="Stats_ShowDebugRuns" xml:space="preserve">
+    <value>テスト周回を表示</value>
+  </data>
+  <data name="Stats_UnsyncedRunsAreNowIncludedInStatistics" xml:space="preserve">
+    <value>制限解除の周回を統計に含めています</value>
+  </data>
+  <data name="Stats_UnsyncedRunsAreHiddenFromStatistics" xml:space="preserve">
+    <value>制限解除の周回を統計から除外しています</value>
+  </data>
+  <data name="Stats_CombinedStats" xml:space="preserve">
+    <value>合計統計</value>
+  </data>
+  <data name="Stats_TotalRuns" xml:space="preserve">
+    <value>合計周回数：{0}</value>
+  </data>
+  <data name="Stats_TotalMogtomes" xml:space="preserve">
+    <value>合計モグトーム：{0}</value>
+  </data>
+  <data name="Stats_CurrentDailyCounter" xml:space="preserve">
+    <value>現在の日次カウンター：{0}</value>
+  </data>
+  <data name="Stats_DailyDecumanaBest" xml:space="preserve">
+    <value>本日のデクマーナ：{0}（最高：{1}）</value>
+  </data>
+  <data name="Stats_NextDailyReset" xml:space="preserve">
+    <value>次の日次リセット：{0}（{1}）</value>
+  </data>
+  <data name="Stats_TodaySDecumanaStats" xml:space="preserve">
+    <value>本日のデクマーナ統計：</value>
+  </data>
+  <data name="Stats_BestToday" xml:space="preserve">
+    <value>  本日の最短：{0}</value>
+  </data>
+  <data name="Stats_LongestToday" xml:space="preserve">
+    <value>  本日の最長：{0}</value>
+  </data>
+  <data name="Stats_RunsToday" xml:space="preserve">
+    <value>  本日の周回数：{0}</value>
+  </data>
+  <data name="Stats_MogtomesToday" xml:space="preserve">
+    <value>  本日のモグトーム：{0}</value>
+  </data>
+  <data name="Stats_ResetAllStats" xml:space="preserve">
+    <value>全統計をリセット</value>
+  </data>
+  <data name="Stats_JobPerformance" xml:space="preserve">
+    <value>ジョブ別の成績</value>
+  </data>
+  <data name="Stats_PlayerStats" xml:space="preserve">
+    <value>プレイヤー統計</value>
+  </data>
+  <data name="Stats_RecentRuns" xml:space="preserve">
+    <value>最近の周回</value>
+  </data>
+  <data name="Stats_Trends" xml:space="preserve">
+    <value>傾向</value>
+  </data>
+  <data name="Stats_Best" xml:space="preserve">
+    <value>最短：{0}</value>
+  </data>
+  <data name="Stats_Date" xml:space="preserve">
+    <value>日時：{0}</value>
+  </data>
+  <data name="Stats_Party" xml:space="preserve">
+    <value>パーティ：</value>
+  </data>
+  <data name="Stats_BestNoRunsYet" xml:space="preserve">
+    <value>最短：記録なし</value>
+  </data>
+  <data name="Stats_Longest" xml:space="preserve">
+    <value>最長：{0}</value>
+  </data>
+  <data name="Stats_LongestNoRunsYet" xml:space="preserve">
+    <value>最長：記録なし</value>
+  </data>
+  <data name="Stats_DeathsSingleRun" xml:space="preserve">
+    <value>戦闘不能（1周）：</value>
+  </data>
+  <data name="Stats_SelfOthersAll" xml:space="preserve">
+    <value>自分：{0}　他：{1}　合計：{2}</value>
+  </data>
+  <data name="Stats_DeathsTotal" xml:space="preserve">
+    <value>戦闘不能（累計）：</value>
+  </data>
+  <data name="Stats_Runs" xml:space="preserve">
+    <value>周回数：{0}</value>
+  </data>
+  <data name="Stats_Mogtomes" xml:space="preserve">
+    <value>モグトーム：{0}</value>
+  </data>
+  <data name="Stats_NotLoggedIn" xml:space="preserve">
+    <value>  ログインしていません。</value>
+  </data>
+  <data name="Stats_Name" xml:space="preserve">
+    <value>名前</value>
+  </data>
+  <data name="Stats_Job" xml:space="preserve">
+    <value>ジョブ</value>
+  </data>
+  <data name="Stats_Level" xml:space="preserve">
+    <value>レベル</value>
+  </data>
+  <data name="Stats_HMS" xml:space="preserve">
+    <value>{0}時間{1:D2}分{2:D2}秒</value>
+  </data>
+  <data name="Stats_MS" xml:space="preserve">
+    <value>{0}分{1:D2}秒</value>
+  </data>
+  <data name="Stats_None" xml:space="preserve">
+    <value>なし</value>
+  </data>
+  <data name="Stats_NoRunDataAvailableEnableDetailedTracking" xml:space="preserve">
+    <value>周回データがありません。詳細記録を有効にして周回を完了してください。</value>
+  </data>
+  <data name="Stats_Avg" xml:space="preserve">
+    <value>平均：{0}</value>
+  </data>
+  <data name="Stats_Deaths" xml:space="preserve">
+    <value>戦闘不能：{0}</value>
+  </data>
+  <data name="Stats_Rate" xml:space="preserve">
+    <value>成功率：{0:F1}%</value>
+  </data>
+  <data name="Stats_PlayerStatistics" xml:space="preserve">
+    <value>プレイヤー統計</value>
+  </data>
+  <data name="Stats_Player" xml:space="preserve">
+    <value>プレイヤー███</value>
+  </data>
+  <data name="Stats_You" xml:space="preserve">
+    <value>（自分）</value>
+  </data>
+  <data name="Stats_Total" xml:space="preserve">
+    <value>合計：{0}</value>
+  </data>
+  <data name="Stats_PraeDecu" xml:space="preserve">
+    <value>プラエ：{0}　デクマーナ：{1}</value>
+  </data>
+  <data name="Stats_StreakBest" xml:space="preserve">
+    <value>連続成功：{0}（最高：{1}）</value>
+  </data>
+  <data name="Stats_Job2" xml:space="preserve">
+    <value>ジョブ：{0}</value>
+  </data>
+  <data name="Stats_RecentRunsLast" xml:space="preserve">
+    <value>最近の周回（25件）</value>
+  </data>
+  <data name="Stats_Time" xml:space="preserve">
+    <value>時刻</value>
+  </data>
+  <data name="Stats_Player2" xml:space="preserve">
+    <value>プレイヤー</value>
+  </data>
+  <data name="Stats_Deaths2" xml:space="preserve">
+    <value>戦闘不能</value>
+  </data>
+  <data name="Stats_Status" xml:space="preserve">
+    <value>状態</value>
+  </data>
+  <data name="Stats_NotCaptured" xml:space="preserve">
+    <value>{0}：未記録</value>
+  </data>
+  <data name="Stats_PartyDataNotCaptured" xml:space="preserve">
+    <value>パーティ情報は未記録</value>
+  </data>
+  <data name="Stats_SelfOthersAll2" xml:space="preserve">
+    <value>自分 / 他 / 合計</value>
+  </data>
+  <data name="Stats_Success" xml:space="preserve">
+    <value>成功</value>
+  </data>
+  <data name="Stats_NoReasonRecorded" xml:space="preserve">
+    <value>理由の記録なし</value>
+  </data>
+  <data name="Stats_Aborted" xml:space="preserve">
+    <value>中断：{0}</value>
+  </data>
+  <data name="Stats_PerformanceTrends" xml:space="preserve">
+    <value>成績の傾向</value>
+  </data>
+  <data name="Stats_NoSuccessfulRunDataAvailable" xml:space="preserve">
+    <value>成功した周回のデータがありません。</value>
+  </data>
+  <data name="Stats_AverageCompletionTimeLast" xml:space="preserve">
+    <value>平均クリア時間（直近10周）：{0}</value>
+  </data>
+  <data name="Stats_AverageCompletionTimeLast2" xml:space="preserve">
+    <value>平均クリア時間（直近50周）：{0}</value>
+  </data>
+  <data name="Stats_AverageCompletionTimeAllTime" xml:space="preserve">
+    <value>平均クリア時間（全期間）：{0}</value>
+  </data>
+  <data name="Stats_DeathRateLast" xml:space="preserve">
+    <value>戦闘不能率（直近10周）：{0:F1}%</value>
+  </data>
+  <data name="Stats_DeathRateAllTime" xml:space="preserve">
+    <value>戦闘不能率（全期間）：{0:F1}%</value>
+  </data>
+  <data name="Stats_MostEfficientJobAvg" xml:space="preserve">
+    <value>最も効率のよいジョブ：{0}（平均 {1}）</value>
+  </data>
+  <data name="Stats_RecentPerformanceTrend" xml:space="preserve">
+    <value>最近の成績推移：</value>
+  </data>
+  <data name="WarningText_SorryToMakeYouReadThis" xml:space="preserve">
+    <value>お手数ですがお読みください。</value>
+  </data>
+  <data name="WarningText_AFewNotesOnMOGTOMEVersionX" xml:space="preserve">
+    <value>MOGTOME 0.0.0.x版についての注意です（まだ1.x.x.xではありません）。</value>
+  </data>
+  <data name="WarningText_ItSExperimentalAndWillBreakOccasionally" xml:space="preserve">
+    <value>実験的なため、時々動作しなくなることがあります。</value>
+  </data>
+  <data name="WarningText_PleaseProvideLogsSoICanAnalyze" xml:space="preserve">
+    <value>解析用にログをご提供ください。</value>
+  </data>
+  <data name="WarningText_MultiplayerGuideDiscordLinkAndInfoAt" xml:space="preserve">
+    <value>複数クライアント用ガイド、Discordリンク、情報：</value>
+  </data>
+  <data name="WarningText_ThereAreWaysMOGTOMEIsCurrentlyCrashing" xml:space="preserve">
+    <value>現在、MOGTOME使用時にクライアントがクラッシュする状況が3つあります（原因はMOGTOME以外です）。</value>
+  </data>
+  <data name="WarningText_IfYouHaveRSRUISimulateThe" xml:space="preserve">
+    <value>(1) RSR &gt; UI の「Simulate the effect of pressing abilities」が有効なら、無効にしてください。</value>
+  </data>
+  <data name="WarningText_DoNotRunDalamudFromTheSame" xml:space="preserve">
+    <value>(2) 同じフォルダーからDalamudを複数起動しないでください。複数クライアントでクラッシュしやすくなります。</value>
+  </data>
+  <data name="WarningText_AUTODUTYRSRNavmeshSometimesWILLHaveRace" xml:space="preserve">
+    <value>AutoDuty・RSR・navmeshでは競合やデッドロックが起き、エラー表示の有無にかかわらずクライアントが終了する場合があります。</value>
+  </data>
+  <data name="WarningText_YouWillNeedToUseMultiInstall" xml:space="preserve">
+    <value>対処には別々のインストールフォルダーを使用してください。</value>
+  </data>
+  <data name="WarningText_ItWillBeTheFirstThingI" xml:space="preserve">
+    <value>MOGTOMEのバージョンの次に、まずこの点を確認します。</value>
+  </data>
+  <data name="WarningText_IfYouDonTHaveVeryMuch" xml:space="preserve">
+    <value>(3) RAMが少ない環境で多数のクライアントを起動すると問題が発生します。</value>
+  </data>
+  <data name="WarningText_PlanForGBFreePerClientYou" xml:space="preserve">
+    <value>起動前に、使用するクライアント1つあたり5GBの空きRAMを確保してください。</value>
+  </data>
+  <data name="WarningText_SeeTheMultiplayerGuideOnHttpsAethertek" xml:space="preserve">
+    <value>ヒントは https://aethertek.io/ の複数クライアント用ガイドをご覧ください。</value>
+  </data>
+  <data name="WarningText_NowForSomeTipsAndTricksFor" xml:space="preserve">
+    <value>続いてMOGTOMEの使い方のヒントです。</value>
+  </data>
+  <data name="WarningText_IfYouAreSelfRepairingSetRepair" xml:space="preserve">
+    <value>1. 自分で修理する場合、選択した進行プラグインの修理割合を高めに設定してください。</value>
+  </data>
+  <data name="WarningText_AutoDutyRepairIsStillWeirdSometimesADS" xml:space="preserve">
+    <value>AutoDutyの修理は時々不安定です。ADSモードは独自の修理コマンドを使用し、検証が必要です。</value>
+  </data>
+  <data name="WarningText_MakeAnAutoDutyProfileJustForThis" xml:space="preserve">
+    <value>2. ADSモードを使わない場合は、専用のAutoDutyプロファイルを作成して開始前に選択してください。</value>
+  </data>
+  <data name="WarningText_MOGTOMEChangesSomeSettingsSoThisKeeps" xml:space="preserve">
+    <value>MOGTOMEは一部の設定を変更するため、レベリングなど他の用途のプロファイルを保護できます。</value>
+  </data>
+  <data name="WarningText_JoinTheAutoPartyDiscordHttpsDiscordGg" xml:space="preserve">
+    <value>3. AutoPartyのDiscord： https://discord.gg/KyfyAzG6</value>
+  </data>
+  <data name="WarningText_WhenStartingMogtomeMakeSureYouStart" xml:space="preserve">
+    <value>4. MOGTOMEはリーダー以外のクライアントから先に開始してください。その後、</value>
+  </data>
+  <data name="WarningText_ConfigureWHOThePartyLeaderIsBy" xml:space="preserve">
+    <value>リーダーのクライアントで状態更新をクリックし、誰がリーダーかを設定してください。</value>
+  </data>
+  <data name="WarningText_IDidThisBecauseItsASeriously" xml:space="preserve">
+    <value>実際のパーティリーダーを正しく判定するのは難しいため、この方式にしています。</value>
+  </data>
+  <data name="WarningText_IHaveSomeCommentedOutAndRetired" xml:space="preserve">
+    <value>他の方法も試しましたが信頼性が低く、無効化または廃止しています。</value>
+  </data>
+  <data name="WarningText_ReadThisBeforeRunningMOGTOME" xml:space="preserve">
+    <value>MOGTOMEを実行する前にお読みください</value>
+  </data>
+  <data name="WarningText_WarningV" xml:space="preserve">
+    <value>注意事項 v{0}</value>
+  </data>
+  <data name="WarningText_OKIREADIT" xml:space="preserve">
+    <value>読みました</value>
+  </data>
+  <data name="Engine_HasNotBeenStartedSinceLoading" xml:space="preserve">
+    <value>読み込み後、まだ開始していません。</value>
+  </data>
+  <data name="Engine_DutyStartupPendingAfterExperimentalOpener" xml:space="preserve">
+    <value>実験的な開始処理後、コンテンツ開始待機中：{0}</value>
+  </data>
+  <data name="Engine_Initializing" xml:space="preserve">
+    <value>初期化中…</value>
+  </data>
+  <data name="Engine_PreparingBossModSupport" xml:space="preserve">
+    <value>BossModの支援を準備中…</value>
+  </data>
+  <data name="Engine_CheckingConflictingPlugins" xml:space="preserve">
+    <value>競合プラグインを確認中…</value>
+  </data>
+  <data name="Engine_PreparingADS" xml:space="preserve">
+    <value>ADSを準備中…</value>
+  </data>
+  <data name="Engine_PreparingAutoDuty" xml:space="preserve">
+    <value>AutoDutyを準備中…</value>
+  </data>
+  <data name="Engine_ResumingInsideDuty" xml:space="preserve">
+    <value>コンテンツ内で再開中…</value>
+  </data>
+  <data name="Engine_RunningDuty" xml:space="preserve">
+    <value>実行中：コンテンツ #{0}</value>
+  </data>
+  <data name="Engine_Stopping" xml:space="preserve">
+    <value>停止中…</value>
+  </data>
+  <data name="Engine_Stopped" xml:space="preserve">
+    <value>停止：{0}</value>
+  </data>
+  <data name="Engine_InDuty" xml:space="preserve">
+    <value>コンテンツ内：#{0}（{1}）</value>
+  </data>
+  <data name="Engine_SuspendedWaitingForLoginAndDutyContext" xml:space="preserve">
+    <value>一時中断：ログインとコンテンツ情報を待機中。</value>
+  </data>
+  <data name="Engine_DutyTransitionWaitingForConfirmedDutyContext" xml:space="preserve">
+    <value>コンテンツ移行中：情報の確定を待機中…</value>
+  </data>
+  <data name="Engine_DutyPendingWaitingForMatchingSupportedTerritory" xml:space="preserve">
+    <value>コンテンツ待機中：対応するエリア/CFCの一致を待っています。</value>
+  </data>
+  <data name="Engine_EnteringDutyWaitingForReadyDutyContext" xml:space="preserve">
+    <value>突入中：コンテンツの準備完了を待機中…</value>
+  </data>
+  <data name="Engine_EnteringDutyWaitingForTerritory" xml:space="preserve">
+    <value>突入中：エリアを待機中…</value>
+  </data>
+  <data name="Engine_DutyPendingUnexpectedOrMissingTerritoryCFC" xml:space="preserve">
+    <value>コンテンツ待機中：エリア/CFCが不明または想定外です（{0}）。対応情報を待っています。</value>
+  </data>
+  <data name="Engine_OutsideDutyNext" xml:space="preserve">
+    <value>コンテンツ外：次は #{0}</value>
+  </data>
+  <data name="Engine_WaitingForLeader" xml:space="preserve">
+    <value>リーダー待機中：#{0}（{1}）</value>
+  </data>
+  <data name="Engine_WaitingForLeader2" xml:space="preserve">
+    <value>リーダー待機中：#{0}</value>
+  </data>
+  <data name="Engine_DelayedRequeueInProgress" xml:space="preserve">
+    <value>時間を空けて再申請中…</value>
+  </data>
+  <data name="Engine_WaitingAfterLeaveDutyS" xml:space="preserve">
+    <value>退出後の待機中（{0:F0}秒）</value>
+  </data>
+  <data name="Engine_WaitingToStopS" xml:space="preserve">
+    <value>{0}の停止待機中（{1:F0}秒）</value>
+  </data>
+  <data name="Engine_Stopping2" xml:space="preserve">
+    <value>{0}を停止中…</value>
+  </data>
+  <data name="Engine_WaitingToQueueS" xml:space="preserve">
+    <value>申請待機中（{0:F0}秒）</value>
+  </data>
+  <data name="Engine_Queueing" xml:space="preserve">
+    <value>申請中…</value>
+  </data>
+  <data name="Engine_QueueingRegistered" xml:space="preserve">
+    <value>申請中：{0}（登録済み、{1}）</value>
+  </data>
+  <data name="Engine_QueueingRegistered2" xml:space="preserve">
+    <value>申請中：{0}（登録済み）</value>
+  </data>
+  <data name="Engine_QueueingContentsFinderRetryCooldownS" xml:space="preserve">
+    <value>申請中：{0}（ContentsFinder再試行まで{1:F0}秒、{2}）</value>
+  </data>
+  <data name="Engine_QueueingWaitingForQueueRegistrationS" xml:space="preserve">
+    <value>申請中：{0}（登録待機 {1:F0}/{2:F0}秒、{3}）</value>
+  </data>
+  <data name="Engine_QueueingWaitingForQueueRegistrationS2" xml:space="preserve">
+    <value>申請中：{0}（登録待機 {1:F0}/{2:F0}秒）</value>
+  </data>
+  <data name="Engine_QueueingWaiting" xml:space="preserve">
+    <value>申請中：{0}（待機中、{1}）</value>
+  </data>
+  <data name="Engine_QueueingWaiting2" xml:space="preserve">
+    <value>申請中：{0}（待機中…）</value>
+  </data>
+  <data name="Engine_LeaveBlocked" xml:space="preserve">
+    <value>{0}：退出不可（{1}）</value>
+  </data>
+  <data name="Engine_LeaveRequestedWaitingForZoneOutS" xml:space="preserve">
+    <value>退出要求済み：エリア移動を待機中（{0:F0}秒）</value>
+  </data>
+  <data name="Engine_CombatPending" xml:space="preserve">
+    <value>戦闘待機中：{0}。</value>
+  </data>
+  <data name="Engine_InDutyS" xml:space="preserve">
+    <value>コンテンツ内 #{0}：{1:F0}秒</value>
+  </data>
+  <data name="Engine_Repairing" xml:space="preserve">
+    <value>修理中…</value>
+  </data>
+  <data name="Engine_RepairDoneResuming" xml:space="preserve">
+    <value>修理完了、再開中</value>
+  </data>
+  <data name="Engine_RepairingWaitingForTelepotTownS" xml:space="preserve">
+    <value>修理中：TelepotTownを待機（{0:F0}秒）</value>
+  </data>
+  <data name="Engine_RepairingWaitingFor" xml:space="preserve">
+    <value>修理中：{0}を待機</value>
+  </data>
+  <data name="Engine_ContentsFinderQueueCooldownS" xml:space="preserve">
+    <value>ContentsFinder申請待機：{0}（{1:F0}秒、{2}）</value>
+  </data>
+  <data name="Engine_ContentsFinderQueueCooldownS2" xml:space="preserve">
+    <value>ContentsFinder申請待機：{0}（{1:F0}秒）</value>
+  </data>
+  <data name="Engine_Value" xml:space="preserve">
+    <value>{0}：{1}（{2} / {3}）</value>
+  </data>
+  <data name="Engine_Value2" xml:space="preserve">
+    <value>{0}：{1}</value>
+  </data>
+  <data name="Engine_WaitingForPeopleVisible" xml:space="preserve">
+    <value>4人を待機中（表示 {0}/4）</value>
+  </data>
+  <data name="Engine_WaitingForPartyMembersToLeaveDuty" xml:space="preserve">
+    <value>パーティメンバーの退出を待機中。</value>
+  </data>
+  <data name="Engine_QueueRecoveryWaitingAfterS" xml:space="preserve">
+    <value>申請の復旧：{0}後に待機（{1:F0}秒）</value>
+  </data>
+  <data name="Engine_QueueRecoveryAllowingRepairsS" xml:space="preserve">
+    <value>申請の復旧：修理時間を確保中（{0:F0}秒）</value>
+  </data>
+  <data name="Engine_QueueRecoveryResumingDutyEntry" xml:space="preserve">
+    <value>申請の復旧：コンテンツへの突入を再開</value>
+  </data>
+  <data name="Engine_RepairRecoveryWaitingToRequeueS" xml:space="preserve">
+    <value>修理後の復旧：再申請まで{0:F0}秒</value>
+  </data>
+  <data name="Engine_RepairRecoveryRetryWaitingForLeader" xml:space="preserve">
+    <value>修理後の復旧、再試行 {0}：リーダー待機中</value>
+  </data>
+  <data name="Engine_RepairRecoveryRestarting" xml:space="preserve">
+    <value>修理後の復旧：{0}を再開</value>
+  </data>
+  <data name="Engine_RepairRecoveryWaitingForLeader" xml:space="preserve">
+    <value>修理後の復旧：リーダー待機中</value>
+  </data>
+  <data name="Engine_LeaveRequestedViaADSAttemptWaitingFor" xml:space="preserve">
+    <value>ADSで退出要求済み（試行 #{0}）：エリア移動を待機中</value>
+  </data>
+  <data name="Engine_LeaveRequestedAttemptWaitingForZoneOut" xml:space="preserve">
+    <value>退出要求済み（試行 #{0}）：エリア移動を待機中</value>
+  </data>
+  <data name="Engine_PluginUnloadedOrReloaded" xml:space="preserve">
+    <value>プラグインが停止または再読み込みされました。</value>
+  </data>
+  <data name="Engine_RepairingBeforeStart" xml:space="preserve">
+    <value>開始前に修理中…</value>
+  </data>
+  <data name="Engine_StopAfterNextSuccessfulClearAndConfirmed" xml:space="preserve">
+    <value>次の成功後に停止：クリアと退出を確認しました。</value>
+  </data>
+  <data name="Engine_InitializationFailed" xml:space="preserve">
+    <value>初期化失敗：{0}</value>
+  </data>
+  <data name="Engine_PraetoriumDailyLimitReached" xml:space="preserve">
+    <value>プラエトリウムの1日上限に達しました（{0}/{1}）。</value>
+  </data>
+  <data name="Startup_WaitingForDutyReadiness" xml:space="preserve">
+    <value>コンテンツの準備完了を待機中。</value>
+  </data>
+  <data name="Startup_DutyStartupCancelled" xml:space="preserve">
+    <value>コンテンツ開始をキャンセルしました。</value>
+  </data>
+  <data name="Startup_DutyStartupPending" xml:space="preserve">
+    <value>コンテンツ開始待機：{0}。</value>
+  </data>
+  <data name="Startup_CombatRecoveryAfterDeathWaitingForContinuous" xml:space="preserve">
+    <value>戦闘不能後の戦闘復旧：準備完了状態の継続を待機</value>
+  </data>
+  <data name="Startup_WaitingForDuty" xml:space="preserve">
+    <value>コンテンツ待機中</value>
+  </data>
+  <data name="Startup_ExperimentalOpenerActive" xml:space="preserve">
+    <value>実験的な開始処理が動作中</value>
+  </data>
+  <data name="Startup_WaitingForLiveDutyTerritoryCFCIdentity" xml:space="preserve">
+    <value>現在のコンテンツのエリア/CFC情報を待機中</value>
+  </data>
+  <data name="Startup_ADSIsNotLoaded" xml:space="preserve">
+    <value>ADSが読み込まれていません</value>
+  </data>
+  <data name="Startup_HasADSClearanceMWaitingForFour" xml:space="preserve">
+    <value>{0}のADS対応状況は{1}（M{2}）です。4人用M3対応を待機中</value>
+  </data>
+  <data name="Startup_StartupInSOfContinuousReadiness" xml:space="preserve">
+    <value>準備完了状態が{0:F1}秒継続すると開始</value>
+  </data>
+  <data name="Startup_WaitingForDutyStartSeam" xml:space="preserve">
+    <value>コンテンツ開始のタイミングを待機中</value>
+  </data>
+  <data name="Startup_WaitingForReadableADSOwnershipConfirmation" xml:space="preserve">
+    <value>読み取り可能なADS管理確認を待機中</value>
+  </data>
+  <data name="Startup_WaitingSForADSOwnershipConfirmation" xml:space="preserve">
+    <value>ADS管理確認を待機中（{0:F1}秒）</value>
+  </data>
+  <data name="Startup_HandoffRetryBackoffUntil" xml:space="preserve">
+    <value>引き継ぎ再試行は{0:HH:mm:ss}以降</value>
+  </data>
+  <data name="Startup_AdStartWasNotHandled" xml:space="preserve">
+    <value>/ad start が処理されませんでした</value>
+  </data>
+  <data name="Startup_ADSStartDutyFromInsideAccepted" xml:space="preserve">
+    <value>ADS.StartDutyFromInsideを受理</value>
+  </data>
+  <data name="Startup_ADSStartDutyFromInsideRejectedCommandFallbackSuppressed" xml:space="preserve">
+    <value>ADS.StartDutyFromInsideを拒否：代替コマンドは送信しません</value>
+  </data>
+  <data name="Startup_TypedEndpointUnavailableSentAdsInsideFallback" xml:space="preserve">
+    <value>型付き接続先が利用不可：代替の /ads inside を送信</value>
+  </data>
+  <data name="Startup_TypedEndpointUnavailableAndAdsInsideFallback" xml:space="preserve">
+    <value>型付き接続先が利用不可で、代替の /ads inside も失敗</value>
+  </data>
+  <data name="Startup_DutyStartupFailed" xml:space="preserve">
+    <value>コンテンツ開始失敗：{0}</value>
+  </data>
+  <data name="Startup_CombatRecoveryBackoffUntil" xml:space="preserve">
+    <value>戦闘復旧の再試行は{0:HH:mm:ss}以降</value>
+  </data>
+  <data name="Startup_CombatActivationFailedRetryingAfterSAnd" xml:space="preserve">
+    <value>戦闘の有効化に失敗：{0}。5秒後、準備完了状態の継続を確認して再試行</value>
+  </data>
+  <data name="Startup_WaitingForAuthoritativeOwnership" xml:space="preserve">
+    <value>{0}：確定した管理状態を待機</value>
+  </data>
+  <data name="Startup_RestartingReadinessDelayWithSRetryBackoff" xml:space="preserve">
+    <value>{0}：準備待機をやり直し、5秒後に再試行</value>
+  </data>
+  <data name="Automation_AutoDutyPreparationFailed" xml:space="preserve">
+    <value>AutoDutyの準備に失敗：{0}</value>
+  </data>
+  <data name="Automation_QueueLeader" xml:space="preserve">
+    <value>申請担当リーダー</value>
+  </data>
+  <data name="Automation_FollowerWaitingOnLeader" xml:space="preserve">
+    <value>リーダーを待つ参加者</value>
+  </data>
+  <data name="Automation_ADS" xml:space="preserve">
+    <value>ADS</value>
+  </data>
+  <data name="Automation_RepairWaiting" xml:space="preserve">
+    <value>修理待機</value>
+  </data>
+  <data name="Automation_RepairHandoff" xml:space="preserve">
+    <value>修理へ引き継ぎ</value>
+  </data>
+  <data name="Automation_LeaveRequestedWaitingForZoneOut" xml:space="preserve">
+    <value>退出要求済み、エリア移動待機</value>
+  </data>
+  <data name="Automation_LeaveRequested" xml:space="preserve">
+    <value>退出要求済み</value>
+  </data>
+  <data name="Automation_ADSInsideOwned" xml:space="preserve">
+    <value>ADSがコンテンツ内を管理</value>
+  </data>
+  <data name="Automation_ADSOutsideOwned" xml:space="preserve">
+    <value>ADSがコンテンツ外を管理</value>
+  </data>
+  <data name="Automation_LeaderReady" xml:space="preserve">
+    <value>リーダー準備完了</value>
+  </data>
+  <data name="Automation_OutsideArmed" xml:space="preserve">
+    <value>コンテンツ外で待機準備済み</value>
+  </data>
+  <data name="Automation_WaitingForEntry" xml:space="preserve">
+    <value>突入待機</value>
+  </data>
+  <data name="Automation_InsideObserved" xml:space="preserve">
+    <value>コンテンツ内への突入を検出</value>
+  </data>
+  <data name="Automation_Leaving" xml:space="preserve">
+    <value>退出中</value>
+  </data>
+  <data name="Automation_Recovered" xml:space="preserve">
+    <value>復旧済み</value>
+  </data>
+  <data name="Automation_Idle" xml:space="preserve">
+    <value>待機</value>
+  </data>
+  <data name="Automation_ADSDutyBackendInnReturn" xml:space="preserve">
+    <value>ADSによる進行と宿屋への帰還</value>
+  </data>
+  <data name="Automation_ADSMissing" xml:space="preserve">
+    <value>ADSがありません</value>
+  </data>
+  <data name="Automation_ADSInnReady" xml:space="preserve">
+    <value>ADS宿屋機能が使用可能</value>
+  </data>
+  <data name="Automation_Value" xml:space="preserve">
+    <value>{0} / {1}</value>
+  </data>
+  <data name="Engine_ManualStop" xml:space="preserve">
+    <value>手動停止。</value>
+  </data>
+  <data name="Engine_CleanupFailed" xml:space="preserve">
+    <value>{0} {1}の終了処理に失敗：{2}</value>
+  </data>
+  <data name="Role_Tank" xml:space="preserve">
+    <value>タンク</value>
+  </data>
+  <data name="Role_Healer" xml:space="preserve">
+    <value>ヒーラー</value>
+  </data>
+  <data name="Role_Dps" xml:space="preserve">
+    <value>DPS</value>
+  </data>
+  <data name="Rotation_CouldNotDisableCombatComponentsFromThe" xml:space="preserve">
+    <value>前の周回の戦闘機能を無効にできませんでした。</value>
+  </data>
+  <data name="Rotation_BothBossModVariantsAreStillLoadedConflict" xml:space="preserve">
+    <value>BossModの両方の版がまだ読み込まれています。プリセット準備前に競合の解消が必要です。</value>
+  </data>
+  <data name="Rotation_BMROrVBM" xml:space="preserve">
+    <value>BMRまたはVBM</value>
+  </data>
+  <data name="Rotation_RequiresLoadedBossModSupport" xml:space="preserve">
+    <value>{0}にはBossModの読み込みが必要です（{1}）。</value>
+  </data>
+  <data name="Rotation_BossModPackagedPresetInstallationFailedCheckThat" xml:space="preserve">
+    <value>BossMod同梱プリセットの導入に失敗しました。プリセットIPCの準備状態と6つのファイルを確認してください。</value>
+  </data>
+  <data name="Rotation_CombatActivationWasRequestedAfterThisDuty" xml:space="preserve">
+    <value>コンテンツ終了後に戦闘の有効化が要求されました（{0}）。</value>
+  </data>
+  <data name="Rotation_CombatActivationFailed" xml:space="preserve">
+    <value>戦闘の有効化に失敗：{0}</value>
+  </data>
+  <data name="Rotation_CouldNotDisableAllMogTomeCombatComponents" xml:space="preserve">
+    <value>MogTomeの戦闘機能をすべて無効にできませんでした（{0}）。失敗したコマンドをログで確認してください。</value>
+  </data>
+  <data name="Rotation_RSRHealthRecoveryFailed" xml:space="preserve">
+    <value>RSRの状態復旧に失敗しました（{0}）。</value>
+  </data>
+  <data name="Rotation_BossModAvailabilityOrSelectionChangedAfterStartup" xml:space="preserve">
+    <value>開始後にBossModの利用状態または選択が変わりました。MogTomeを停止して再度開始してください。</value>
+  </data>
+  <data name="Rotation_PresetPreparationFailedCombatWasNotEnabled" xml:space="preserve">
+    <value>{0}のプリセット準備に失敗したため、戦闘を有効にしませんでした。</value>
+  </data>
+  <data name="Rotation_RSRAutoIPCAndRotationAutoBoth" xml:space="preserve">
+    <value>RSR Auto IPCと /rotation auto の両方が失敗しました。</value>
+  </data>
+  <data name="Rotation_CouldNotEnableUsing" xml:space="preserve">
+    <value>{1}で{0}を有効にできませんでした。</value>
+  </data>
+  <data name="Path_NotAttempted" xml:space="preserve">
+    <value>未試行</value>
+  </data>
+  <data name="Path_FAILEDAutoDutyPluginNotFoundOrNot" xml:space="preserve">
+    <value>失敗：AutoDutyが見つからないか、読み込まれていません</value>
+  </data>
+  <data name="Path_OKTerritoryPathSelectionSavedAndVerified" xml:space="preserve">
+    <value>OK：エリア={0}、経路={1}（{2}）。選択を保存・確認済み</value>
+  </data>
+  <data name="Path_FAILED" xml:space="preserve">
+    <value>失敗：{0}</value>
+  </data>
+  <data name="Conflict_StartupWasStoppedBeforeBossModCleanup" xml:space="preserve">
+    <value>BossModの終了処理前に開始が停止されました。</value>
+  </data>
+  <data name="Conflict_StartupCancelledDuringVBMCleanup" xml:space="preserve">
+    <value>VBMの終了処理中に開始をキャンセルしました。</value>
+  </data>
+  <data name="Conflict_VBMCouldNotBeDisabledWhileBoth" xml:space="preserve">
+    <value>BossModの両方の版が読み込まれた状態でVBMを無効にできませんでした。</value>
+  </data>
+  <data name="Conflict_StartupCancelledDuringBMRCleanup" xml:space="preserve">
+    <value>BMRの終了処理中に開始をキャンセルしました。</value>
+  </data>
+  <data name="Conflict_BMRCouldNotBeTemporarilyDisabledTo" xml:space="preserve">
+    <value>共有IPC登録を復旧するためのBMRの一時無効化に失敗しました。</value>
+  </data>
+  <data name="Conflict_TheNativeTemporaryBMREnableCommandWas" xml:space="preserve">
+    <value>BMRを一時的に有効にするネイティブコマンドが処理されませんでした。</value>
+  </data>
+  <data name="Conflict_StartupCancelledDuringBMRReadiness" xml:space="preserve">
+    <value>BMRの準備中に開始をキャンセルしました。</value>
+  </data>
+  <data name="Conflict_BMRDidNotBecomeReadyAfterIts" xml:space="preserve">
+    <value>BMRが再読み込み後に準備完了にならなかったか、VBMが再度読み込まれました。</value>
+  </data>
+  <data name="Conflict_WasEnabledAndHasBeenAutoDisabled" xml:space="preserve">
+    <value>{0}が有効だったため、MOGTOME用に自動で無効化しました。</value>
+  </data>
+  <data name="Conflict_MOGTOMEKeptRunningClickTheWarningWindow" xml:space="preserve">
+    <value>{0}
+
+MOGTOMEは実行を続けました。クリックで警告を閉じるか、プラグインが再度有効になった場合は無効化ボタンを使ってください。</value>
+  </data>
+  <data name="Conflict_IsStillEnabledMOGTOMEWillKeepRunning" xml:space="preserve">
+    <value>{0}はまだ有効です。MOGTOMEは続行しますが、{1}で無効にしてください。</value>
+  </data>
+  <data name="Conflict_UseTheWarningWindowButtonToTry" xml:space="preserve">
+    <value>{0}
+
+警告内のボタンで無効化を再試行するか、警告を閉じて続行してください。</value>
+  </data>
+  <data name="Conflict_WasEnabledAndHasBeenAutoDisabled2" xml:space="preserve">
+    <value>{0}が有効だったため、ADSモード用に自動で無効化しました。</value>
+  </data>
+  <data name="Conflict_IsStillEnabledADSModeExpects" xml:space="preserve">
+    <value>{0}はまだ有効です。ADSモードでは{1}が必要です。</value>
+  </data>
+  <data name="Blocker_WaitingForMatchingDutyIdentity" xml:space="preserve">
+    <value>一致するコンテンツ情報を待機中</value>
+  </data>
+  <data name="Blocker_Loading" xml:space="preserve">
+    <value>読み込み中</value>
+  </data>
+  <data name="Blocker_Combat" xml:space="preserve">
+    <value>戦闘中</value>
+  </data>
+  <data name="Blocker_Cutscene" xml:space="preserve">
+    <value>カットシーン中</value>
+  </data>
+  <data name="Blocker_OccupiedTransition" xml:space="preserve">
+    <value>操作不可の移行中</value>
+  </data>
+  <data name="Blocker_WaitingForLogin" xml:space="preserve">
+    <value>ログイン待機中</value>
+  </data>
+  <data name="Blocker_WaitingForLocalPlayer" xml:space="preserve">
+    <value>自キャラクターを待機中</value>
+  </data>
+  <data name="Blocker_WaitingForLocalPlayerJob" xml:space="preserve">
+    <value>自キャラクターのジョブ情報を待機中</value>
+  </data>
+  <data name="Blocker_WaitingForUnconsciousStateToClear" xml:space="preserve">
+    <value>戦闘不能状態の解除を待機中</value>
+  </data>
+  <data name="Blocker_WaitingForLocalPlayerToBeAlive" xml:space="preserve">
+    <value>自キャラクターの復活を待機中</value>
+  </data>
+  <data name="Blocker_WaitingForAreaTransitionToFinish" xml:space="preserve">
+    <value>エリア移動の完了を待機中</value>
+  </data>
+  <data name="Blocker_WaitingForCutsceneToFinish" xml:space="preserve">
+    <value>カットシーン終了を待機中</value>
+  </data>
+  <data name="Blocker_WaitingForCutsceneEventToFinish" xml:space="preserve">
+    <value>カットシーンイベント終了を待機中</value>
+  </data>
+  <data name="Window_MOGTOMEStatus" xml:space="preserve">
+    <value>MOGTOME - 状態</value>
+  </data>
+  <data name="Window_MOGTOMEConfiguration" xml:space="preserve">
+    <value>MOGTOME - 設定</value>
+  </data>
+  <data name="Window_MOGTOMEStatistics" xml:space="preserve">
+    <value>MOGTOME - 統計</value>
+  </data>
+  <data name="Window_MOGTOMEWarningText" xml:space="preserve">
+    <value>MOGTOME - 注意事項</value>
+  </data>
+  <data name="Config_CombatProvider2" xml:space="preserve">
+    <value>戦闘プラグイン：{0}</value>
+  </data>
+  <data name="Config_NotConfigured" xml:space="preserve">
+    <value>未設定</value>
+  </data>
+  <data name="Config_OptionalFood" xml:space="preserve">
+    <value>任意の食事：{0}</value>
+  </data>
+  <data name="Config_HQ" xml:space="preserve">
+    <value>［HQ］</value>
+  </data>
+  <data name="Config_NQ" xml:space="preserve">
+    <value>［NQ］</value>
+  </data>
+  <data name="Config_SelectedID" xml:space="preserve">
+    <value>  選択中：{0} {1}（ID：{2}）</value>
+  </data>
+  <data name="Main_ForceAutoDutyToSelectModeLoopingDuty" xml:space="preserve">
+    <value>AutoDutyに次を強制選択します：
+Mode：Looping
+Duty Mode：Regular
+コンテンツ：The Praetorium（1044）
+経路：{0}
+
+AutoDutyの全構造をDalamudログへ出力します。</value>
+  </data>
+  <data name="Main_TestPathIndexDiscoveryMethodsComparesDictionaryPaths" xml:space="preserve">
+    <value>経路インデックスの検出方法をテストします。
+DictionaryPathsとPathSelectionsByPathを比較します。
+結果をDalamudログへ出力します。</value>
+  </data>
+  <data name="Main_DumpAutoDutyConfigurationStructureToDalamudLog" xml:space="preserve">
+    <value>AutoDutyのConfiguration構造をDalamudログへ出力します。</value>
+  </data>
+  <data name="Plugin_ScrollDownToTheDumpsterFireChannel" xml:space="preserve">
+    <value>プラグインの問題や提案は「The Dumpster Fire」チャンネルまでスクロールしてください。</value>
+  </data>
+  <data name="Plugin_CheckPartyLeaderSettingsIfTheDuty" xml:space="preserve">
+    <value>コンテンツが始まらない場合はパーティリーダー設定を確認してください</value>
+  </data>
+  <data name="Plugin_ADSDidNotHandleAdsEnterinnEnsure" xml:space="preserve">
+    <value>ADSが /ads enterinn を処理しませんでした。ADSのインストールと読み込みを確認してください。</value>
+  </data>
+  <data name="Warning_SharedMOGTOMEConfigPath" xml:space="preserve">
+    <value>MOGTOME設定パスの共有</value>
+  </data>
+  <data name="Warning_AnotherClientHoldsMOGTOMESConfigDirectory" xml:space="preserve">
+    <value>別のクライアントがMOGTOMEの設定フォルダーを使用中です。同じ設定パスで複数クライアントを開始すると、設定が上書きされる可能性があります。該当するゲームプロセス数：{0}。</value>
+  </data>
+  <data name="Warning_CancelStart" xml:space="preserve">
+    <value>開始をキャンセル</value>
+  </data>
+  <data name="Warning_AcknowledgeAndStart" xml:space="preserve">
+    <value>確認して開始</value>
+  </data>
+  <data name="Warning_TwistOfFayteConflict" xml:space="preserve">
+    <value>Twist of Fayteとの競合</value>
+  </data>
+  <data name="Warning_AutoDutyConflict" xml:space="preserve">
+    <value>AutoDutyとの競合</value>
+  </data>
+  <data name="Warning_PluginConflict" xml:space="preserve">
+    <value>プラグインの競合</value>
+  </data>
+  <data name="Warning_DisableTwistOfFayte" xml:space="preserve">
+    <value>TwistOfFayteを無効化</value>
+  </data>
+  <data name="Warning_DisableAutoDuty" xml:space="preserve">
+    <value>AutoDutyを無効化</value>
+  </data>
+  <data name="Chat_MOGTOMEStoppedAndClearedPendingStartAnd" xml:space="preserve">
+    <value>[MOGTOME] 停止し、開始予約と次の成功後の停止予約を解除しました。</value>
+  </data>
+  <data name="Chat_MOGTOMEAlreadyStopped" xml:space="preserve">
+    <value>[MOGTOME] 既に停止しています：{0}</value>
+  </data>
+  <data name="Chat_MOGTOMEEngineIsStillInitializing" xml:space="preserve">
+    <value>[MOGTOME] まだ初期化中です。</value>
+  </data>
+  <data name="Chat_MOGTOMEStopAfterNextSuccessfulRunArmed" xml:space="preserve">
+    <value>[MOGTOME] 次の成功後の停止を予約しました。</value>
+  </data>
+  <data name="Chat_MOGTOMEStopAfterNextSuccessfulRunCancelled" xml:space="preserve">
+    <value>[MOGTOME] 次の成功後の停止を取り消しました。</value>
+  </data>
+  <data name="Chat_MOGTOMEMogInnIsOnlyAvailableWhile" xml:space="preserve">
+    <value>[MOGTOME] /mog inn は停止中または修理中のみ使用できます。</value>
+  </data>
+  <data name="Chat_MOGTOMEStateDuty" xml:space="preserve">
+    <value>[MOGTOME] 状態：{0}　コンテンツ #{1}　{2}</value>
+  </data>
+  <data name="Chat_MOGTOMEDebugMode" xml:space="preserve">
+    <value>[MOGTOME] デバッグモード：{0}</value>
+  </data>
+  <data name="Chat_MOGTOMEDebugCheckboxNowVisibleInStats" xml:space="preserve">
+    <value>[MOGTOME] 統計ウィンドウにデバッグ用チェック項目を表示しました</value>
+  </data>
+  <data name="Chat_MOGTOME" xml:space="preserve">
+    <value>[MOGTOME] {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEFailedToSendAdsEnterinnCheck" xml:space="preserve">
+    <value>[MOGTOME] /ads enterinn の送信に失敗しました。Dalamudログを確認してください。</value>
+  </data>
+  <data name="Chat_MOGTOMEQueuedMainConfigStatsWindowReset" xml:space="preserve">
+    <value>[MOGTOME] メイン・設定・統計ウィンドウの位置を1,1へ戻す処理を予約しました。</value>
+  </data>
+  <data name="Chat_MOGTOMEQueuedRandomVisibleJumpsForMain" xml:space="preserve">
+    <value>[MOGTOME] メイン・設定・統計ウィンドウを画面内のランダムな位置へ移動します。</value>
+  </data>
+  <data name="Chat_MOGTOMEEngineIsStillInitializingTryAgain" xml:space="preserve">
+    <value>[MOGTOME] まだ初期化中です。少し待ってから再試行してください。</value>
+  </data>
+  <data name="Chat_MOGTOMEAlreadyRunning" xml:space="preserve">
+    <value>[MOGTOME] 既に実行中です</value>
+  </data>
+  <data name="Chat_MOGTOMEStartAlreadyQueued" xml:space="preserve">
+    <value>[MOGTOME] 開始は既に予約されています。</value>
+  </data>
+  <data name="Chat_MOGTOMEStartQueued" xml:space="preserve">
+    <value>[MOGTOME] 開始を予約しました。</value>
+  </data>
+  <data name="Chat_MOGTOMEWarningXASlaveDidNotHandle" xml:space="preserve">
+    <value>[MOGTOME] 注意：XA Slaveが{0}を処理しませんでした。開始を続行します。</value>
+  </data>
+  <data name="Chat_MOGTOMEWarningFailedToSendContinuingStartup" xml:space="preserve">
+    <value>[MOGTOME] 注意：{0}の送信に失敗しました。開始を続行します。</value>
+  </data>
+  <data name="DutyAutomationService_AIDutySolverADSExperimentalModeIs" xml:space="preserve">
+    <value>AI Duty Solver（ADS）の実験モードが有効ですが、ADSが読み込まれていません。</value>
+  </data>
+  <data name="DutyAutomationService_AutoDutyIsStillInitializingOrFaultedRetry" xml:space="preserve">
+    <value>AutoDutyは初期化中または異常状態です。ログイン後に安定してからMOGTOMEを再試行してください</value>
+  </data>
+  <data name="DutyAutomationService_BundledPraetoriumPathsCouldNotBeInstalled" xml:space="preserve">
+    <value>同梱のプラエトリウム経路をAutoDutyにインストールできませんでした。</value>
+  </data>
+  <data name="DutyAutomationService_ADSDidNotHandleAdsEnterinnAfter" xml:space="preserve">
+    <value>修理後にADSが /ads enterinn を処理しませんでした。ADSのインストールと読み込みを確認してください。</value>
+  </data>
+  <data name="Chat_MOGTOMEAutoDutyPreparationFailed" xml:space="preserve">
+    <value>[MOGTOME] AutoDutyの準備に失敗：{0}</value>
+  </data>
+  <data name="Chat_MOGTOMEPraetoriumCallbackTest" xml:space="preserve">
+    <value>[MOGTOME] プラエトリウムのコールバックテスト：{0}</value>
+  </data>
+  <data name="Chat_MOGTOMEMissingOptionalUnlocks" xml:space="preserve">
+    <value>[MOGTOME] 未開放の任意項目：{0}</value>
+  </data>
+  <data name="MogtomeEngine_CombatCleanupFailedAfterDutyExitContinuing" xml:space="preserve">
+    <value>退出後の戦闘終了処理に失敗しました。続行します。</value>
+  </data>
+  <data name="MogtomeEngine_ManualPartyRefreshSkippedInsideDutyUse" xml:space="preserve">
+    <value>コンテンツ内のため手動更新を行いませんでした。全員が退出し、表示されてからコンテンツ外で更新してください。</value>
+  </data>
+  <data name="MogtomeEngine_NonLeader" xml:space="preserve">
+    <value>リーダー以外</value>
+  </data>
+  <data name="MogtomeEngine_ManualPartyRefreshCouldNotDetermineLeader" xml:space="preserve">
+    <value>現在の同一ワールドの一覧からリーダーを判定できませんでした。{0}の役割を維持します。</value>
+  </data>
+  <data name="Chat_MOGTOMEStopAfterNextCompletedStoppingBefore" xml:space="preserve">
+    <value>[MOGTOME] 次の成功後の停止条件を達成しました。再申請前に停止します。</value>
+  </data>
+  <data name="Chat_MOGTOMEAlreadyInsideInnTerritory" xml:space="preserve">
+    <value>[MOGTOME] 既に宿屋にいます：{0}。</value>
+  </data>
+  <data name="Chat_MOGTOMENoInnkeeperFoundWithinYMog" xml:space="preserve">
+    <value>[MOGTOME] {0:F0}m以内に宿屋の受付が見つかりません。/mog inn は何も行いませんでした。</value>
+  </data>
+  <data name="Chat_MOGTOMEMogInnCancelled" xml:space="preserve">
+    <value>[MOGTOME] /mog inn をキャンセル：{0}</value>
+  </data>
+  <data name="Warning_Title" xml:space="preserve">
+    <value>MOGTOMEの警告</value>
+  </data>
+  <data name="Warning_Dismiss" xml:space="preserve">
+    <value>閉じる</value>
+  </data>
+  <data name="Language_Label" xml:space="preserve">
+    <value>表示言語</value>
+  </data>
+  <data name="Language_WaitForProfile" xml:space="preserve">
+    <value>プロファイルが利用可能になるまで、ゲームクライアントの言語を使用します。</value>
+  </data>
+  <data name="Config_Potion" xml:space="preserve">
+    <value>薬品</value>
+  </data>
+  <data name="Chat_MessageAndReason" xml:space="preserve">
+    <value>[MOGTOME] {0} {1}</value>
+  </data>
+  <data name="EngineState_Idle" xml:space="preserve">
+    <value>待機</value>
+  </data>
+  <data name="EngineState_Initializing" xml:space="preserve">
+    <value>初期化中</value>
+  </data>
+  <data name="EngineState_WaitingOutsideDuty" xml:space="preserve">
+    <value>コンテンツ外で待機中</value>
+  </data>
+  <data name="EngineState_Queueing" xml:space="preserve">
+    <value>申請中</value>
+  </data>
+  <data name="EngineState_InDuty" xml:space="preserve">
+    <value>コンテンツ内</value>
+  </data>
+  <data name="EngineState_RepairingOutside" xml:space="preserve">
+    <value>コンテンツ外で修理中</value>
+  </data>
+  <data name="EngineState_Stopping" xml:space="preserve">
+    <value>停止処理中</value>
+  </data>
+  <data name="EngineState_Stopped" xml:space="preserve">
+    <value>停止</value>
+  </data>
+  <data name="CombatProvider_Bmr" xml:space="preserve">
+    <value>BMR</value>
+  </data>
+  <data name="CombatProvider_Vbm" xml:space="preserve">
+    <value>VBM</value>
+  </data>
+  <data name="CombatProvider_Rsr" xml:space="preserve">
+    <value>RSR</value>
+  </data>
+  <data name="CombatProvider_Wrath" xml:space="preserve">
+    <value>Wrath Combo</value>
+  </data>
+  <data name="Inn_InteractingWithInnkeeper" xml:space="preserve">
+    <value>宿屋の受付{0}に話しかけています</value>
+  </data>
+  <data name="Inn_MovingToInnkeeper" xml:space="preserve">
+    <value>宿屋の受付{0}へ移動中</value>
+  </data>
+  <data name="Inn_MOGTOMEMogInnRequiresALoggedIn" xml:space="preserve">
+    <value>[MOGTOME] /mog inn にはキャラクターのログインが必要です。</value>
+  </data>
+  <data name="Inn_EnteredInnTerritorySuccessfully" xml:space="preserve">
+    <value>宿屋への入室に成功しました。</value>
+  </data>
+  <data name="Inn_TimedOutWhileTryingToEnterThe" xml:space="preserve">
+    <value>宿屋への入室がタイムアウトしました。</value>
+  </data>
+  <data name="Inn_InnEntryFailed" xml:space="preserve">
+    <value>宿屋への入室に失敗：{0}</value>
+  </data>
+  <data name="Inn_WaitingForInnZoneTransition" xml:space="preserve">
+    <value>宿屋へのエリア移動を待機中</value>
+  </data>
+  <data name="Inn_InnkeeperIsNoLongerNearby" xml:space="preserve">
+    <value>宿屋の受付{0}が近くにいません。</value>
+  </data>
+  <data name="Inn_InteractingWith" xml:space="preserve">
+    <value>{0}に話しかけています</value>
+  </data>
+  <data name="Inn_DriftedTooFarAwayFromWhileWaiting" xml:space="preserve">
+    <value>話しかけるまでの待機中に{0}から離れすぎました。</value>
+  </data>
+  <data name="Inn_RepositioningNear" xml:space="preserve">
+    <value>{0}の近くへ移動し直しています</value>
+  </data>
+  <data name="Inn_Retrying" xml:space="preserve">
+    <value>{0}を再試行中</value>
+  </data>
+  <data name="Time_Calculating" xml:space="preserve">
+    <value>計算中…</value>
+  </data>
+  <data name="Time_Unknown" xml:space="preserve">
+    <value>不明</value>
+  </data>
+  <data name="Time_DH" xml:space="preserve">
+    <value>{0}日{1}時間</value>
+  </data>
+  <data name="Time_HM" xml:space="preserve">
+    <value>{0}時間{1}分</value>
+  </data>
+  <data name="Time_MS" xml:space="preserve">
+    <value>{0}分{1}秒</value>
+  </data>
+  <data name="Engine_DutyComplete" xml:space="preserve">
+    <value>コンテンツ完了</value>
+  </data>
+  <data name="Engine_BailoutPending" xml:space="preserve">
+    <value>脱出待機中</value>
+  </data>
+  <data name="Config_CombatRotation" xml:space="preserve">
+    <value>戦闘ローテーション</value>
+  </data>
+  <data name="Config_PotOnBoss" xml:space="preserve">
+    <value>{0}で薬品を使用</value>
+  </data>
+  <data name="RepairBlocker_DutyState" xml:space="preserve">
+    <value>コンテンツ状態</value>
+  </data>
+  <data name="RepairBlocker_ZoneTransition" xml:space="preserve">
+    <value>エリア移動</value>
+  </data>
+  <data name="RepairBlocker_QueueRegistration" xml:space="preserve">
+    <value>参加登録</value>
+  </data>
+  <data name="RepairBlocker_DutyConfirmation" xml:space="preserve">
+    <value>突入確認</value>
+  </data>
+  <data name="RepairBlocker_MinimizedDutyConfirmation" xml:space="preserve">
+    <value>最小化された突入確認</value>
+  </data>
+  <data name="RepairBlocker_CancelDutyConfirmation" xml:space="preserve">
+    <value>突入確認のキャンセル処理</value>
+  </data>
+  <data name="RepairBlocker_YesNoDialog" xml:space="preserve">
+    <value>SelectYesnoダイアログ</value>
+  </data>
+  <data name="RepairBlocker_Cutscene" xml:space="preserve">
+    <value>カットシーン</value>
+  </data>
+  <data name="RepairBlocker_Occupied" xml:space="preserve">
+    <value>操作不可の移行</value>
+  </data>
+  <data name="Plugin_CommandMainHelp" xml:space="preserve">
+    <value>MOGTOMEのメインウィンドウを開きます。</value>
+  </data>
+  <data name="Plugin_CommandAliasHelp" xml:space="preserve">
+    <value>MOGTOME: /mog [start|stop|stopnext|inn|config|status|debug|ws|j]、または /mog で画面を開きます。</value>
+  </data>
+  <data name="Ads_Empty" xml:space="preserve"><value>ADS.GetStatusJson の応答が空です</value></data>
+  <data name="Ads_Inactive" xml:space="preserve"><value>ADS の状態に実行中のインスタンスコンテンツがありません</value></data>
+  <data name="Ads_NoCatalog" xml:space="preserve"><value>現在の ADS コンテンツにカタログ情報がありません</value></data>
+  <data name="Ads_NoName" xml:space="preserve"><value>現在の ADS カタログ行にコンテンツ名がありません</value></data>
+  <data name="Ads_NoTerritory" xml:space="preserve"><value>現在の ADS カタログ行にテリトリー ID がありません</value></data>
+  <data name="Ads_NoCfc" xml:space="preserve"><value>現在の ADS カタログ行に CFC ID がありません</value></data>
+  <data name="Ads_Category" xml:space="preserve"><value>現在の ADS カタログ行のカテゴリ「{0}」には対応していません</value></data>
+  <data name="Ads_Support" xml:space="preserve"><value>現在の ADS カタログ行の対応レベル「{0}」には対応していません</value></data>
+  <data name="Ads_Clearance" xml:space="preserve"><value>現在の ADS カタログ行のクリア状況「{0}」には対応していません</value></data>
+  <data name="Ads_InvalidJson" xml:space="preserve"><value>ADS.GetStatusJson の JSON が無効です: {0}</value></data>
+  <data name="Ads_Unvalidated" xml:space="preserve"><value>現在の ADS コンテンツの確認済み状態がありません。</value></data>
+  <data name="Ads_Unloaded" xml:space="preserve"><value>ADS が読み込まれていません。</value></data>
+  <data name="Ads_Outside" xml:space="preserve"><value>クライアントはインスタンスコンテンツの外にいます。</value></data>
+  <data name="Ads_NoLiveIdentity" xml:space="preserve"><value>GameMain から現在のコンテンツのテリトリー ID を取得できません。</value></data>
+  <data name="Ads_Changed" xml:space="preserve"><value>コンテンツ ID がテリトリー/CFC {0}/{1} から {2}/{3} に変わりました。</value></data>
+  <data name="Ads_Mismatch" xml:space="preserve"><value>ADS のコンテンツ ID {0}/{1} が GameMain の現在の ID {2}/{3} と一致しません。</value></data>
+  <data name="Ads_Validated" xml:space="preserve"><value>テリトリー/CFC {0}/{1} の ADS コンテンツ状態を確認しました。</value></data>
+  <data name="Ads_Unavailable" xml:space="preserve"><value>ADS.GetStatusJson を利用できません: {0}</value></data>
+  <data name="Ads_Retained" xml:space="preserve"><value>ADS.GetStatusJson を利用できないため、現在の ID と一致する確認済み状態を保持します: {0}</value></data>
+  <data name="Opener_Timeout" xml:space="preserve"><value>実験処理が10秒でタイムアウト</value></data>
+  <data name="Opener_NoTarget" xml:space="preserve"><value>最初の敵グループのターゲットが見つかりません</value></data>
+  <data name="Opener_NoArea" xml:space="preserve"><value>{0} の範囲アクションを使用できません</value></data>
+  <data name="Opener_NoInvulnerability" xml:space="preserve"><value>{0} の無敵アクションを使用できません</value></data>
+  <data name="Opener_NoTerminal" xml:space="preserve"><value>魔導ターミナル 2012811 が見つかりません</value></data>
+  <data name="Opener_NoPlayerAtTerminal" xml:space="preserve"><value>ターミナルで自分のキャラクターを取得できません</value></data>
+  <data name="Opener_Descended" xml:space="preserve"><value>ターミナルからの降下を検出しました</value></data>
+  <data name="Opener_NoInteract" xml:space="preserve"><value>魔導ターミナルを操作できません</value></data>
+  <data name="Opener_NoPlayerBeforeMove" xml:space="preserve"><value>{0} への移動前に自分のキャラクターを取得できません</value></data>
+  <data name="Opener_NoMove" xml:space="preserve"><value>{0} への vnav 移動を実行できません</value></data>
+  <data name="Opener_NoPlayerMoving" xml:space="preserve"><value>移動中に自分のキャラクターを取得できません</value></data>
+  <data name="Opener_NoProgress" xml:space="preserve"><value>vnav 移動が進んでいません</value></data>
+  <data name="Opener_Pack" xml:space="preserve"><value>最初の敵グループ</value></data>
+  <data name="Opener_Terminal" xml:space="preserve"><value>魔導ターミナル</value></data>
+  <data name="Engine_AutoQueueing" xml:space="preserve"><value>自動参加申請中</value></data>
+  <data name="Engine_RepairRecoveryRetry" xml:space="preserve"><value>修理後の復帰を再試行 {0}</value></data>
+</root>

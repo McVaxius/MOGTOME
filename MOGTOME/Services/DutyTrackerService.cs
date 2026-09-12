@@ -1,3 +1,4 @@
+using MOGTOME.Localization;
 using System;
 using Dalamud.Plugin.Services;
 using MOGTOME.Models;
@@ -247,7 +248,7 @@ public class DutyTrackerService
     {
         if (state.NextResetTime == null)
         {
-            return ("Calculating...", "Unknown");
+            return (Ui.T("Time_Calculating"), Ui.T("Time_Unknown"));
         }
 
         var now = DateTime.UtcNow;
@@ -257,24 +258,24 @@ public class DutyTrackerService
         string countdown;
         if (timeUntilReset.TotalHours > 24)
         {
-            countdown = $"{(int)timeUntilReset.TotalDays}d {(int)timeUntilReset.Hours % 24}h";
+            countdown = Ui.T("Time_DH", (int)timeUntilReset.TotalDays, (int)timeUntilReset.Hours % 24);
         }
         else if (timeUntilReset.TotalHours > 1)
         {
-            countdown = $"{(int)timeUntilReset.TotalHours}h {timeUntilReset.Minutes % 60}m";
+            countdown = Ui.T("Time_HM", (int)timeUntilReset.TotalHours, timeUntilReset.Minutes % 60);
         }
         else if (timeUntilReset.TotalMinutes > 1)
         {
-            countdown = $"{(int)timeUntilReset.TotalMinutes}m {timeUntilReset.Seconds % 60}s";
+            countdown = Ui.T("Time_MS", (int)timeUntilReset.TotalMinutes, timeUntilReset.Seconds % 60);
         }
         else
         {
-            countdown = $"{(int)timeUntilReset.TotalSeconds}s";
+            countdown = Ui.T("Main_S", (int)timeUntilReset.TotalSeconds);
         }
 
         // Convert to local time for display
         var localResetTime = state.NextResetTime.Value.ToLocalTime();
-        var localTime = localResetTime.ToString("yyyy-MM-dd HH:mm");
+        var localTime = localResetTime.ToString("g", Ui.Culture);
 
         return (countdown, localTime);
     }

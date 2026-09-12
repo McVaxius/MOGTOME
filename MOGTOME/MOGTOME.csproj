@@ -5,9 +5,9 @@
   <PropertyGroup>
     <TargetFramework>net10.0-windows</TargetFramework>
     <PlatformTarget>x64</PlatformTarget>
-    <Version>0.3.1.0</Version>
-    <FileVersion>0.3.1.0</FileVersion>
-    <AssemblyVersion>0.3.1.0</AssemblyVersion>
+    <Version>1.0.0.0</Version>
+    <FileVersion>1.0.0.0</FileVersion>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <PackageProjectUrl>https://github.com/McVaxius/MOGTOME</PackageProjectUrl>
     <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
     <IsPackable>false</IsPackable>
@@ -44,6 +44,9 @@
       <PluginFiles Include="images\icon.png" />
       <PluginDataFiles Include="data\autoduty-paths\**" />
       <PluginBossModDataFiles Include="data\bm\**" />
+      <PluginSatelliteFiles Include="$(TargetDir)fr\$(AssemblyName).resources.dll"><Culture>fr</Culture></PluginSatelliteFiles>
+      <PluginSatelliteFiles Include="$(TargetDir)de\$(AssemblyName).resources.dll"><Culture>de</Culture></PluginSatelliteFiles>
+      <PluginSatelliteFiles Include="$(TargetDir)ja\$(AssemblyName).resources.dll"><Culture>ja</Culture></PluginSatelliteFiles>
     </ItemGroup>
 
     
@@ -57,6 +60,10 @@
 
     <Copy SourceFiles="@(PluginBossModDataFiles)"
           DestinationFiles="@(PluginBossModDataFiles->'$(PluginOutput)\data\bm\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
+
+    <Copy SourceFiles="@(PluginSatelliteFiles)"
+          DestinationFiles="@(PluginSatelliteFiles->'$(PluginOutput)\%(Culture)\%(Filename)%(Extension)')"
           SkipUnchangedFiles="true" />
 
   </Target>

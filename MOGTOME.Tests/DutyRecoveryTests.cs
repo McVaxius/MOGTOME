@@ -139,16 +139,6 @@ public sealed class DutyRecoveryTests
     public void DirectRegistrationRequiresExactlyIntendedRegularDuty(uint expected, int count, bool regular, uint selected, bool allowed)
         => Assert.Equal(allowed, DutyAutomationService.IsIntendedSelection(expected, count, regular, selected));
 
-    [Theory]
-    [InlineData("Do you wish to leave the duty?", true)]
-    [InlineData("Are you sure you wish to abandon the duty?", true)]
-    [InlineData("Would you like to be raised?", false)]
-    [InlineData("Return to the starting point?", false)]
-    [InlineData("Move immediately to the sealed area?", false)]
-    [InlineData("Accept this party invitation?", false)]
-    public void OnlyActualLeavePromptsAreExitEvidence(string prompt, bool leave)
-        => Assert.Equal(leave, GameHelpers.IsLeaveDutyPrompt(prompt));
-
     [Fact]
     public void StopContinuesCleanupAfterBackendExceptionAndInvalidatesLeaveCallbacks()
     {

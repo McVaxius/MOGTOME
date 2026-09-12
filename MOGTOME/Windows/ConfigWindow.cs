@@ -1,3 +1,4 @@
+using MOGTOME.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,6 +26,7 @@ public class ConfigWindow : Window, IDisposable
     private List<(uint Id, string Name)> foodItems = new();
     private List<(uint Id, string Name)> potionItems = new();
     private bool itemsLoaded = false;
+    private UiLanguage? itemLanguage;
 
     // Dependency check cache
     private DateTime lastDepCheck = DateTime.MinValue;
@@ -53,7 +55,7 @@ public class ConfigWindow : Window, IDisposable
     };
 
     public ConfigWindow(Plugin plugin, IPluginLog log)
-        : base("MOGTOME - Configuration##MogtomeConfig", ImGuiWindowFlags.None)
+        : base(Ui.T("Window_MOGTOMEConfiguration") + "###Window_MOGTOMEConfiguration_#MogtomeConfig", ImGuiWindowFlags.None)
     {
         this.plugin = plugin;
         this.Log = log;
@@ -74,6 +76,7 @@ public class ConfigWindow : Window, IDisposable
 
     public override void PreDraw()
     {
+        WindowName = Ui.T("Window_MOGTOMEConfiguration") + "###Window_MOGTOMEConfiguration_#MogtomeConfig";
         if (pendingWindowPosition.HasValue)
         {
             Position = pendingWindowPosition.Value;
@@ -85,12 +88,16 @@ public class ConfigWindow : Window, IDisposable
 
     private void EnsureItemsLoaded()
     {
-        if (itemsLoaded) return;
+        if (itemsLoaded && itemLanguage == Ui.Language) return;
+        itemLanguage = Ui.Language;
+        foodItems.Clear();
+        potionItems.Clear();
+        foodSearch = potionSearch = string.Empty;
         itemsLoaded = true;
 
         try
         {
-            var itemSheet = Plugin.DataManager.GetExcelSheet<Item>();
+            var itemSheet = Plugin.DataManager.GetExcelSheet<Item>(Ui.SheetLanguage);
             if (itemSheet == null) return;
 
             foreach (var item in itemSheet)
@@ -151,7 +158,7 @@ public class ConfigWindow : Window, IDisposable
 
             var wizardIncomplete = config.SetupWizardCompletedVersion < SetupWizardVersion;
             if (ImGui.BeginTabItem(
-                    "Setup Wizard",
+                    Ui.L("Config_SetupWizard"),
                     wizardIncomplete && setupWizardAutoSelectPending
                         ? ImGuiTabItemFlags.SetSelected
                         : ImGuiTabItemFlags.None))
@@ -164,7 +171,7 @@ public class ConfigWindow : Window, IDisposable
             // Dependency Check tab - force user here if not all green
             var depColor = allDepsGreen ? new Vector4(0, 1, 0, 1) : new Vector4(1, 0, 0, 1);
             ImGui.PushStyleColor(ImGuiCol.Text, depColor);
-            var depOpen = ImGui.BeginTabItem("Dependency Check");
+            var depOpen = ImGui.BeginTabItem(Ui.L("Config_DependencyCheck"));
             ImGui.PopStyleColor();
             if (depOpen)
             {
@@ -172,31 +179,31 @@ public class ConfigWindow : Window, IDisposable
                 ImGui.EndTabItem();
             }
 
-            if (ImGui.BeginTabItem("Party"))
+            if (ImGui.BeginTabItem(Ui.L("Config_Party")))
             {
                 changed |= DrawPartyTab(config);
                 ImGui.EndTabItem();
             }
 
-            if (ImGui.BeginTabItem("Duty"))
+            if (ImGui.BeginTabItem(Ui.L("Config_Duty")))
             {
                 changed |= DrawDutyTab(config);
                 ImGui.EndTabItem();
             }
 
-            if (ImGui.BeginTabItem("Food & Pots"))
+            if (ImGui.BeginTabItem(Ui.L("Config_FoodPots")))
             {
                 changed |= DrawFoodPotTab(config);
                 ImGui.EndTabItem();
             }
 
-            if (ImGui.BeginTabItem("Repair"))
+            if (ImGui.BeginTabItem(Ui.L("Config_Repair")))
             {
                 changed |= DrawRepairTab(config);
                 ImGui.EndTabItem();
             }
 
-            if (ImGui.BeginTabItem("Advanced"))
+            if (ImGui.BeginTabItem(Ui.L("Config_Advanced")))
             {
                 changed |= DrawAdvancedTab(config);
                 ImGui.EndTabItem();
@@ -311,43 +318,43 @@ public class ConfigWindow : Window, IDisposable
 
     private void DrawDependencyCheckTab(Configuration config)
     {
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Backend Mode");
+        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Config_BackendMode"));
         var useAdsExperimental = config.UseAdsExperimental;
-        if (ImGui.Checkbox("Use ADS (primary backend)", ref useAdsExperimental))
+        if (ImGui.Checkbox(Ui.L("Config_UseADSPrimaryBackend"), ref useAdsExperimental))
         {
             ToggleAdsExperimental(useAdsExperimental);
             config = plugin.Configuration;
         }
-        ImGui.TextDisabled(config.UseAdsExperimental
-            ? "ADS handles duty automation and inn return. AutoDuty is an alternative backend."
-            : "AutoDuty is the alternative duty backend. ADS is required only when ADS mode is selected or /mog inn is requested.");
+        UiLayout.TextDisabled(config.UseAdsExperimental
+            ? Ui.T("Config_ADSHandlesDutyAutomationAndInnReturn")
+            : Ui.T("Config_AutoDutyIsTheAlternativeDutyBackendADS"));
         ImGui.Spacing();
 
         DrawCombatRotationSelector("Dependencies");
         ImGui.Spacing();
 
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Required Plugins");
+        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Config_RequiredPlugins"));
         if (!allDepsGreen)
         {
-            ImGui.TextColored(new Vector4(1, 0, 0, 1), "Setup requirements are incomplete. The wizard is advisory and does not block Start.");
+            ImGui.TextColored(new Vector4(1, 0, 0, 1), Ui.T("Config_SetupRequirementsAreIncompleteTheWizardIs"));
         }
         ImGui.Separator();
 
         switch (config.CombatProvider)
         {
             case CombatProvider.Rsr:
-                DrawDepLine("RSR (RotationSolverReborn)", depRsr, depRsr ? "Installed" : "NOT FOUND", "RSR");
-                DrawDepLine("BossMod passive support (BMR or VBM)", depBmr || depVbm,
-                    depBmr ? "BMR loaded" : depVbm ? "VBM loaded" : "NOT FOUND", "BMR");
+                DrawDepLine(Ui.T("Config_RSRRotationSolverReborn"), depRsr, depRsr ? Ui.T("Config_Installed") : Ui.T("Config_NOTFOUND"), "RSR");
+                DrawDepLine(Ui.T("Config_BossModPassiveSupportBMROrVBM"), depBmr || depVbm,
+                    depBmr ? Ui.T("Config_BMRLoaded") : depVbm ? Ui.T("Config_VBMLoaded") : Ui.T("Config_NOTFOUND"), "BMR");
                 break;
             case CombatProvider.Bmr:
-                DrawDepLine("BossModReborn (BMR)", depBmr, depBmr ? "Installed" : "NOT FOUND", "BMR");
+                DrawDepLine(Ui.T("Config_BossModRebornBMR"), depBmr, depBmr ? Ui.T("Config_Installed") : Ui.T("Config_NOTFOUND"), "BMR");
                 break;
             case CombatProvider.Vbm:
-                DrawDepLine("BossMod (VBM)", depVbm, depVbm ? "Installed" : "NOT FOUND", "VBM");
+                DrawDepLine(Ui.T("Config_BossModVBM"), depVbm, depVbm ? Ui.T("Config_Installed") : Ui.T("Config_NOTFOUND"), "VBM");
                 break;
             case CombatProvider.Wrath:
-                DrawDepLine("Wrath Combo", depWrath, depWrath ? "Installed" : "NOT FOUND", null);
+                DrawDepLine("Wrath Combo", depWrath, depWrath ? Ui.T("Config_Installed") : Ui.T("Config_NOTFOUND"), null);
                 break;
         }
 
@@ -365,12 +372,12 @@ public class ConfigWindow : Window, IDisposable
         ImGui.PushID(id);
         ImGui.BeginDisabled(plugin.Engine?.IsRunning == true || plugin.Engine?.IsStartupPending == true);
         ImGui.SetNextItemWidth(80 * ImGuiHelpers.GlobalScale);
-        if (ImGui.BeginCombo("Combat rotation", config.CombatProvider.ToString().ToUpperInvariant()))
+        if (ImGui.BeginCombo(Ui.L("Config_CombatRotation"), Ui.EnumLabel(config.CombatProvider)))
         {
             foreach (var provider in Enum.GetValues<CombatProvider>())
             {
                 var selected = config.CombatProvider == provider;
-                if (ImGui.Selectable(provider.ToString().ToUpperInvariant(), selected))
+                if (ImGui.Selectable(Ui.EnumLabel(provider) + "###Provider" + (int)provider, selected))
                 {
                     config.CombatProvider = provider;
                     plugin.ConfigManager.SaveCurrentAccount();
@@ -387,16 +394,16 @@ public class ConfigWindow : Window, IDisposable
 
         ImGui.TextWrapped(config.CombatProvider switch
         {
-            CombatProvider.Rsr => "RSR handles attacks; the loaded BossMod variant uses passive - tank/melee/ranged automatically.",
-            CombatProvider.Bmr => "BMR handles attacks and movement with FRENRIDER - TANK/MELEE/RANGED, or your manual preset.",
-            CombatProvider.Vbm => "VBM handles attacks and movement with FRENRIDER - TANK/MELEE/RANGED, or your manual preset.",
-            _ => "Wrath handles attacks using its current settings.",
+            CombatProvider.Rsr => Ui.T("Config_RSRHandlesAttacksTheLoadedBossModVariant"),
+            CombatProvider.Bmr => Ui.T("Config_BMRHandlesAttacksAndMovementWithFRENRIDER"),
+            CombatProvider.Vbm => Ui.T("Config_VBMHandlesAttacksAndMovementWithFRENRIDER"),
+            _ => Ui.T("Config_WrathHandlesAttacksUsingItsCurrentSettings"),
         });
 
         if (config.CombatProvider is CombatProvider.Bmr or CombatProvider.Vbm)
         {
             var manualPreset = config.UseManualBossModPreset;
-            if (ImGui.Checkbox("Use manual BossMod preset", ref manualPreset))
+            if (ImGui.Checkbox(Ui.L("Config_UseManualBossModPreset"), ref manualPreset))
             {
                 config.UseManualBossModPreset = manualPreset;
                 plugin.ConfigManager.SaveCurrentAccount();
@@ -405,66 +412,66 @@ public class ConfigWindow : Window, IDisposable
             if (manualPreset)
             {
                 var presetName = config.ManualBossModPresetName;
-                if (ImGui.InputText("Preset Name", ref presetName, 128))
+                if (ImGui.InputText(Ui.L("Config_PresetName"), ref presetName, 128))
                 {
                     config.ManualBossModPresetName = presetName;
                     plugin.ConfigManager.SaveCurrentAccount();
                 }
                 if (string.IsNullOrWhiteSpace(config.ManualBossModPresetName))
-                    ImGui.TextWrapped("Enter an existing preset name before starting.");
+                    ImGui.TextWrapped(Ui.T("Config_EnterAnExistingPresetNameBeforeStarting"));
             }
             else
             {
-                ImGui.TextWrapped("MOGTOME selects its packaged active preset by current role at each duty start.");
+                ImGui.TextWrapped(Ui.T("Config_MOGTOMESelectsItsPackagedActivePresetBy"));
             }
         }
         ImGui.EndDisabled();
         if (depBmr && depVbm)
-            ImGui.TextWrapped("Both BossMod variants are loaded. Start disables VBM and reloads BMR; VBM selection changes to BMR, while RSR stays selected.");
+            ImGui.TextWrapped(Ui.T("Config_BothBossModVariantsAreLoadedStartDisables"));
         ImGui.PopID();
     }
 
     private void DrawRemainingDependencies(Configuration config)
     {
         // VNAV
-        DrawDepLine("vnavmesh", depVnav, depVnav ? "Installed" : "NOT FOUND", "vnavmesh");
+        DrawDepLine("vnavmesh", depVnav, depVnav ? Ui.T("Config_Installed") : Ui.T("Config_NOTFOUND"), "vnavmesh");
 
         // XA Slave
-        DrawDepLine("XA Slave", depXaSlave, depXaSlave ? "Installed" : "NOT FOUND", "XASlave");
-        ImGui.TextDisabled("MOGTOME runs /xa skipcutscenes on before every manual start.");
+        DrawDepLine("XA Slave", depXaSlave, depXaSlave ? Ui.T("Config_Installed") : Ui.T("Config_NOTFOUND"), "XASlave");
+        UiLayout.TextDisabled(Ui.T("Config_MOGTOMERunsXaSkipcutscenesOnBeforeEvery"));
 
-        DrawDepLine("YesAlready", depYesAlready, depYesAlready ? "Installed" : "NOT FOUND", null);
+        DrawDepLine("YesAlready", depYesAlready, depYesAlready ? Ui.T("Config_Installed") : Ui.T("Config_NOTFOUND"), null);
 
         if (config.UseAdsExperimental)
         {
-            DrawDepLine("ADS", depAds, depAds ? "Installed" : "NOT FOUND", "ADS");
+            DrawDepLine("ADS", depAds, depAds ? Ui.T("Config_Installed") : Ui.T("Config_NOTFOUND"), "ADS");
         }
         else
         {
-            DrawDepLine("AutoDuty", depAutoDuty, depAutoDuty ? "Installed" : "NOT FOUND", "AutoDuty");
-            DrawDepLineOptional("ADS", depAds, "Optional. Enables /mog inn delegation.");
+            DrawDepLine("AutoDuty", depAutoDuty, depAutoDuty ? Ui.T("Config_Installed") : Ui.T("Config_NOTFOUND"), "AutoDuty");
+            DrawDepLineOptional("ADS", depAds, Ui.T("Config_OptionalEnablesMogInnDelegation"));
         }
 
         ImGui.Spacing();
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Optional Plugins");
+        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Config_OptionalPlugins"));
         ImGui.Separator();
 
-        DrawDepLineOptional("Lifestream", depLifestream, "Optional. Not required by MOGTOME.");
-        DrawDepLineOptional("TextAdvance", depTextAdv, "Optional. Not required by MOGTOME.");
-        DrawDepLineOptional("Krangler", depKrangler, "Recommended. Appearance/nameplate randomizer.");
-        DrawDepLineOptional("CustomResolution (1pp by 0x0ade)", depCustomRes, "Experimental and not recommended. Low Spec Helper.",
-		"Maybe Crashy with 2+ clients");
-        DrawDepLineOptional("ChillFrames", depChillframes, "Will cause some issues sometimes.");
+        DrawDepLineOptional("Lifestream", depLifestream, Ui.T("Config_OptionalNotRequiredByMOGTOME"));
+        DrawDepLineOptional("TextAdvance", depTextAdv, Ui.T("Config_OptionalNotRequiredByMOGTOME"));
+        DrawDepLineOptional("Krangler", depKrangler, Ui.T("Config_RecommendedAppearanceNameplateRandomizer"));
+        DrawDepLineOptional(Ui.T("Config_CustomResolutionPpByX0ade"), depCustomRes, Ui.T("Config_ExperimentalAndNotRecommendedLowSpecHelper"),
+		Ui.T("Config_MaybeCrashyWithClients"));
+        DrawDepLineOptional("ChillFrames", depChillframes, Ui.T("Config_WillCauseSomeIssuesSometimes"));
         DrawDepLineOptional(
-            "DPS (Dhog Potato System)",
+            Ui.T("Config_DPSDhogPotatoSystem"),
             depDps,
-            "Experimental and not recommended. Low Spec Helper.",
-            "May have pathing issues.");
-        DrawDepLineOptional("Thick Thighs Save Lives", depTtsl, "Experimental and not recommended. Remote HUD + Control.",
-            "Very new plugin unknown issues.");
+            Ui.T("Config_ExperimentalAndNotRecommendedLowSpecHelper"),
+            Ui.T("Config_MayHavePathingIssues"));
+        DrawDepLineOptional("Thick Thighs Save Lives", depTtsl, Ui.T("Config_ExperimentalAndNotRecommendedRemoteHUDControl"),
+            Ui.T("Config_VeryNewPluginUnknownIssues"));
 
         ImGui.Spacing();
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Conflicting Plugins");
+        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Config_ConflictingPlugins"));
         ImGui.Separator();
 
         DrawConflictPluginLine(
@@ -480,30 +487,30 @@ public class ConfigWindow : Window, IDisposable
         ImGui.Spacing();
         if (!config.UseAdsExperimental)
         {
-            ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "AutoDuty Path");
+            ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Config_AutoDutyPath"));
             ImGui.Separator();
 
             var pathDisplayName = plugin.AutoDutyPathService.GetPraetoriumPathDisplayName(config.PraetoriumPathFileName);
             var pathExists = plugin.AutoDutyPathService.PathExists(config.PraetoriumPathFileName);
             ImGui.TextColored(
                 pathExists ? new Vector4(0, 1, 0, 1) : new Vector4(1, 0, 0, 1),
-                pathExists ? $"Praetorium path: INSTALLED ({pathDisplayName})" : $"Praetorium path: NOT FOUND ({pathDisplayName})");
+                pathExists ? Ui.T("Config_PraetoriumPathINSTALLED", pathDisplayName) : Ui.T("Config_PraetoriumPathNOTFOUND", pathDisplayName));
 
-            if (ImGui.Button("Install Bundled Praetorium Paths"))
+            if (UiLayout.Button(Ui.L("Config_InstallBundledPraetoriumPaths")))
             {
                 _ = Task.Run(async () => await plugin.AutoDutyPathService.EnsurePathExists());
             }
-            ImGui.TextDisabled("This copies the bundled W2W Praetorium path files from MOGTOME's data folder into AutoDuty's paths folder.");
-            ImGui.TextDisabled("ADS is optional in AutoDuty mode; /mog inn needs ADS when explicitly requested.");
+            UiLayout.TextDisabled(Ui.T("Config_ThisCopiesTheBundledW2WPraetoriumPath"));
+            UiLayout.TextDisabled(Ui.T("Config_ADSIsOptionalInAutoDutyModeMog"));
             ImGui.Spacing();
         }
         else
         {
-            ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "ADS Mode Notes");
+            ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Config_ADSModeNotes"));
             ImGui.Separator();
-            ImGui.TextWrapped("ADS mode disables AutoDuty immediately and again on Start. Queueing uses ADS ownership plus direct duty finder registration.");
-            ImGui.TextWrapped("Repair/inn/leave switch to /ads npcrepair, /ads selfrepair, /ads enterinn, and /ads leave.");
-            ImGui.TextWrapped("The checkbox changes the duty backend. ADS is required only while ADS mode is selected.");
+            ImGui.TextWrapped(Ui.T("Config_ADSModeDisablesAutoDutyImmediatelyAndAgain"));
+            ImGui.TextWrapped(Ui.T("Config_RepairInnLeaveSwitchToAdsNpcrepair"));
+            ImGui.TextWrapped(Ui.T("Config_TheCheckboxChangesTheDutyBackendADS"));
             ImGui.Spacing();
         }
     }
@@ -511,30 +518,30 @@ public class ConfigWindow : Window, IDisposable
     private static void DrawDepLine(string name, bool ok, string detail, string? repoKey)
     {
         var color = ok ? new Vector4(0, 1, 0, 1) : new Vector4(1, 0, 0, 1);
-        var icon = ok ? "[OK]" : "[!!]";
-        ImGui.TextColored(color, $"{icon} {name}");
+        var icon = ok ? Ui.T("Config_OK") : "[!!]";
+        ImGui.TextColored(color, string.Create(Ui.Culture, $"{icon} {name}"));
         ImGui.SameLine();
-        ImGui.TextDisabled($"- {detail}");
+        UiLayout.TextDisabled(string.Create(Ui.Culture, $"- {detail}"));
 
         if (!ok && repoKey != null && PluginRepos.TryGetValue(repoKey, out var repo) && !string.IsNullOrEmpty(repo))
         {
             ImGui.SameLine();
-            if (ImGui.SmallButton($"Copy Repo##{name}"))
+            if (UiLayout.SmallButton(Ui.T("Config_CopyRepo") + string.Format(System.Globalization.CultureInfo.InvariantCulture, "###Config_CopyRepo_{0}", name)))
             {
                 ImGui.SetClipboardText(repo);
             }
             if (ImGui.IsItemHovered())
             {
-                ImGui.SetTooltip($"Copy repo URL to clipboard, then add to\nDalamud Settings > Experimental > Custom Plugin Repositories");
+                UiLayout.SetTooltip(Ui.T("Config_CopyRepoURLToClipboardThenAdd"));
             }
         }
     }
 
     private static void DrawDepLineColor(string name, Vector4 color, string detail)
     {
-        ImGui.TextColored(color, $"[!!] {name}");
+        ImGui.TextColored(color, string.Create(Ui.Culture, $"[!!] {name}"));
         ImGui.SameLine();
-        ImGui.TextColored(color, $"- {detail}");
+        ImGui.TextColored(color, string.Create(Ui.Culture, $"- {detail}"));
     }
 
     private static bool IsXaSlavePlugin(string? name)
@@ -551,10 +558,10 @@ public class ConfigWindow : Window, IDisposable
     private static void DrawDepLineOptional(string name, bool exists, string? missingDetail = null, string? installedWarning = null)
     {
         var color = exists ? new Vector4(0, 1, 0, 1) : new Vector4(0.5f, 0.5f, 0.5f, 1);
-        var icon = exists ? "[OK]" : "[--]";
-        ImGui.TextColored(color, $"{icon} {name}");
+        var icon = exists ? Ui.T("Config_OK") : "[--]";
+        ImGui.TextColored(color, string.Create(Ui.Culture, $"{icon} {name}"));
         ImGui.SameLine();
-        ImGui.TextDisabled(exists ? "Installed" : (string.IsNullOrWhiteSpace(missingDetail) ? "Not installed (optional)" : missingDetail));
+        UiLayout.TextDisabled(exists ? Ui.T("Config_Installed") : (string.IsNullOrWhiteSpace(missingDetail) ? Ui.T("Config_NotInstalledOptional") : missingDetail));
 
         if (exists && !string.IsNullOrWhiteSpace(installedWarning))
         {
@@ -566,25 +573,25 @@ public class ConfigWindow : Window, IDisposable
     private static void DrawConflictPluginLine(string name, bool installed, bool enabled, System.Action disableAction)
     {
         var color = enabled ? new Vector4(1, 0, 0, 1) : new Vector4(0, 1, 0, 1);
-        var icon = enabled ? "[!!]" : "[OK]";
+        var icon = enabled ? "[!!]" : Ui.T("Config_OK");
         var detail = enabled
-            ? "Enabled - known MOGTOME conflict"
+            ? Ui.T("Config_EnabledKnownMOGTOMEConflict")
             : installed
-                ? "Installed but disabled"
-                : "Not installed";
+                ? Ui.T("Config_InstalledButDisabled")
+                : Ui.T("Config_NotInstalled");
 
-        ImGui.TextColored(color, $"{icon} {name}");
+        ImGui.TextColored(color, string.Create(Ui.Culture, $"{icon} {name}"));
         ImGui.SameLine();
-        ImGui.TextColored(color, $"- {detail}");
+        ImGui.TextColored(color, string.Create(Ui.Culture, $"- {detail}"));
 
         if (enabled)
         {
             ImGui.SameLine();
-            if (ImGui.SmallButton($"Disable now##{name}"))
+            if (UiLayout.SmallButton(Ui.T("Config_DisableNow") + string.Format(System.Globalization.CultureInfo.InvariantCulture, "###Config_DisableNow_{0}", name)))
                 disableAction();
         }
 
-        ImGui.TextDisabled("MOGTOME tries /xldisableplugin TwistOfFayte when you start it, but it no longer blocks startup.");
+        UiLayout.TextDisabled(Ui.T("Config_MOGTOMETriesXldisablepluginTwistOfFayteWhenYouStart"));
     }
 
     private void ToggleAdsExperimental(bool enable)
@@ -605,14 +612,14 @@ public class ConfigWindow : Window, IDisposable
         var changed = false;
         var isComplete = config.SetupWizardCompletedVersion >= SetupWizardVersion;
 
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Setup Wizard");
-        ImGui.TextWrapped("This guide is advisory. It never installs, enables, disables, or configures another plugin. It only saves MOGTOME settings when you choose them.");
+        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Config_SetupWizard"));
+        ImGui.TextWrapped(Ui.T("Config_ThisGuideIsAdvisoryItNeverInstalls"));
         ImGui.Separator();
 
         if (isComplete)
         {
-            ImGui.TextColored(new Vector4(0, 1, 0, 1), $"Completed for this account (wizard version {config.SetupWizardCompletedVersion}).");
-            if (ImGui.Button("Run Setup Wizard Again"))
+            ImGui.TextColored(new Vector4(0, 1, 0, 1), Ui.T("Config_CompletedForThisAccountWizardVersion", config.SetupWizardCompletedVersion));
+            if (UiLayout.Button(Ui.L("Config_RunSetupWizardAgain")))
             {
                 config.SetupWizardCompletedVersion = 0;
                 setupWizardStep = 0;
@@ -624,52 +631,52 @@ public class ConfigWindow : Window, IDisposable
 
         var steps = new[]
         {
-            "Backend",
-            "Combat provider",
-            "Required plugins",
-            "Party setup",
-            "Optional settings",
-            "Review",
+            Ui.T("Config_Backend"),
+            Ui.T("Config_CombatProvider"),
+            Ui.T("Config_RequiredPlugins2"),
+            Ui.T("Config_PartySetup"),
+            Ui.T("Config_OptionalSettings"),
+            Ui.T("Config_Review"),
         };
-        ImGui.Text($"Step {setupWizardStep + 1} of {steps.Length}: {steps[setupWizardStep]}");
+        ImGui.Text(Ui.T("Config_StepOf", setupWizardStep + 1, steps.Length, steps[setupWizardStep]));
         ImGui.Separator();
 
         switch (setupWizardStep)
         {
             case 0:
-                ImGui.TextWrapped("ADS is the primary MOGTOME backend. AutoDuty remains an alternative. This choice changes only MOGTOME's saved backend selection.");
+                ImGui.TextWrapped(Ui.T("Config_ADSIsThePrimaryMOGTOMEBackendAutoDuty"));
                 var useAds = config.UseAdsExperimental;
-                if (ImGui.RadioButton("ADS (primary backend)##Wizard", useAds))
+                if (ImGui.RadioButton(Ui.T("Config_ADSPrimaryBackend") + "###Config_ADSPrimaryBackend_Wizard", useAds))
                 {
                     config.UseAdsExperimental = true;
                     lastDepCheck = DateTime.MinValue;
                     changed = true;
                 }
 
-                if (ImGui.RadioButton("AutoDuty (alternative backend)##Wizard", !useAds))
+                if (ImGui.RadioButton(Ui.T("Config_AutoDutyAlternativeBackend") + "###Config_AutoDutyAlternativeBackend_Wizard", !useAds))
                 {
                     config.UseAdsExperimental = false;
                     lastDepCheck = DateTime.MinValue;
                     changed = true;
                 }
 
-                ImGui.TextDisabled(config.UseAdsExperimental
-                    ? "ADS must be loaded for this selection."
-                    : "AutoDuty and the selected Praetorium path must be available for this selection.");
+                UiLayout.TextDisabled(config.UseAdsExperimental
+                    ? Ui.T("Config_ADSMustBeLoadedForThisSelection")
+                    : Ui.T("Config_AutoDutyAndTheSelectedPraetoriumPathMust"));
                 break;
             case 1:
-                ImGui.TextWrapped("Choose the combat provider MOGTOME should request for the selected backend.");
+                ImGui.TextWrapped(Ui.T("Config_ChooseTheCombatProviderMOGTOMEShouldRequest"));
                 DrawCombatRotationSelector("Wizard");
 
-                DrawWizardRequirement("Selected combat provider", IsCombatProviderReady(config), "Load the selected provider; RSR also requires BMR or VBM for passive support.", null);
+                DrawWizardRequirement(Ui.T("Config_SelectedCombatProvider"), IsCombatProviderReady(config), Ui.T("Config_LoadTheSelectedProviderRSRAlsoRequires"), null);
                 break;
             case 2:
                 DrawWizardRequiredPluginChecks(config);
                 break;
             case 3:
-                ImGui.TextWrapped("Mark the client that queues duties as the party leader. Every participating client should independently review its own setup.");
+                ImGui.TextWrapped(Ui.T("Config_MarkTheClientThatQueuesDutiesAs"));
                 var isLeader = config.IsPartyLeader;
-                if (ImGui.Checkbox("I am the Party Leader##Wizard", ref isLeader))
+                if (ImGui.Checkbox(Ui.T("Config_IAmThePartyLeader") + "###Config_IAmThePartyLeader_Wizard", ref isLeader))
                 {
                     config.IsPartyLeader = isLeader;
                     plugin.State.IsPartyLeader = isLeader;
@@ -677,23 +684,23 @@ public class ConfigWindow : Window, IDisposable
                 }
 
                 var crossWorld = config.IsCrossWorldParty;
-                if (ImGui.Checkbox("Cross-World Party##Wizard", ref crossWorld))
+                if (ImGui.Checkbox(Ui.T("Config_CrossWorldParty") + "###Config_CrossWorldParty_Wizard", ref crossWorld))
                 {
                     config.IsCrossWorldParty = crossWorld;
                     changed = true;
                 }
 
-                ImGui.TextDisabled("Use Party settings for the full queue policy and the one-time outside-duty party-state refresh.");
+                UiLayout.TextDisabled(Ui.T("Config_UsePartySettingsForTheFullQueue"));
                 break;
             case 4:
-                ImGui.TextWrapped("Food, potions, and repair are optional. Configure them in their tabs when wanted; leaving them unset is supported.");
-                DrawDepLineOptional("Lifestream", depLifestream, "Optional. Not required by MOGTOME.");
-                DrawDepLineOptional("TextAdvance", depTextAdv, "Optional. Not required by MOGTOME.");
-                ImGui.TextDisabled("Food & Pots and Repair remain available after this wizard; no outside plugin settings are changed here.");
+                ImGui.TextWrapped(Ui.T("Config_FoodPotionsAndRepairAreOptionalConfigure"));
+                DrawDepLineOptional("Lifestream", depLifestream, Ui.T("Config_OptionalNotRequiredByMOGTOME"));
+                DrawDepLineOptional("TextAdvance", depTextAdv, Ui.T("Config_OptionalNotRequiredByMOGTOME"));
+                UiLayout.TextDisabled(Ui.T("Config_FoodPotsAndRepairRemainAvailableAfter"));
                 break;
             case 5:
                 DrawSetupWizardReview(config);
-                if (ImGui.Button("Finish Setup"))
+                if (UiLayout.Button(Ui.L("Config_FinishSetup")))
                 {
                     config.SetupWizardCompletedVersion = SetupWizardVersion;
                     changed = true;
@@ -703,13 +710,13 @@ public class ConfigWindow : Window, IDisposable
         }
 
         ImGui.Spacing();
-        if (setupWizardStep > 0 && ImGui.Button("Back##SetupWizard"))
+        if (setupWizardStep > 0 && UiLayout.Button(Ui.T("Config_Back") + "###Config_Back_SetupWizard"))
             setupWizardStep--;
 
         if (setupWizardStep > 0)
             ImGui.SameLine();
 
-        if (setupWizardStep < steps.Length - 1 && ImGui.Button("Next##SetupWizard"))
+        if (setupWizardStep < steps.Length - 1 && UiLayout.Button(Ui.T("Config_Next") + "###Config_Next_SetupWizard"))
             setupWizardStep++;
 
         return changed;
@@ -722,23 +729,23 @@ public class ConfigWindow : Window, IDisposable
             : depAutoDuty && plugin.AutoDutyPathService.PathExists(config.PraetoriumPathFileName);
 
         DrawWizardRequirement(
-            config.UseAdsExperimental ? "ADS (selected backend)" : "AutoDuty plus selected Praetorium path",
+            config.UseAdsExperimental ? Ui.T("Config_ADSSelectedBackend") : Ui.T("Config_AutoDutyPlusSelectedPraetoriumPath"),
             backendReady,
-            config.UseAdsExperimental ? "Load ADS." : "Load AutoDuty and install the selected Praetorium path.",
+            config.UseAdsExperimental ? Ui.T("Config_LoadADS") : Ui.T("Config_LoadAutoDutyAndInstallTheSelectedPraetorium"),
             config.UseAdsExperimental ? "ADS" : "AutoDuty");
-        DrawWizardRequirement("Selected combat provider", IsCombatProviderReady(config), "Load the provider selected in step 2; RSR also requires BMR or VBM.", null);
-        DrawWizardRequirement("vnavmesh", depVnav, "Load vnavmesh.", "vnavmesh");
-        DrawWizardRequirement("XA Slave", depXaSlave, "Load XA Slave for /xa skipcutscenes on.", "XASlave");
-        DrawWizardRequirement("YesAlready", depYesAlready, "Load YesAlready for dialogs.", null);
+        DrawWizardRequirement(Ui.T("Config_SelectedCombatProvider"), IsCombatProviderReady(config), Ui.T("Config_LoadTheProviderSelectedInStepRSR"), null);
+        DrawWizardRequirement("vnavmesh", depVnav, Ui.T("Config_LoadVnavmesh"), "vnavmesh");
+        DrawWizardRequirement("XA Slave", depXaSlave, Ui.T("Config_LoadXASlaveForXaSkipcutscenesOn"), "XASlave");
+        DrawWizardRequirement("YesAlready", depYesAlready, Ui.T("Config_LoadYesAlreadyForDialogs"), null);
 
         if (!config.UseAdsExperimental)
         {
-            if (ImGui.Button("Install Bundled Praetorium Paths##Wizard"))
+            if (UiLayout.Button(Ui.T("Config_InstallBundledPraetoriumPaths") + "###Config_InstallBundledPraetoriumPaths_Wizard"))
                 _ = Task.Run(async () => await plugin.AutoDutyPathService.EnsurePathExists());
-            ImGui.TextDisabled("Operator-clicked only: copies MOGTOME's bundled files into AutoDuty's paths folder.");
+            UiLayout.TextDisabled(Ui.T("Config_OperatorClickedOnlyCopiesMOGTOMESBundled"));
         }
 
-        ImGui.TextDisabled("Lifestream and TextAdvance are optional and do not affect this checklist.");
+        UiLayout.TextDisabled(Ui.T("Config_LifestreamAndTextAdvanceAreOptionalAndDo"));
     }
 
     private void DrawSetupWizardReview(Configuration config)
@@ -747,13 +754,13 @@ public class ConfigWindow : Window, IDisposable
             ? depAds
             : depAutoDuty && plugin.AutoDutyPathService.PathExists(config.PraetoriumPathFileName);
 
-        ImGui.Text($"Backend: {(config.UseAdsExperimental ? "ADS (primary)" : "AutoDuty (alternative)")}");
-        ImGui.Text($"Combat provider: {config.CombatProvider}");
-        ImGui.Text($"Required checks: {(backendReady && IsCombatProviderReady(config) && depVnav && depXaSlave && depYesAlready ? "ready" : "incomplete")}");
-        ImGui.Text($"Party role: {(config.IsPartyLeader ? "leader" : "participant")}");
-        ImGui.Text($"Optional food: {(config.FoodItemId > 0 ? config.FoodItemName : "not configured")}");
-        ImGui.Text($"Optional repair threshold: {config.RepairThreshold}%");
-        ImGui.TextWrapped("Finish records only that this account completed this wizard version. It does not gate Start or alter another plugin.");
+        ImGui.Text(Ui.T("Config_Backend2", (config.UseAdsExperimental ? Ui.T("Config_ADSPrimary") : Ui.T("Config_AutoDutyAlternative"))));
+        ImGui.Text(Ui.T("Config_CombatProvider2", Ui.EnumLabel(config.CombatProvider)));
+        ImGui.Text(Ui.T("Config_RequiredChecks", (backendReady && IsCombatProviderReady(config) && depVnav && depXaSlave && depYesAlready ? Ui.T("Config_Ready") : Ui.T("Config_Incomplete"))));
+        ImGui.Text(Ui.T("Config_PartyRole", (config.IsPartyLeader ? Ui.T("Config_Leader") : Ui.T("Config_Participant"))));
+        ImGui.Text(Ui.T("Config_OptionalFood", (config.FoodItemId > 0 ? Ui.Item((uint)config.FoodItemId).Render() : Ui.T("Config_NotConfigured"))));
+        ImGui.Text(Ui.T("Config_OptionalRepairThreshold", config.RepairThreshold));
+        ImGui.TextWrapped(Ui.T("Config_FinishRecordsOnlyThatThisAccountCompleted"));
     }
 
     private bool IsCombatProviderReady(Configuration config)
@@ -769,14 +776,14 @@ public class ConfigWindow : Window, IDisposable
     private static void DrawWizardRequirement(string name, bool ready, string missingDetail, string? repoKey)
     {
         var color = ready ? new Vector4(0, 1, 0, 1) : new Vector4(1, 0, 0, 1);
-        ImGui.TextColored(color, $"[{(ready ? "OK" : "!!")}] {name}");
+        ImGui.TextColored(color, string.Create(Ui.Culture, $"[{(ready ? "OK" : "!!")}] {name}"));
         ImGui.SameLine();
-        ImGui.TextDisabled(ready ? "Ready" : missingDetail);
+        UiLayout.TextDisabled(ready ? Ui.T("Config_Ready2") : missingDetail);
 
         if (!ready && repoKey != null && PluginRepos.TryGetValue(repoKey, out var repo))
         {
             ImGui.SameLine();
-            if (ImGui.SmallButton($"Copy Repo##Wizard{repoKey}"))
+            if (UiLayout.SmallButton(Ui.T("Config_CopyRepo") + string.Format(System.Globalization.CultureInfo.InvariantCulture, "###Config_CopyRepo_Wizard{0}", repoKey)))
                 ImGui.SetClipboardText(repo);
         }
     }
@@ -812,32 +819,32 @@ public class ConfigWindow : Window, IDisposable
     {
         var changed = false;
 
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Party Settings");
+        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Config_PartySettings"));
         ImGui.Separator();
 
         var isLeader = config.IsPartyLeader;
-        if (ImGui.Checkbox("I am the Party Leader", ref isLeader))
+        if (ImGui.Checkbox(Ui.L("Config_IAmThePartyLeader"), ref isLeader))
         {
             config.IsPartyLeader = isLeader;
             changed = true;
         }
-        ImGui.TextDisabled("Runtime role follows this saved setting. Use Refresh Party State outside duty for a one-time same-world detection.");
+        UiLayout.TextDisabled(Ui.T("Config_RuntimeRoleFollowsThisSavedSettingUse"));
 
         var isCrossWorld = config.IsCrossWorldParty;
-        if (ImGui.Checkbox("Cross-World Party", ref isCrossWorld))
+        if (ImGui.Checkbox(Ui.L("Config_CrossWorldParty"), ref isCrossWorld))
         {
             config.IsCrossWorldParty = isCrossWorld;
             changed = true;
         }
-        ImGui.TextDisabled("Enable if you're in a cross-world party.");
+        UiLayout.TextDisabled(Ui.T("Config_EnableIfYouReInACross"));
 
         var onlyQueueWithFour = config.OnlyQueueWithFourPeople;
-        if (ImGui.Checkbox("Only queue with exactly 4 visible people", ref onlyQueueWithFour))
+        if (ImGui.Checkbox(Ui.L("Config_OnlyQueueWithExactlyVisiblePeople"), ref onlyQueueWithFour))
         {
             config.OnlyQueueWithFourPeople = onlyQueueWithFour;
             changed = true;
         }
-        ImGui.TextDisabled("Applies only to same-world leaders in synced modes because cross-world roster visibility is unreliable. Unsynced testing mode is exempt.");
+        UiLayout.TextDisabled(Ui.T("Config_AppliesOnlyToSameWorldLeadersIn"));
 
         if (changed)
         {
@@ -846,27 +853,27 @@ public class ConfigWindow : Window, IDisposable
         }
 
         ImGui.Spacing();
-        ImGui.TextColored(new Vector4(0.7f, 0.85f, 1.0f, 1.0f), "Runtime Party State:");
-        ImGui.Text($"Leader right now: {(plugin.State.IsPartyLeader ? "Yes" : "No")}");
-        ImGui.TextDisabled(config.IsCrossWorldParty
-            ? "Source: configured cross-world role."
-            : "Source: configured role. Refresh Party State only probes the current same-world party list once.");
+        ImGui.TextColored(new Vector4(0.7f, 0.85f, 1.0f, 1.0f), Ui.T("Config_RuntimePartyState"));
+        ImGui.Text(Ui.T("Config_LeaderRightNow", (plugin.State.IsPartyLeader ? Ui.T("Config_Yes") : Ui.T("Config_No"))));
+        UiLayout.TextDisabled(config.IsCrossWorldParty
+            ? Ui.T("Config_SourceConfiguredCrossWorldRole")
+            : Ui.T("Config_SourceConfiguredRoleRefreshPartyStateOnly"));
 
-        if (plugin.Engine != null && ImGui.Button("Refresh Party State", new Vector2(170f, 28f)))
+        if (plugin.Engine != null && UiLayout.Button(Ui.L("Config_RefreshPartyState"), new Vector2(170f, 28f)))
         {
             plugin.Engine.RefreshPartyLeaderState();
         }
         if (ImGui.IsItemHovered())
         {
-            ImGui.SetTooltip("One-time same-world leader detection. Use only outside duty after the full party is visible.");
+            UiLayout.SetTooltip(Ui.T("Config_OneTimeSameWorldLeaderDetectionUse"));
         }
 
         ImGui.Spacing();
-        ImGui.TextColored(new Vector4(0.7f, 0.7f, 0.7f, 1.0f), "Party Behaviour:");
-        ImGui.TextWrapped("- Leader: Queues duties and controls the MOGTOME run flow.");
-        ImGui.TextWrapped("- Non-leader: Waits for party queue pops and repairs independently.");
-        ImGui.TextWrapped("- Repair: MOGTOME pauses its own manual queue attempts while repair is active, then resumes after repair.");
-        ImGui.TextWrapped("- Detection: Refresh Party State is manual-only and will not auto-promote solo or partial party data to leader.");
+        ImGui.TextColored(new Vector4(0.7f, 0.7f, 0.7f, 1.0f), Ui.T("Config_PartyBehaviour"));
+        ImGui.TextWrapped(Ui.T("Config_LeaderQueuesDutiesAndControlsTheMOGTOME"));
+        ImGui.TextWrapped(Ui.T("Config_NonLeaderWaitsForPartyQueuePops"));
+        ImGui.TextWrapped(Ui.T("Config_RepairMOGTOMEPausesItsOwnManualQueue"));
+        ImGui.TextWrapped(Ui.T("Config_DetectionRefreshPartyStateIsManualOnly"));
 
         return changed;
     }
@@ -876,17 +883,17 @@ public class ConfigWindow : Window, IDisposable
         var changed = false;
         var dutyCounterChanged = false;
 
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Duty Settings");
+        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Config_DutySettings"));
         ImGui.Separator();
 
         var dutyCounter = config.DutyCounter;
-        if (ImGui.InputInt("Duty Counter", ref dutyCounter))
+        if (ImGui.InputInt(Ui.L("Config_DutyCounter"), ref dutyCounter))
         {
             config.DutyCounter = Math.Clamp(dutyCounter, 0, 666);
             changed = true;
             dutyCounterChanged = true;
         }
-        ImGui.TextDisabled("Current Praetorium run count. Set to 0 for first run of the day.");
+        UiLayout.TextDisabled(Ui.T("Config_CurrentPraetoriumRunCountSetToFor"));
 
         if (!config.UseAdsExperimental)
         {
@@ -898,7 +905,7 @@ public class ConfigWindow : Window, IDisposable
             }
 
             var selectedPraetoriumPathLabel = plugin.AutoDutyPathService.GetPraetoriumPathDisplayName(selectedPraetoriumPath);
-            if (ImGui.BeginCombo("Praetorium AutoDuty Path", selectedPraetoriumPathLabel))
+            if (ImGui.BeginCombo(Ui.L("Config_PraetoriumAutoDutyPath"), selectedPraetoriumPathLabel))
             {
                 foreach (var option in plugin.AutoDutyPathService.GetPraetoriumPathOptions())
                 {
@@ -917,36 +924,36 @@ public class ConfigWindow : Window, IDisposable
 
                 ImGui.EndCombo();
             }
-            ImGui.TextDisabled("Bundled with MOGTOME and copied into AutoDuty's paths folder on start/install. Default: phecda.");
+            UiLayout.TextDisabled(Ui.T("Config_BundledWithMOGTOMEAndCopiedIntoAutoDuty"));
         }
         else
         {
-            ImGui.TextDisabled("ADS mode ignores AutoDuty path selection.");
+            UiLayout.TextDisabled(Ui.T("Config_ADSModeIgnoresAutoDutyPathSelection"));
         }
 
         var praeThreshold = config.PraetoriumThreshold;
-        if (ImGui.InputInt("Praetorium Threshold", ref praeThreshold))
+        if (ImGui.InputInt(Ui.L("Config_PraetoriumThreshold"), ref praeThreshold))
         {
             config.PraetoriumThreshold = Math.Clamp(praeThreshold, 1, 666);
             changed = true;
         }
-        ImGui.TextDisabled("Switch to Decumana after this many Praetorium runs.");
+        UiLayout.TextDisabled(Ui.T("Config_SwitchToDecumanaAfterThisManyPraetorium"));
 
         var maxRuns = config.MaxRuns;
-        if (ImGui.InputInt("Praetorium Daily Limit", ref maxRuns))
+        if (ImGui.InputInt(Ui.L("Config_PraetoriumDailyLimit"), ref maxRuns))
         {
             config.MaxRuns = Math.Clamp(maxRuns, 0, 9999);
             changed = true;
         }
-        ImGui.TextDisabled("Stop after this many successful Praetorium clears today. Decumana and aborted runs do not count.");
+        UiLayout.TextDisabled(Ui.T("Config_StopAfterThisManySuccessfulPraetoriumClears"));
 
         var quitCommand = config.QuitCommand;
-        if (ImGui.InputText("Quit Command", ref quitCommand, 50))
+        if (ImGui.InputText(Ui.L("Config_QuitCommand"), ref quitCommand, 50))
         {
             config.QuitCommand = quitCommand;
             changed = true;
         }
-        ImGui.TextDisabled("Runs once when the Praetorium daily limit is reached, after leaving duty.");
+        UiLayout.TextDisabled(Ui.T("Config_RunsOnceWhenThePraetoriumDailyLimit"));
 
         // Sync counters if duty counter changed
         if (dutyCounterChanged)
@@ -965,25 +972,25 @@ public class ConfigWindow : Window, IDisposable
         if (config.DebugModeEnabled)
         {
             var testMode = config.TestingModeUnsynced;
-            if (ImGui.Checkbox("Testing Mode: Unsynced (uncheck level sync yourself if you really want to do this. Stats won't be recorded)", ref testMode))
+            if (ImGui.Checkbox(Ui.L("Config_TestingModeUnsyncedUncheckLevelSyncYourself"), ref testMode))
             {
                 config.TestingModeUnsynced = testMode;
                 changed = true;
             }
             if (testMode)
             {
-                ImGui.TextColored(new Vector4(1, 1, 0, 1), "WARNING: Running Unsynced without Level Sync (Testing mode. No Stats).");
+                ImGui.TextColored(new Vector4(1, 1, 0, 1), Ui.T("Config_WARNINGRunningUnsyncedWithoutLevelSyncTesting"));
             }
             else
             {
-                ImGui.TextDisabled("Default: Unsync+Level Sync (Sync+Level Sync for safety from Queueing with Randoms).");
+                UiLayout.TextDisabled(Ui.T("Config_DefaultUnsyncLevelSyncSyncLevelSync"));
             }
         }
         else
         {
             if (config.TestingModeUnsynced)
             {
-                ImGui.TextColored(new Vector4(1, 1, 0, 1), "[Testing Mode active - enable debug to change]");
+                ImGui.TextColored(new Vector4(1, 1, 0, 1), Ui.T("Config_TestingModeActiveEnableDebugToChange"));
             }
         }
 
@@ -994,13 +1001,13 @@ public class ConfigWindow : Window, IDisposable
     {
         var changed = false;
 
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Food");
+        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Config_Food"));
         ImGui.Separator();
 
         // Food dropdown with search
         var foodId = config.FoodItemId;
-        var foodName = config.FoodItemName;
-        if (DrawItemSearchDropdown("Food", ref foodSearch, foodItems, ref foodId, ref foodName))
+        var foodName = Ui.Item((uint)config.FoodItemId).Render();
+        if (DrawItemSearchDropdown("Config_Food", ref foodSearch, foodItems, ref foodId, ref foodName))
         {
             config.FoodItemId = foodId;
             config.FoodItemName = foodName;
@@ -1009,15 +1016,15 @@ public class ConfigWindow : Window, IDisposable
 
         if (config.FoodItemId > 0)
         {
-            ImGui.Text($"  Selected: {config.FoodItemName} {(config.FoodUseHighQuality ? "[HQ]" : "[NQ]")} (ID: {config.FoodItemId})");
+            ImGui.Text(Ui.T("Config_SelectedID", Ui.Item((uint)config.FoodItemId), (config.FoodUseHighQuality ? Ui.T("Config_HQ") : Ui.T("Config_NQ")), config.FoodItemId));
             var useFoodHq = config.FoodUseHighQuality;
-            if (ImGui.Checkbox("Use HQ food", ref useFoodHq))
+            if (ImGui.Checkbox(Ui.L("Config_UseHQFood"), ref useFoodHq))
             {
                 config.FoodUseHighQuality = useFoodHq;
                 changed = true;
             }
-            ImGui.TextDisabled("Uses the selected meal as HQ when enabled; leave off for normal-quality food.");
-            if (ImGui.SmallButton("Clear Food"))
+            UiLayout.TextDisabled(Ui.T("Config_UsesTheSelectedMealAsHQWhen"));
+            if (UiLayout.SmallButton(Ui.L("Config_ClearFood")))
             {
                 config.FoodItemId = 0;
                 config.FoodItemName = "";
@@ -1027,17 +1034,17 @@ public class ConfigWindow : Window, IDisposable
         }
         else
         {
-            ImGui.TextDisabled("  No food selected. Food is optional.");
+            UiLayout.TextDisabled(Ui.T("Config_NoFoodSelectedFoodIsOptional"));
         }
 
         ImGui.Spacing();
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Potions");
+        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Config_Potions"));
         ImGui.Separator();
 
         // Potion dropdown with search
         var potId = config.PotionItemId;
-        var potName = config.PotionItemName;
-        if (DrawItemSearchDropdown("Potion", ref potionSearch, potionItems, ref potId, ref potName))
+        var potName = Ui.Item((uint)config.PotionItemId).Render();
+        if (DrawItemSearchDropdown("Config_Potion", ref potionSearch, potionItems, ref potId, ref potName))
         {
             config.PotionItemId = potId;
             config.PotionItemName = potName;
@@ -1046,15 +1053,15 @@ public class ConfigWindow : Window, IDisposable
 
         if (config.PotionItemId > 0)
         {
-            ImGui.Text($"  Selected: {config.PotionItemName} {(config.PotionUseHighQuality ? "[HQ]" : "[NQ]")} (ID: {config.PotionItemId})");
+            ImGui.Text(Ui.T("Config_SelectedID", Ui.Item((uint)config.PotionItemId), (config.PotionUseHighQuality ? Ui.T("Config_HQ") : Ui.T("Config_NQ")), config.PotionItemId));
             var usePotionHq = config.PotionUseHighQuality;
-            if (ImGui.Checkbox("Use HQ potion", ref usePotionHq))
+            if (ImGui.Checkbox(Ui.L("Config_UseHQPotion"), ref usePotionHq))
             {
                 config.PotionUseHighQuality = usePotionHq;
                 changed = true;
             }
-            ImGui.TextDisabled("Uses the selected medicine as HQ when enabled; leave off for normal-quality tinctures/potions.");
-            if (ImGui.SmallButton("Clear Potion"))
+            UiLayout.TextDisabled(Ui.T("Config_UsesTheSelectedMedicineAsHQWhen"));
+            if (UiLayout.SmallButton(Ui.L("Config_ClearPotion")))
             {
                 config.PotionItemId = 0;
                 config.PotionItemName = "";
@@ -1064,13 +1071,13 @@ public class ConfigWindow : Window, IDisposable
 
             ImGui.Spacing();
             var potTarget = config.PotionTarget;
-            if (ImGui.RadioButton("Pot on Gaius", ref potTarget, 0))
+            if (ImGui.RadioButton(Ui.L("Config_PotOnBoss", Ui.Boss(2136)) + "_Gaius", ref potTarget, 0))
             {
                 config.PotionTarget = 0;
                 changed = true;
             }
             ImGui.SameLine();
-            if (ImGui.RadioButton("Pot on Phantom Gaius", ref potTarget, 1))
+            if (ImGui.RadioButton(Ui.L("Config_PotOnBoss", Ui.Boss(11285)) + "_Phantom", ref potTarget, 1))
             {
                 config.PotionTarget = 1;
                 changed = true;
@@ -1078,7 +1085,7 @@ public class ConfigWindow : Window, IDisposable
         }
         else
         {
-            ImGui.TextDisabled("  No potion selected. Potions are optional.");
+            UiLayout.TextDisabled(Ui.T("Config_NoPotionSelectedPotionsAreOptional"));
         }
 
         return changed;
@@ -1087,13 +1094,13 @@ public class ConfigWindow : Window, IDisposable
     private static bool DrawItemSearchDropdown(string label, ref string search, List<(uint Id, string Name)> items, ref int selectedId, ref string selectedName)
     {
         var changed = false;
-        var displayText = selectedId > 0 ? $"{selectedName} ({selectedId})" : $"Select {label}...";
+        var displayText = selectedId > 0 ? string.Create(Ui.Culture, $"{selectedName} ({selectedId})") : Ui.T("Config_Select", Ui.T(label));
 
         ImGui.SetNextItemWidth(400);
         if (ImGui.BeginCombo($"##{label}Select", displayText))
         {
             ImGui.SetNextItemWidth(380);
-            ImGui.InputText($"Search##{label}", ref search, 128);
+            ImGui.InputText(Ui.T("Config_Search") + string.Format(System.Globalization.CultureInfo.InvariantCulture, "###Config_Search_{0}", label), ref search, 128);
 
             ImGui.Separator();
 
@@ -1118,7 +1125,7 @@ public class ConfigWindow : Window, IDisposable
                     shown++;
 
                     var isSelected = (int)item.Id == selectedId;
-                    if (ImGui.Selectable($"{item.Name} ({item.Id})##{label}{i}", isSelected))
+                    if (ImGui.Selectable(string.Create(Ui.Culture, $"{item.Name} ({item.Id})###{label}{item.Id}"), isSelected))
                     {
                         selectedId = (int)item.Id;
                         selectedName = item.Name;
@@ -1128,12 +1135,12 @@ public class ConfigWindow : Window, IDisposable
 
                 if (shown == 0)
                 {
-                    ImGui.TextDisabled("No results. Try a different search term.");
+                    UiLayout.TextDisabled(Ui.T("Config_NoResultsTryADifferentSearchTerm"));
                 }
             }
             else
             {
-                ImGui.TextDisabled("Type at least 2 characters to search...");
+                UiLayout.TextDisabled(Ui.T("Config_TypeAtLeastCharactersToSearch"));
             }
 
             ImGui.EndCombo();
@@ -1146,50 +1153,50 @@ public class ConfigWindow : Window, IDisposable
     {
         var changed = false;
 
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Repair Settings");
+        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Config_RepairSettings"));
         ImGui.Separator();
 
         // Repair threshold slider
         var repairThreshold = config.RepairThreshold;
-        if (ImGui.SliderInt("Repair Threshold (%)", ref repairThreshold, 0, 100))
+        if (ImGui.SliderInt(Ui.L("Config_RepairThreshold"), ref repairThreshold, 0, 100))
         {
             config.RepairThreshold = Math.Clamp(repairThreshold, 0, 100);
             changed = true;
         }
-        ImGui.TextDisabled("Repair when equipment durability falls below this percentage. Set to 0 to disable auto-repair.");
+        UiLayout.TextDisabled(Ui.T("Config_RepairWhenEquipmentDurabilityFallsBelowThis"));
 
         ImGui.Spacing();
 
         if (config.UseAdsExperimental)
         {
             var useAdsSelfRepair = config.UseAdsSelfRepair;
-            if (ImGui.Checkbox("Use self repair", ref useAdsSelfRepair))
+            if (ImGui.Checkbox(Ui.L("Config_UseSelfRepair"), ref useAdsSelfRepair))
             {
                 config.UseAdsSelfRepair = useAdsSelfRepair;
                 changed = true;
             }
 
-            ImGui.TextDisabled("Checked = /ads selfrepair. Unchecked = /ads npcrepair.");
+            UiLayout.TextDisabled(Ui.T("Config_CheckedAdsSelfrepairUncheckedAdsNpcrepair"));
             ImGui.Spacing();
         }
 
         // Repair method info
-        ImGui.TextColored(new Vector4(0.7f, 0.7f, 0.7f, 1.0f), "Repair Behavior:");
-        ImGui.TextWrapped("- Leader: Repairs automatically between duties when threshold is met");
-        ImGui.TextWrapped("- Non-leader: Repairs independently after 1 second outside duty");
-        ImGui.TextWrapped("- Solo: Treated as leader automatically");
+        ImGui.TextColored(new Vector4(0.7f, 0.7f, 0.7f, 1.0f), Ui.T("Config_RepairBehavior"));
+        ImGui.TextWrapped(Ui.T("Config_LeaderRepairsAutomaticallyBetweenDutiesWhenThreshold"));
+        ImGui.TextWrapped(Ui.T("Config_NonLeaderRepairsIndependentlyAfterSecondOutside"));
+        ImGui.TextWrapped(Ui.T("Config_SoloTreatedAsLeaderAutomatically"));
         ImGui.TextWrapped(config.UseAdsExperimental
-            ? $"- ADS mode: currently uses {(config.UseAdsSelfRepair ? "/ads selfrepair" : "/ads npcrepair")} and /ads enterinn"
-            : "- AutoDuty mode: repair METHOD (self/NPC) is configured in AutoDuty settings; inn return uses /ads enterinn");
+            ? Ui.T("Config_ADSModeCurrentlyUsesAndAdsEnterinn", (config.UseAdsSelfRepair ? "/ads selfrepair" : "/ads npcrepair"))
+            : Ui.T("Config_AutoDutyModeRepairMETHODSelfNPCIs"));
         
         ImGui.Spacing();
         
         // Current status info
-        ImGui.TextColored(new Vector4(0.7f, 0.7f, 0.7f, 1.0f), "Status:");
-        ImGui.Text($"  Current Threshold: {config.RepairThreshold}%");
-        ImGui.Text($"  Auto-Repair: {(config.RepairThreshold > 0 ? "Enabled" : "Disabled")}");
+        ImGui.TextColored(new Vector4(0.7f, 0.7f, 0.7f, 1.0f), Ui.T("Config_Status"));
+        ImGui.Text(Ui.T("Config_CurrentThreshold", config.RepairThreshold));
+        ImGui.Text(Ui.T("Config_AutoRepair", (config.RepairThreshold > 0 ? Ui.T("Config_Enabled") : Ui.T("Config_Disabled"))));
         if (config.UseAdsExperimental)
-            ImGui.Text($"  ADS Repair Method: {(config.UseAdsSelfRepair ? "Self" : "NPC")}");
+            ImGui.Text(Ui.T("Config_ADSRepairMethod", (config.UseAdsSelfRepair ? Ui.T("Config_Self") : Ui.T("Config_NPC"))));
 
         return changed;
     }
@@ -1198,41 +1205,41 @@ public class ConfigWindow : Window, IDisposable
     {
         var changed = false;
 
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Experimental ADS");
+        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Config_ExperimentalADS"));
         ImGui.Separator();
         var firstRoomSkip = config.ExperimentalFirstRoomSkip;
         ImGui.BeginDisabled(!config.UseAdsExperimental);
-        if (ImGui.Checkbox("Experimental first room skip (Praetorium)##FirstRoomSkip", ref firstRoomSkip))
+        if (ImGui.Checkbox(Ui.T("Config_ExperimentalFirstRoomSkipPraetorium") + "###Config_ExperimentalFirstRoomSkipPraetorium_FirstRoomSkip", ref firstRoomSkip))
         {
             config.ExperimentalFirstRoomSkip = firstRoomSkip;
             changed = true;
         }
         ImGui.EndDisabled();
-        ImGui.TextDisabled(config.UseAdsExperimental
-            ? "ADS/Praetorium only. Every participating client must opt in locally. MOGTOME falls back to ADS after success or any failure."
-            : "Available only when ADS is the selected backend; the saved option is inactive in AutoDuty mode.");
+        UiLayout.TextDisabled(config.UseAdsExperimental
+            ? Ui.T("Config_ADSPraetoriumOnlyEveryParticipatingClientMust")
+            : Ui.T("Config_AvailableOnlyWhenADSIsTheSelected"));
         ImGui.Spacing();
 
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), "Debug");
+        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Config_Debug"));
         ImGui.Separator();
 
         var debugCounter = config.DebugCounter;
-        if (ImGui.InputInt("Debug Counter", ref debugCounter))
+        if (ImGui.InputInt(Ui.L("Config_DebugCounter"), ref debugCounter))
         {
             config.DebugCounter = debugCounter;
             changed = true;
         }
-        ImGui.TextDisabled("Crash recovery offset. If you restarted mid-session, set this to your last\nknown run count to continue tracking correctly for today.");
+        UiLayout.TextDisabled(Ui.T("Config_CrashRecoveryOffsetIfYouRestartedMid"));
 
         ImGui.Spacing();
 
         var bailout = config.BailoutTimeout;
-        if (ImGui.InputInt("Bailout Timeout (sec)", ref bailout))
+        if (ImGui.InputInt(Ui.L("Config_BailoutTimeoutSec"), ref bailout))
         {
             config.BailoutTimeout = Math.Clamp(bailout, 60, 3600);
             changed = true;
         }
-        ImGui.TextDisabled("Leave duty if stuck for this many seconds. Default: 1200 (20 min).");
+        UiLayout.TextDisabled(Ui.T("Config_LeaveDutyIfStuckForThisMany"));
 
         return changed;
     }

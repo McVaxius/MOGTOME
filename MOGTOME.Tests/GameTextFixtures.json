@@ -1,0 +1,54 @@
+{
+  "English": {
+    "108": "Leave party and abandon your current duty?",
+    "109": "Abandon your current duty?",
+    "112": "Accept Raise?",
+    "118": "Return to the starting point for\u003Cbr\u003E\u003Cstring(gstr56)\u003E?",
+    "119": "Return to the starting point for\u003Cbr\u003E\u003Cstring(gstr56)\u003E? \u003Cbr\u003E\u003Cbr\u003E\u003Ccolortype(500)\u003E\u003Cedgecolortype(501)\u003E\u203BYou may be unable to re-enter ongoing battles.\u003Cedgecolortype(0)\u003E\u003Ccolortype(0)\u003E",
+    "194": "Return to the starting point for\u003Cbr\u003E\u003Cstring(gstr56)\u003E?",
+    "197": "Return to the starting point for\u003Cbr\u003E\u003Cstring(gstr56)\u003E?",
+    "3787": "Accept Raise from \u003Cstring(lstr1)\u003E?",
+    "102631": "Move immediately to sealed area?",
+    "877": "No duty has been selected.",
+    "880": "One of your party members does not meet the requirements for this duty."
+  },
+  "French": {
+    "108": "Abandonner la mission en cours et quitter l\u0027\u00E9quipe\u003Cnbsp\u003E?",
+    "109": "Abandonner la mission en cours\u003Cnbsp\u003E?",
+    "112": "Accepter la r\u00E9surrection\u003Cnbsp\u003E?",
+    "118": "Retourner au point de d\u00E9part de la mission \u003Cstring(gstr56)\u003E\u003Cnbsp\u003E?",
+    "119": "Retour au point de d\u00E9part de la mission \u201C\u003Cstring(gstr56)\u003E\u201D.\u003Cbr\u003E\u003Cbr\u003E\u003Ccolortype(500)\u003E\u003Cedgecolortype(501)\u003E* Il est impossible d\u0027acc\u00E9der \u00E0 une aire ferm\u00E9e, tant que le combat s\u0027y d\u00E9roulant n\u0027est pas termin\u00E9.\u003Cedgecolortype(0)\u003E\u003Ccolortype(0)\u003E\u003Cbr\u003E",
+    "194": "Retour au point de d\u00E9part de l\u0027instance\u003Cbr\u003E\u201C\u003Cstring(gstr56)\u003E\u201D.",
+    "197": "Retourner au point de d\u00E9part de la mission \u003Cstring(gstr56)\u003E\u003Cnbsp\u003E?",
+    "3787": "Accepter la r\u00E9surrection de \u003Cstring(lstr1)\u003E\u003Cnbsp\u003E?",
+    "102631": "Vous allez vous t\u00E9l\u00E9porter dans une zone verrouill\u00E9e. Souhaitez-vous continuer\u003Cnbsp\u003E?",
+    "877": "Vous n\u0027avez pas s\u00E9lectionn\u00E9 de mission.",
+    "880": "Un ou plusieurs des \u00E9quipiers ne remplissent pas les conditions de par\u003C-\u003Eti\u003C-\u003Eci\u003C-\u003Epa\u003C-\u003Etion \u00E0 cette mission."
+  },
+  "German": {
+    "108": "Die Gruppe verlassen und den laufenden Spielinhalt beenden?",
+    "109": "Den laufenden Spielinhalt als Fehlschlag beenden?",
+    "112": "Willst du dich wiederbeleben lassen? ",
+    "118": "Zum Ausgangspunkt von \u201E\u003Cstring(gstr56)\u003E\u201C zur\u00FCckkehren?",
+    "119": "Zum Ausgangspunkt von \u201E\u003Cstring(gstr56)\u003E\u201C zur\u00FCckkehren?\u003Cbr\u003E\u003Cbr\u003E\u003Ccolortype(500)\u003E\u003Cedgecolortype(501)\u003E\u203B Wenn du einen geschlossenen Kampfplatz verl\u00E4sst, kannst du ihn erst wieder betreten, wenn der Kampf beendet ist.\u003Cedgecolortype(0)\u003E\u003Ccolortype(0)\u003E\u003Cbr\u003E",
+    "194": "Zum Ausgangspunkt von \u201E\u003Cstring(gstr56)\u003E\u201C zur\u00FCckkehren?",
+    "197": "Zum Ausgangspunkt von \u201E\u003Cstring(gstr56)\u003E\u201C zur\u00FCckkehren?",
+    "3787": "Willst du dich von \u003Cstring(lstr1)\u003E wiederbeleben lassen?",
+    "102631": "Du wirst in einen abgesperrten Raum teleportiert. Jetzt fortfahren?",
+    "877": "Kein Inhalt ausgew\u00E4hlt.",
+    "880": "Eines der Grup\u003C-\u003Epen\u003C-\u003Emit\u003C-\u003Eglieder erf\u00FCllt nicht die Voraus\u003C-\u003Esetzungen f\u00FCr die Teilnahme."
+  },
+  "Japanese": {
+    "108": "\u53C2\u52A0\u4E2D\u306E\u30B3\u30F3\u30C6\u30F3\u30C4\u3068\u30D1\u30FC\u30C6\u30A3\u304B\u3089\u96E2\u8131\u3057\u307E\u3059\u3002\u003Cbr\u003E\u3088\u308D\u3057\u3044\u3067\u3059\u304B\uFF1F",
+    "109": "\u53C2\u52A0\u4E2D\u306E\u30B3\u30F3\u30C6\u30F3\u30C4\u304C\u5931\u6557\u3057\u307E\u3059\u3002\u003Cbr\u003E\u3088\u308D\u3057\u3044\u3067\u3059\u304B\uFF1F",
+    "112": "\u8607\u751F\u3092\u53D7\u3051\u307E\u3059\u304B\uFF1F",
+    "118": "\u300C\u003Cstring(gstr56)\u003E\u300D\u306E\u003Cbr\u003E\u958B\u59CB\u5730\u70B9\u306B\u623B\u308A\u307E\u3059\u3002\u3088\u308D\u3057\u3044\u3067\u3059\u304B\uFF1F",
+    "119": "\u300C\u003Cstring(gstr56)\u003E\u300D\u306E\u003Cbr\u003E\u958B\u59CB\u5730\u70B9\u306B\u623B\u308A\u307E\u3059\u3002\u003Cbr\u003E\u003Cbr\u003E\u003Ccolortype(500)\u003E\u003Cedgecolortype(501)\u003E\u203B\u6226\u95D8\u304C\u884C\u308F\u308C\u3066\u3044\u308B\u5C01\u9396\u3055\u308C\u305F\u533A\u753B\u306B\u306F\u003Cbr\u003E\u3000\u6226\u95D8\u7D42\u4E86\u307E\u3067\u5408\u6D41\u3067\u304D\u307E\u305B\u3093\u3002\u003Cedgecolortype(0)\u003E\u003Ccolortype(0)\u003E\u003Cbr\u003E",
+    "194": "\u300C\u003Cstring(gstr56)\u003E\u300D\u306E\u003Cbr\u003E\u5FA9\u5E30\u5730\u70B9\u306B\u623B\u308A\u307E\u3059\u3002",
+    "197": "\u300C\u003Cstring(gstr56)\u003E\u300D\u306E\u003Cbr\u003E\u958B\u59CB\u5730\u70B9\u306B\u623B\u308A\u307E\u3059\u3002\u3088\u308D\u3057\u3044\u3067\u3059\u304B\uFF1F",
+    "3787": "\u003Cstring(lstr1)\u003E\u304B\u3089\u306E\u8607\u751F\u3092\u53D7\u3051\u307E\u3059\u304B\uFF1F",
+    "102631": "\u5C01\u9396\u7A7A\u9593\u3078\u5F37\u5236\u8EE2\u9001\u3057\u307E\u3059\u3002\u003Cbr\u003E\u4ECA\u3059\u3050\u79FB\u52D5\u3057\u307E\u3059\u304B\uFF1F",
+    "877": "\u30B3\u30F3\u30C6\u30F3\u30C4\u3092\u9078\u629E\u3057\u306A\u3044\u3068\u53C2\u52A0\u7533\u8ACB\u306F\u3067\u304D\u307E\u305B\u3093\u3002",
+    "880": "\u30D1\u30FC\u30C6\u30A3\u306B\u53C2\u52A0\u6761\u4EF6\u3092\u6E80\u305F\u3055\u306A\u3044\u30E1\u30F3\u30D0\u30FC\u304C\u3044\u308B\u305F\u3081\u3001\u53C2\u52A0\u7533\u8ACB\u3067\u304D\u307E\u305B\u3093\u3002"
+  }
+}

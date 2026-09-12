@@ -26,6 +26,15 @@ public class ConfigManager
     private bool hasLoggedNoAccount = false;
     
     public event Action<Configuration>? ConfigurationChanged;
+
+    public void SetUiLanguage(Localization.UiLanguage language)
+    {
+        if (string.IsNullOrEmpty(CurrentAccountId) || !accounts.TryGetValue(CurrentAccountId, out var account)) return;
+        if (!Enum.IsDefined(language)) return;
+        account.Settings.UiLanguage = language;
+        Localization.Ui.SetLanguage(language);
+        SaveCurrentAccount();
+    }
     
     public string CurrentAccountId 
     { 
@@ -39,6 +48,7 @@ public class ConfigManager
         this.playerState = playerState;
         this.clientState = clientState;
         this.pluginInterface = pluginInterface;
+        Localization.Ui.SetLanguage(Localization.Ui.FromClient(clientState.ClientLanguage));
         
         EnsureConfigFolderExists();
         
@@ -133,6 +143,8 @@ public class ConfigManager
                     accounts[fallbackId] = CreateAccountForContentId(0);
                 }
                 CurrentAccountId = fallbackId;
+                accounts[fallbackId].Settings.UiLanguage = Localization.Ui.ResolveLanguage(accounts[fallbackId].Settings.UiLanguage, clientState.ClientLanguage);
+                Localization.Ui.SetLanguage(accounts[fallbackId].Settings.UiLanguage.GetValueOrDefault());
                 log.Warning($"[MOGTOME][ConfigManager] Using fallback account: {fallbackId}");
                 return true;
             }
@@ -147,6 +159,8 @@ public class ConfigManager
             }
             
             var account = accounts[accountId];
+            account.Settings.UiLanguage = Localization.Ui.ResolveLanguage(account.Settings.UiLanguage, clientState.ClientLanguage);
+            Localization.Ui.SetLanguage(account.Settings.UiLanguage.Value);
             
             // Create character config from provided info
             var character = new CharacterConfig

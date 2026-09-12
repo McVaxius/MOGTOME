@@ -1,3 +1,4 @@
+using MOGTOME.Localization;
 using System;
 using System.Linq;
 using System.Text.Json;
@@ -100,7 +101,8 @@ public sealed class AdsDutyIpcService : IDisposable
 
     public AdsDutyOwnershipSnapshot Current { get; private set; } = AdsDutyOwnershipSnapshot.Empty;
     public AdsCurrentDutySnapshot? CurrentDuty { get; private set; }
-    public string CurrentDutyDetail { get; private set; } = "No validated ADS current-duty snapshot.";
+    public string CurrentDutyDetail => CurrentDutyMessage.English;
+    internal UiText CurrentDutyMessage { get; private set; } = Ui.M("Ads_Unvalidated");
 
     public void Dispose()
     {
@@ -121,7 +123,7 @@ public sealed class AdsDutyIpcService : IDisposable
         if (!isAdsLoaded())
         {
             lastKnownOwnedUtc = DateTime.MinValue;
-            ClearCurrentDuty("ADS unloaded.");
+            ClearCurrentDuty(Ui.M("Ads_Unloaded"));
             return Apply(new AdsDutyOwnershipSnapshot(
                 false,
                 false,
@@ -155,9 +157,9 @@ public sealed class AdsDutyIpcService : IDisposable
         catch (Exception ex)
         {
             jsonException = ex;
-            CurrentDutyDetail = CurrentDuty is null
-                ? $"ADS.GetStatusJson unavailable: {ex.Message}"
-                : $"ADS.GetStatusJson unavailable; retaining the validated current-duty snapshot for the same live identity: {ex.Message}";
+            CurrentDutyMessage = CurrentDuty is null
+                ? Ui.M("Ads_Unavailable", ex.Message)
+                : Ui.M("Ads_Retained", ex.Message);
         }
 
         if (typedException is null)
@@ -296,7 +298,7 @@ public sealed class AdsDutyIpcService : IDisposable
             trackedInInstancedDuty = false;
             trackedTerritoryTypeId = territoryTypeId;
             trackedContentFinderConditionId = contentFinderConditionId;
-            ClearCurrentDuty("Live client is outside an instanced duty.");
+            ClearCurrentDuty(Ui.M("Ads_Outside"));
             return;
         }
 
@@ -305,7 +307,7 @@ public sealed class AdsDutyIpcService : IDisposable
             trackedInInstancedDuty = true;
             trackedTerritoryTypeId = territoryTypeId;
             trackedContentFinderConditionId = contentFinderConditionId;
-            ClearCurrentDuty("GameMain did not provide a live duty territory identity.");
+            ClearCurrentDuty(Ui.M("Ads_NoLiveIdentity"));
             return;
         }
 
@@ -314,7 +316,7 @@ public sealed class AdsDutyIpcService : IDisposable
                 || trackedContentFinderConditionId != contentFinderConditionId))
         {
             ClearCurrentDuty(
-                $"Live duty identity changed from territory/CFC {trackedTerritoryTypeId}/{trackedContentFinderConditionId} to {territoryTypeId}/{contentFinderConditionId}.");
+                Ui.M("Ads_Changed", trackedTerritoryTypeId, trackedContentFinderConditionId, territoryTypeId, contentFinderConditionId));
         }
 
         trackedInInstancedDuty = true;
@@ -331,11 +333,11 @@ public sealed class AdsDutyIpcService : IDisposable
     {
         if (!inInstancedDuty)
         {
-            ClearCurrentDuty("Live client is outside an instanced duty.");
+            ClearCurrentDuty(Ui.M("Ads_Outside"));
             return;
         }
 
-        if (!AdsCurrentDutySnapshot.TryParseStatusJson(
+        if (!AdsCurrentDutySnapshot.TryReadSnapshot(
                 statusJson,
                 capturedAtUtc,
                 out var snapshot,
@@ -349,18 +351,18 @@ public sealed class AdsDutyIpcService : IDisposable
         if (!snapshot.MatchesIdentity(territoryTypeId, contentFinderConditionId))
         {
             ClearCurrentDuty(
-                $"ADS current-duty identity {snapshot.TerritoryTypeId}/{snapshot.ContentFinderConditionId} does not match live GameMain identity {territoryTypeId}/{contentFinderConditionId}.");
+                Ui.M("Ads_Mismatch", snapshot.TerritoryTypeId, snapshot.ContentFinderConditionId, territoryTypeId, contentFinderConditionId));
             return;
         }
 
         CurrentDuty = snapshot;
-        CurrentDutyDetail = $"Validated ADS current-duty snapshot for territory/CFC {territoryTypeId}/{contentFinderConditionId}.";
+        CurrentDutyMessage = Ui.M("Ads_Validated", territoryTypeId, contentFinderConditionId);
     }
 
-    private void ClearCurrentDuty(string detail)
+    private void ClearCurrentDuty(UiText detail)
     {
         CurrentDuty = null;
-        CurrentDutyDetail = detail;
+        CurrentDutyMessage = detail;
     }
 
     private AdsDutyOwnershipSnapshot Apply(AdsDutyOwnershipSnapshot snapshot)

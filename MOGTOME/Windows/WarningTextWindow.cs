@@ -1,3 +1,4 @@
+using MOGTOME.Localization;
 using System;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
@@ -9,52 +10,52 @@ public sealed class WarningTextWindow : Window, IDisposable
 {
     public const int CurrentWarningVersion = 0;
 
-    private static readonly string[] WarningLines =
+    private static readonly UiText[] WarningLines =
     [
-        "Sorry to make you read this.",
+        Ui.M("WarningText_SorryToMakeYouReadThis"),
         "-",
-        "A few notes on MOGTOME version 0.0.0.x (not 1.x.x.x yet).",
-        "it's experimental and will break occasionally.",
-        "please provide logs so i can analyze !",
+        Ui.M("WarningText_AFewNotesOnMOGTOMEVersionX"),
+        Ui.M("WarningText_ItSExperimentalAndWillBreakOccasionally"),
+        Ui.M("WarningText_PleaseProvideLogsSoICanAnalyze"),
         "-",
-        "Multiplayer guide, discord link and info at:",
+        Ui.M("WarningText_MultiplayerGuideDiscordLinkAndInfoAt"),
         "-",
 		"https://aethertek.io/",
         "-",
-        "There are 3 ways MOGTOME is currently crashing clients. (its not mogtome)",
-        "(1) If you have RSR -> UI -> Simulate the effect of pressing abilities? Turn that feature off.",
+        Ui.M("WarningText_ThereAreWaysMOGTOMEIsCurrentlyCrashing"),
+        Ui.M("WarningText_IfYouHaveRSRUISimulateThe"),
         "-",
-        "(2) Do not run dalamud from the same folder multiple times. it gets crashy when multiboxing",
-        "AUTODUTY/RSR/navmesh sometimes WILL have race/deadlock and CTD with(out) error.",
-        "You will need to use multi install folders. to resolve this",
-        "It will be the first thing I ask after what version of MOGTOME is it.",
+        Ui.M("WarningText_DoNotRunDalamudFromTheSame"),
+        Ui.M("WarningText_AUTODUTYRSRNavmeshSometimesWILLHaveRace"),
+        Ui.M("WarningText_YouWillNeedToUseMultiInstall"),
+        Ui.M("WarningText_ItWillBeTheFirstThingI"),
         "-",
-        "(3) if you don't have very much RAM. you will have some issues with many clients",
-        "plan for 5GB free per client you want to run before loading any clients",
-        "see the multiplayer guide on https://aethertek.io/  for some tips and tricks",
+        Ui.M("WarningText_IfYouDonTHaveVeryMuch"),
+        Ui.M("WarningText_PlanForGBFreePerClientYou"),
+        Ui.M("WarningText_SeeTheMultiplayerGuideOnHttpsAethertek"),
         "---------------------------------------------------------------------------------------------------",
         "-",
-        "Now for some tips and tricks for MOGTOME.",
+        Ui.M("WarningText_NowForSomeTipsAndTricksFor"),
         "-",
-        "1. If you are self repairing. set repair % high in your selected backend plugin.",
-		"AutoDuty repair is still weird sometimes. ADS mode uses its own repair commands and needs testing.",
+        Ui.M("WarningText_IfYouAreSelfRepairingSetRepair"),
+		Ui.M("WarningText_AutoDutyRepairIsStillWeirdSometimesADS"),
         "-",
-		"2. Make an AutoDuty profile just for this purpose and pick it before you hit start when ADS mode is OFF.",
-		"MOGTOME changes some settings so this keeps your leveling etc profiles safe", 
+		Ui.M("WarningText_MakeAnAutoDutyProfileJustForThis"),
+		Ui.M("WarningText_MOGTOMEChangesSomeSettingsSoThisKeeps"),
         "-",
-		"3. Join the AutoParty discord -> https://discord.gg/KyfyAzG6", 
+		Ui.M("WarningText_JoinTheAutoPartyDiscordHttpsDiscordGg"),
         "-",
-        "4. When starting mogtome, make sure you start the non party leader first.  and you will have to",
-		"configure WHO the party leader is by clicking refresh status on the party leader.",
-        "I did this because its a seriously annoying logic puzzle to figure out who is actually the party leader.",
-		"I have some commented out and retired methods for it but it was unreliable.",
+        Ui.M("WarningText_WhenStartingMogtomeMakeSureYouStart"),
+		Ui.M("WarningText_ConfigureWHOThePartyLeaderIsBy"),
+        Ui.M("WarningText_IDidThisBecauseItsASeriously"),
+		Ui.M("WarningText_IHaveSomeCommentedOutAndRetired"),
     ];
 
     private readonly Plugin plugin;
     private bool warningAcknowledgedThisOpen;
 
     public WarningTextWindow(Plugin plugin)
-        : base("MOGTOME Warning Text##MOGTOMEWarningText", ImGuiWindowFlags.NoCollapse)
+        : base(Ui.T("Window_MOGTOMEWarningText") + "###MOGTOMEWarningText", ImGuiWindowFlags.NoCollapse)
     {
         this.plugin = plugin;
         RespectCloseHotkey = false;
@@ -87,6 +88,8 @@ public sealed class WarningTextWindow : Window, IDisposable
         IsOpen = true;
     }
 
+    public override void PreDraw() => WindowName = Ui.T("Window_MOGTOMEWarningText") + "###MOGTOMEWarningText";
+
     public override void Draw()
     {
         if (ImGui.IsWindowAppearing())
@@ -97,19 +100,19 @@ public sealed class WarningTextWindow : Window, IDisposable
             ImGui.SetWindowPos(new Vector2(MathF.Max(1f, posX), MathF.Max(1f, posY)));
         }
 
-        ImGui.TextColored(new Vector4(1.0f, 0.55f, 0.2f, 1.0f), "Read This Before Running MOGTOME");
+        ImGui.TextColored(new Vector4(1.0f, 0.55f, 0.2f, 1.0f), Ui.T("WarningText_ReadThisBeforeRunningMOGTOME"));
         ImGui.SameLine();
-        ImGui.TextDisabled($"warning v{CurrentWarningVersion}");
+        UiLayout.TextDisabled(Ui.T("WarningText_WarningV", CurrentWarningVersion));
         ImGui.Spacing();
 
         foreach (var line in WarningLines)
         {
-            ImGui.TextWrapped(line);
+            ImGui.TextWrapped(line.Render());
             ImGui.Spacing();
         }
 
         var buttonWidth = MathF.Max(260f, ImGui.GetContentRegionAvail().X);
-        if (ImGui.Button("OK I READ IT", new Vector2(buttonWidth, 42f)))
+        if (UiLayout.Button(Ui.L("WarningText_OKIREADIT"), new Vector2(buttonWidth, 42f)))
         {
             plugin.Configuration.WarningPopupAcknowledgedVersion = CurrentWarningVersion;
             plugin.ConfigManager.SaveCurrentAccount();

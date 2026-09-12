@@ -1,3 +1,4 @@
+using MOGTOME.Localization;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -23,7 +24,7 @@ internal sealed class PraetoriumFirstRoomSkipService : IDisposable
         InteractingWithTerminal,
     }
 
-    private readonly record struct TankActionMap(string Job, uint AreaActionId, uint InvulnerabilityActionId);
+    private readonly record struct TankActionMap(uint JobId, uint AreaActionId, uint InvulnerabilityActionId);
 
     private const uint TerminalDataId = 2012811;
     private static readonly Vector3 OpeningPackPosition = new(186.77065f, 185.99998f, -29.414112f);
@@ -38,10 +39,10 @@ internal sealed class PraetoriumFirstRoomSkipService : IDisposable
     private static readonly TimeSpan InteractionRetryDelay = TimeSpan.FromMilliseconds(400);
     private static readonly Dictionary<uint, TankActionMap> TankActions = new()
     {
-        [19] = new("PLD", 7381, 30),     // Total Eclipse / Hallowed Ground
-        [21] = new("WAR", 31, 43),       // Overpower / Holmgang
-        [32] = new("DRK", 3621, 3638),   // Unleash / Living Dead
-        [37] = new("GNB", 16137, 16152), // Demon Slice / Superbolide
+        [19] = new(19, 7381, 30),     // Total Eclipse / Hallowed Ground
+        [21] = new(21, 31, 43),       // Overpower / Holmgang
+        [32] = new(32, 3621, 3638),   // Unleash / Living Dead
+        [37] = new(37, 16137, 16152), // Demon Slice / Superbolide
     };
 
     private readonly IPluginLog log;
@@ -50,7 +51,7 @@ internal sealed class PraetoriumFirstRoomSkipService : IDisposable
     private readonly IClientState clientState;
     private readonly IObjectTable objectTable;
     private readonly VNavIPC vnav;
-    private readonly Action<string> handoffToAds;
+    private readonly Action<UiText> handoffToAds;
     private readonly Func<int> getSessionId;
 
     private SkipState state;
@@ -71,7 +72,7 @@ internal sealed class PraetoriumFirstRoomSkipService : IDisposable
         IClientState clientState,
         IObjectTable objectTable,
         VNavIPC vnav,
-        Action<string> handoffToAds, Func<int> getSessionId)
+        Action<UiText> handoffToAds, Func<int> getSessionId)
     {
         this.log = log;
         this.framework = framework;
@@ -115,9 +116,9 @@ internal sealed class PraetoriumFirstRoomSkipService : IDisposable
         if (TankActions.TryGetValue(jobRow, out tankActions))
         {
             state = SkipState.TankAcquirePack;
-            if (RequestMove(OpeningPackPosition, "opening pack"))
+            if (RequestMove(OpeningPackPosition, Ui.M("Opener_Pack")))
             {
-                log.Information($"[MOGTOME][FirstRoomSkip] Tank {tankActions.Job} starting local opening pull");
+                log.Information($"[MOGTOME][FirstRoomSkip] Tank {Ui.Job(tankActions.JobId)} starting local opening pull");
                 return true;
             }
 
@@ -164,7 +165,7 @@ internal sealed class PraetoriumFirstRoomSkipService : IDisposable
         var now = DateTime.UtcNow;
         if (now - startedUtc >= TotalTimeout)
         {
-            CompleteWithAdsHandoff("10 second experiment timeout");
+            CompleteWithAdsHandoff(Ui.M("Opener_Timeout"));
             return;
         }
 
@@ -196,14 +197,14 @@ internal sealed class PraetoriumFirstRoomSkipService : IDisposable
         var target = FindOpeningPackTarget();
         if (target == null)
         {
-            CompleteWithAdsHandoff("opening pack target unavailable");
+            CompleteWithAdsHandoff(Ui.M("Opener_NoTarget"));
             return;
         }
 
         Plugin.TargetManager.Target = target;
         if (!GameHelpers.TryUseCombatAction(tankActions.AreaActionId))
         {
-            CompleteWithAdsHandoff($"{tankActions.Job} area action unavailable");
+            CompleteWithAdsHandoff(Ui.M("Opener_NoArea", Ui.Job(tankActions.JobId)));
             return;
         }
 
@@ -215,7 +216,7 @@ internal sealed class PraetoriumFirstRoomSkipService : IDisposable
     {
         if (!GameHelpers.TryUseCombatAction(tankActions.InvulnerabilityActionId))
         {
-            CompleteWithAdsHandoff($"{tankActions.Job} invulnerability unavailable");
+            CompleteWithAdsHandoff(Ui.M("Opener_NoInvulnerability", Ui.Job(tankActions.JobId)));
             return;
         }
 
@@ -226,11 +227,11 @@ internal sealed class PraetoriumFirstRoomSkipService : IDisposable
     {
         if (FindTerminal() == null)
         {
-            CompleteWithAdsHandoff("Magitek Terminal 2012811 unavailable");
+            CompleteWithAdsHandoff(Ui.M("Opener_NoTerminal"));
             return;
         }
 
-        if (!RequestMove(TerminalPosition, "Magitek Terminal"))
+        if (!RequestMove(TerminalPosition, Ui.M("Opener_Terminal")))
             return;
 
         state = SkipState.InteractingWithTerminal;
@@ -241,13 +242,13 @@ internal sealed class PraetoriumFirstRoomSkipService : IDisposable
         var player = objectTable.LocalPlayer;
         if (player == null)
         {
-            CompleteWithAdsHandoff("local player unavailable at terminal");
+            CompleteWithAdsHandoff(Ui.M("Opener_NoPlayerAtTerminal"));
             return;
         }
 
         if (player.Position.Y <= entryY - DescentDelta)
         {
-            CompleteWithAdsHandoff("local terminal descent detected");
+            CompleteWithAdsHandoff(Ui.M("Opener_Descended"));
             return;
         }
 
@@ -260,27 +261,27 @@ internal sealed class PraetoriumFirstRoomSkipService : IDisposable
         var terminal = FindTerminal();
         if (terminal == null)
         {
-            CompleteWithAdsHandoff("Magitek Terminal 2012811 unavailable");
+            CompleteWithAdsHandoff(Ui.M("Opener_NoTerminal"));
             return;
         }
 
         lastInteractionUtc = now;
         if (!GameHelpers.InteractWithObject(terminal))
-            CompleteWithAdsHandoff("Magitek Terminal interaction unavailable");
+            CompleteWithAdsHandoff(Ui.M("Opener_NoInteract"));
     }
 
-    private bool RequestMove(Vector3 destination, string label)
+    private bool RequestMove(Vector3 destination, UiText label)
     {
         var player = objectTable.LocalPlayer;
         if (player == null)
         {
-            CompleteWithAdsHandoff($"local player unavailable before movement to {label}");
+            CompleteWithAdsHandoff(Ui.M("Opener_NoPlayerBeforeMove", label));
             return false;
         }
 
         if (!vnav.MoveTo(destination))
         {
-            CompleteWithAdsHandoff($"vnav movement to {label} unavailable");
+            CompleteWithAdsHandoff(Ui.M("Opener_NoMove", label));
             return false;
         }
 
@@ -298,7 +299,7 @@ internal sealed class PraetoriumFirstRoomSkipService : IDisposable
         var player = objectTable.LocalPlayer;
         if (player == null)
         {
-            CompleteWithAdsHandoff("local player unavailable while moving");
+            CompleteWithAdsHandoff(Ui.M("Opener_NoPlayerMoving"));
             return false;
         }
 
@@ -319,7 +320,7 @@ internal sealed class PraetoriumFirstRoomSkipService : IDisposable
         if (now - lastMovementProgressUtc < MovementProgressTimeout)
             return true;
 
-        CompleteWithAdsHandoff("vnav movement made no progress");
+        CompleteWithAdsHandoff(Ui.M("Opener_NoProgress"));
         return false;
     }
 
@@ -358,7 +359,7 @@ internal sealed class PraetoriumFirstRoomSkipService : IDisposable
         return null;
     }
 
-    private void CompleteWithAdsHandoff(string reason)
+    private void CompleteWithAdsHandoff(UiText reason)
     {
         if (!active)
             return;
@@ -366,7 +367,7 @@ internal sealed class PraetoriumFirstRoomSkipService : IDisposable
         active = false;
         state = SkipState.Idle;
         movementTarget = null;
-        StopMovement(reason);
+        StopMovement(reason.English);
         log.Information($"[MOGTOME][FirstRoomSkip] {reason}; handing off to ADS");
         handoffToAds(reason);
     }

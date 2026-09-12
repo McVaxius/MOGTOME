@@ -11,6 +11,7 @@ namespace MOGTOME;
 public class Configuration
 {
     public int Version { get; set; } = 1;
+    public Localization.UiLanguage? UiLanguage { get; set; }
 
     // --- Party Settings ---
     public bool IsPartyLeader { get; set; } = false;

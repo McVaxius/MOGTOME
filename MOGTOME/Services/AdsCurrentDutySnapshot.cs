@@ -1,3 +1,4 @@
+using MOGTOME.Localization;
 using System;
 using System.Text.Json;
 using MOGTOME.Models;
@@ -24,11 +25,19 @@ public sealed record AdsCurrentDutySnapshot(
         out AdsCurrentDutySnapshot? snapshot,
         out string failure)
     {
+        var success = TryReadSnapshot(json, capturedAtUtc, out snapshot, out var message);
+        failure = message.English;
+        return success;
+    }
+
+    internal static bool TryReadSnapshot(string json, DateTime capturedAtUtc,
+        out AdsCurrentDutySnapshot? snapshot, out UiText failure)
+    {
         snapshot = null;
         failure = string.Empty;
         if (string.IsNullOrWhiteSpace(json))
         {
-            failure = "ADS.GetStatusJson returned an empty payload";
+            failure = Ui.M("Ads_Empty");
             return false;
         }
 
@@ -39,54 +48,54 @@ public sealed record AdsCurrentDutySnapshot(
             if (!TryReadBoolean(root, "inInstancedDuty", out var inInstancedDuty)
                 || !inInstancedDuty)
             {
-                failure = "ADS status does not identify an active instanced duty";
+                failure = Ui.M("Ads_Inactive");
                 return false;
             }
 
             if (!TryReadBoolean(root, "hasCatalogMetadata", out var hasCatalogMetadata)
                 || !hasCatalogMetadata)
             {
-                failure = "ADS current duty has no catalog metadata";
+                failure = Ui.M("Ads_NoCatalog");
                 return false;
             }
 
             if (!TryReadString(root, "duty", out var dutyName))
             {
-                failure = "ADS current-duty catalog row has no duty name";
+                failure = Ui.M("Ads_NoName");
                 return false;
             }
 
             if (!TryReadUInt32(root, "territoryTypeId", out var territoryTypeId)
                 || territoryTypeId == 0)
             {
-                failure = "ADS current-duty catalog row has no territory identity";
+                failure = Ui.M("Ads_NoTerritory");
                 return false;
             }
 
             if (!TryReadUInt32(root, "contentFinderConditionId", out var contentFinderConditionId))
             {
-                failure = "ADS current-duty catalog row has no CFC identity";
+                failure = Ui.M("Ads_NoCfc");
                 return false;
             }
 
             if (!TryReadString(root, "dutyCategory", out var categoryName)
                 || !TryParseCategory(categoryName, out var category))
             {
-                failure = $"ADS current-duty catalog row has unsupported category '{categoryName}'";
+                failure = Ui.M("Ads_Category", categoryName);
                 return false;
             }
 
             if (!TryReadString(root, "supportLevel", out var supportLevel)
                 || !IsKnownSupportLevel(supportLevel))
             {
-                failure = $"ADS current-duty catalog row has unsupported support level '{supportLevel}'";
+                failure = Ui.M("Ads_Support", supportLevel);
                 return false;
             }
 
             if (!TryReadString(root, "clearanceStatus", out var clearanceStatus)
                 || !TryParseClearance(clearanceStatus, out var clearanceLevel))
             {
-                failure = $"ADS current-duty catalog row has unsupported clearance status '{clearanceStatus}'";
+                failure = Ui.M("Ads_Clearance", clearanceStatus);
                 return false;
             }
 
@@ -103,7 +112,7 @@ public sealed record AdsCurrentDutySnapshot(
         }
         catch (JsonException ex)
         {
-            failure = $"ADS.GetStatusJson was invalid JSON: {ex.Message}";
+            failure = Ui.M("Ads_InvalidJson", ex.Message);
             return false;
         }
     }

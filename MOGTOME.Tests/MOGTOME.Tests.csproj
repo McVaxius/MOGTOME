@@ -14,6 +14,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <Using Include="Xunit" />
+    <None Update="GameTextFixtures.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Dalamud;Dalamud.Common;Dalamud.Bindings.ImGui;FFXIVClientStructs;Lumina;Lumina.Excel;Serilog;Newtonsoft.Json">

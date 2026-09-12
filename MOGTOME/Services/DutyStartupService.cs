@@ -1,3 +1,4 @@
+using MOGTOME.Localization;
 using System;
 using Dalamud.Game.ClientState.Conditions;
 using FFXIVClientStructs.FFXIV.Client.Game;
@@ -19,7 +20,7 @@ internal sealed class DutyStartupService(
     Func<bool> useAds,
     Func<bool> startAutoDuty,
     Func<bool> enableCombat,
-    Func<string> combatFailure,
+    Func<UiText> combatFailure,
     Func<string, bool> processCommand,
     Func<float> getDutyRemainingTime,
     Action<string> logInformation,
@@ -44,7 +45,8 @@ internal sealed class DutyStartupService(
     internal bool CombatActivated { get; private set; }
     internal bool BackendConfirmed { get; private set; }
     internal bool IsConfirmed => CombatActivated && BackendConfirmed;
-    internal string StatusText { get; private set; } = "Waiting for duty readiness.";
+    internal string StatusText => Status.English;
+    internal UiText Status { get; private set; } = Ui.M("Startup_WaitingForDutyReadiness");
 
     internal void ResetSession(bool resumedInsideDuty = false)
     {
@@ -121,7 +123,7 @@ internal sealed class DutyStartupService(
                 CombatActivated = false;
                 handoffState.ResetCountdown();
                 invalidateCombat?.Invoke();
-                Pending("combat recovery after death; waiting for continuous readiness");
+                Pending(Ui.M("Startup_CombatRecoveryAfterDeathWaitingForContinuous"));
             }
             handoffState.ObserveReadiness(conditions);
         }
@@ -138,12 +140,12 @@ internal sealed class DutyStartupService(
         var operation = generation;
         if (cancelled || exitRequested || DutySession.IsCompleted)
         {
-            StatusText = "Duty startup cancelled.";
+            Status = Ui.M("Startup_DutyStartupCancelled");
             return DutyStartupResult.Cancelled;
         }
 
         if (!inDuty)
-            return Pending("waiting for duty");
+            return Pending(Ui.M("Startup_WaitingForDuty"));
 
         if (inDuty != trackedInDuty
             || identity.TerritoryTypeId != trackedDutyTerritoryId
@@ -160,13 +162,13 @@ internal sealed class DutyStartupService(
         if (openerActive)
         {
             handoffState.ResetCountdown();
-            return Pending("experimental opener active");
+            return Pending(Ui.M("Startup_ExperimentalOpenerActive"));
         }
 
         if (!DutyState.IsSupportedDutyIdentity(identity.TerritoryTypeId, identity.ContentFinderConditionId))
         {
             ResetHandoff();
-            return Pending("waiting for live duty territory/CFC identity");
+            return Pending(Ui.M("Startup_WaitingForLiveDutyTerritoryCFCIdentity"));
         }
 
         var ads = useAds();
@@ -192,21 +194,21 @@ internal sealed class DutyStartupService(
             if (!ownership.AdsLoaded)
             {
                 ResetHandoff();
-                return Pending("ADS is not loaded");
+                return Pending(Ui.M("Startup_ADSIsNotLoaded"));
             }
 
             var entry = adsDutyIpcService.CurrentDuty;
             if (entry is null || !entry.MatchesIdentity(identity.TerritoryTypeId, identity.ContentFinderConditionId))
             {
                 ResetHandoff();
-                return Pending(adsDutyIpcService.CurrentDutyDetail);
+                return Pending(adsDutyIpcService.CurrentDutyMessage);
             }
 
             // Bind FrenRider's default four-player policy without adding settings.
             if (!IsSnapshotReady(entry))
             {
                 ResetHandoff();
-                return Pending($"{entry.DutyName} has ADS clearance {entry.ClearanceStatus} (M{entry.ClearanceLevel}); waiting for four-player M3 support");
+                return Pending(Ui.M("Startup_HasADSClearanceMWaitingForFour", Ui.Duty(entry.TerritoryTypeId, entry.DutyName), entry.ClearanceStatus, entry.ClearanceLevel));
             }
         }
 
@@ -222,19 +224,19 @@ internal sealed class DutyStartupService(
             now, 2, conditions, automaticSoloHandoff: false,
             ownershipConfirmed: BackendConfirmed);
         if (countdown.Blocker is not null)
-            return Pending(countdown.Blocker);
+            return Pending(countdown.BlockerMessage!);
         if (!countdown.IsReady)
-            return Pending($"startup in {Math.Max(0, countdown.Remaining.TotalSeconds):F1}s of continuous readiness");
+            return Pending(Ui.M("Startup_StartupInSOfContinuousReadiness", Math.Max(0, countdown.Remaining.TotalSeconds)));
 
         // Existing ADS ownership bypasses only the backend timer seam, as in
         // FrenRider. Combat always waits for continuous player readiness above.
         if (!BackendConfirmed && !ownership.IsOwned && !IsReadyToStartInsideDuty(identity.TerritoryTypeId, now))
-            return Pending("waiting for duty start seam");
+            return Pending(Ui.M("Startup_WaitingForDutyStartSeam"));
 
         if (!BackendConfirmed && tryStartOpener?.Invoke() == true)
         {
             handoffState.ResetCountdown();
-            return Pending("experimental opener active");
+            return Pending(Ui.M("Startup_ExperimentalOpenerActive"));
         }
 
         if (ads || BackendConfirmed)
@@ -246,16 +248,16 @@ internal sealed class DutyStartupService(
         }
 
         if (ownership.IsOwned)
-            return Pending("waiting for readable ADS ownership confirmation");
+            return Pending(Ui.M("Startup_WaitingForReadableADSOwnershipConfirmation"));
 
         if (AdsIntegrationPolicy.IsHandoffConfirmationPending(handoffRequestedAtUtc, now))
         {
             var remaining = AdsIntegrationPolicy.HandoffConfirmationTimeout - (now - handoffRequestedAtUtc);
-            return Pending($"waiting {Math.Max(0, remaining.TotalSeconds):F1}s for ADS ownership confirmation");
+            return Pending(Ui.M("Startup_WaitingSForADSOwnershipConfirmation", Math.Max(0, remaining.TotalSeconds)));
         }
 
         if (!AdsIntegrationPolicy.CanAttemptHandoff(handoffRequestedAtUtc, nextHandoffAttemptUtc, now))
-            return Pending($"handoff retry backoff until {nextHandoffAttemptUtc:HH:mm:ss}");
+            return Pending(Ui.M("Startup_HandoffRetryBackoffUntil", nextHandoffAttemptUtc));
 
         handoffRequestedAtUtc = DateTime.MinValue;
         try
@@ -265,7 +267,7 @@ internal sealed class DutyStartupService(
                 var accepted = startAutoDuty();
                 if (!IsCurrent(operation)) return DutyStartupResult.Cancelled;
                 if (!accepted)
-                    return BackoffFailedHandoff(now, "/ad start was not handled");
+                    return BackoffFailedHandoff(now, Ui.M("Startup_AdStartWasNotHandled"));
 
                 // AutoDuty's existing command adapter has no ownership endpoint.
                 BackendConfirmed = true;
@@ -277,22 +279,22 @@ internal sealed class DutyStartupService(
             if (request.EndpointAvailable)
             {
                 if (request.Accepted)
-                    return AwaitHandoffConfirmation(now, "ADS.StartDutyFromInside accepted");
+                    return AwaitHandoffConfirmation(now, Ui.M("Startup_ADSStartDutyFromInsideAccepted"));
 
-                return BackoffFailedHandoff(now, "ADS.StartDutyFromInside rejected; command fallback suppressed");
+                return BackoffFailedHandoff(now, Ui.M("Startup_ADSStartDutyFromInsideRejectedCommandFallbackSuppressed"));
             }
 
             var handled = processCommand("/ads inside");
             if (!IsCurrent(operation)) return DutyStartupResult.Cancelled;
             if (handled)
-                return AwaitHandoffConfirmation(now, "typed endpoint unavailable; sent /ads inside fallback");
+                return AwaitHandoffConfirmation(now, Ui.M("Startup_TypedEndpointUnavailableSentAdsInsideFallback"));
 
-            return BackoffFailedHandoff(now, "typed endpoint unavailable and /ads inside fallback failed");
+            return BackoffFailedHandoff(now, Ui.M("Startup_TypedEndpointUnavailableAndAdsInsideFallback"));
         }
         catch (Exception ex)
         {
             if (!IsCurrent(operation)) return DutyStartupResult.Cancelled;
-            return BackoffFailedHandoff(now, $"duty startup failed: {ex.Message}");
+            return BackoffFailedHandoff(now, Ui.M("Startup_DutyStartupFailed", ex.Message));
         }
     }
 
@@ -304,11 +306,11 @@ internal sealed class DutyStartupService(
             return true;
         if (now < nextCombatAttemptUtc)
         {
-            Pending($"combat recovery backoff until {nextCombatAttemptUtc:HH:mm:ss}");
+            Pending(Ui.M("Startup_CombatRecoveryBackoffUntil", nextCombatAttemptUtc));
             return false;
         }
 
-        string failure;
+        UiText failure;
         try
         {
             var activated = enableCombat();
@@ -328,7 +330,7 @@ internal sealed class DutyStartupService(
 
         nextCombatAttemptUtc = now + AdsIntegrationPolicy.HandoffConfirmationTimeout;
         handoffState.ResetCountdown();
-        Pending($"combat activation failed: {failure}; retrying after 5s and continuous readiness");
+        Pending(Ui.M("Startup_CombatActivationFailedRetryingAfterSAnd", failure));
         logWarning($"[MOGTOME][Startup] {StatusText}");
         return false;
     }
@@ -336,26 +338,26 @@ internal sealed class DutyStartupService(
     private bool IsCurrent(int operation)
         => operation == generation && !cancelled && !exitRequested && !DutySession.IsCompleted;
 
-    private DutyStartupResult AwaitHandoffConfirmation(DateTime now, string reason)
+    private DutyStartupResult AwaitHandoffConfirmation(DateTime now, UiText reason)
     {
         handoffRequestedAtUtc = now;
         nextHandoffAttemptUtc = now + AdsIntegrationPolicy.HandoffConfirmationTimeout;
         logInformation($"[MOGTOME][Startup] {reason}; waiting for authoritative ownership.");
-        return Pending($"{reason}; waiting for authoritative ownership");
+        return Pending(Ui.M("Startup_WaitingForAuthoritativeOwnership", reason));
     }
 
-    private DutyStartupResult BackoffFailedHandoff(DateTime now, string reason)
+    private DutyStartupResult BackoffFailedHandoff(DateTime now, UiText reason)
     {
         handoffRequestedAtUtc = DateTime.MinValue;
         nextHandoffAttemptUtc = now + AdsIntegrationPolicy.HandoffConfirmationTimeout;
         handoffState.ResetCountdown();
         logWarning($"[MOGTOME][Startup] {reason}.");
-        return Pending($"{reason}; restarting readiness delay with 5s retry backoff");
+        return Pending(Ui.M("Startup_RestartingReadinessDelayWithSRetryBackoff", reason));
     }
 
-    private DutyStartupResult Pending(string reason)
+    private DutyStartupResult Pending(UiText reason)
     {
-        StatusText = $"Duty startup pending: {reason}.";
+        Status = Ui.M("Startup_DutyStartupPending", reason);
         return DutyStartupResult.Pending;
     }
 

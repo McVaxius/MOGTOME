@@ -1,3 +1,4 @@
+using MOGTOME.Localization;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -29,7 +30,7 @@ public sealed class ConflictPluginService
     private readonly record struct PluginDisableResult(PluginStatus InitialStatus, PluginStatus FinalStatus, bool DisableAttempted);
 
     private readonly Dictionary<string, DateTime> lastDisableAttemptUtc = new(StringComparer.Ordinal);
-    private string? pendingWarningMessage;
+    private UiText? pendingWarningMessage;
 
     public ConflictPluginService(IPluginLog log, ICommandManager commandManager)
     {
@@ -49,7 +50,7 @@ public sealed class ConflictPluginService
         return (status.IsInstalled, status.IsLoaded);
     }
 
-    public async Task<(bool Ready, bool PreferBmr, string Reason)> EnsureBossModReadyAsync(Func<bool> isStarting)
+    public async Task<(bool Ready, bool PreferBmr, UiText Reason)> EnsureBossModReadyAsync(Func<bool> isStarting)
     {
         var bmr = GetPluginStatus(MatchesBmr);
         var vbm = GetPluginStatus(MatchesVbm);
@@ -57,26 +58,26 @@ public sealed class ConflictPluginService
             return (true, false, string.Empty);
 
         if (!isStarting())
-            return (false, false, "Startup was stopped before BossMod cleanup.");
+            return (false, false, Ui.M("Conflict_StartupWasStoppedBeforeBossModCleanup"));
 
         var disabledVbm = await EnsurePluginDisabledAsync("MOGTOME start", "VBM", "/xldisableplugin BossMod", MatchesVbm, isStarting).ConfigureAwait(false);
-        if (!isStarting()) return (false, false, "Startup cancelled during VBM cleanup.");
+        if (!isStarting()) return (false, false, Ui.M("Conflict_StartupCancelledDuringVBMCleanup"));
         if (disabledVbm.FinalStatus.LoadState != "Unloaded")
-            return (false, false, "VBM could not be disabled while both BossMod variants were loaded.");
+            return (false, false, Ui.M("Conflict_VBMCouldNotBeDisabledWhileBoth"));
 
         // VBM disposal unregisters the shared BossMod IPC gates. Reload BMR once to restore them.
         var disabledBmr = await EnsurePluginDisabledAsync("BossMod IPC recovery", "BMR", "/xldisableplugintemp BossModReborn", MatchesBmr, isStarting).ConfigureAwait(false);
-        if (!isStarting()) return (false, false, "Startup cancelled during BMR cleanup.");
+        if (!isStarting()) return (false, false, Ui.M("Conflict_StartupCancelledDuringBMRCleanup"));
         if (disabledBmr.FinalStatus.LoadState != "Unloaded")
-            return (false, false, "BMR could not be temporarily disabled to restore its shared IPC registrations.");
+            return (false, false, Ui.M("Conflict_BMRCouldNotBeTemporarilyDisabledTo"));
 
         if (!await GameHelpers.RunOnFrameworkThreadAsync(() => isStarting() && commandManager.ProcessCommand("/xlenableplugintemp BossModReborn")).ConfigureAwait(false))
-            return (false, false, "The native temporary BMR enable command was not handled.");
+            return (false, false, Ui.M("Conflict_TheNativeTemporaryBMREnableCommandWas"));
 
         var readyBmr = await WaitForPluginStateAsync(MatchesBmr, loaded: true, isStarting).ConfigureAwait(false);
-        if (!isStarting()) return (false, false, "Startup cancelled during BMR readiness.");
+        if (!isStarting()) return (false, false, Ui.M("Conflict_StartupCancelledDuringBMRReadiness"));
         if (readyBmr.LoadState != "Loaded" || GetPluginStatus(MatchesVbm).LoadState != "Unloaded")
-            return (false, false, "BMR did not become ready after its reload, or VBM loaded again.");
+            return (false, false, Ui.M("Conflict_BMRDidNotBecomeReadyAfterIts"));
 
         log.Information("[MOGTOME][Conflict] Disabled VBM and reloaded BMR to restore shared BossMod IPC");
         return (true, true, string.Empty);
@@ -109,27 +110,27 @@ public sealed class ConflictPluginService
 
         if (!result.FinalStatus.IsLoaded)
         {
-            var successMessage = $"{TwistOfFayteDisplayName} was enabled and has been auto-disabled for MOGTOME.";
-            Plugin.ChatGui.Print($"[MOGTOME] {successMessage}");
+            var successMessage = Ui.M("Conflict_WasEnabledAndHasBeenAutoDisabled", TwistOfFayteDisplayName);
+            Plugin.ChatGui.Print(Ui.T("Chat_MOGTOME", successMessage));
             log.Information($"[MOGTOME][Conflict] {successMessage} Match={DescribePluginStatus(result.InitialStatus)} DisableAttempted={result.DisableAttempted}");
 
             if (showPopup)
             {
                 QueueWarning(
-                    $"{successMessage}\n\nMOGTOME kept running. Click the warning window once to dismiss it, or use the disable button there if the plugin comes back.");
+                    Ui.M("Conflict_MOGTOMEKeptRunningClickTheWarningWindow", successMessage));
             }
 
             return true;
         }
 
-        var failureMessage = $"{TwistOfFayteDisplayName} is still enabled. MOGTOME will keep running, but you should disable it with {TwistOfFayteDisableCommand}.";
-        Plugin.ChatGui.Print($"[MOGTOME] {failureMessage}");
+        var failureMessage = Ui.M("Conflict_IsStillEnabledMOGTOMEWillKeepRunning", TwistOfFayteDisplayName, TwistOfFayteDisableCommand);
+        Plugin.ChatGui.Print(Ui.T("Chat_MOGTOME", failureMessage));
         log.Warning($"[MOGTOME][Conflict] {failureMessage} Match={DescribePluginStatus(result.FinalStatus)} DisableAttempted={result.DisableAttempted}");
 
         if (showPopup)
         {
             QueueWarning(
-                $"{failureMessage}\n\nUse the warning window button to try disabling it again, or dismiss the warning and keep going.");
+                Ui.M("Conflict_UseTheWarningWindowButtonToTry", failureMessage));
         }
 
         return false;
@@ -157,8 +158,8 @@ public sealed class ConflictPluginService
 
         if (!result.FinalStatus.IsLoaded)
         {
-            var successMessage = $"{AutoDutyDisplayName} was enabled and has been auto-disabled for ADS mode.";
-            Plugin.ChatGui.Print($"[MOGTOME] {successMessage}");
+            var successMessage = Ui.M("Conflict_WasEnabledAndHasBeenAutoDisabled2", AutoDutyDisplayName);
+            Plugin.ChatGui.Print(Ui.T("Chat_MOGTOME", successMessage));
             log.Information($"[MOGTOME][Conflict] {successMessage} Match={DescribePluginStatus(result.InitialStatus)} DisableAttempted={result.DisableAttempted}");
 
             if (showPopup)
@@ -167,8 +168,8 @@ public sealed class ConflictPluginService
             return true;
         }
 
-        var failureMessage = $"{AutoDutyDisplayName} is still enabled. ADS mode expects {AutoDutyDisableCommand}.";
-        Plugin.ChatGui.Print($"[MOGTOME] {failureMessage}");
+        var failureMessage = Ui.M("Conflict_IsStillEnabledADSModeExpects", AutoDutyDisplayName, AutoDutyDisableCommand);
+        Plugin.ChatGui.Print(Ui.T("Chat_MOGTOME", failureMessage));
         log.Warning($"[MOGTOME][Conflict] {failureMessage} Match={DescribePluginStatus(result.FinalStatus)} DisableAttempted={result.DisableAttempted}");
 
         if (showPopup)
@@ -177,11 +178,11 @@ public sealed class ConflictPluginService
         return false;
     }
 
-    public bool TryTakePendingWarning(out string message)
+    public bool TryTakePendingWarning(out UiText message)
     {
         lock (stateLock)
         {
-            if (string.IsNullOrWhiteSpace(pendingWarningMessage))
+            if (pendingWarningMessage == null)
             {
                 message = string.Empty;
                 return false;
@@ -193,7 +194,7 @@ public sealed class ConflictPluginService
         }
     }
 
-    private void QueueWarning(string message)
+    private void QueueWarning(UiText message)
     {
         lock (stateLock)
         {

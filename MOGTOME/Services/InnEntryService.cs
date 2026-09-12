@@ -1,3 +1,4 @@
+using MOGTOME.Localization;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -26,22 +27,17 @@ public class InnEntryService
     private static readonly TimeSpan MenuRetryCooldown = TimeSpan.FromMilliseconds(1500);
     private static readonly TimeSpan ZoneWaitTimeout = TimeSpan.FromSeconds(12);
     private static readonly TimeSpan OverallTimeout = TimeSpan.FromSeconds(90);
-    private static readonly HashSet<string> KnownInnNpcNames = new(StringComparer.Ordinal)
-    {
-        "Antoinaut",
-        "Otopa Pottopa",
-        "Mytesyn",
-        "Bamponcet",
-        "Ushitora",
-        "Manager of Suites",
-        "Ojika Tsunjika",
-        "Peshekwa",
-    };
+    // ENpcBase/ENpcResident: Antoinaut, Mytesyn, Otopa Pottopa, Bamponcet,
+    // Ushitora, Manager of Suites, Ojika Tsunjika, Peshekwa (innkeeper spawns).
+    internal static bool IsInnkeeper(uint baseId) => baseId is
+        1000102 or 1000974 or 1001976 or 1011193 or 1018981 or 1027231 or 1037293 or 1048375;
 
     private readonly IPluginLog log;
     private readonly VNavIPC vNavIPC;
     private InnEntryState state = InnEntryState.Idle;
     private string targetNpcName = string.Empty;
+    private ulong targetObjectId;
+    private uint targetBaseId;
     private DateTime startedAtUtc = DateTime.MinValue;
     private DateTime stateStartedAtUtc = DateTime.MinValue;
     private DateTime lastMoveCommandUtc = DateTime.MinValue;
@@ -49,7 +45,8 @@ public class InnEntryService
     private DateTime lastMenuClickUtc = DateTime.MinValue;
 
     public bool IsRunning => state != InnEntryState.Idle;
-    public string StatusMessage { get; private set; } = "Idle";
+    public string StatusMessage => Status.English;
+    public UiText Status { get; private set; } = Ui.M("EngineState_Idle");
 
     public InnEntryService(IPluginLog log, VNavIPC vNavIPC)
     {
@@ -59,7 +56,7 @@ public class InnEntryService
 
     public void StartManualEntry()
     {
-        StartEntry("[MOGTOME] /mog inn requires a logged-in character.", "manual restart", allowRestart: true);
+        StartEntry(Ui.M("Inn_MOGTOMEMogInnRequiresALoggedIn"), "manual restart", allowRestart: true);
     }
 
     public void StartRepairReturnEntry()
@@ -67,12 +64,12 @@ public class InnEntryService
         StartEntry(string.Empty, "repair return restart", allowRestart: true);
     }
 
-    private void StartEntry(string missingCharacterMessage, string restartReason, bool allowRestart)
+    private void StartEntry(UiText missingCharacterMessage, string restartReason, bool allowRestart)
     {
         if (!Plugin.ClientState.IsLoggedIn || Plugin.ObjectTable.LocalPlayer == null)
         {
-            if (!string.IsNullOrWhiteSpace(missingCharacterMessage))
-                Plugin.ChatGui.Print(missingCharacterMessage);
+            if (!string.IsNullOrWhiteSpace(missingCharacterMessage.English))
+                Plugin.ChatGui.Print(missingCharacterMessage.Render());
             return;
         }
 
@@ -83,7 +80,7 @@ public class InnEntryService
         {
             var territoryName = GameHelpers.GetTerritoryName(Plugin.ClientState.TerritoryType);
             log.Information($"[MOGTOME][Inn] /mog inn skipped because the player is already inside inn territory {territoryName}");
-            Plugin.ChatGui.Print($"[MOGTOME] Already inside inn territory: {territoryName}.");
+            Plugin.ChatGui.Print(Ui.T("Chat_MOGTOMEAlreadyInsideInnTerritory", Ui.Duty(Plugin.ClientState.TerritoryType)));
             return;
         }
 
@@ -91,11 +88,13 @@ public class InnEntryService
         if (npc == null)
         {
             log.Information($"[MOGTOME][Inn] /mog inn found no innkeeper within {SearchRadiusYalms:F0}y; treating as no-op success");
-            Plugin.ChatGui.Print($"[MOGTOME] No innkeeper found within {SearchRadiusYalms:F0}y. /mog inn did nothing.");
+            Plugin.ChatGui.Print(Ui.T("Chat_MOGTOMENoInnkeeperFoundWithinYMog", SearchRadiusYalms));
             return;
         }
 
         targetNpcName = npc.Name.TextValue;
+        targetObjectId = npc.GameObjectId;
+        targetBaseId = npc.BaseId;
         startedAtUtc = DateTime.UtcNow;
         stateStartedAtUtc = startedAtUtc;
         lastMoveCommandUtc = DateTime.MinValue;
@@ -106,14 +105,14 @@ public class InnEntryService
         if (distance <= InteractRadiusYalms)
         {
             state = InnEntryState.WaitingForMenu;
-            StatusMessage = $"Interacting with innkeeper {targetNpcName}";
+            Status = Ui.M("Inn_InteractingWithInnkeeper", Ui.Npc(targetBaseId));
             log.Information($"[MOGTOME][Inn] /mog inn found {targetNpcName} at {distance:F1}y; interacting immediately");
             TryInteract(npc);
             return;
         }
 
         state = InnEntryState.MovingToNpc;
-        StatusMessage = $"Moving to innkeeper {targetNpcName}";
+        Status = Ui.M("Inn_MovingToInnkeeper", Ui.Npc(targetBaseId));
         log.Information($"[MOGTOME][Inn] /mog inn found {targetNpcName} at {distance:F1}y; moving into interaction range");
         SendMoveCommand(npc, initial: true);
     }
@@ -127,13 +126,13 @@ public class InnEntryService
         {
             if (GameHelpers.IsInnTerritory(Plugin.ClientState.TerritoryType))
             {
-                Complete("Entered inn territory successfully.");
+                Complete(Ui.M("Inn_EnteredInnTerritorySuccessfully"));
                 return;
             }
 
             if (DateTime.UtcNow - startedAtUtc > OverallTimeout)
             {
-                Fail("Timed out while trying to enter the inn.");
+                Fail(Ui.M("Inn_TimedOutWhileTryingToEnterThe"));
                 return;
             }
 
@@ -152,7 +151,7 @@ public class InnEntryService
         }
         catch (Exception ex)
         {
-            Fail($"Inn entry failed: {ex.Message}");
+            Fail(Ui.M("Inn_InnEntryFailed", ex.Message));
         }
     }
 
@@ -164,25 +163,25 @@ public class InnEntryService
         vNavIPC.Stop();
         log.Warning($"[MOGTOME][Inn] /mog inn cancelled: {reason}");
         state = InnEntryState.Idle;
-        StatusMessage = "Idle";
+        Status = Ui.M("EngineState_Idle");
         targetNpcName = string.Empty;
 
         if (notifyUser)
-            Plugin.ChatGui.Print($"[MOGTOME] /mog inn cancelled: {reason}");
+            Plugin.ChatGui.Print(Ui.T("Chat_MOGTOMEMogInnCancelled", reason));
     }
 
     private void UpdateMovingToNpc()
     {
         if (TryAdvanceInnDialogs())
         {
-            TransitionTo(InnEntryState.WaitingForZone, "Waiting for inn zone transition");
+            TransitionTo(InnEntryState.WaitingForZone, Ui.M("Inn_WaitingForInnZoneTransition"));
             return;
         }
 
         var npc = FindTargetNpc();
         if (npc == null)
         {
-            Fail($"Innkeeper {targetNpcName} is no longer nearby.");
+            Fail(Ui.M("Inn_InnkeeperIsNoLongerNearby", Ui.Npc(targetBaseId)));
             return;
         }
 
@@ -190,7 +189,7 @@ public class InnEntryService
         if (distance <= InteractRadiusYalms)
         {
             vNavIPC.Stop();
-            TransitionTo(InnEntryState.WaitingForMenu, $"Interacting with {targetNpcName}");
+            TransitionTo(InnEntryState.WaitingForMenu, Ui.M("Inn_InteractingWith", Ui.Npc(targetBaseId)));
             TryInteract(npc);
             return;
         }
@@ -203,27 +202,27 @@ public class InnEntryService
     {
         if (TryAdvanceInnDialogs())
         {
-            TransitionTo(InnEntryState.WaitingForZone, "Waiting for inn zone transition");
+            TransitionTo(InnEntryState.WaitingForZone, Ui.M("Inn_WaitingForInnZoneTransition"));
             return;
         }
 
         var npc = FindTargetNpc();
         if (npc == null)
         {
-            Fail($"Innkeeper {targetNpcName} is no longer nearby.");
+            Fail(Ui.M("Inn_InnkeeperIsNoLongerNearby", Ui.Npc(targetBaseId)));
             return;
         }
 
         var distance = DistanceToLocalPlayer(npc);
         if (distance > SearchRadiusYalms + 5.0f)
         {
-            Fail($"Drifted too far away from {targetNpcName} while waiting to interact.");
+            Fail(Ui.M("Inn_DriftedTooFarAwayFromWhileWaiting", Ui.Npc(targetBaseId)));
             return;
         }
 
         if (distance > InteractRadiusYalms)
         {
-            TransitionTo(InnEntryState.MovingToNpc, $"Repositioning near {targetNpcName}");
+            TransitionTo(InnEntryState.MovingToNpc, Ui.M("Inn_RepositioningNear", Ui.Npc(targetBaseId)));
             SendMoveCommand(npc, initial: true);
             return;
         }
@@ -244,14 +243,14 @@ public class InnEntryService
             return;
 
         log.Warning($"[MOGTOME][Inn] Zone transition did not start after selecting the inn option for {targetNpcName}; retrying interaction");
-        TransitionTo(InnEntryState.WaitingForMenu, $"Retrying {targetNpcName}");
+        TransitionTo(InnEntryState.WaitingForMenu, Ui.M("Inn_Retrying", Ui.Npc(targetBaseId)));
     }
 
-    private void TransitionTo(InnEntryState nextState, string statusMessage)
+    private void TransitionTo(InnEntryState nextState, UiText statusMessage)
     {
         state = nextState;
         stateStartedAtUtc = DateTime.UtcNow;
-        StatusMessage = statusMessage;
+        Status = statusMessage;
     }
 
     private bool TryAdvanceInnDialogs()
@@ -276,13 +275,8 @@ public class InnEntryService
             return true;
         }
 
-        if (GameHelpers.ClickYesIfVisible())
-        {
-            log.Information($"[MOGTOME][Inn] Confirmed SelectYesno while entering the inn through {targetNpcName}");
-            lastMenuClickUtc = now;
-            return true;
-        }
-
+        // Supported innkeepers use the entry menu above. An unrelated Yes/No
+        // prompt is not evidence that an inn transition should be confirmed.
         return false;
     }
 
@@ -302,23 +296,23 @@ public class InnEntryService
         vNavIPC.MoveTo(npc.Position);
     }
 
-    private void Complete(string message)
+    private void Complete(UiText message)
     {
         vNavIPC.Stop();
         log.Information($"[MOGTOME][Inn] {message}");
-        Plugin.ChatGui.Print($"[MOGTOME] {message}");
+        Plugin.ChatGui.Print(Ui.T("Chat_MOGTOME", message));
         state = InnEntryState.Idle;
-        StatusMessage = "Idle";
+        Status = Ui.M("EngineState_Idle");
         targetNpcName = string.Empty;
     }
 
-    private void Fail(string message)
+    private void Fail(UiText message)
     {
         vNavIPC.Stop();
         log.Warning($"[MOGTOME][Inn] {message}");
-        Plugin.ChatGui.Print($"[MOGTOME] {message}");
+        Plugin.ChatGui.Print(Ui.T("Chat_MOGTOME", message));
         state = InnEntryState.Idle;
-        StatusMessage = "Idle";
+        Status = Ui.M("EngineState_Idle");
         targetNpcName = string.Empty;
     }
 
@@ -335,8 +329,7 @@ public class InnEntryService
             if (obj == null || obj.ObjectKind != ObjectKind.EventNpc)
                 continue;
 
-            var name = obj.Name.TextValue;
-            if (!KnownInnNpcNames.Contains(name))
+            if (!IsInnkeeper(obj.BaseId))
                 continue;
 
             var distance = Vector3.Distance(player.Position, obj.Position);
@@ -353,7 +346,7 @@ public class InnEntryService
     private IGameObject? FindTargetNpc()
     {
         var player = Plugin.ObjectTable.LocalPlayer;
-        if (player == null || string.IsNullOrWhiteSpace(targetNpcName))
+        if (player == null || targetObjectId == 0)
             return null;
 
         IGameObject? nearest = null;
@@ -363,7 +356,7 @@ public class InnEntryService
             if (obj == null || obj.ObjectKind != ObjectKind.EventNpc)
                 continue;
 
-            if (!string.Equals(obj.Name.TextValue, targetNpcName, StringComparison.Ordinal))
+            if (!IsSelectedInnkeeper(obj.GameObjectId, obj.BaseId, targetObjectId, targetBaseId))
                 continue;
 
             var distance = Vector3.Distance(player.Position, obj.Position);
@@ -376,6 +369,9 @@ public class InnEntryService
 
         return nearest;
     }
+
+    internal static bool IsSelectedInnkeeper(ulong objectId, uint baseId, ulong selectedObjectId, uint selectedBaseId)
+        => selectedObjectId != 0 && objectId == selectedObjectId && baseId == selectedBaseId && IsInnkeeper(baseId);
 
     private static float DistanceToLocalPlayer(IGameObject obj)
     {

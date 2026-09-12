@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Added English, French, German, and Japanese interface resources and a main-window language selector saved per account profile. Profiles without a selection initialize from the game client language; the interface choice remains independent of game-text recognition and can change during automation.
+- Added regression coverage for all 16 client/interface language combinations, profile persistence and switching, resource keys and formatting, localized prompts and queue errors, inn identity, and native combat action selection. Live duty/backend and visual smoke tests remain outstanding. Version remains 0.3.1.0.
+
+### Changed
+- Replaced English boss/action matching with numeric NPC and action IDs, including GeneralAction 3 for Limit Break. Innkeepers use event-NPC base and spawned-object IDs; inn territories use their intended-use classification.
+- Match evaluated Addon and LogMessage text in the client language, refusing unknown or unresolved prompts and vote-abandon confirmation. Preserve immediate raises/sealed-area movement, the 300-second return delay, queue recovery gates, and party-requirements advice.
+- Translate windows, wizard, warnings, statuses, and ordinary chat/toast messages. Resolve displayed game names and item searches in the interface language, preserve English IPC/diagnostics, use stable control/window IDs, and include translation assemblies in the existing artifact-copy flow.
+
 ### Fixed
 - Recover the full selected combat setup after death, raises, and entrance respawns using continuous readiness and the existing retry delay, while preserving confirmed ADS/AutoDuty ownership and run counters.
 - Treat timed-out and incomplete duty exits as aborted attempts, keep Mogtome running through party departure and requeue, and count success only after a matching verified completion and confirmed exit. Stop-after-next survives failures; the daily limit and its Quit Command apply only to successful Praetorium clears.

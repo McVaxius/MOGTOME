@@ -1,3 +1,4 @@
+using MOGTOME.Localization;
 using System;
 using MOGTOME.Models;
 
@@ -24,7 +25,10 @@ internal readonly record struct AdsHandoffCountdownResult(
     AdsHandoffCountdownState State,
     bool IsReady,
     TimeSpan Remaining,
-    string? Blocker);
+    UiText? BlockerMessage)
+{
+    internal string? Blocker => BlockerMessage?.English;
+}
 
 internal sealed class AdsHandoffState
 {
@@ -68,21 +72,29 @@ public static class AdsIntegrationPolicy
 {
     public static readonly TimeSpan HandoffConfirmationTimeout = TimeSpan.FromSeconds(5);
 
-    internal static string? GetDutyLeaveBlocker(uint activeTerritory, bool inDuty,
+    internal static UiText? GetDutyLeaveMessage(uint activeTerritory, bool inDuty,
         (uint TerritoryTypeId, uint ContentFinderConditionId) identity,
         AdsHandoffReadinessConditions conditions, bool inCombat, bool occupied)
     {
         if (!conditions.IsLoggedIn || !inDuty || identity.TerritoryTypeId != activeTerritory
             || !DutyState.IsSupportedDutyIdentity(identity.TerritoryTypeId, identity.ContentFinderConditionId))
-            return "waiting for matching duty identity";
+            return Ui.M("Blocker_WaitingForMatchingDutyIdentity");
         if (!conditions.HasLocalPlayer || conditions.IsBetweenAreas || conditions.IsBetweenAreas51)
-            return "loading";
-        if (inCombat) return "combat";
+            return Ui.M("Blocker_Loading");
+        if (inCombat) return Ui.M("Blocker_Combat");
         if (conditions.IsWatchingCutscene || conditions.IsWatchingCutscene78 || conditions.IsOccupiedInCutSceneEvent)
-            return "cutscene";
-        if (occupied) return "occupied transition";
+            return Ui.M("Blocker_Cutscene");
+        if (occupied) return Ui.M("Blocker_OccupiedTransition");
         return null;
     }
+
+    internal static string? GetDutyLeaveBlocker(uint activeTerritory, bool inDuty,
+        (uint TerritoryTypeId, uint ContentFinderConditionId) identity,
+        AdsHandoffReadinessConditions conditions, bool inCombat, bool occupied)
+        => GetDutyLeaveMessage(activeTerritory, inDuty, identity, conditions, inCombat, occupied)?.English;
+
+    internal static string? GetHandoffReadinessBlocker(AdsHandoffReadinessConditions conditions)
+        => GetHandoffReadinessMessage(conditions)?.English;
 
     public static bool ShouldPauseDutySystems(bool handoffPending, bool runtimeOwned, bool exitTakeoverActive)
         => handoffPending || runtimeOwned || exitTakeoverActive;
@@ -106,7 +118,7 @@ public static class AdsIntegrationPolicy
         int delaySeconds,
         AdsHandoffReadinessConditions conditions)
     {
-        var blocker = GetHandoffReadinessBlocker(conditions);
+        var blocker = GetHandoffReadinessMessage(conditions);
         if (blocker is not null)
         {
             return new AdsHandoffCountdownResult(
@@ -134,24 +146,24 @@ public static class AdsIntegrationPolicy
             null);
     }
 
-    internal static string? GetHandoffReadinessBlocker(AdsHandoffReadinessConditions conditions)
+    internal static UiText? GetHandoffReadinessMessage(AdsHandoffReadinessConditions conditions)
     {
         if (!conditions.IsLoggedIn)
-            return "waiting for login";
+            return Ui.M("Blocker_WaitingForLogin");
         if (!conditions.HasLocalPlayer)
-            return "waiting for local player";
+            return Ui.M("Blocker_WaitingForLocalPlayer");
         if (!conditions.HasJob)
-            return "waiting for local player job";
+            return Ui.M("Blocker_WaitingForLocalPlayerJob");
         if (conditions.IsUnconscious)
-            return "waiting for unconscious state to clear";
+            return Ui.M("Blocker_WaitingForUnconsciousStateToClear");
         if (!conditions.IsPlayerAlive)
-            return "waiting for local player to be alive";
+            return Ui.M("Blocker_WaitingForLocalPlayerToBeAlive");
         if (conditions.IsBetweenAreas || conditions.IsBetweenAreas51)
-            return "waiting for area transition to finish";
+            return Ui.M("Blocker_WaitingForAreaTransitionToFinish");
         if (conditions.IsWatchingCutscene || conditions.IsWatchingCutscene78)
-            return "waiting for cutscene to finish";
+            return Ui.M("Blocker_WaitingForCutsceneToFinish");
         if (conditions.IsOccupiedInCutSceneEvent)
-            return "waiting for cutscene event to finish";
+            return Ui.M("Blocker_WaitingForCutsceneEventToFinish");
 
         return null;
     }

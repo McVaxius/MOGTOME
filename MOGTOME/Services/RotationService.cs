@@ -1,3 +1,4 @@
+using MOGTOME.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +17,8 @@ public class RotationService
     private bool rotationDisableSentForDuty;
     private readonly HashSet<CombatProvider> enabledComponents = [];
     private CombatProvider? preparedBossMod;
-    public string LastFailureReason { get; private set; } = string.Empty;
+    public string LastFailureReason => Failure.English;
+    public UiText Failure { get; private set; } = string.Empty;
     private static readonly TimeSpan RsrHealthProbeInterval = TimeSpan.FromSeconds(5);
     private static readonly TimeSpan RsrRecoveryCommandSuppression = TimeSpan.FromSeconds(10);
     private static readonly TimeSpan RsrReflectionFailureLogInterval = TimeSpan.FromSeconds(60);
@@ -37,7 +39,7 @@ public class RotationService
     public bool Initialize(bool preferBmr = false)
     {
         if (!DisableEnabledComponents())
-            return Fail("Could not disable combat components from the previous run.");
+            return Fail(Ui.M("Rotation_CouldNotDisableCombatComponentsFromThe"));
         ResetDutyRotationState("engine start");
         preparedBossMod = null;
 
@@ -51,7 +53,7 @@ public class RotationService
         var bmrLoaded = bossModIPC.IsPluginLoaded("BossModReborn");
         var vbmLoaded = bossModIPC.IsPluginLoaded("BossMod");
         if (bmrLoaded && vbmLoaded)
-            return Fail("Both BossMod variants are still loaded; conflict cleanup must finish before preset preparation.");
+            return Fail(Ui.M("Rotation_BothBossModVariantsAreStillLoadedConflict"));
 
         if (config.CombatProvider != CombatProvider.Wrath)
         {
@@ -61,13 +63,13 @@ public class RotationService
             if (preparedBossMod == null ||
                 (preparedBossMod == CombatProvider.Bmr && !bmrLoaded) ||
                 (preparedBossMod == CombatProvider.Vbm && !vbmLoaded))
-                return Fail($"{config.CombatProvider} requires loaded BossMod support ({(config.CombatProvider == CombatProvider.Rsr ? "BMR or VBM" : config.CombatProvider)}).");
+                return Fail(Ui.M("Rotation_RequiresLoadedBossModSupport", config.CombatProvider, (config.CombatProvider == CombatProvider.Rsr ? Ui.M("Rotation_BMROrVBM") : (UiText)config.CombatProvider.ToString())));
 
             if (!bossModIPC.RefreshPackagedPresets())
-                return Fail("BossMod packaged preset installation failed; check that its preset IPC is ready and all six preset files are present.");
+                return Fail(Ui.M("Rotation_BossModPackagedPresetInstallationFailedCheckThat"));
         }
 
-        LastFailureReason = string.Empty;
+        Failure = string.Empty;
         log.Information($"[MOGTOME][Rotation] Initialized selected combat provider: {config.CombatProvider}");
         return true;
     }
@@ -101,7 +103,7 @@ public class RotationService
     public bool EnableRotationOncePerDuty(string reason)
     {
         if (rotationDisableSentForDuty)
-            return Fail($"Combat activation was requested after this duty ended ({reason}).");
+            return Fail(Ui.M("Rotation_CombatActivationWasRequestedAfterThisDuty", reason));
         if (rotationEnableSentForDuty)
         {
             log.Debug($"[MOGTOME][Rotation] Skipped selected combat provider enable; already enabled for this duty ({reason})");
@@ -120,14 +122,14 @@ public class RotationService
         catch (Exception ex)
         {
             DisableEnabledComponents();
-            return Fail($"Combat activation failed: {ex.Message}");
+            return Fail(Ui.M("Rotation_CombatActivationFailed", ex.Message));
         }
         rotationEnableSentForDuty = true;
         rotationDisableSentForDuty = false;
         // Full activation also restored RSR; suppress its independent Off probe
         // while the provider applies that command.
         rsrRecoveryCommandSuppressedUntilUtc = DateTime.UtcNow + RsrRecoveryCommandSuppression;
-        LastFailureReason = string.Empty;
+        Failure = string.Empty;
         log.Information($"[MOGTOME][Rotation] enabled selected combat provider once per duty: {provider} ({reason})");
         return true;
     }
@@ -138,7 +140,7 @@ public class RotationService
         // but pending activation can never reopen this duty.
         rotationDisableSentForDuty = true;
         if (!DisableEnabledComponents())
-            return Fail($"Could not disable all MogTome combat components ({reason}); see the failed command in the log.");
+            return Fail(Ui.M("Rotation_CouldNotDisableAllMogTomeCombatComponents", reason));
         log.Information($"[MOGTOME][Rotation] MogTome combat components are disabled ({reason})");
         return true;
     }
@@ -184,7 +186,7 @@ public class RotationService
 
         if (!EnableRsr())
         {
-            Fail($"RSR health recovery failed ({reason}).");
+            Fail(Ui.M("Rotation_RSRHealthRecoveryFailed", reason));
             rsrRecoveryCommandSuppressedUntilUtc = now + RsrRecoveryCommandSuppression;
             return;
         }
@@ -252,17 +254,17 @@ public class RotationService
                 (preparedBossMod == CombatProvider.Bmr && !bmrLoaded) ||
                 (preparedBossMod == CombatProvider.Vbm && !vbmLoaded) ||
                 (provider != CombatProvider.Rsr && provider != preparedBossMod))
-                return Fail("BossMod availability or selection changed after startup. Stop and Start MogTome to prepare it again.");
+                return Fail(Ui.M("Rotation_BossModAvailabilityOrSelectionChangedAfterStartup"));
 
             if (!bossModIPC.PreparePresetForStart(preparedBossMod.Value, provider == CombatProvider.Rsr,
                     config.UseManualBossModPreset, config.ManualBossModPresetName))
-                return Fail($"{preparedBossMod} preset preparation failed; combat was not enabled.");
+                return Fail(Ui.M("Rotation_PresetPreparationFailedCombatWasNotEnabled", preparedBossMod));
         }
 
         if (rotationDisableSentForDuty) return false;
 
         if (provider == CombatProvider.Rsr && !EnableRsr())
-            return Fail("RSR Auto IPC and /rotation auto both failed.");
+            return Fail(Ui.M("Rotation_RSRAutoIPCAndRotationAutoBoth"));
 
         var aiProvider = provider == CombatProvider.Wrath ? provider : preparedBossMod!.Value;
         var command = aiProvider switch
@@ -275,7 +277,7 @@ public class RotationService
         if (rotationDisableSentForDuty) return false;
         enabledComponents.Add(aiProvider);
         if (command.Length == 0 || !bossModIPC.SendCommand(command, $"enable {aiProvider}"))
-            return Fail($"Could not enable {aiProvider} using {command}.");
+            return Fail(Ui.M("Rotation_CouldNotEnableUsing", aiProvider, command));
         return !rotationDisableSentForDuty;
     }
 
@@ -290,9 +292,9 @@ public class RotationService
         return !rotationDisableSentForDuty;
     }
 
-    private bool Fail(string reason)
+    private bool Fail(UiText reason)
     {
-        LastFailureReason = reason;
+        Failure = reason;
         log.Error($"[MOGTOME][Rotation] {reason}");
         return false;
     }

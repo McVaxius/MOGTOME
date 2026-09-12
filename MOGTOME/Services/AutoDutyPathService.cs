@@ -1,3 +1,4 @@
+using MOGTOME.Localization;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -32,7 +33,8 @@ public class AutoDutyPathService
     private const int TargetTerritoryType = 1044;
 
     // Last result for UI display
-    public string LastForceResult { get; private set; } = "Not attempted";
+    public string LastForceResult => ForceResult.English;
+    public UiText ForceResult { get; private set; } = Ui.M("Path_NotAttempted");
 
     public AutoDutyPathService(IPluginLog log, IDalamudPluginInterface pluginInterface)
     {
@@ -155,7 +157,7 @@ public class AutoDutyPathService
             
             if (autoDutyPlugin == null)
             {
-                LastForceResult = "FAILED: AutoDuty plugin not found or not loaded";
+                ForceResult = Ui.M("Path_FAILEDAutoDutyPluginNotFoundOrNot");
                 log.Error($"[MOGTOME][AutoDutyPath] {LastForceResult}");
                 return false;
             }
@@ -536,13 +538,13 @@ public class AutoDutyPathService
                 throw new InvalidOperationException($"AutoDuty content/path setup failed: {ex.Message}", ex);
             }
 
-            LastForceResult = $"OK: Territory={TargetTerritoryType}, Path={pathIndex} ({selectedPathName}); selection saved and verified";
+            ForceResult = Ui.M("Path_OKTerritoryPathSelectionSavedAndVerified", TargetTerritoryType, pathIndex, selectedPathName);
             log.Information($"[MOGTOME][AutoDutyPath] === FORCE PATH SELECTION COMPLETE: {LastForceResult} ===");
             return true;
         }
         catch (Exception ex)
         {
-            LastForceResult = $"FAILED: {ex.Message}";
+            ForceResult = Ui.M("Path_FAILED", ex.Message);
             log.Error($"[MOGTOME][AutoDutyPath] ForcePathSelection failed: {ex}");
             return false;
         }

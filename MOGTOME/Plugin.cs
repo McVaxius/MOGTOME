@@ -1,3 +1,4 @@
+using MOGTOME.Localization;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -24,8 +25,8 @@ namespace MOGTOME;
 public sealed class Plugin : IDalamudPlugin
 {
     public const string DiscordUrl = "https://discord.gg/VsXqydsvpu";
-    public const string DiscordChannelHint = "Scroll down to \"The Dumpster Fire\" channel for plugin-specific issues and suggestions.";
-    public const string StartReminderToastMessage = "Check Party leader settings if the duty isn't starting";
+    public static string DiscordChannelHint => Ui.T("Plugin_ScrollDownToTheDumpsterFireChannel");
+    public static string StartReminderToastMessage => Ui.T("Plugin_CheckPartyLeaderSettingsIfTheDuty");
 
     private sealed class ExternalExceptionLogState
     {
@@ -49,6 +50,7 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static IPartyList PartyList { get; private set; } = null!;
     [PluginService] internal static IDutyState DutyStateService { get; private set; } = null!;
     [PluginService] internal static IDataManager DataManager { get; private set; } = null!;
+    [PluginService] internal static ISeStringEvaluator SeStringEvaluator { get; private set; } = null!;
 
     private const string CommandName = "/mogtome";
     private const string AliasCommandName = "/mog";
@@ -58,6 +60,7 @@ public sealed class Plugin : IDalamudPlugin
     // Per-account configuration management
     public ConfigManager ConfigManager { get; init; }
     public Configuration Configuration => ConfigManager.GetActiveConfig();
+    public bool CanSelectUiLanguage => accountInitialized && ClientState.IsLoggedIn;
     public DutyState State { get; init; }
 
     // IPC
@@ -98,7 +101,7 @@ public sealed class Plugin : IDalamudPlugin
     private readonly Dictionary<string, ExternalExceptionLogState> externalExceptionLogStates = new(StringComparer.Ordinal);
     private bool pendingEngineStartRequest;
     public bool IsEngineStartQueued => pendingEngineStartRequest || deferredSharedConfigStartRequest;
-    private string stopReasonBeforeInitialization = "Has not been started since loading.";
+    private UiText stopReasonBeforeInitialization = Ui.M("Engine_HasNotBeenStartedSinceLoading");
     private string pendingEngineStartSource = string.Empty;
     private bool pendingEngineStartNotifyChat;
     private bool pendingEngineStartDuplicateNotified;
@@ -175,20 +178,22 @@ public sealed class Plugin : IDalamudPlugin
         WindowSystem.AddWindow(WarningTextWindow);
 
         // Commands
-        CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
+        mainCommandInfo = new CommandInfo(OnCommand)
         {
-            HelpMessage = "Open the MOGTOME main window."
-        });
-        CommandManager.AddHandler(AliasCommandName, new CommandInfo(OnAliasCommand)
+            HelpMessage = Ui.T("Plugin_CommandMainHelp")
+        };
+        aliasCommandInfo = new CommandInfo(OnAliasCommand)
         {
-            HelpMessage = "MOGTOME: /mog [start|stop|stopnext|inn|config|status|debug|ws|j] or /mog to open UI."
-        });
+            HelpMessage = Ui.T("Plugin_CommandAliasHelp")
+        };
+        CommandManager.AddHandler(CommandName, mainCommandInfo);
+        CommandManager.AddHandler(AliasCommandName, aliasCommandInfo);
 
         AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
         TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
 
         // Events
-        PluginInterface.UiBuilder.Draw += WindowSystem.Draw;
+        PluginInterface.UiBuilder.Draw += DrawUi;
         PluginInterface.UiBuilder.OpenConfigUi += ToggleConfigUi;
         PluginInterface.UiBuilder.OpenMainUi += ToggleMainUi;
         ClientState.Login += OnLoginEvent;
@@ -212,7 +217,7 @@ public sealed class Plugin : IDalamudPlugin
         AppDomain.CurrentDomain.UnhandledException -= OnUnhandledException;
         TaskScheduler.UnobservedTaskException -= OnUnobservedTaskException;
 
-        PluginInterface.UiBuilder.Draw -= WindowSystem.Draw;
+        PluginInterface.UiBuilder.Draw -= DrawUi;
         PluginInterface.UiBuilder.OpenConfigUi -= ToggleConfigUi;
         PluginInterface.UiBuilder.OpenMainUi -= ToggleMainUi;
 
@@ -255,6 +260,23 @@ public sealed class Plugin : IDalamudPlugin
         MainWindow.Toggle();
     }
 
+    private UiLanguage? commandHelpLanguage;
+    private readonly CommandInfo mainCommandInfo;
+    private readonly CommandInfo aliasCommandInfo;
+
+    private void DrawUi()
+    {
+        if (!CanSelectUiLanguage)
+            Localization.Ui.SetLanguage(Localization.Ui.FromClient(ClientState.ClientLanguage));
+        if (commandHelpLanguage != Ui.Language)
+        {
+            mainCommandInfo.HelpMessage = Ui.T("Plugin_CommandMainHelp");
+            aliasCommandInfo.HelpMessage = Ui.T("Plugin_CommandAliasHelp");
+            commandHelpLanguage = Ui.Language;
+        }
+        WindowSystem.Draw();
+    }
+
     private void OnAliasCommand(string command, string args)
     {
         var arg = args.Trim().ToLowerInvariant();
@@ -267,21 +289,21 @@ public sealed class Plugin : IDalamudPlugin
             case "stop":
                 var stoppedSomething = StopEngine();
                 ChatGui.Print(stoppedSomething
-                    ? "[MOGTOME] Stopped and cleared pending Start and stop-after-next state."
-                    : $"[MOGTOME] Already stopped: {Engine?.LastStopReason ?? stopReasonBeforeInitialization}");
+                    ? Ui.T("Chat_MOGTOMEStoppedAndClearedPendingStartAnd")
+                    : Ui.T("Chat_MOGTOMEAlreadyStopped", Engine?.StopReason ?? stopReasonBeforeInitialization));
                 break;
 
             case "stopnext":
                 if (Engine == null)
                 {
-                    ChatGui.Print("[MOGTOME] Engine is still initializing.");
+                    ChatGui.Print(Ui.T("Chat_MOGTOMEEngineIsStillInitializing"));
                     break;
                 }
 
                 var armed = Engine.ToggleStopAfterNextSuccessfulRun();
                 ChatGui.Print(armed
-                    ? "[MOGTOME] Stop after next successful run armed."
-                    : "[MOGTOME] Stop after next successful run cancelled.");
+                    ? Ui.T("Chat_MOGTOMEStopAfterNextSuccessfulRunArmed")
+                    : Ui.T("Chat_MOGTOMEStopAfterNextSuccessfulRunCancelled"));
                 break;
 
             case "config":
@@ -291,7 +313,7 @@ public sealed class Plugin : IDalamudPlugin
             case "inn":
                 if (Engine != null && Engine.IsRunning && Engine.CurrentState != EngineState.RepairingOutside)
                 {
-                    ChatGui.Print("[MOGTOME] /mog inn is only available while the engine is stopped or actively repairing.");
+                    ChatGui.Print(Ui.T("Chat_MOGTOMEMogInnIsOnlyAvailableWhile"));
                     break;
                 }
 
@@ -305,11 +327,11 @@ public sealed class Plugin : IDalamudPlugin
             case "status":
                 if (Engine == null)
                 {
-                    ChatGui.Print("[MOGTOME] Engine is still initializing.");
+                    ChatGui.Print(Ui.T("Chat_MOGTOMEEngineIsStillInitializing"));
                     break;
                 }
 
-                ChatGui.Print($"[MOGTOME] State: {Engine.CurrentState} | Duty #{State.DutyCounter} | {Engine.StatusMessage}");
+                ChatGui.Print(Ui.T("Chat_MOGTOMEStateDuty", Ui.EnumLabel(Engine.CurrentState), State.DutyCounter, Engine.Status));
                 break;
 
             case "debug":
@@ -317,11 +339,11 @@ public sealed class Plugin : IDalamudPlugin
                 Configuration.DebugModeEnabled = debugMode;
                 ConfigManager.SaveCurrentAccount();
                 
-                var status = debugMode ? "ENABLED" : "DISABLED";
-                ChatGui.Print($"[MOGTOME] Debug mode {status}");
+                var status = debugMode ? Ui.M("Config_Enabled") : Ui.M("Config_Disabled");
+                ChatGui.Print(Ui.T("Chat_MOGTOMEDebugMode", status));
                 if (debugMode)
                 {
-                    ChatGui.Print("[MOGTOME] Debug checkbox now visible in Stats Window");
+                    ChatGui.Print(Ui.T("Chat_MOGTOMEDebugCheckboxNowVisibleInStats"));
                 }
                 break;
 
@@ -347,17 +369,17 @@ public sealed class Plugin : IDalamudPlugin
             if (CommandManager.ProcessCommand(AdsEnterInnCommand))
                 return true;
 
-            const string message = "ADS did not handle /ads enterinn. Ensure ADS is installed and loaded.";
+            var message = Ui.M("Plugin_ADSDidNotHandleAdsEnterinnEnsure");
             Log.Warning($"[MOGTOME][Inn] {message}");
             if (notifyFailure)
-                ChatGui.Print($"[MOGTOME] {message}");
+                ChatGui.Print(Ui.T("Chat_MOGTOME", message));
             return false;
         }
         catch (Exception ex)
         {
             Log.Warning(ex, $"[MOGTOME][Inn] Failed to send {AdsEnterInnCommand} from {source}");
             if (notifyFailure)
-                ChatGui.Print("[MOGTOME] Failed to send /ads enterinn. Check Dalamud log.");
+                ChatGui.Print(Ui.T("Chat_MOGTOMEFailedToSendAdsEnterinnCheck"));
             return false;
         }
     }
@@ -372,7 +394,7 @@ public sealed class Plugin : IDalamudPlugin
         ConfigWindow.IsOpen = true;
         StatsWindow.IsOpen = true;
 
-        ChatGui.Print("[MOGTOME] Queued main/config/stats window reset to 1,1.");
+        ChatGui.Print(Ui.T("Chat_MOGTOMEQueuedMainConfigStatsWindowReset"));
     }
 
     private void JumpWindowsToRandomVisibleLocations()
@@ -385,7 +407,7 @@ public sealed class Plugin : IDalamudPlugin
         ConfigWindow.IsOpen = true;
         StatsWindow.IsOpen = true;
 
-        ChatGui.Print("[MOGTOME] Queued random visible jumps for main/config/stats windows.");
+        ChatGui.Print(Ui.T("Chat_MOGTOMEQueuedRandomVisibleJumpsForMain"));
     }
 
     public void ShowStartReminderToast()
@@ -399,7 +421,7 @@ public sealed class Plugin : IDalamudPlugin
         {
             Log.Information("[Plugin] Start request from {Source} skipped because engine is still initializing", source);
             if (notifyChat)
-                ChatGui.Print("[MOGTOME] Engine is still initializing. Try again in a moment.");
+                ChatGui.Print(Ui.T("Chat_MOGTOMEEngineIsStillInitializingTryAgain"));
             return;
         }
 
@@ -407,7 +429,7 @@ public sealed class Plugin : IDalamudPlugin
         {
             Log.Information("[Plugin] Start request from {Source} skipped because engine is already running", source);
             if (notifyChat)
-                ChatGui.Print("[MOGTOME] Already running");
+                ChatGui.Print(Ui.T("Chat_MOGTOMEAlreadyRunning"));
             return;
         }
 
@@ -417,11 +439,11 @@ public sealed class Plugin : IDalamudPlugin
             deferredSharedConfigStartSource = source;
             deferredSharedConfigStartNotifyChat = notifyChat;
             ActionWarningWindow.ShowWarning(
-                "Shared MOGTOME Config Path",
-                $"Another client holds MOGTOME's config-directory lock. Starting multiple clients with the same config path can overwrite account settings. Matching game process count: {matchingProcessCount}.",
-                dismissButtonLabel: "Cancel Start",
+                Ui.M("Warning_SharedMOGTOMEConfigPath"),
+                Ui.M("Warning_AnotherClientHoldsMOGTOMESConfigDirectory", matchingProcessCount),
+                dismissButtonLabel: Ui.M("Warning_CancelStart"),
                 onDismiss: CancelDeferredSharedConfigStart,
-                acknowledgeButtonLabel: "Acknowledge and Start",
+                acknowledgeButtonLabel: Ui.M("Warning_AcknowledgeAndStart"),
                 onAcknowledged: AcknowledgeSharedConfigAndStart,
                 explicitChoiceRequired: true);
             Log.Warning("[Plugin] Start request from {Source} deferred for shared-config acknowledgement", source);
@@ -440,20 +462,21 @@ public sealed class Plugin : IDalamudPlugin
         CancelDeferredSharedConfigStart();
     }
 
-    public bool StopEngine(string reason = "Manual Stop.")
+    public bool StopEngine(string? reason = null)
     {
+        UiText stopReason = reason == null ? Ui.M("Engine_ManualStop") : (UiText)reason;
         var stopped = IsEngineStartQueued;
         CancelQueuedEngineStart();
         if (Engine?.IsRunning == true)
         {
-            Engine.Stop(reason);
+            Engine.StopWithReason(stopReason);
             return true;
         }
         stopped |= Engine?.ClearStopAfterNextSuccessfulRun() == true;
         if (stopped)
         {
-            stopReasonBeforeInitialization = reason;
-            Engine?.RecordStopReason(reason);
+            stopReasonBeforeInitialization = stopReason;
+            Engine?.RecordStopReason(stopReason);
         }
         return stopped;
     }
@@ -469,7 +492,7 @@ public sealed class Plugin : IDalamudPlugin
                     source,
                     pendingEngineStartSource);
                 if (notifyChat)
-                    ChatGui.Print("[MOGTOME] Start already queued.");
+                    ChatGui.Print(Ui.T("Chat_MOGTOMEStartAlreadyQueued"));
             }
 
             return;
@@ -482,7 +505,7 @@ public sealed class Plugin : IDalamudPlugin
         pendingEngineStartDuplicateNotified = false;
         Log.Information("[Plugin] Start request queued from {Source}; engine start will begin on framework thread", source);
         if (notifyChat)
-            ChatGui.Print("[MOGTOME] Start queued.");
+            ChatGui.Print(Ui.T("Chat_MOGTOMEStartQueued"));
     }
 
     private void AcknowledgeSharedConfigAndStart()
@@ -596,12 +619,12 @@ public sealed class Plugin : IDalamudPlugin
         if (!ActionWarningWindow.IsOpen &&
             ConflictPluginService.TryTakePendingWarning(out var conflictPopupMessage))
         {
-            var isTwistWarning = conflictPopupMessage.Contains("Twist of Fayte", StringComparison.OrdinalIgnoreCase);
-            var isAutoDutyWarning = conflictPopupMessage.Contains("AutoDuty", StringComparison.OrdinalIgnoreCase);
+            var isTwistWarning = conflictPopupMessage.English.Contains("Twist of Fayte", StringComparison.OrdinalIgnoreCase);
+            var isAutoDutyWarning = conflictPopupMessage.English.Contains("AutoDuty", StringComparison.OrdinalIgnoreCase);
             ActionWarningWindow.ShowWarning(
-                isTwistWarning ? "Twist of Fayte Conflict" : isAutoDutyWarning ? "AutoDuty Conflict" : "Plugin Conflict",
+                isTwistWarning ? Ui.M("Warning_TwistOfFayteConflict") : isAutoDutyWarning ? Ui.M("Warning_AutoDutyConflict") : Ui.M("Warning_PluginConflict"),
                 conflictPopupMessage,
-                isTwistWarning ? "Disable TwistOfFayte" : isAutoDutyWarning ? "Disable AutoDuty" : null,
+                isTwistWarning ? Ui.M("Warning_DisableTwistOfFayte") : isAutoDutyWarning ? Ui.M("Warning_DisableAutoDuty") : null,
                 isTwistWarning
                     ? () => _ = ConflictPluginService.EnsureTwistOfFayteDisabledAsync("Warning window", showPopup: false)
                     : isAutoDutyWarning
@@ -640,7 +663,7 @@ public sealed class Plugin : IDalamudPlugin
         {
             Log.Warning("[Plugin] Framework-thread start skipped for {Source} because engine is still initializing", source);
             if (notifyChat)
-                ChatGui.Print("[MOGTOME] Engine is still initializing. Try again in a moment.");
+                ChatGui.Print(Ui.T("Chat_MOGTOMEEngineIsStillInitializingTryAgain"));
             return;
         }
 
@@ -648,7 +671,7 @@ public sealed class Plugin : IDalamudPlugin
         {
             Log.Information("[Plugin] Framework-thread start skipped for {Source} because engine is already running", source);
             if (notifyChat)
-                ChatGui.Print("[MOGTOME] Already running");
+                ChatGui.Print(Ui.T("Chat_MOGTOMEAlreadyRunning"));
             return;
         }
 
@@ -668,13 +691,13 @@ public sealed class Plugin : IDalamudPlugin
             }
 
             Log.Warning("[Plugin] XA Slave did not handle {Command} for {Source}; continuing startup", XaSkipCutscenesCommand, source);
-            ChatGui.Print($"[MOGTOME] Warning: XA Slave did not handle {XaSkipCutscenesCommand}; continuing startup.");
+            ChatGui.Print(Ui.T("Chat_MOGTOMEWarningXASlaveDidNotHandle", XaSkipCutscenesCommand));
             return false;
         }
         catch (Exception ex)
         {
             Log.Warning(ex, "[Plugin] Failed to send {Command} for {Source}; continuing startup", XaSkipCutscenesCommand, source);
-            ChatGui.Print($"[MOGTOME] Warning: failed to send {XaSkipCutscenesCommand}; continuing startup.");
+            ChatGui.Print(Ui.T("Chat_MOGTOMEWarningFailedToSendContinuingStartup", XaSkipCutscenesCommand));
             return false;
         }
     }

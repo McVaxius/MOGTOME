@@ -1,3 +1,4 @@
+using MOGTOME.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,10 @@ using MOGTOME.Models;
 
 namespace MOGTOME.Services;
 
-public sealed record PraetoriumUnlockStatus(string DutyName, bool IsUnlocked, string QuestSummary);
+public sealed record PraetoriumUnlockStatus(string DutyName, bool IsUnlocked, string QuestSummary)
+{
+    public uint TerritoryTypeId { get; init; }
+}
 
 public sealed record PraetoriumSelectionInfo(int SelectionIndex, IReadOnlyList<PraetoriumUnlockStatus> Unlocks)
 {
@@ -41,7 +45,6 @@ public sealed class DutyAutomationService
     private const int AdsStableVisiblePollDelayMs = 250;
     private const int AdsStableVisiblePollAttempts = 20;
     private const int AdsRegistrationFailureCooldownSeconds = 5;
-    private const string NoDutySelectedErrorText = "No duty has been selected.";
     private const string PartyRequirementsErrorText = "One of your party members does not meet the requirements for this duty.";
     private const int QueueConditionIndex = 91;
     private const int WaitingForDutyConditionIndex = 55;
@@ -108,11 +111,11 @@ public sealed class DutyAutomationService
     private const int AdsRepairStopSettleDelayMs = 1000;
     private static readonly PraetoriumUnlockDefinition[] PraetoriumOptionalUnlocks =
     [
-        new("Sunken Temple of Qarn", [764]),
-        new("Cutter's Cry", [921]),
-        new("Dzemael Darkhold", [979, 1128, 1129, 1130]),
-        new("The Aurum Vale", [1014, 1131, 1132, 1133]),
-        new("The Wanderer's Palace", [870]),
+        new("Sunken Temple of Qarn", 1267, [764]),
+        new("Cutter's Cry", 1303, [921]),
+        new("Dzemael Darkhold", 171, [979, 1128, 1129, 1130]),
+        new("The Aurum Vale", 172, [1014, 1131, 1132, 1133]),
+        new("The Wanderer's Palace", 159, [870]),
     ];
 
     private Configuration Config => configManager.GetActiveConfig();
@@ -150,13 +153,14 @@ public sealed class DutyAutomationService
     public bool IsAutoDutyLoaded()
         => IsPluginLoaded("AutoDuty");
 
-    public string LastPreparationFailure { get; private set; } = string.Empty;
+    public string LastPreparationFailure => PreparationFailure.English;
+    public UiText PreparationFailure { get; private set; } = string.Empty;
     internal Func<bool>? QueueEligibility { get; set; }
 
     public async Task<bool> PrepareForStartAsync(bool isLeader, bool startingInsideDuty, Func<bool> isCurrent)
     {
         if (!isCurrent()) return false;
-        LastPreparationFailure = string.Empty;
+        PreparationFailure = string.Empty;
         if (UseAdsExperimental)
         {
             log.Information("[MOGTOME][Automation] Preparing ADS backend");
@@ -165,10 +169,10 @@ public sealed class DutyAutomationService
 
             if (!IsAdsLoaded())
             {
-                const string message = "AI Duty Solver (ADS) experimental mode is enabled, but ADS is not loaded.";
-                LastPreparationFailure = message;
+                var message = Ui.M("DutyAutomationService_AIDutySolverADSExperimentalModeIs");
+                PreparationFailure = message;
                 log.Warning($"[MOGTOME][Automation] {message}");
-                Plugin.ChatGui.Print($"[MOGTOME] {message}");
+                Plugin.ChatGui.Print(Ui.T("Chat_MOGTOME", message));
                 return false;
             }
 
@@ -207,10 +211,10 @@ public sealed class DutyAutomationService
         if (!isCurrent()) return false;
         if (!autoDutyReady)
         {
-            const string startupFailure = "AutoDuty is still initializing or faulted; retry MOGTOME after login settles";
-            LastPreparationFailure = startupFailure;
+            var startupFailure = Ui.M("DutyAutomationService_AutoDutyIsStillInitializingOrFaultedRetry");
+            PreparationFailure = startupFailure;
             log.Warning($"[MOGTOME][Automation] {startupFailure}");
-            Plugin.ChatGui.Print($"[MOGTOME] {startupFailure}");
+            Plugin.ChatGui.Print(Ui.T("Chat_MOGTOME", startupFailure));
             return false;
         }
 
@@ -218,10 +222,10 @@ public sealed class DutyAutomationService
         if (!isCurrent()) return false;
         if (!bundledPathsReady)
         {
-            const string pathFailure = "Bundled Praetorium paths could not be installed into AutoDuty.";
-            LastPreparationFailure = pathFailure;
+            var pathFailure = Ui.M("DutyAutomationService_BundledPraetoriumPathsCouldNotBeInstalled");
+            PreparationFailure = pathFailure;
             log.Warning($"[MOGTOME][Automation] {pathFailure}");
-            Plugin.ChatGui.Print($"[MOGTOME] {pathFailure}");
+            Plugin.ChatGui.Print(Ui.T("Chat_MOGTOME", pathFailure));
             return false;
         }
 
@@ -237,9 +241,9 @@ public sealed class DutyAutomationService
         if (!pathSelectionReady)
         {
             if (!isCurrent()) return false;
-            LastPreparationFailure = $"AutoDuty preparation failed: {autoDutyPathService.LastForceResult}";
+            PreparationFailure = Ui.M("Automation_AutoDutyPreparationFailed", autoDutyPathService.ForceResult);
             log.Warning($"[MOGTOME][Automation] AutoDuty preparation failed: {autoDutyPathService.LastForceResult}");
-            Plugin.ChatGui.Print($"[MOGTOME] AutoDuty preparation failed: {autoDutyPathService.LastForceResult}");
+            Plugin.ChatGui.Print(Ui.T("Chat_MOGTOMEAutoDutyPreparationFailed", autoDutyPathService.ForceResult));
             return false;
         }
 
@@ -415,9 +419,9 @@ public sealed class DutyAutomationService
             log.Information($"[MOGTOME][Repair] Repair completed outside inn territory {territoryName} ({territoryId}); sending {AdsEnterInnCommand}");
             if (!commandManager.ProcessCommand(AdsEnterInnCommand))
             {
-                const string message = "ADS did not handle /ads enterinn after repair. Ensure ADS is installed and loaded.";
+                var message = Ui.M("DutyAutomationService_ADSDidNotHandleAdsEnterinnAfter");
                 log.Warning($"[MOGTOME][Repair] {message}");
-                Plugin.ChatGui.Print($"[MOGTOME] {message}");
+                Plugin.ChatGui.Print(Ui.T("Chat_MOGTOME", message));
             }
         }
         catch (Exception ex)
@@ -426,57 +430,63 @@ public sealed class DutyAutomationService
         }
     }
 
-    public string GetQueueStatusLabel()
+    public string GetQueueStatusLabel() => GetQueueStatusText().English;
+
+    public UiText GetQueueStatusText()
         => UseAdsExperimental
             ? adsRuntimeRole switch
             {
-                AdsRuntimeRole.QueueLeader => "Queue leader",
-                AdsRuntimeRole.Follower => "Follower waiting on leader",
-                _ => "ADS",
+                AdsRuntimeRole.QueueLeader => Ui.M("Automation_QueueLeader"),
+                AdsRuntimeRole.Follower => Ui.M("Automation_FollowerWaitingOnLeader"),
+                _ => Ui.M("Automation_ADS"),
             }
             : ActiveBackendDisplayName;
 
-    public string GetAdsRuntimeStatusLabel()
+    public string GetAdsRuntimeStatusLabel() => GetAdsRuntimeStatusText().English;
+
+    public UiText GetAdsRuntimeStatusText()
     {
         if (!UseAdsExperimental)
             return ActiveBackendDisplayName;
 
         if (IsAdsRepairHandoffActive)
-            return IsAdsRepairWaitingForCompletion ? "repair-waiting" : "repair-handoff";
+            return IsAdsRepairWaitingForCompletion ? Ui.M("Automation_RepairWaiting") : Ui.M("Automation_RepairHandoff");
 
         if (adsLeaveRequested)
         {
             return adsLeaveConfirmationObserved
-                ? "leave requested, waiting for zone-out"
-                : "leave requested";
+                ? Ui.M("Automation_LeaveRequestedWaitingForZoneOut")
+                : Ui.M("Automation_LeaveRequested");
         }
 
         return adsRuntimeRole switch
         {
-            AdsRuntimeRole.QueueLeader when adsLeaderInsideOwned => "ADS inside-owned",
-            AdsRuntimeRole.QueueLeader when adsLeaderOutsideOwned => "ADS outside-owned",
-            AdsRuntimeRole.QueueLeader => "leader-ready",
+            AdsRuntimeRole.QueueLeader when adsLeaderInsideOwned => Ui.M("Automation_ADSInsideOwned"),
+            AdsRuntimeRole.QueueLeader when adsLeaderOutsideOwned => Ui.M("Automation_ADSOutsideOwned"),
+            AdsRuntimeRole.QueueLeader => Ui.M("Automation_LeaderReady"),
             AdsRuntimeRole.Follower => adsFollowerState switch
             {
-                AdsFollowerState.OutsideArmed => "outside-armed",
-                AdsFollowerState.WaitingForEntry => "waiting-for-entry",
-                AdsFollowerState.InsideObserved => "inside-observed",
-                AdsFollowerState.Leaving => "leaving",
-                AdsFollowerState.Recovered => "recovered",
-                _ => "waiting-for-entry",
+                AdsFollowerState.OutsideArmed => Ui.M("Automation_OutsideArmed"),
+                AdsFollowerState.WaitingForEntry => Ui.M("Automation_WaitingForEntry"),
+                AdsFollowerState.InsideObserved => Ui.M("Automation_InsideObserved"),
+                AdsFollowerState.Leaving => Ui.M("Automation_Leaving"),
+                AdsFollowerState.Recovered => Ui.M("Automation_Recovered"),
+                _ => Ui.M("Automation_WaitingForEntry"),
             },
-            _ => "idle",
+            _ => Ui.M("Automation_Idle"),
         };
     }
 
-    public string GetSubsystemStatusLabel()
+    public string GetSubsystemStatusLabel() => GetSubsystemStatusText().English;
+
+    public UiText GetSubsystemStatusText()
     {
         if (UseAdsExperimental)
-            return IsAdsLoaded() ? "ADS duty backend + inn return" : "ADS missing";
+            return IsAdsLoaded() ? Ui.M("Automation_ADSDutyBackendInnReturn") : Ui.M("Automation_ADSMissing");
 
         var pathName = autoDutyPathService.GetPraetoriumPathDisplayName(Config.PraetoriumPathFileName);
-        var adsStatus = IsAdsLoaded() ? "ADS inn ready" : "ADS missing";
-        return $"{pathName} / {adsStatus}";
+        var adsStatus = IsAdsLoaded() ? Ui.M("Automation_ADSInnReady") : Ui.M("Automation_ADSMissing");
+        return Ui.M("Automation_Value", pathName, adsStatus);
     }
 
     public bool GetSubsystemHealthy()
@@ -577,18 +587,18 @@ public sealed class DutyAutomationService
 
     public void HandleAdsQueueChatMessage(string messageText)
     {
-        var text = messageText.Trim();
-        if (!string.Equals(text, NoDutySelectedErrorText, StringComparison.Ordinal) &&
-            !string.Equals(text, PartyRequirementsErrorText, StringComparison.Ordinal))
-        {
-            return;
-        }
-
         var operationId = GetActiveAdsQueueOperationId();
         if (operationId == 0)
             return;
 
-        if (string.Equals(text, NoDutySelectedErrorText, StringComparison.Ordinal))
+        var noSelection = GameText.MatchesLogMessage(messageText, 877);
+        var partyRequirements = GameText.MatchesLogMessage(messageText, 880);
+        if (!noSelection && !partyRequirements)
+        {
+            return;
+        }
+
+        if (noSelection)
         {
             if (Interlocked.Exchange(ref lastNoDutySelectedLoggedOperationId, operationId) != operationId)
                 log.Warning($"[MOGTOME][DutyQueue] Queue selection failed from chat error; aborting operation {operationId}");
@@ -680,7 +690,10 @@ public sealed class DutyAutomationService
             {
                 var isUnlocked = IsAnyQuestComplete(definition.QuestIds);
                 var questSummary = string.Join(", ", definition.QuestIds);
-                return new PraetoriumUnlockStatus(definition.DutyName, isUnlocked, questSummary);
+                return new PraetoriumUnlockStatus(definition.DutyName, isUnlocked, questSummary)
+                {
+                    TerritoryTypeId = definition.TerritoryTypeId,
+                };
             })
             .ToArray();
 
@@ -694,11 +707,11 @@ public sealed class DutyAutomationService
         var selectionInfo = GetPraetoriumSelectionInfo();
         var missingDuties = selectionInfo.Unlocks
             .Where(unlock => !unlock.IsUnlocked)
-            .Select(unlock => unlock.DutyName)
+            .Select(unlock => Ui.Duty(unlock.TerritoryTypeId).Render())
             .ToArray();
         var missingSummary = missingDuties.Length > 0
             ? string.Join(", ", missingDuties)
-            : "none";
+            : Ui.T("Stats_None");
 
         log.Information($"[MOGTOME][DutyQueue] Praetorium callback test -> {selectionInfo.CallbackCommand} (missing optional unlocks: {selectionInfo.MissingUnlockCount})");
         foreach (var unlock in selectionInfo.Unlocks)
@@ -706,8 +719,8 @@ public sealed class DutyAutomationService
             log.Information($"[MOGTOME][DutyQueue] Praetorium unlock check: {unlock.DutyName} -> {(unlock.IsUnlocked ? "unlocked" : "missing")} (quests: {unlock.QuestSummary})");
         }
 
-        Plugin.ChatGui.Print($"[MOGTOME] Praetorium callback test: {selectionInfo.CallbackCommand}");
-        Plugin.ChatGui.Print($"[MOGTOME] Missing optional unlocks: {missingSummary}");
+        Plugin.ChatGui.Print(Ui.T("Chat_MOGTOMEPraetoriumCallbackTest", selectionInfo.CallbackCommand));
+        Plugin.ChatGui.Print(Ui.T("Chat_MOGTOMEMissingOptionalUnlocks", missingSummary));
     }
 
     private static string GetDutyName(bool isPraetorium)
@@ -1251,5 +1264,5 @@ public sealed class DutyAutomationService
         return false;
     }
 
-    private sealed record PraetoriumUnlockDefinition(string DutyName, ushort[] QuestIds);
+    private sealed record PraetoriumUnlockDefinition(string DutyName, uint TerritoryTypeId, ushort[] QuestIds);
 }
