@@ -403,6 +403,12 @@ Paramètres Dalamud &gt; Expérimental &gt; Dépôts de plugins personnalisés</
   <data name="Config_DutyCounter" xml:space="preserve">
     <value>Compteur de missions</value>
   </data>
+  <data name="Config_ReturnToEntranceDelaySeconds" xml:space="preserve">
+    <value>Délai de retour à l'entrée (secondes)</value>
+  </data>
+  <data name="Config_ReturnToEntranceDelayHelp" xml:space="preserve">
+    <value>Attente tant que la demande de retour reste affichée après la mort. Par défaut : 60 secondes ; minimum : 1. S'applique à ADS et AutoDuty. Les résurrections et les déplacements vers les zones scellées restent immédiats.</value>
+  </data>
   <data name="Config_CurrentPraetoriumRunCountSetToFor" xml:space="preserve">
     <value>Nombre actuel de parcours Praetorium. Mettez 0 pour le premier de la journée.</value>
   </data>
@@ -1065,7 +1071,7 @@ En mode AutoDuty, ADS est facultatif et utilisé uniquement pour /mog inn.</valu
     <value>Désolé de vous imposer cette lecture.</value>
   </data>
   <data name="WarningText_AFewNotesOnMOGTOMEVersionX" xml:space="preserve">
-    <value>Quelques notes sur MOGTOME version 0.0.0.x (pas encore 1.x.x.x).</value>
+    <value>Quelques notes sur MOGTOME.</value>
   </data>
   <data name="WarningText_ItSExperimentalAndWillBreakOccasionally" xml:space="preserve">
     <value>C'est expérimental et des pannes occasionnelles sont à prévoir.</value>

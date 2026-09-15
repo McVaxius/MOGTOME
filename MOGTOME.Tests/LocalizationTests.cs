@@ -113,9 +113,22 @@ public sealed class LocalizationTests : IDisposable
         Assert.False(GameText.MatchesEvaluated("Return?", "return?"));
         Assert.False(GameText.MatchesEvaluated("", ""));
         Assert.False(GameText.MatchesEvaluated("Unrelated", null));
-        Assert.False(DialogHandlerService.ReturnDelayElapsed(TimeSpan.FromSeconds(299.999)));
-        Assert.True(DialogHandlerService.ReturnDelayElapsed(TimeSpan.FromSeconds(300)));
-        Assert.True(DialogHandlerService.ReturnDelayElapsed(TimeSpan.FromSeconds(301)));
+        var config = JsonSerializer.Deserialize<Configuration>("{}")!;
+        Assert.Equal(60, config.ReturnToEntranceDelaySeconds);
+        Assert.False(DialogHandlerService.ReturnDelayElapsed(TimeSpan.FromSeconds(59.999), config.ReturnToEntranceDelaySeconds));
+        Assert.True(DialogHandlerService.ReturnDelayElapsed(TimeSpan.FromSeconds(60), config.ReturnToEntranceDelaySeconds));
+        Assert.True(DialogHandlerService.ReturnDelayElapsed(TimeSpan.FromSeconds(61), config.ReturnToEntranceDelaySeconds));
+
+        config.ReturnToEntranceDelaySeconds = 120;
+        Assert.False(DialogHandlerService.ReturnDelayElapsed(TimeSpan.FromSeconds(119.999), config.ReturnToEntranceDelaySeconds));
+        Assert.True(DialogHandlerService.ReturnDelayElapsed(TimeSpan.FromSeconds(120), config.ReturnToEntranceDelaySeconds));
+        Assert.True(DialogHandlerService.ReturnDelayElapsed(TimeSpan.FromSeconds(121), config.ReturnToEntranceDelaySeconds));
+
+        foreach (var delay in new[] { 1, 0, -1 })
+        {
+            Assert.False(DialogHandlerService.ReturnDelayElapsed(TimeSpan.FromSeconds(0.999), delay));
+            Assert.True(DialogHandlerService.ReturnDelayElapsed(TimeSpan.FromSeconds(1), delay));
+        }
     }
 
     [Theory]

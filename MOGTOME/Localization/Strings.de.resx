@@ -403,6 +403,12 @@ Dalamud-Einstellungen &gt; Experimentell &gt; Benutzerdefinierte Plugin-Reposito
   <data name="Config_DutyCounter" xml:space="preserve">
     <value>Inhaltszähler</value>
   </data>
+  <data name="Config_ReturnToEntranceDelaySeconds" xml:space="preserve">
+    <value>Wartezeit bis zur Rückkehr zum Eingang (Sekunden)</value>
+  </data>
+  <data name="Config_ReturnToEntranceDelayHelp" xml:space="preserve">
+    <value>Wartezeit, solange die Rückkehrabfrage nach dem Tod sichtbar bleibt. Standard: 60 Sekunden; Minimum: 1. Gilt für ADS und AutoDuty. Wiederbelebungen und Wechsel in versiegelte Bereiche bleiben sofort.</value>
+  </data>
   <data name="Config_CurrentPraetoriumRunCountSetToFor" xml:space="preserve">
     <value>Aktuelle Anzahl der Praetorium-Durchläufe. Für den ersten Durchlauf des Tages auf 0 setzen.</value>
   </data>
@@ -1065,7 +1071,7 @@ Im AutoDuty-Modus ist ADS optional und wird nur für /mog inn verwendet.</value>
     <value>Entschuldige die Pflichtlektüre.</value>
   </data>
   <data name="WarningText_AFewNotesOnMOGTOMEVersionX" xml:space="preserve">
-    <value>Ein paar Hinweise zu MOGTOME-Version 0.0.0.x (noch nicht 1.x.x.x).</value>
+    <value>Ein paar Hinweise zu MOGTOME.</value>
   </data>
   <data name="WarningText_ItSExperimentalAndWillBreakOccasionally" xml:space="preserve">
     <value>Es ist experimentell und wird gelegentlich nicht funktionieren.</value>

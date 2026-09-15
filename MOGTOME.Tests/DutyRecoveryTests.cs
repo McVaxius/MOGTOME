@@ -322,7 +322,7 @@ public sealed class DutyRecoveryTests
             Queue = new DutyQueueService(log, State, Automation, condition, manager);
             Rotation = new RotationService(log, manager, new BossModIPC(pi, log, command));
             YesAlready = new YesAlreadyIPC(log);
-            var dialog = new DialogHandlerService(log, YesAlready, command, Fake<IGameGui>());
+            var dialog = new DialogHandlerService(log, YesAlready, command, Fake<IGameGui>(), manager);
             var tracker = new DutyTrackerService(log, Config, State, manager, History);
             Engine = new MogtomeEngine(log, Config, State, tracker, Queue, null!, null!, null!, Rotation, null!, null!,
                 dialog, Automation, null!, null!, History, deaths, autoDuty, YesAlready, null!, condition, client, command, () => { });

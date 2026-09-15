@@ -832,7 +832,7 @@ public sealed class DutyAutomationService
                 return;
 
             var selectionDebugText = selectionRequired
-                ? $", selectionCallback=ContentsFinder true 3 {GetFinalSelectionCallbackIndex(targetDuty)}"
+                ? $", targetCfc={GetContentFinderConditionId(targetDuty == SelectedMogtomeDuty.Praetorium)}"
                 : ", selected duty already confirmed";
 
             if (selectionRequired)
@@ -989,7 +989,8 @@ public sealed class DutyAutomationService
 
     private async Task<bool> RunAdsDutySelectionSequenceAsync(int operationId, SelectedMogtomeDuty targetDuty, string dutyName)
     {
-        var praetoriumSelectionIndex = GetPraetoriumSelectionInfo().SelectionIndex;
+        var praetoriumDutyId = (int)GetContentFinderConditionId(true);
+        var decumanaDutyId = (int)GetContentFinderConditionId(false);
         var previousDuty = GetLastConfirmedSelectedDuty();
 
         switch (targetDuty)
@@ -998,29 +999,29 @@ public sealed class DutyAutomationService
                 if (previousDuty == SelectedMogtomeDuty.Decumana)
                 {
                     if (!await FireAdsContentsFinderStepAsync(operationId, dutyName, "switching to Decumana tab to clear prior selection", 1, 4).ConfigureAwait(false) ||
-                        !await FireAdsContentsFinderStepAsync(operationId, dutyName, "selecting Decumana to clear prior selection", 3, 4).ConfigureAwait(false) ||
-                        !await FireAdsContentsFinderStepAsync(operationId, dutyName, "unselecting Decumana before Praetorium", 3, 4).ConfigureAwait(false))
+                        !await FireAdsContentsFinderStepAsync(operationId, dutyName, "selecting Decumana to clear prior selection", 3, decumanaDutyId).ConfigureAwait(false) ||
+                        !await FireAdsContentsFinderStepAsync(operationId, dutyName, "unselecting Decumana before Praetorium", 3, decumanaDutyId).ConfigureAwait(false))
                     {
                         return false;
                     }
                 }
 
                 return await FireAdsContentsFinderStepAsync(operationId, dutyName, "switching to Praetorium tab", 1, 1).ConfigureAwait(false) &&
-                       await FireAdsContentsFinderStepAsync(operationId, dutyName, "selecting Praetorium", 3, praetoriumSelectionIndex).ConfigureAwait(false);
+                       await FireAdsContentsFinderStepAsync(operationId, dutyName, "selecting Praetorium", 3, praetoriumDutyId).ConfigureAwait(false);
 
             case SelectedMogtomeDuty.Decumana:
                 return await FireAdsContentsFinderStepAsync(operationId, dutyName, "switching to Praetorium tab for Decumana pre-clear", 1, 1).ConfigureAwait(false) &&
-                       await FireAdsContentsFinderStepAsync(operationId, dutyName, "selecting Praetorium for Decumana pre-clear", 3, praetoriumSelectionIndex).ConfigureAwait(false) &&
-                       await FireAdsContentsFinderStepAsync(operationId, dutyName, "unselecting Praetorium before Decumana", 3, praetoriumSelectionIndex).ConfigureAwait(false) &&
+                       await FireAdsContentsFinderStepAsync(operationId, dutyName, "selecting Praetorium for Decumana pre-clear", 3, praetoriumDutyId).ConfigureAwait(false) &&
+                       await FireAdsContentsFinderStepAsync(operationId, dutyName, "unselecting Praetorium before Decumana", 3, praetoriumDutyId).ConfigureAwait(false) &&
                        await FireAdsContentsFinderStepAsync(operationId, dutyName, "switching to Decumana tab", 1, 4).ConfigureAwait(false) &&
-                       await FireAdsContentsFinderStepAsync(operationId, dutyName, "selecting Decumana", 3, 4).ConfigureAwait(false);
+                       await FireAdsContentsFinderStepAsync(operationId, dutyName, "selecting Decumana", 3, decumanaDutyId).ConfigureAwait(false);
 
             default:
                 return false;
         }
     }
 
-    private async Task<bool> FireAdsContentsFinderStepAsync(int operationId, string dutyName, string stepName, int arg1, int arg2)
+    private async Task<bool> FireAdsContentsFinderStepAsync(int operationId, string dutyName, string stepName, int arg1, int tabOrDutyId)
     {
         if (!IsCurrentAdsQueueOperation(operationId))
             return false;
@@ -1031,12 +1032,42 @@ public sealed class DutyAutomationService
             return false;
         }
 
-        log.Information($"[MOGTOME][DutyQueue] Operation {operationId}: {stepName} for {dutyName} via ContentsFinder true {arg1} {arg2}");
         if (!await GameHelpers.RunOnFrameworkThreadAsync(() =>
-                IsCurrentAdsQueueOperation(operationId) && Plugin.ClientState.IsLoggedIn && !DutyStartupService.IsInDuty()
-                && GameHelpers.TryFireAdsAddonCallback(operationId, "ContentsFinder", true, arg1, arg2)).ConfigureAwait(false))
+            {
+                if (!IsCurrentAdsQueueOperation(operationId) || !Plugin.ClientState.IsLoggedIn || DutyStartupService.IsInDuty())
+                    return false;
+
+                var callbackIndex = tabOrDutyId;
+                if (arg1 == 3)
+                {
+                    // Resolve the visible row immediately before clicking; the player can reverse the list.
+                    callbackIndex = -1;
+                    unsafe
+                    {
+                        var agent = AgentContentsFinder.Instance();
+                        if (agent == null)
+                            return false;
+
+                        for (var index = 0; index < agent->ContentList.Count; index++)
+                        {
+                            var content = agent->ContentList[index].Value;
+                            if (content != null && content->Id.ContentType == ContentsType.Regular && content->Id.Id == tabOrDutyId)
+                            {
+                                callbackIndex = index;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (callbackIndex < 0)
+                        return false;
+                }
+
+                log.Information($"[MOGTOME][DutyQueue] Operation {operationId}: {stepName} for {dutyName} via ContentsFinder true {arg1} {callbackIndex}");
+                return GameHelpers.TryFireAdsAddonCallback(operationId, "ContentsFinder", true, arg1, callbackIndex);
+            }).ConfigureAwait(false))
         {
-            MarkAdsQueueAttemptFailed(operationId, $"selection callback failed: ContentsFinder true {arg1} {arg2}", invalidateOperation: true);
+            MarkAdsQueueAttemptFailed(operationId, $"{stepName} failed (tab/duty ID {tabOrDutyId})", invalidateOperation: true);
             return false;
         }
 
@@ -1222,14 +1253,6 @@ public sealed class DutyAutomationService
             SelectedMogtomeDuty.Praetorium => "Praetorium",
             SelectedMogtomeDuty.Decumana => "Decumana",
             _ => "unknown duty",
-        };
-
-    private int GetFinalSelectionCallbackIndex(SelectedMogtomeDuty targetDuty)
-        => targetDuty switch
-        {
-            SelectedMogtomeDuty.Praetorium => GetPraetoriumSelectionInfo().SelectionIndex,
-            SelectedMogtomeDuty.Decumana => 4,
-            _ => -1,
         };
 
     private static bool IsQueueRegistrationActive()

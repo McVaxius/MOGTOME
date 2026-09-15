@@ -13,7 +13,7 @@ public class DialogHandlerService
     private readonly YesAlreadyIPC yesAlreadyIPC;
     private readonly ICommandManager commandManager;
     private readonly IGameGui gameGui;
-    private static readonly TimeSpan ReturnPromptDelay = TimeSpan.FromSeconds(300);
+    private readonly ConfigManager configManager;
     private string returnPromptText = string.Empty;
     private long? returnPromptFirstSeenAt;
 
@@ -25,12 +25,13 @@ public class DialogHandlerService
 
     public DialogHandlerService(
         IPluginLog log, YesAlreadyIPC yesAlreadyIPC,
-        ICommandManager commandManager, IGameGui gameGui)
+        ICommandManager commandManager, IGameGui gameGui, ConfigManager configManager)
     {
         this.log = log;
         this.yesAlreadyIPC = yesAlreadyIPC;
         this.commandManager = commandManager;
         this.gameGui = gameGui;
+        this.configManager = configManager;
     }
 
     public void Start()
@@ -133,7 +134,7 @@ public class DialogHandlerService
         }
 
         if (isReturnPrompt && returnPromptFirstSeenAt is { } firstSeenAt &&
-            ReturnDelayElapsed(Stopwatch.GetElapsedTime(firstSeenAt)))
+            ReturnDelayElapsed(Stopwatch.GetElapsedTime(firstSeenAt), configManager.GetActiveConfig().ReturnToEntranceDelaySeconds))
         {
             TryAcceptPrompt(dialogText, now, GamePrompt.Return, "return to starting point");
         }
@@ -165,5 +166,6 @@ public class DialogHandlerService
         return false;
     }
 
-    internal static bool ReturnDelayElapsed(TimeSpan elapsed) => elapsed >= ReturnPromptDelay;
+    internal static bool ReturnDelayElapsed(TimeSpan elapsed, int delaySeconds)
+        => elapsed >= TimeSpan.FromSeconds(Math.Max(1, delaySeconds));
 }

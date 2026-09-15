@@ -409,6 +409,12 @@ Dalamud Settings &gt; Experimental &gt; Custom Plugin Repositories</value>
   <data name="Config_DutyCounter" xml:space="preserve">
     <value>Duty Counter</value>
   </data>
+  <data name="Config_ReturnToEntranceDelaySeconds" xml:space="preserve">
+    <value>Return to entrance delay (seconds)</value>
+  </data>
+  <data name="Config_ReturnToEntranceDelayHelp" xml:space="preserve">
+    <value>Wait while the return prompt stays visible after death. Default: 60 seconds; minimum: 1. Applies to ADS and AutoDuty. Raises and sealed-area moves remain immediate.</value>
+  </data>
   <data name="Config_CurrentPraetoriumRunCountSetToFor" xml:space="preserve">
     <value>Current Praetorium run count. Set to 0 for first run of the day.</value>
   </data>
@@ -1071,7 +1077,7 @@ ADS is optional in AutoDuty mode and is used only when /mog inn is requested.</v
     <value>Sorry to make you read this.</value>
   </data>
   <data name="WarningText_AFewNotesOnMOGTOMEVersionX" xml:space="preserve">
-    <value>A few notes on MOGTOME version 0.0.0.x (not 1.x.x.x yet).</value>
+    <value>A few notes on MOGTOME.</value>
   </data>
   <data name="WarningText_ItSExperimentalAndWillBreakOccasionally" xml:space="preserve">
     <value>it's experimental and will break occasionally.</value>

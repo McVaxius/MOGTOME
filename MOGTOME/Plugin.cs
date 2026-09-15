@@ -154,7 +154,7 @@ public sealed class Plugin : IDalamudPlugin
         FoodService = new FoodService(Log, Configuration, State, Condition, ConsumableInventoryService);
         BossHandlerService = new BossHandlerService(Log, Configuration, State, VNavIPC, CommandManager, Condition, ConsumableInventoryService);
         StuckDetectionService = new StuckDetectionService(Log, ConfigManager, State, VNavIPC, Condition);
-        DialogHandlerService = new DialogHandlerService(Log, YesAlreadyIPC, CommandManager, GameGui);
+        DialogHandlerService = new DialogHandlerService(Log, YesAlreadyIPC, CommandManager, GameGui, ConfigManager);
 
         // Wire up configuration change subscriptions
         ConsumableInventoryService.SubscribeToConfigChanges(ConfigManager);

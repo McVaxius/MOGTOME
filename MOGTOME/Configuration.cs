@@ -24,6 +24,7 @@ public class Configuration
     public int MaxRuns { get; set; } = 9999;
     public string QuitCommand { get; set; } = "/ays m e";
     public bool TestingModeUnsynced { get; set; } = false;
+    public int ReturnToEntranceDelaySeconds { get; set; } = 60;
 
     // --- Debug Settings ---
     public bool DebugModeEnabled { get; set; } = false;           // Controls UI visibility

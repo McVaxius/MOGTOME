@@ -94,7 +94,7 @@ The main window has a **Language** dropdown with **English**, **Français**, **D
 
 The interface language is independent of game-text recognition. For example, French interface text on a Japanese client still recognizes Japanese prompts. Duty, item, job, and NPC labels use the selected interface language; item searches refresh when it changes. Commands, external plugin identifiers, logs, IPC output, and historical run records retain their existing representation.
 
-Automation uses numeric boss, action, and innkeeper IDs and evaluated client-language game prompts. Unknown or unresolved prompts are ignored. Raises and sealed-area moves remain immediate; eligible return prompts retain the 300-second delay. Only actual duty-exit prompts are accepted for leave confirmation.
+Automation uses numeric boss, action, and innkeeper IDs and evaluated client-language game prompts. Unknown or unresolved prompts are ignored. Raises and sealed-area moves remain immediate. While dead in an active duty, eligible return prompts must stay visible for the per-account **Return to entrance delay (seconds)** in the **Duty** settings tab (default: 60 seconds; minimum: 1), with either ADS or AutoDuty. Only actual duty-exit prompts are accepted for leave confirmation.
 
 Local regression coverage exercises all 16 client/interface language pairs and resource completeness. Live verification remains outstanding: user-run smoke tests should cover both duties with ADS and AutoDuty, including Japanese glyph rendering, long French/German labels, language changes during a run, and translated item searches. Automated checks alone do not establish full runtime compatibility.
 

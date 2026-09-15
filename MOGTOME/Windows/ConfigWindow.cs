@@ -895,6 +895,14 @@ public class ConfigWindow : Window, IDisposable
         }
         UiLayout.TextDisabled(Ui.T("Config_CurrentPraetoriumRunCountSetToFor"));
 
+        var returnDelay = config.ReturnToEntranceDelaySeconds;
+        if (ImGui.InputInt(Ui.L("Config_ReturnToEntranceDelaySeconds"), ref returnDelay))
+        {
+            config.ReturnToEntranceDelaySeconds = Math.Max(1, returnDelay);
+            changed = true;
+        }
+        UiLayout.TextDisabled(Ui.T("Config_ReturnToEntranceDelayHelp"));
+
         if (!config.UseAdsExperimental)
         {
             var selectedPraetoriumPath = plugin.AutoDutyPathService.ResolvePraetoriumPathFileName(config.PraetoriumPathFileName);
