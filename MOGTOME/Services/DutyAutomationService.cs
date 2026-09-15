@@ -1053,7 +1053,7 @@ public sealed class DutyAutomationService
                             var content = agent->ContentList[index].Value;
                             if (content != null && content->Id.ContentType == ContentsType.Regular && content->Id.Id == tabOrDutyId)
                             {
-                                callbackIndex = index;
+                                callbackIndex = index + 1;
                                 break;
                             }
                         }
