@@ -86,6 +86,28 @@ public sealed class ConflictPluginService
     private static bool MatchesBmr(string? internalName, string? displayName) => internalName == "BossModReborn";
     private static bool MatchesVbm(string? internalName, string? displayName) => internalName == "BossMod";
 
+    public async Task DisableStartupAutomationAsync(Func<bool> isCurrent)
+    {
+        // Use the normal disable flow and deliberately leave QSTCompanion disabled on Stop.
+        var result = await EnsurePluginDisabledAsync(
+            "MOGTOME start", "QSTCompanion", "/xldisableplugin QSTCompanion",
+            static (internalName, _) => string.Equals(internalName, "QSTCompanion", StringComparison.OrdinalIgnoreCase),
+            isCurrent).ConfigureAwait(false);
+        if (!isCurrent()) return;
+        if (result.FinalStatus.IsLoaded)
+            log.Warning("[MOGTOME][Conflict] QSTCompanion is still loaded after the startup disable attempt.");
+
+        await GameHelpers.RunOnFrameworkThreadAsync(() =>
+        {
+            if (!isCurrent() || !GetPluginStatus(static (internalName, _) =>
+                    string.Equals(internalName, "Coppelia", StringComparison.OrdinalIgnoreCase)).IsLoaded)
+                return;
+
+            log.Information("[MOGTOME][Conflict] Sending /healbot off for loaded HealBot during startup.");
+            GameHelpers.SendCommand("/healbot off");
+        }).ConfigureAwait(false);
+    }
+
     public async Task<bool> EnsureTwistOfFayteDisabledAsync(string triggerSource, bool showPopup, Func<bool>? isCurrent = null)
     {
         var result = await EnsurePluginDisabledAsync(

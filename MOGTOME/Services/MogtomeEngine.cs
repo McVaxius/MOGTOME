@@ -327,6 +327,9 @@ public class MogtomeEngine
             }).ConfigureAwait(false);
             if (!IsCurrentStartup(operation)) return;
 
+            await conflictPluginService.DisableStartupAutomationAsync(() => IsCurrentStartup(operation)).ConfigureAwait(false);
+            if (!IsCurrentStartup(operation)) return;
+
             Status = Ui.M("Engine_PreparingBossModSupport");
             var bossModReady = await conflictPluginService.EnsureBossModReadyAsync(() => IsCurrentStartup(operation)).ConfigureAwait(false);
             if (!bossModReady.Ready)
