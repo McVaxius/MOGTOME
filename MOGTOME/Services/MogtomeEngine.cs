@@ -398,6 +398,7 @@ public class MogtomeEngine
             {
                 if (!IsCurrentStartup(operation))
                     return new StartupPreparationResult(EnteredRepairMode: false);
+                rotationService.RestoreRsrHealingForStart();
                 log.Information("[MOGTOME][Engine] Sending /at enable as part of startup command prep");
                 GameHelpers.SendCommand("/at enable");
 

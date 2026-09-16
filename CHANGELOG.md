@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Translate windows, wizard, warnings, statuses, and ordinary chat/toast messages. Resolve displayed game names and item searches in the interface language, preserve English IPC/diagnostics, use stable control/window IDs, and include translation assemblies in the existing artifact-copy flow.
 
 ### Fixed
+- Accepted manual and DAD starts restore the approved current-job RSR healing settings after startup cleanup and checks, before rotation activation, replacing customized thresholds. IPC failures are logged without blocking Start.
 - Correct the one-based Duty Finder selection callback so Praetorium and Decumana selection and deselection target the duty found by ID.
 - Select Praetorium and Decumana by duty ID in the current Duty Finder list so reversing its sort order no longer breaks ADS queue selection.
 - Removed the outdated pre-1.0 version claim from the warning-window heading in all four interface languages.

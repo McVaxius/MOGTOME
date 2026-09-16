@@ -26,6 +26,8 @@ internal enum RsrOperatingMode
 
 public class BossModIPC : IDisposable
 {
+    private enum RsrOtherCommandType : byte { Settings }
+
     private enum RsrStateCommandType : byte
     {
         Off,
@@ -148,6 +150,29 @@ public class BossModIPC : IDisposable
                 return SendCommand($"/vbm ar set {presetName}", "set VBM preset");
             default:
                 return false;
+        }
+    }
+
+    internal void RestoreRsrHealing()
+    {
+        try
+        {
+            var subscriber = pluginInterface.GetIpcSubscriber<RsrOtherCommandType, string, object>("RotationSolverReborn.OtherCommand");
+            subscriber.InvokeAction(RsrOtherCommandType.Settings, "AutoHeal true");
+            subscriber.InvokeAction(RsrOtherCommandType.Settings, "UseGroundBeneficialAbility true");
+            subscriber.InvokeAction(RsrOtherCommandType.Settings, "HealWhenNothingTodo true");
+            subscriber.InvokeAction(RsrOtherCommandType.Settings, "HealthAreaAbilityHot 0.70");
+            subscriber.InvokeAction(RsrOtherCommandType.Settings, "HealthAreaSpellHot 0.70");
+            subscriber.InvokeAction(RsrOtherCommandType.Settings, "HealthAreaAbility 0.90");
+            subscriber.InvokeAction(RsrOtherCommandType.Settings, "HealthAreaSpell 0.80");
+            subscriber.InvokeAction(RsrOtherCommandType.Settings, "HealthSingleAbilityHot 0.80");
+            subscriber.InvokeAction(RsrOtherCommandType.Settings, "HealthSingleSpellHot 0.70");
+            subscriber.InvokeAction(RsrOtherCommandType.Settings, "HealthSingleAbility 0.85");
+            subscriber.InvokeAction(RsrOtherCommandType.Settings, "HealthSingleSpell 0.80");
+        }
+        catch (Exception ex)
+        {
+            log.Warning($"[MOGTOME][Rotation] RSR healing settings dispatch failed; continuing startup: {ex.Message}");
         }
     }
 

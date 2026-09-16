@@ -74,6 +74,9 @@ public class RotationService
         return true;
     }
 
+    internal void RestoreRsrHealingForStart()
+        => bossModIPC.RestoreRsrHealing();
+
     public bool ForceRotation()
         => EnableRotationOncePerDuty("force rotation");
 
