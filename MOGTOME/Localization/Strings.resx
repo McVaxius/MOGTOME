@@ -1996,4 +1996,6 @@ Results logged to Dalamud log.</value>
   <data name="Opener_Terminal" xml:space="preserve"><value>Magitek Terminal</value></data>
   <data name="Engine_AutoQueueing" xml:space="preserve"><value>Auto-queueing</value></data>
   <data name="Engine_RepairRecoveryRetry" xml:space="preserve"><value>Repair recovery retry {0}</value></data>
+  <data name="Config_ObstacleMapsOn" xml:space="preserve"><value>Obstacle maps on</value></data>
+  <data name="Config_ObstacleMapsOnTooltip" xml:space="preserve"><value>Controls BossMod Reborn only. Default: off. Applies on Start after BossMod readiness and rotation setup, regardless of combat provider.</value></data>
 </root>

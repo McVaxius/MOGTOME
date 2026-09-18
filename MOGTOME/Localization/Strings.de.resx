@@ -1990,4 +1990,6 @@ Ergebnisse im Dalamud-Protokoll.</value>
   <data name="Opener_Terminal" xml:space="preserve"><value>Magitek-Terminal</value></data>
   <data name="Engine_AutoQueueing" xml:space="preserve"><value>Automatische Anmeldung</value></data>
   <data name="Engine_RepairRecoveryRetry" xml:space="preserve"><value>Wiederaufnahme nach Reparatur, Versuch {0}</value></data>
+  <data name="Config_ObstacleMapsOn" xml:space="preserve"><value>Hinderniskarten aktivieren</value></data>
+  <data name="Config_ObstacleMapsOnTooltip" xml:space="preserve"><value>Steuert nur BossMod Reborn. Standardmäßig aus. Wird beim Start angewendet, sobald BossMod bereit und die Rotation eingerichtet ist, unabhängig vom gewählten Kampfanbieter.</value></data>
 </root>

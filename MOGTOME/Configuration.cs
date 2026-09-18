@@ -60,6 +60,7 @@ public class Configuration
     public CombatProvider CombatProvider { get; set; } = CombatProvider.Rsr;
     public bool UseManualBossModPreset { get; set; } = false;
     public string ManualBossModPresetName { get; set; } = "";
+    public bool ObstacleMapsOn { get; set; } = false;
 
     // --- Stats ---
     // Global stats (kept for compatibility)

@@ -1990,4 +1990,6 @@ Résultats dans le journal Dalamud.</value>
   <data name="Opener_Terminal" xml:space="preserve"><value>terminal magitek</value></data>
   <data name="Engine_AutoQueueing" xml:space="preserve"><value>Inscription automatique</value></data>
   <data name="Engine_RepairRecoveryRetry" xml:space="preserve"><value>Nouvelle tentative de reprise après réparation {0}</value></data>
+  <data name="Config_ObstacleMapsOn" xml:space="preserve"><value>Activer les cartes d'obstacles</value></data>
+  <data name="Config_ObstacleMapsOnTooltip" xml:space="preserve"><value>Contrôle uniquement BossMod Reborn. Désactivé par défaut. S'applique au démarrage, une fois BossMod prêt et la rotation configurée, quel que soit le fournisseur de combat.</value></data>
 </root>

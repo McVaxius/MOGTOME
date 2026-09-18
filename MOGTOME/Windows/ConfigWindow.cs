@@ -1213,6 +1213,16 @@ public class ConfigWindow : Window, IDisposable
     {
         var changed = false;
 
+        var obstacleMapsOn = config.ObstacleMapsOn;
+        if (ImGui.Checkbox(Ui.L("Config_ObstacleMapsOn"), ref obstacleMapsOn))
+        {
+            config.ObstacleMapsOn = obstacleMapsOn;
+            changed = true;
+        }
+        if (ImGui.IsItemHovered())
+            UiLayout.SetTooltip(Ui.T("Config_ObstacleMapsOnTooltip"));
+        ImGui.Spacing();
+
         ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Config_ExperimentalADS"));
         ImGui.Separator();
         var firstRoomSkip = config.ExperimentalFirstRoomSkip;
