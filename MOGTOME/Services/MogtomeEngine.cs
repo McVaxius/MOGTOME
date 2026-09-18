@@ -708,6 +708,16 @@ public class MogtomeEngine
         var inDuty = DutyStartupService.IsInDuty();
         var identity = DutyStartupService.ReadLiveDutyIdentity();
         var readiness = DutyStartupService.ReadReadinessConditions();
+        // Reset even on frames that return before the throttled dialog update.
+        if (!clientState.IsLoggedIn || readiness.IsBetweenAreas || readiness.IsBetweenAreas51 ||
+            CurrentState != EngineState.InDuty || !inDuty || dutyCompleted ||
+            !IsMogtomeDutyTerritory(clientState.TerritoryType) ||
+            !DutyState.IsSupportedDutyIdentity(identity.TerritoryTypeId, identity.ContentFinderConditionId) ||
+            identity.TerritoryTypeId != state.DutyStartTerritory ||
+            Plugin.ObjectTable.LocalPlayer?.IsDead != true)
+        {
+            dialogHandler.ResetReturnPromptWait();
+        }
         confirmedDutyExitPending |= dutyStartup.ObserveReadiness(inDuty, identity, readiness, DateTime.UtcNow);
         if (!dutyStartup.CombatActivated)
             autoDutyStartedInDuty = false;
@@ -798,6 +808,7 @@ public class MogtomeEngine
                 // Handle dialogs always unless repair is actively protecting an inn/NPC repair flow.
                 dialogHandler.Update(returnToStartEligible:
                     CurrentState == EngineState.InDuty && inDuty && !dutyCompleted &&
+                    !readiness.IsBetweenAreas && !readiness.IsBetweenAreas51 &&
                     IsMogtomeDutyTerritory(state.CurrentTerritory) &&
                     Plugin.ObjectTable.LocalPlayer?.IsDead == true);
 

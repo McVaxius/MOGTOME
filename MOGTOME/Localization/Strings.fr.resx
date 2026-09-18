@@ -407,7 +407,7 @@ Paramètres Dalamud &gt; Expérimental &gt; Dépôts de plugins personnalisés</
     <value>Délai de retour à l'entrée (secondes)</value>
   </data>
   <data name="Config_ReturnToEntranceDelayHelp" xml:space="preserve">
-    <value>Attente tant que la demande de retour reste affichée après la mort. Par défaut : 60 secondes ; minimum : 1. S'applique à ADS et AutoDuty. Les résurrections et les déplacements vers les zones scellées restent immédiats.</value>
+    <value>Le délai commence dès la détection de la mort dans une mission en cours et continue lorsque la demande de retour est réduite. La demande réduite est rouverte à la fin du délai. Par défaut : 60 secondes ; minimum : 1. S'applique à ADS et AutoDuty. Les résurrections et les déplacements vers les zones scellées restent immédiats.</value>
   </data>
   <data name="Config_CurrentPraetoriumRunCountSetToFor" xml:space="preserve">
     <value>Nombre actuel de parcours Praetorium. Mettez 0 pour le premier de la journée.</value>

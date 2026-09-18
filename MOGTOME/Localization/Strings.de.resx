@@ -407,7 +407,7 @@ Dalamud-Einstellungen &gt; Experimentell &gt; Benutzerdefinierte Plugin-Reposito
     <value>Wartezeit bis zur Rückkehr zum Eingang (Sekunden)</value>
   </data>
   <data name="Config_ReturnToEntranceDelayHelp" xml:space="preserve">
-    <value>Wartezeit, solange die Rückkehrabfrage nach dem Tod sichtbar bleibt. Standard: 60 Sekunden; Minimum: 1. Gilt für ADS und AutoDuty. Wiederbelebungen und Wechsel in versiegelte Bereiche bleiben sofort.</value>
+    <value>Die Wartezeit beginnt, sobald der Tod in einem laufenden Inhalt erkannt wird, und läuft auch bei minimierter Rückkehrabfrage weiter. Nach Ablauf wird die minimierte Rückkehrabfrage wieder geöffnet. Standard: 60 Sekunden; Minimum: 1. Gilt für ADS und AutoDuty. Wiederbelebungen und Wechsel in versiegelte Bereiche werden weiterhin sofort bestätigt.</value>
   </data>
   <data name="Config_CurrentPraetoriumRunCountSetToFor" xml:space="preserve">
     <value>Aktuelle Anzahl der Praetorium-Durchläufe. Für den ersten Durchlauf des Tages auf 0 setzen.</value>

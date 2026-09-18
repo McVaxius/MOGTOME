@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.UI;
@@ -14,8 +13,7 @@ public class DialogHandlerService
     private readonly ICommandManager commandManager;
     private readonly IGameGui gameGui;
     private readonly ConfigManager configManager;
-    private string returnPromptText = string.Empty;
-    private long? returnPromptFirstSeenAt;
+    private long? eligibleDeathStartedAt;
 
     private DateTime lastDialogCheck = DateTime.MinValue;
     private const float DialogCheckCooldown = 0.5f;
@@ -50,14 +48,15 @@ public class DialogHandlerService
 
     public void ResetReturnPromptWait()
     {
-        returnPromptText = string.Empty;
-        returnPromptFirstSeenAt = null;
+        eligibleDeathStartedAt = null;
     }
 
     public void Update(bool returnToStartEligible)
     {
         if (!returnToStartEligible)
             ResetReturnPromptWait();
+        else
+            eligibleDeathStartedAt ??= Stopwatch.GetTimestamp();
 
         var now = DateTime.UtcNow;
         if ((now - lastDialogCheck).TotalSeconds < DialogCheckCooldown) return;
@@ -69,52 +68,25 @@ public class DialogHandlerService
         }
         catch (Exception ex)
         {
-            ResetReturnPromptWait();
             log.Error($"[MOGTOME][DialogHandler] Update failed: {ex.Message}");
         }
     }
 
-    private unsafe void TryAcceptRecognizedYesNoPrompt(bool returnToStartEligible)
+    private void TryAcceptRecognizedYesNoPrompt(bool returnToStartEligible)
     {
-        nint addonPtr = gameGui.GetAddonByName("SelectYesno", 1);
-        if (addonPtr == 0)
+        var (visible, dialogText) = ReadYesNoPrompt();
+        var returnDelayElapsed = returnToStartEligible && eligibleDeathStartedAt is { } startedAt &&
+            ReturnDelayElapsed(Stopwatch.GetElapsedTime(startedAt), configManager.GetActiveConfig().ReturnToEntranceDelaySeconds);
+        if (!visible)
         {
-            ResetReturnPromptWait();
+            if (returnDelayElapsed && IsAddonVisible("_NotificationRevive"))
+                TryFireAddonCallback("_Notification", true, 0, 1, 2);
+            // Re-read and classify the restored prompt on the next update.
             return;
         }
 
-        var addon = (AddonSelectYesno*)addonPtr;
-        if (addon == null || !addon->AtkUnitBase.IsVisible)
-        {
-            ResetReturnPromptWait();
-            return;
-        }
-
-        var promptNode = addon->PromptText;
-        if (promptNode == null || !promptNode->NodeText.StringPtr.HasValue)
-        {
-            ResetReturnPromptWait();
-            return;
-        }
-
-        var dialogText = GameText.Normalize(GameText.ReadVisibleText(promptNode->NodeText.AsSpan()));
         if (string.IsNullOrWhiteSpace(dialogText))
-        {
-            ResetReturnPromptWait();
             return;
-        }
-
-        var isReturnPrompt = returnToStartEligible &&
-            GameText.MatchesPrompt(dialogText, GamePrompt.Return);
-        if (!isReturnPrompt)
-        {
-            ResetReturnPromptWait();
-        }
-        else if (!string.Equals(dialogText, returnPromptText, StringComparison.Ordinal))
-        {
-            returnPromptText = dialogText;
-            returnPromptFirstSeenAt = Stopwatch.GetTimestamp();
-        }
 
         var now = DateTime.UtcNow;
         if (string.Equals(dialogText, lastHandledDialog, StringComparison.OrdinalIgnoreCase) &&
@@ -133,8 +105,7 @@ public class DialogHandlerService
             return;
         }
 
-        if (isReturnPrompt && returnPromptFirstSeenAt is { } firstSeenAt &&
-            ReturnDelayElapsed(Stopwatch.GetElapsedTime(firstSeenAt), configManager.GetActiveConfig().ReturnToEntranceDelaySeconds))
+        if (returnDelayElapsed)
         {
             TryAcceptPrompt(dialogText, now, GamePrompt.Return, "return to starting point");
         }
@@ -146,10 +117,10 @@ public class DialogHandlerService
         GamePrompt prompt,
         string promptKind)
     {
-        if (GameText.MatchesPrompt(dialogText, prompt))
+        if (MatchesPrompt(dialogText, prompt))
         {
 
-            if (GameHelpers.ClickYesIfVisible())
+            if (ClickYesIfVisible())
             {
                 lastHandledDialog = dialogText;
                 lastHandledDialogAt = now;
@@ -168,4 +139,24 @@ public class DialogHandlerService
 
     internal static bool ReturnDelayElapsed(TimeSpan elapsed, int delaySeconds)
         => elapsed >= TimeSpan.FromSeconds(Math.Max(1, delaySeconds));
+
+    // Keep native reads/callbacks at the boundary so the flow can be exercised without a game client.
+    internal virtual unsafe (bool Visible, string? Text) ReadYesNoPrompt()
+    {
+        var addon = (AddonSelectYesno*)gameGui.GetAddonByName("SelectYesno", 1).Address;
+        if (addon == null || !addon->AtkUnitBase.IsVisible)
+            return (false, null);
+
+        var promptNode = addon->PromptText;
+        if (promptNode == null || !promptNode->NodeText.StringPtr.HasValue)
+            return (true, null);
+
+        return (true, GameText.Normalize(GameText.ReadVisibleText(promptNode->NodeText.AsSpan())));
+    }
+
+    internal virtual bool IsAddonVisible(string addonName) => GameHelpers.IsAddonVisible(addonName);
+    internal virtual bool TryFireAddonCallback(string addonName, bool updateState, params object[] args)
+        => GameHelpers.TryFireAddonCallback(addonName, updateState, args);
+    internal virtual bool ClickYesIfVisible() => GameHelpers.ClickYesIfVisible();
+    internal virtual bool MatchesPrompt(string text, GamePrompt prompt) => GameText.MatchesPrompt(text, prompt);
 }
