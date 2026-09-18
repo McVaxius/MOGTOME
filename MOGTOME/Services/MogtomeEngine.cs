@@ -712,7 +712,7 @@ public class MogtomeEngine
         var inDuty = DutyStartupService.IsInDuty();
         var identity = DutyStartupService.ReadLiveDutyIdentity();
         var readiness = DutyStartupService.ReadReadinessConditions();
-        // Reset even on frames that return before the throttled dialog update.
+        // Observe wipes and resets even on frames before the throttled dialog update.
         if (!clientState.IsLoggedIn || readiness.IsBetweenAreas || readiness.IsBetweenAreas51 ||
             CurrentState != EngineState.InDuty || !inDuty || dutyCompleted ||
             !IsMogtomeDutyTerritory(clientState.TerritoryType) ||
@@ -721,6 +721,10 @@ public class MogtomeEngine
             Plugin.ObjectTable.LocalPlayer?.IsDead != true)
         {
             dialogHandler.ResetReturnPromptWait();
+        }
+        else
+        {
+            dialogHandler.ObservePartyDeaths(Plugin.PartyList);
         }
         confirmedDutyExitPending |= dutyStartup.ObserveReadiness(inDuty, identity, readiness, DateTime.UtcNow);
         if (!dutyStartup.CombatActivated)

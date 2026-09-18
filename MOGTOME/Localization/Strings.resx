@@ -413,7 +413,7 @@ Dalamud Settings &gt; Experimental &gt; Custom Plugin Repositories</value>
     <value>Return to entrance delay (seconds)</value>
   </data>
   <data name="Config_ReturnToEntranceDelayHelp" xml:space="preserve">
-    <value>The delay starts when death is detected in an active duty and continues while the return prompt is minimized. Minimized return prompts reopen after the delay. Default: 60 seconds; minimum: 1. Applies to ADS and AutoDuty. Raises and sealed-area moves remain immediate.</value>
+    <value>The delay starts when death is detected in an active duty and continues while the return prompt is minimized. A confirmed full-party wipe skips the delay for the current death, even if another member revives first. After the delay or a confirmed wipe, visible Return prompts are accepted on the next normal update; minimized prompts reopen and are checked on the following update. Default: 60 seconds; minimum: 1. Applies to ADS and AutoDuty. Raises and sealed-area moves remain immediate.</value>
   </data>
   <data name="Config_CurrentPraetoriumRunCountSetToFor" xml:space="preserve">
     <value>Current Praetorium run count. Set to 0 for first run of the day.</value>

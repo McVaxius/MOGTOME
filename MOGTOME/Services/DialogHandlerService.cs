@@ -14,6 +14,7 @@ public class DialogHandlerService
     private readonly IGameGui gameGui;
     private readonly ConfigManager configManager;
     private long? eligibleDeathStartedAt;
+    private bool fullPartyWipeObserved;
 
     private DateTime lastDialogCheck = DateTime.MinValue;
     private const float DialogCheckCooldown = 0.5f;
@@ -49,6 +50,26 @@ public class DialogHandlerService
     public void ResetReturnPromptWait()
     {
         eligibleDeathStartedAt = null;
+        fullPartyWipeObserved = false;
+    }
+
+    internal void ObservePartyDeaths(IPartyList party)
+    {
+        if (fullPartyWipeObserved)
+            return;
+
+        var partySize = party.Length;
+        if (partySize == 0)
+            return;
+
+        for (var i = 0; i < partySize; i++)
+        {
+            if (party[i]?.GameObject?.IsDead != true)
+                return;
+        }
+
+        // Retain a confirmed wipe for this death even if another member returns first.
+        fullPartyWipeObserved = true;
     }
 
     public void Update(bool returnToStartEligible)
@@ -75,11 +96,12 @@ public class DialogHandlerService
     private void TryAcceptRecognizedYesNoPrompt(bool returnToStartEligible)
     {
         var (visible, dialogText) = ReadYesNoPrompt();
-        var returnDelayElapsed = returnToStartEligible && eligibleDeathStartedAt is { } startedAt &&
-            ReturnDelayElapsed(Stopwatch.GetElapsedTime(startedAt), configManager.GetActiveConfig().ReturnToEntranceDelaySeconds);
+        var returnReady = returnToStartEligible && (fullPartyWipeObserved ||
+            eligibleDeathStartedAt is { } startedAt &&
+            ReturnDelayElapsed(Stopwatch.GetElapsedTime(startedAt), configManager.GetActiveConfig().ReturnToEntranceDelaySeconds));
         if (!visible)
         {
-            if (returnDelayElapsed && IsAddonVisible("_NotificationRevive"))
+            if (returnReady && IsAddonVisible("_NotificationRevive"))
                 TryFireAddonCallback("_Notification", true, 0, 1, 2);
             // Re-read and classify the restored prompt on the next update.
             return;
@@ -105,7 +127,7 @@ public class DialogHandlerService
             return;
         }
 
-        if (returnDelayElapsed)
+        if (returnReady)
         {
             TryAcceptPrompt(dialogText, now, GamePrompt.Return, "return to starting point");
         }

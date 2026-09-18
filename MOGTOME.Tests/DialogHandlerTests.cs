@@ -2,6 +2,8 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Dalamud.Game;
+using Dalamud.Game.ClientState.Objects.Types;
+using Dalamud.Game.ClientState.Party;
 using Dalamud.Plugin.Services;
 using MOGTOME.IPC;
 using MOGTOME.Models;
@@ -11,6 +13,83 @@ namespace MOGTOME.Tests;
 
 public sealed class DialogHandlerTests
 {
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void ConfirmedWipeBypassesDelayUntilTheLocalDeathEnds(bool minimized, bool useAds)
+    {
+        var run = new DialogRun(new Configuration { ReturnToEntranceDelaySeconds = 120, UseAdsExperimental = useAds });
+        var dead = DialogRun.Member(true);
+        var alive = DialogRun.Member(false);
+        run.Visible = !minimized;
+        run.Text = DialogRun.Prompt(118);
+
+        // Empty parties, missing members/objects, and individual deaths cannot confirm a wipe.
+        foreach (var members in new IPartyMember?[][] { [], [dead, null], [dead, Fake<IPartyMember>()], [dead, alive] })
+        {
+            run.ObserveParty(members);
+            run.Frame();
+            Assert.Equal(0, run.Accepts);
+            Assert.Equal(0, run.Reopens);
+        }
+
+        // Observe between dialog updates; another member returns before the next update.
+        var startedAt = run.StartedAt;
+        run.ObserveParty(dead, dead);
+        run.ObserveParty(dead, alive);
+        Assert.Equal(0, run.Accepts);
+        Assert.Equal(0, run.Reopens);
+
+        // A recorded wipe still cannot accept unrelated or unreadable prompts.
+        foreach (var text in new[] { (string?)null, "", "Accept this party invitation?", DialogRun.Prompt(109) })
+        {
+            run.Visible = true;
+            run.Text = text;
+            run.Frame();
+            Assert.Equal(0, run.Accepts);
+            Assert.Equal(0, run.Reopens);
+        }
+
+        run.Visible = !minimized;
+        run.Text = DialogRun.Prompt(118);
+        run.Frame();
+        Assert.Equal(minimized ? 1 : 0, run.Reopens);
+        Assert.Equal(minimized ? 0 : 1, run.Accepts);
+        if (minimized)
+            run.Frame(); // Restored Return is classified on the following update.
+        Assert.Equal(1, run.Accepts);
+        Assert.Equal(startedAt, run.StartedAt);
+
+        run.Frame(eligible: false); // Local revival/lost eligibility clears the recorded wipe.
+        Assert.Null(run.StartedAt);
+        run.ObserveParty(dead, alive);
+        run.Visible = false;
+        run.Frame(); // The next individual death must wait again.
+        Assert.NotNull(run.StartedAt);
+        Assert.NotEqual(startedAt, run.StartedAt);
+        Assert.Equal(minimized ? 1 : 0, run.Reopens);
+        run.Visible = true;
+        run.Text = DialogRun.Prompt(119); // Avoid the duplicate-prompt cooldown masking a stale wipe.
+        run.Frame();
+        Assert.Equal(1, run.Accepts);
+
+        run.Visible = false;
+        run.Advance(121);
+        run.Frame();
+        Assert.Equal(minimized ? 2 : 1, run.Reopens);
+        run.Frame();
+        Assert.Equal(2, run.Accepts);
+
+        run.ObserveParty(dead, dead);
+        run.Stop(); // Stop also clears the recorded wipe through the existing reset path.
+        Assert.Null(run.StartedAt);
+        run.Visible = false;
+        run.Frame();
+        Assert.Equal(minimized ? 2 : 1, run.Reopens);
+    }
+
     [Theory]
     [InlineData(60, false, false)]
     [InlineData(60, true, false)]
@@ -134,6 +213,19 @@ public sealed class DialogHandlerTests
             : base(Fake<IPluginLog>(), new YesAlreadyIPC(Fake<IPluginLog>()),
                 Fake<ICommandManager>(), Fake<IGameGui>(), Manager(config)) { }
 
+        internal void ObserveParty(params IPartyMember?[] members)
+            => ObservePartyDeaths(Fake<IPartyList>((method, args) => method.Name switch
+            {
+                "get_Length" => members.Length,
+                "get_Item" => members[(int)args![0]!],
+                _ => null,
+            }));
+
+        internal static IPartyMember Member(bool dead)
+            => Fake<IPartyMember>((method, _) => method.Name == "get_GameObject"
+                ? Fake<IGameObject>((member, _) => member.Name == "get_IsDead" ? dead : null)
+                : null);
+
         internal void Frame(bool eligible = true)
         {
             if (eligible)
@@ -201,11 +293,19 @@ public sealed class DialogHandlerTests
         }
     }
 
-    private static T Fake<T>() where T : class => DispatchProxy.Create<T, Stub>();
+    private static T Fake<T>(Func<MethodInfo, object?[]?, object?>? handler = null) where T : class
+    {
+        var fake = DispatchProxy.Create<T, Stub>();
+        ((Stub)(object)fake).Handler = handler;
+        return fake;
+    }
+
     public class Stub : DispatchProxy
     {
+        internal Func<MethodInfo, object?[]?, object?>? Handler;
         protected override object? Invoke(MethodInfo? method, object?[]? args)
-            => method!.ReturnType == typeof(void) ? null : method.ReturnType.IsValueType
-                ? Activator.CreateInstance(method.ReturnType) : null;
+            => Handler != null ? Handler(method!, args)
+                : method!.ReturnType == typeof(void) ? null : method.ReturnType.IsValueType
+                    ? Activator.CreateInstance(method.ReturnType) : null;
     }
 }
