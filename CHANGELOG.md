@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Translate windows, wizard, warnings, statuses, and ordinary chat/toast messages. Resolve displayed game names and item searches in the interface language, preserve English IPC/diagnostics, use stable control/window IDs, and include translation assemblies in the existing artifact-copy flow.
 
 ### Fixed
+- Apply DDUCK's 1.5-yalm dodge clearance through Medium cushioning in all six packaged presets and before BMR activation, including BMR movement alongside RSR.
 - Bypass the return-to-entrance delay after a confirmed full-party wipe for ADS and AutoDuty, retaining the wipe until the local death ends. Visible Return prompts are accepted on the next normal dialog update; minimized prompts reopen and are checked on the following update. Individual deaths keep the configured delay.
 - Accepted manual and DAD starts restore the approved current-job RSR healing settings after startup cleanup and checks, before rotation activation, replacing customized thresholds. IPC failures are logged without blocking Start.
 - Correct the one-based Duty Finder selection callback so Praetorium and Decumana selection and deselection target the duty found by ID.

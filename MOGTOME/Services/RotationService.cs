@@ -278,6 +278,11 @@ public class RotationService
             _ => string.Empty,
         };
         if (rotationDisableSentForDuty) return false;
+        if (aiProvider == CombatProvider.Bmr)
+        {
+            bossModIPC.SendCommand("/bmrai prefdistance 1.5", "set BMR dodge clearance");
+            if (rotationDisableSentForDuty) return false;
+        }
         enabledComponents.Add(aiProvider);
         if (command.Length == 0 || !bossModIPC.SendCommand(command, $"enable {aiProvider}"))
             return Fail(Ui.M("Rotation_CouldNotEnableUsing", aiProvider, command));
