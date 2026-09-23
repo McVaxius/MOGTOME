@@ -282,6 +282,8 @@ public class RotationService
         {
             bossModIPC.SendCommand("/bmrai prefdistance 1.5", "set BMR dodge clearance");
             if (rotationDisableSentForDuty) return false;
+            bossModIPC.SendCommand("/bmrai forbidactions off", "allow BMR actions");
+            if (rotationDisableSentForDuty) return false;
         }
         enabledComponents.Add(aiProvider);
         if (command.Length == 0 || !bossModIPC.SendCommand(command, $"enable {aiProvider}"))
