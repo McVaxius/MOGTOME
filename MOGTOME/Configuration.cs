@@ -2,6 +2,7 @@ using Dalamud.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using MOGTOME.Models;
 
@@ -10,7 +11,7 @@ namespace MOGTOME;
 [Serializable]
 public class Configuration
 {
-    public int Version { get; set; } = 1;
+    public int Version { get; set; } = 2;
     public Localization.UiLanguage? UiLanguage { get; set; }
 
     // --- Party Settings ---
@@ -44,6 +45,7 @@ public class Configuration
     // --- Repair Settings (handled by duty automation backend) ---
     public int RepairThreshold { get; set; } = 25;
     public bool UseAdsSelfRepair { get; set; } = false;
+    public AdsRepairMode AdsRepairMode { get; set; } = AdsRepairMode.NpcYesInn;
 
     // --- Debug Settings ---
     public int DebugCounter { get; set; } = 0;
@@ -164,7 +166,8 @@ public class Configuration
             }
 
             var json = File.ReadAllText(filePath);
-            var config = JsonSerializer.Deserialize<Configuration>(json, GetJsonOptions());
+            using var document = JsonDocument.Parse(json);
+            var config = document.RootElement.Deserialize<Configuration>(GetJsonOptions());
             
             if (config == null)
             {
@@ -173,6 +176,14 @@ public class Configuration
             }
 
             Plugin.Log.Debug($"[MOGTOME][Configuration] Loaded from file: {filePath}");
+            if (!document.RootElement.EnumerateObject().Any(property => property.Name.Equals("Version", StringComparison.OrdinalIgnoreCase)))
+                config.Version = 1;
+            if (config.Version < 2)
+            {
+                config.AdsRepairMode = config.UseAdsSelfRepair ? AdsRepairMode.Self : AdsRepairMode.NpcYesInn;
+                config.Version = 2;
+                config.SaveToFile(filePath);
+            }
             return config;
         }
         catch (Exception ex)
@@ -204,4 +215,11 @@ public class Configuration
         Plugin.Log.Warning("[MOGTOME][Configuration] Legacy Save() called - this should use SaveToFile with per-account path");
         // Don't call Plugin.PluginInterface.SavePluginConfig(this) anymore
     }
+}
+
+public enum AdsRepairMode
+{
+    Npc = 0,
+    Self = 1,
+    NpcYesInn = 2,
 }

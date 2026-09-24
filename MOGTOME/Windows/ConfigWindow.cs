@@ -1177,14 +1177,15 @@ public class ConfigWindow : Window, IDisposable
 
         if (config.UseAdsExperimental)
         {
-            var useAdsSelfRepair = config.UseAdsSelfRepair;
-            if (ImGui.Checkbox(Ui.L("Config_UseSelfRepair"), ref useAdsSelfRepair))
+            var repairMode = (int)config.AdsRepairMode;
+            var repairModes = new[] { Ui.T("Config_NPC"), Ui.T("Config_Self"), Ui.T("Config_NPCRepairInn") };
+            if (ImGui.Combo(Ui.L("Config_RepairMode"), ref repairMode, repairModes, repairModes.Length))
             {
-                config.UseAdsSelfRepair = useAdsSelfRepair;
+                config.AdsRepairMode = (AdsRepairMode)repairMode;
                 changed = true;
             }
 
-            UiLayout.TextDisabled(Ui.T("Config_CheckedAdsSelfrepairUncheckedAdsNpcrepair"));
+            UiLayout.TextDisabled(Ui.T("Config_RepairModeHelp"));
             ImGui.Spacing();
         }
 
@@ -1194,7 +1195,12 @@ public class ConfigWindow : Window, IDisposable
         ImGui.TextWrapped(Ui.T("Config_NonLeaderRepairsIndependentlyAfterSecondOutside"));
         ImGui.TextWrapped(Ui.T("Config_SoloTreatedAsLeaderAutomatically"));
         ImGui.TextWrapped(config.UseAdsExperimental
-            ? Ui.T("Config_ADSModeCurrentlyUsesAndAdsEnterinn", (config.UseAdsSelfRepair ? "/ads selfrepair" : "/ads npcrepair"))
+            ? Ui.T("Config_ADSRepairCommand", config.AdsRepairMode switch
+            {
+                AdsRepairMode.Self => "/ads selfrepair",
+                AdsRepairMode.NpcYesInn => "/ads npcrepair yesinn",
+                _ => "/ads npcrepair",
+            })
             : Ui.T("Config_AutoDutyModeRepairMETHODSelfNPCIs"));
         
         ImGui.Spacing();
@@ -1204,7 +1210,12 @@ public class ConfigWindow : Window, IDisposable
         ImGui.Text(Ui.T("Config_CurrentThreshold", config.RepairThreshold));
         ImGui.Text(Ui.T("Config_AutoRepair", (config.RepairThreshold > 0 ? Ui.T("Config_Enabled") : Ui.T("Config_Disabled"))));
         if (config.UseAdsExperimental)
-            ImGui.Text(Ui.T("Config_ADSRepairMethod", (config.UseAdsSelfRepair ? Ui.T("Config_Self") : Ui.T("Config_NPC"))));
+            ImGui.Text(Ui.T("Config_ADSRepairMethod", Ui.T(config.AdsRepairMode switch
+            {
+                AdsRepairMode.Self => "Config_Self",
+                AdsRepairMode.NpcYesInn => "Config_NPCRepairInn",
+                _ => "Config_NPC",
+            })));
 
         return changed;
     }

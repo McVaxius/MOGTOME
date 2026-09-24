@@ -514,11 +514,11 @@ Dalamud Settings &gt; Experimental &gt; Custom Plugin Repositories</value>
   <data name="Config_RepairWhenEquipmentDurabilityFallsBelowThis" xml:space="preserve">
     <value>Repair when equipment durability falls below this percentage. Set to 0 to disable auto-repair.</value>
   </data>
-  <data name="Config_UseSelfRepair" xml:space="preserve">
-    <value>Use self repair</value>
+  <data name="Config_RepairMode" xml:space="preserve">
+    <value>Repair mode</value>
   </data>
-  <data name="Config_CheckedAdsSelfrepairUncheckedAdsNpcrepair" xml:space="preserve">
-    <value>Checked = /ads selfrepair. Unchecked = /ads npcrepair.</value>
+  <data name="Config_RepairModeHelp" xml:space="preserve">
+    <value>NPC repair + inn room finishes only after ADS enters the room.</value>
   </data>
   <data name="Config_RepairBehavior" xml:space="preserve">
     <value>Repair Behavior:</value>
@@ -532,8 +532,8 @@ Dalamud Settings &gt; Experimental &gt; Custom Plugin Repositories</value>
   <data name="Config_SoloTreatedAsLeaderAutomatically" xml:space="preserve">
     <value>- Solo: Treated as leader automatically</value>
   </data>
-  <data name="Config_ADSModeCurrentlyUsesAndAdsEnterinn" xml:space="preserve">
-    <value>- ADS mode: currently uses {0} and /ads enterinn</value>
+  <data name="Config_ADSRepairCommand" xml:space="preserve">
+    <value>- ADS repair command: {0}</value>
   </data>
   <data name="Config_AutoDutyModeRepairMETHODSelfNPCIs" xml:space="preserve">
     <value>- AutoDuty mode: repair METHOD (self/NPC) is configured in AutoDuty settings; inn return uses /ads enterinn</value>
@@ -1998,4 +1998,10 @@ Results logged to Dalamud log.</value>
   <data name="Engine_RepairRecoveryRetry" xml:space="preserve"><value>Repair recovery retry {0}</value></data>
   <data name="Config_ObstacleMapsOn" xml:space="preserve"><value>Obstacle maps on</value></data>
   <data name="Config_ObstacleMapsOnTooltip" xml:space="preserve"><value>Controls BossMod Reborn only. Default: off. Applies on Start after BossMod readiness and rotation setup, regardless of combat provider.</value></data>
+  <data name="Config_NPCRepairInn" xml:space="preserve">
+    <value>NPC repair + inn room</value>
+  </data>
+  <data name="Engine_InnRepairFailed" xml:space="preserve">
+    <value>Inn repair failed: {0}</value>
+  </data>
 </root>

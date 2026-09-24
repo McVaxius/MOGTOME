@@ -508,11 +508,11 @@ Dalamud設定 &gt; 試験的機能 &gt; カスタムプラグインリポジト�
   <data name="Config_RepairWhenEquipmentDurabilityFallsBelowThis" xml:space="preserve">
     <value>装備の耐久度がこの割合を下回ると修理します。0にすると自動修理を無効にします。</value>
   </data>
-  <data name="Config_UseSelfRepair" xml:space="preserve">
-    <value>自分で修理</value>
+  <data name="Config_RepairMode" xml:space="preserve">
+    <value>修理モード</value>
   </data>
-  <data name="Config_CheckedAdsSelfrepairUncheckedAdsNpcrepair" xml:space="preserve">
-    <value>有効：/ads selfrepair　無効：/ads npcrepair</value>
+  <data name="Config_RepairModeHelp" xml:space="preserve">
+    <value>「NPC修理＋宿屋の部屋」は、ADSが部屋に入るまで完了しません。</value>
   </data>
   <data name="Config_RepairBehavior" xml:space="preserve">
     <value>修理の動作：</value>
@@ -526,8 +526,8 @@ Dalamud設定 &gt; 試験的機能 &gt; カスタムプラグインリポジト�
   <data name="Config_SoloTreatedAsLeaderAutomatically" xml:space="preserve">
     <value>- ソロ：自動でリーダーとして扱います</value>
   </data>
-  <data name="Config_ADSModeCurrentlyUsesAndAdsEnterinn" xml:space="preserve">
-    <value>- ADSモード：現在は {0} と /ads enterinn を使用します</value>
+  <data name="Config_ADSRepairCommand" xml:space="preserve">
+    <value>- ADSの修理コマンド：{0}</value>
   </data>
   <data name="Config_AutoDutyModeRepairMETHODSelfNPCIs" xml:space="preserve">
     <value>- AutoDutyモード：修理方法（自分/NPC）はAutoDutyで設定します。宿屋への帰還は /ads enterinn を使用します</value>
@@ -1992,4 +1992,10 @@ DictionaryPathsとPathSelectionsByPathを比較します。
   <data name="Engine_RepairRecoveryRetry" xml:space="preserve"><value>修理後の復帰を再試行 {0}</value></data>
   <data name="Config_ObstacleMapsOn" xml:space="preserve"><value>障害物マップを有効にする</value></data>
   <data name="Config_ObstacleMapsOnTooltip" xml:space="preserve"><value>BossMod Reborn のみに適用されます。既定ではオフです。選択中の戦闘プラグインに関係なく、開始時に BossMod の準備とローテーション設定が完了した後で適用されます。</value></data>
+  <data name="Config_NPCRepairInn" xml:space="preserve">
+    <value>NPC修理＋宿屋の部屋</value>
+  </data>
+  <data name="Engine_InnRepairFailed" xml:space="preserve">
+    <value>宿屋に戻る修理に失敗しました：{0}</value>
+  </data>
 </root>

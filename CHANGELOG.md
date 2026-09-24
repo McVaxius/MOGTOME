@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added regression coverage for all 16 client/interface language combinations, profile persistence and switching, resource keys and formatting, localized prompts and queue errors, inn identity, and native combat action selection. Live duty/backend and visual smoke tests remain outstanding. Version remains 0.3.1.0.
 
 ### Changed
+- Replaced the ADS self-repair checkbox with NPC, Self, and NPC repair + inn room choices. New profiles default to inn return; configuration version 2 migrates legacy NPC profiles to inn return once while retaining Self, repair thresholds, disabled repair, AutoDuty, and unrelated settings. Later selections persist across reloads. Inn repair waits for ADS utility completion before retries or duty queues resume.
 - Every accepted Start, including DAD starts, disables loaded QSTCompanion through the existing plugin-disable flow and sends `/healbot off` when HealBot (Coppelia) is loaded. Stop leaves both off.
 - Replaced English boss/action matching with numeric NPC and action IDs, including GeneralAction 3 for Limit Break. Innkeepers use event-NPC base and spawned-object IDs; inn territories use their intended-use classification.
 - Match evaluated Addon and LogMessage text in the client language, refusing unknown or unresolved prompts and vote-abandon confirmation. Preserve immediate raises/sealed-area movement, the configured return delay, queue recovery gates, and party-requirements advice.

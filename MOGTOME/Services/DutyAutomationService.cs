@@ -2,6 +2,7 @@ using MOGTOME.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Dalamud.Game.Command;
@@ -36,6 +37,7 @@ public sealed class DutyAutomationService
     private const string AdsEnterInnCommand = "/ads enterinn";
     private const string AdsSelfRepairCommand = "/ads selfrepair";
     private const string AdsNpcRepairCommand = "/ads npcrepair";
+    private const string AdsNpcInnRepairCommand = "/ads npcrepair yesinn";
     private const int AdsVisiblePollDelayMs = 500;
     private const int AdsVisiblePollAttempts = 20;
     private const int AdsInitialSettleDelayMs = 1500;
@@ -103,6 +105,9 @@ public sealed class DutyAutomationService
     private bool adsRepairHandoffActive = false;
     private bool adsRepairWaitingForCompletion = false;
     private bool adsRepairOutsideRestorePending = false;
+    private bool adsRepairReturnsToInn;
+    private DateTime adsInnRepairRequestedUtc;
+    private string adsInnRepairFailure = string.Empty;
     private DateTime adsLastOutsideArmUtc = DateTime.MinValue;
     private DateTime adsLastLeaveRequestUtc = DateTime.MinValue;
     private const float AdsFollowerOutsideArmRetrySeconds = 5.0f;
@@ -371,7 +376,58 @@ public sealed class DutyAutomationService
             return;
         }
 
-        BeginAdsRepairHandoff(AdsNpcRepairCommand, "npc repair");
+        BeginAdsRepairHandoff(Config.AdsRepairMode == AdsRepairMode.NpcYesInn ? AdsNpcInnRepairCommand : AdsNpcRepairCommand, "npc repair");
+    }
+
+    public bool IsAdsInnRepairPending(out string failure)
+    {
+        failure = string.Empty;
+        DateTime requestedUtc;
+        lock (adsRepairStateLock)
+        {
+            if (!adsRepairHandoffActive || !adsRepairReturnsToInn)
+                return false;
+            failure = adsInnRepairFailure;
+            if (failure.Length != 0)
+                return false;
+            if (!adsRepairWaitingForCompletion)
+                return true;
+            requestedUtc = adsInnRepairRequestedUtc;
+        }
+
+        if (requestedUtc == DateTime.MinValue)
+        {
+            failure = "The character was not ready to start the ADS inn repair trip.";
+            return false;
+        }
+
+        try
+        {
+            using var document = JsonDocument.Parse(Plugin.PluginInterface.GetIpcSubscriber<string>("ADS.GetStatusJson").InvokeFunc());
+            var root = document.RootElement;
+            if (root.TryGetProperty("utilityRunning", out var running) && !running.GetBoolean()
+                && root.TryGetProperty("utilityCompletedAtUtc", out var completed)
+                && completed.ValueKind == JsonValueKind.String && completed.TryGetDateTime(out var completedUtc)
+                && completedUtc >= requestedUtc)
+            {
+                failure = root.TryGetProperty("utilityLastFailure", out var error) ? error.GetString() ?? string.Empty : string.Empty;
+                if (failure.Length == 0 && (!root.TryGetProperty("utilityLastSuccess", out var success) || string.IsNullOrEmpty(success.GetString())))
+                    failure = "ADS ended the inn repair trip without a success result.";
+                return false;
+            }
+        }
+        catch (Exception ex)
+        {
+            log.Debug($"[MOGTOME][ADS][Repair] Could not read inn repair status: {ex.Message}");
+        }
+
+        // ADS's utility timeout is 120 seconds; allow its terminal status to arrive.
+        if (DateTime.UtcNow - requestedUtc > TimeSpan.FromSeconds(150))
+        {
+            failure = "Timed out waiting for ADS to complete the inn repair trip.";
+            return false;
+        }
+        return true;
     }
 
     public void RestoreAdsOutsideAfterRepair()
@@ -1107,6 +1163,9 @@ public sealed class DutyAutomationService
             adsRepairHandoffActive = true;
             adsRepairWaitingForCompletion = false;
             adsRepairOutsideRestorePending = true;
+            adsRepairReturnsToInn = repairCommand == AdsNpcInnRepairCommand;
+            adsInnRepairRequestedUtc = DateTime.MinValue;
+            adsInnRepairFailure = string.Empty;
         }
 
         ResetAdsLeaveTracking();
@@ -1140,7 +1199,19 @@ public sealed class DutyAutomationService
             await GameHelpers.RunOnFrameworkThreadAsync(() =>
             {
                 if (IsCurrentAdsRepairOperation(operationId) && Plugin.ClientState.IsLoggedIn && !DutyStartupService.IsInDuty())
-                    commandManager.ProcessCommand(repairCommand);
+                {
+                    if (repairCommand == AdsNpcInnRepairCommand)
+                    {
+                        lock (adsRepairStateLock)
+                        {
+                            adsInnRepairRequestedUtc = DateTime.UtcNow;
+                            if (!Plugin.PluginInterface.GetIpcSubscriber<string, bool>("ADS.StartRepair").InvokeFunc("npc-yes-inn"))
+                                adsInnRepairFailure = "ADS did not accept NPC repair + inn room.";
+                        }
+                    }
+                    else
+                        commandManager.ProcessCommand(repairCommand);
+                }
             }).ConfigureAwait(false);
 
             if (!IsCurrentAdsRepairOperation(operationId))
@@ -1154,11 +1225,16 @@ public sealed class DutyAutomationService
                 adsRepairWaitingForCompletion = true;
             }
 
-            log.Information($"[MOGTOME][ADS][Repair] Operation {operationId}: {repairLabel} requested; waiting for durability truth before {AdsStartOutsideCommand}");
+            log.Information($"[MOGTOME][ADS][Repair] Operation {operationId}: {repairLabel} requested; waiting for repair completion before {AdsStartOutsideCommand}");
         }
         catch (Exception ex)
         {
             log.Error($"[MOGTOME][ADS][Repair] Operation {operationId}: repair handoff failed: {ex.Message}");
+            lock (adsRepairStateLock)
+            {
+                if (activeAdsRepairOperationId == operationId)
+                    adsInnRepairFailure = ex.Message;
+            }
         }
     }
 

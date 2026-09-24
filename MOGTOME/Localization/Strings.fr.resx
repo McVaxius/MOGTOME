@@ -508,11 +508,11 @@ Paramètres Dalamud &gt; Expérimental &gt; Dépôts de plugins personnalisés</
   <data name="Config_RepairWhenEquipmentDurabilityFallsBelowThis" xml:space="preserve">
     <value>Réparer sous ce pourcentage de durabilité. Mettez 0 pour désactiver la réparation automatique.</value>
   </data>
-  <data name="Config_UseSelfRepair" xml:space="preserve">
-    <value>Réparer soi-même</value>
+  <data name="Config_RepairMode" xml:space="preserve">
+    <value>Mode de réparation</value>
   </data>
-  <data name="Config_CheckedAdsSelfrepairUncheckedAdsNpcrepair" xml:space="preserve">
-    <value>Coché = /ads selfrepair. Décoché = /ads npcrepair.</value>
+  <data name="Config_RepairModeHelp" xml:space="preserve">
+    <value>Réparation PNJ + chambre d’auberge ne se termine qu’après l’entrée dans la chambre par ADS.</value>
   </data>
   <data name="Config_RepairBehavior" xml:space="preserve">
     <value>Comportement de réparation :</value>
@@ -526,8 +526,8 @@ Paramètres Dalamud &gt; Expérimental &gt; Dépôts de plugins personnalisés</
   <data name="Config_SoloTreatedAsLeaderAutomatically" xml:space="preserve">
     <value>- Solo : traité automatiquement comme chef</value>
   </data>
-  <data name="Config_ADSModeCurrentlyUsesAndAdsEnterinn" xml:space="preserve">
-    <value>- Mode ADS : utilise actuellement {0} et /ads enterinn</value>
+  <data name="Config_ADSRepairCommand" xml:space="preserve">
+    <value>- Commande de réparation ADS : {0}</value>
   </data>
   <data name="Config_AutoDutyModeRepairMETHODSelfNPCIs" xml:space="preserve">
     <value>- Mode AutoDuty : la méthode de réparation (soi-même/PNJ) se règle dans AutoDuty ; retour à l'auberge via /ads enterinn</value>
@@ -1992,4 +1992,10 @@ Résultats dans le journal Dalamud.</value>
   <data name="Engine_RepairRecoveryRetry" xml:space="preserve"><value>Nouvelle tentative de reprise après réparation {0}</value></data>
   <data name="Config_ObstacleMapsOn" xml:space="preserve"><value>Activer les cartes d'obstacles</value></data>
   <data name="Config_ObstacleMapsOnTooltip" xml:space="preserve"><value>Contrôle uniquement BossMod Reborn. Désactivé par défaut. S'applique au démarrage, une fois BossMod prêt et la rotation configurée, quel que soit le fournisseur de combat.</value></data>
+  <data name="Config_NPCRepairInn" xml:space="preserve">
+    <value>Réparation PNJ + chambre d’auberge</value>
+  </data>
+  <data name="Engine_InnRepairFailed" xml:space="preserve">
+    <value>Échec de la réparation avec retour à l’auberge : {0}</value>
+  </data>
 </root>

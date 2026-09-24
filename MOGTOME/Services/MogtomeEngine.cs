@@ -1731,6 +1731,18 @@ public class MogtomeEngine
             return;
         }
 
+        // yesinn owns repair and travel, including the interval after durability recovers.
+        if (dutyAutomationService.IsAdsInnRepairPending(out var innRepairFailure))
+        {
+            Status = Ui.M("Automation_RepairWaiting");
+            return;
+        }
+        if (!string.IsNullOrEmpty(innRepairFailure))
+        {
+            StopWithReason(Ui.M("Engine_InnRepairFailed", innRepairFailure));
+            return;
+        }
+
         // Repair completion must win over stale cached state before retrying commands.
         if (repairService.NeedsRepair(forceRefresh: true))
         {
@@ -1766,7 +1778,7 @@ public class MogtomeEngine
         if (!dutyAutomationService.UseAdsExperimental)
             return !state.IsPartyLeader;
 
-        return !config.UseAdsSelfRepair;
+        return config.AdsRepairMode != AdsRepairMode.Self;
     }
 
     private void EnterRepairMode(bool useNpcRepair, UiText statusMessage)

@@ -508,11 +508,11 @@ Dalamud-Einstellungen &gt; Experimentell &gt; Benutzerdefinierte Plugin-Reposito
   <data name="Config_RepairWhenEquipmentDurabilityFallsBelowThis" xml:space="preserve">
     <value>Reparieren, wenn die Haltbarkeit unter diesen Prozentsatz fällt. 0 deaktiviert automatische Reparaturen.</value>
   </data>
-  <data name="Config_UseSelfRepair" xml:space="preserve">
-    <value>Selbst reparieren</value>
+  <data name="Config_RepairMode" xml:space="preserve">
+    <value>Reparaturmodus</value>
   </data>
-  <data name="Config_CheckedAdsSelfrepairUncheckedAdsNpcrepair" xml:space="preserve">
-    <value>Aktiviert = /ads selfrepair. Deaktiviert = /ads npcrepair.</value>
+  <data name="Config_RepairModeHelp" xml:space="preserve">
+    <value>NPC-Reparatur + Gästezimmer endet erst, wenn ADS das Zimmer betreten hat.</value>
   </data>
   <data name="Config_RepairBehavior" xml:space="preserve">
     <value>Reparaturverhalten:</value>
@@ -526,8 +526,8 @@ Dalamud-Einstellungen &gt; Experimentell &gt; Benutzerdefinierte Plugin-Reposito
   <data name="Config_SoloTreatedAsLeaderAutomatically" xml:space="preserve">
     <value>- Solo: Wird automatisch als Leiter behandelt</value>
   </data>
-  <data name="Config_ADSModeCurrentlyUsesAndAdsEnterinn" xml:space="preserve">
-    <value>- ADS-Modus: Verwendet derzeit {0} und /ads enterinn</value>
+  <data name="Config_ADSRepairCommand" xml:space="preserve">
+    <value>- ADS-Reparaturbefehl: {0}</value>
   </data>
   <data name="Config_AutoDutyModeRepairMETHODSelfNPCIs" xml:space="preserve">
     <value>- AutoDuty-Modus: Reparaturmethode (selbst/NPC) in AutoDuty einstellen; Rückkehr ins Gästezimmer mit /ads enterinn</value>
@@ -1992,4 +1992,10 @@ Ergebnisse im Dalamud-Protokoll.</value>
   <data name="Engine_RepairRecoveryRetry" xml:space="preserve"><value>Wiederaufnahme nach Reparatur, Versuch {0}</value></data>
   <data name="Config_ObstacleMapsOn" xml:space="preserve"><value>Hinderniskarten aktivieren</value></data>
   <data name="Config_ObstacleMapsOnTooltip" xml:space="preserve"><value>Steuert nur BossMod Reborn. Standardmäßig aus. Wird beim Start angewendet, sobald BossMod bereit und die Rotation eingerichtet ist, unabhängig vom gewählten Kampfanbieter.</value></data>
+  <data name="Config_NPCRepairInn" xml:space="preserve">
+    <value>NPC-Reparatur + Gästezimmer</value>
+  </data>
+  <data name="Engine_InnRepairFailed" xml:space="preserve">
+    <value>Reparatur mit Gasthausrückkehr fehlgeschlagen: {0}</value>
+  </data>
 </root>

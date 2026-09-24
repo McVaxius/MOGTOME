@@ -334,6 +334,67 @@ public sealed class LocalizationTests : IDisposable
         }
     }
 
+    [Fact]
+    public void InnRepairMigrationIsSavedOnceAndPreservesLaterSelections()
+    {
+        SetService("Log", Fake<IPluginLog>());
+        Assert.Equal(AdsRepairMode.NpcYesInn, new Configuration().AdsRepairMode);
+        Assert.Equal(2, new Configuration().Version);
+        var directory = Path.Combine(Path.GetTempPath(), "MogtomeRepairMigrationTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        try
+        {
+            foreach (var selfRepair in new[] { false, true })
+            foreach (var threshold in new[] { -1, 0, 25, 80 })
+            foreach (var includeVersion in new[] { false, true })
+            {
+                var path = Path.Combine(directory, "profile.json");
+                var legacy = new Dictionary<string, object>
+                {
+                    ["UseAdsSelfRepair"] = selfRepair,
+                    ["RepairThreshold"] = threshold,
+                    ["UseAdsExperimental"] = false,
+                    ["AutoDutyPathInstalled"] = true,
+                    ["ReturnToEntranceDelaySeconds"] = 91,
+                    ["MaxRuns"] = 123,
+                    ["FoodItemId"] = 456,
+                };
+                if (includeVersion)
+                    legacy["Version"] = 1;
+                File.WriteAllText(path, JsonSerializer.Serialize(legacy));
+
+                var migrated = Configuration.LoadFromFile(path);
+                Assert.Equal(selfRepair ? AdsRepairMode.Self : AdsRepairMode.NpcYesInn, migrated.AdsRepairMode);
+                var saved = File.ReadAllText(path);
+                Assert.Equal(2, JsonSerializer.Deserialize<Configuration>(saved)!.Version);
+                Assert.Equal(migrated.AdsRepairMode, JsonSerializer.Deserialize<Configuration>(saved)!.AdsRepairMode);
+                var reloaded = Configuration.LoadFromFile(path);
+                Assert.Equal(migrated.AdsRepairMode, reloaded.AdsRepairMode);
+                Assert.Equal(saved, File.ReadAllText(path));
+
+                // Even a legacy Self flag must not override a choice made after migration.
+                reloaded.AdsRepairMode = AdsRepairMode.Npc;
+                reloaded.SaveToFile(path);
+                for (var reload = 0; reload < 2; reload++)
+                {
+                    reloaded = Configuration.LoadFromFile(path);
+                    Assert.Equal(2, reloaded.Version);
+                    Assert.Equal(AdsRepairMode.Npc, reloaded.AdsRepairMode);
+                    Assert.Equal(threshold, reloaded.RepairThreshold);
+                    Assert.False(reloaded.UseAdsExperimental);
+                    Assert.True(reloaded.AutoDutyPathInstalled);
+                    Assert.Equal(91, reloaded.ReturnToEntranceDelaySeconds);
+                    Assert.Equal(123, reloaded.MaxRuns);
+                    Assert.Equal(456, reloaded.FoodItemId);
+                }
+            }
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
     private void SetService(string name, object value)
     {
         var property = typeof(Plugin).GetProperty(name, BindingFlags.Static | BindingFlags.NonPublic)!;
