@@ -1998,4 +1998,28 @@ Résultats dans le journal Dalamud.</value>
   <data name="Engine_InnRepairFailed" xml:space="preserve">
     <value>Échec de la réparation avec retour à l’auberge : {0}</value>
   </data>
+  <data name="Config_NPCRepairInnUldah" xml:space="preserve">
+    <value>Réparation PNJ + chambre d’auberge — Ul’dah</value>
+  </data>
+  <data name="Config_NPCRepairInnGridania" xml:space="preserve">
+    <value>Réparation PNJ + chambre d’auberge — Gridania</value>
+  </data>
+  <data name="Config_NPCRepairInnLimsa" xml:space="preserve">
+    <value>Réparation PNJ + chambre d’auberge — Limsa Lominsa</value>
+  </data>
+  <data name="Config_NPCRepairInnIshgard" xml:space="preserve">
+    <value>Réparation PNJ + chambre d’auberge — Ishgard</value>
+  </data>
+  <data name="Config_NPCRepairInnCrystarium" xml:space="preserve">
+    <value>Réparation PNJ + chambre d’auberge — Cristarium</value>
+  </data>
+  <data name="Config_NPCRepairInnSharlayan" xml:space="preserve">
+    <value>Réparation PNJ + chambre d’auberge — Vieille Sharlayan</value>
+  </data>
+  <data name="Config_NPCRepairInnTuliyollal" xml:space="preserve">
+    <value>Réparation PNJ + chambre d’auberge — Tuliyollal</value>
+  </data>
+  <data name="Config_UnsupportedADSRepairMode" xml:space="preserve">
+    <value>Mode de réparation ADS non pris en charge</value>
+  </data>
 </root>

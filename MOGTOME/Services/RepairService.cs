@@ -7,6 +7,36 @@ namespace MOGTOME.Services;
 
 public class RepairService
 {
+    internal static string GetAdsRepairCommand(AdsRepairMode mode) => mode switch
+    {
+        AdsRepairMode.Npc => "/ads npcrepair",
+        AdsRepairMode.Self => "/ads selfrepair",
+        AdsRepairMode.NpcYesInn => "/ads npcrepair yesinn",
+        AdsRepairMode.NpcYesInnUldah => "/ads npcrepair yesinn uldah",
+        AdsRepairMode.NpcYesInnGridania => "/ads npcrepair yesinn gridania",
+        AdsRepairMode.NpcYesInnLimsa => "/ads npcrepair yesinn limsa",
+        AdsRepairMode.NpcYesInnIshgard => "/ads npcrepair yesinn ishgard",
+        AdsRepairMode.NpcYesInnCrystarium => "/ads npcrepair yesinn crystarium",
+        AdsRepairMode.NpcYesInnSharlayan => "/ads npcrepair yesinn sharlayan",
+        AdsRepairMode.NpcYesInnTuliyollal => "/ads npcrepair yesinn tuliyollal",
+        _ => string.Empty,
+    };
+
+    internal static string GetAdsRepairLabelKey(AdsRepairMode mode) => mode switch
+    {
+        AdsRepairMode.Npc => "Config_NPC",
+        AdsRepairMode.Self => "Config_Self",
+        AdsRepairMode.NpcYesInn => "Config_NPCRepairInn",
+        AdsRepairMode.NpcYesInnUldah => "Config_NPCRepairInnUldah",
+        AdsRepairMode.NpcYesInnGridania => "Config_NPCRepairInnGridania",
+        AdsRepairMode.NpcYesInnLimsa => "Config_NPCRepairInnLimsa",
+        AdsRepairMode.NpcYesInnIshgard => "Config_NPCRepairInnIshgard",
+        AdsRepairMode.NpcYesInnCrystarium => "Config_NPCRepairInnCrystarium",
+        AdsRepairMode.NpcYesInnSharlayan => "Config_NPCRepairInnSharlayan",
+        AdsRepairMode.NpcYesInnTuliyollal => "Config_NPCRepairInnTuliyollal",
+        _ => "Config_UnsupportedADSRepairMode",
+    };
+
     private readonly IPluginLog log;
     private Configuration config; // Remove readonly to allow updates
     private readonly DutyState state;

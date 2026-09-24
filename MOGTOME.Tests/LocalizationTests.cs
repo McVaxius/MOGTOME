@@ -373,19 +373,22 @@ public sealed class LocalizationTests : IDisposable
                 Assert.Equal(saved, File.ReadAllText(path));
 
                 // Even a legacy Self flag must not override a choice made after migration.
-                reloaded.AdsRepairMode = AdsRepairMode.Npc;
-                reloaded.SaveToFile(path);
-                for (var reload = 0; reload < 2; reload++)
+                foreach (var selection in Enum.GetValues<AdsRepairMode>())
                 {
-                    reloaded = Configuration.LoadFromFile(path);
-                    Assert.Equal(2, reloaded.Version);
-                    Assert.Equal(AdsRepairMode.Npc, reloaded.AdsRepairMode);
-                    Assert.Equal(threshold, reloaded.RepairThreshold);
-                    Assert.False(reloaded.UseAdsExperimental);
-                    Assert.True(reloaded.AutoDutyPathInstalled);
-                    Assert.Equal(91, reloaded.ReturnToEntranceDelaySeconds);
-                    Assert.Equal(123, reloaded.MaxRuns);
-                    Assert.Equal(456, reloaded.FoodItemId);
+                    reloaded.AdsRepairMode = selection;
+                    reloaded.SaveToFile(path);
+                    for (var reload = 0; reload < 2; reload++)
+                    {
+                        reloaded = Configuration.LoadFromFile(path);
+                        Assert.Equal(2, reloaded.Version);
+                        Assert.Equal(selection, reloaded.AdsRepairMode);
+                        Assert.Equal(threshold, reloaded.RepairThreshold);
+                        Assert.False(reloaded.UseAdsExperimental);
+                        Assert.True(reloaded.AutoDutyPathInstalled);
+                        Assert.Equal(91, reloaded.ReturnToEntranceDelaySeconds);
+                        Assert.Equal(123, reloaded.MaxRuns);
+                        Assert.Equal(456, reloaded.FoodItemId);
+                    }
                 }
             }
         }

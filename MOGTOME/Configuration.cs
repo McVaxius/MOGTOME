@@ -222,4 +222,11 @@ public enum AdsRepairMode
     Npc = 0,
     Self = 1,
     NpcYesInn = 2,
+    NpcYesInnUldah = 3,
+    NpcYesInnGridania = 4,
+    NpcYesInnLimsa = 5,
+    NpcYesInnIshgard = 6,
+    NpcYesInnCrystarium = 7,
+    NpcYesInnSharlayan = 8,
+    NpcYesInnTuliyollal = 9,
 }

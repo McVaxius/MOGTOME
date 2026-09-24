@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Added seven localized ADS NPC repair + inn room destinations: Ul’dah, Gridania, Limsa Lominsa, Ishgard, Crystarium, Old Sharlayan, and Tuliyollal. Existing selections, the default, configuration version/migration, thresholds, and AutoDuty behavior are unchanged. Destination handoffs use ADS.StartRepair and wait for its terminal room-entry result; unsupported or rejected requests fail without substituting a destination.
 - Added the saved, per-account **Obstacle maps on** switch in Advanced, defaulting to off, with English, French, German, and Japanese labels and tooltips. Accepted startup sends the selected state to BossMod Reborn on the framework thread after readiness/reload and rotation setup, regardless of combat provider. VBM is unaffected; Stop does not restore the setting.
 - Added a per-account return-to-entrance delay in the Duty settings tab, translated into all four interface languages. Defaults to 60 seconds for new and existing profiles, with a one-second minimum, for both ADS and AutoDuty.
 - Added English, French, German, and Japanese interface resources and a main-window language selector saved per account profile. Profiles without a selection initialize from the game client language; the interface choice remains independent of game-text recognition and can change during automation.

@@ -251,6 +251,80 @@ public sealed class DutyRecoveryTests
         => Assert.NotNull(AdsIntegrationPolicy.GetDutyLeaveBlocker(1044, true, (territory, cfc),
             Ready with { IsLoggedIn = loggedIn, IsWatchingCutscene78 = cutscene }, false, occupied));
 
+    [Fact]
+    public async Task InnDestinationsPreserveSavedValuesAndWaitForAdsTerminalResult()
+    {
+        var destinations = new[] { "uldah", "gridania", "limsa", "ishgard", "crystarium", "sharlayan", "tuliyollal" };
+        Assert.Equal(0, (int)AdsRepairMode.Npc);
+        Assert.Equal(1, (int)AdsRepairMode.Self);
+        Assert.Equal(2, (int)AdsRepairMode.NpcYesInn);
+        using var run = new Run();
+        for (var index = 2; index <= 9; index++)
+        {
+            var mode = (AdsRepairMode)index;
+            var suffix = index == 2 ? "" : " " + destinations[index - 3];
+            Assert.Equal("/ads npcrepair yesinn" + suffix, RepairService.GetAdsRepairCommand(mode));
+            foreach (var language in Enum.GetValues<MOGTOME.Localization.UiLanguage>())
+            {
+                var original = MOGTOME.Localization.Ui.Language;
+                try
+                {
+                    MOGTOME.Localization.Ui.SetLanguage(language);
+                    var key = RepairService.GetAdsRepairLabelKey(mode);
+                    Assert.NotEqual(key, MOGTOME.Localization.Ui.T(key));
+                    if (index > 2) Assert.Contains(" — ", MOGTOME.Localization.Ui.T(key));
+                }
+                finally { MOGTOME.Localization.Ui.SetLanguage(original); }
+            }
+            run.Config.AdsRepairMode = mode;
+            run.RepairStatus = "{\"utilityRunning\":true}";
+            run.Automation.RequestNpcRepair();
+            Assert.True(run.Automation.IsAdsInnRepairPending(out var failure));
+            Assert.Empty(failure);
+            var deadline = DateTime.UtcNow.AddSeconds(10);
+            while (!run.Automation.IsAdsRepairWaitingForCompletion && DateTime.UtcNow < deadline)
+            {
+                run.Pump();
+                await Task.Delay(10);
+            }
+            Assert.True(run.Automation.IsAdsRepairWaitingForCompletion);
+            Assert.Equal(index == 2 ? "npc-yes-inn" : "npc-yes-inn-" + destinations[index - 3], run.RepairModes[^1]);
+            Assert.True(run.Automation.IsAdsInnRepairPending(out failure));
+            Assert.Empty(failure);
+            Assert.DoesNotContain(run.Commands, command => command.StartsWith("/ads npcrepair"));
+
+            string Terminal(DateTime time, string success, string error) => System.Text.Json.JsonSerializer.Serialize(new
+            { utilityRunning = false, utilityCompletedAtUtc = time, utilityLastSuccess = success, utilityLastFailure = error });
+            run.RepairStatus = Terminal(DateTime.UtcNow.AddMinutes(-5), "old entry", "");
+            Assert.True(run.Automation.IsAdsInnRepairPending(out _));
+            run.RepairStatus = Terminal(DateTime.UtcNow, "confirmed room entry", "");
+            Assert.False(run.Automation.IsAdsInnRepairPending(out failure));
+            Assert.Empty(failure);
+            run.RepairStatus = Terminal(DateTime.UtcNow, "", "entry failed");
+            Assert.False(run.Automation.IsAdsInnRepairPending(out failure));
+            Assert.Equal("entry failed", failure);
+            run.Automation.CancelPendingOperations("test complete");
+        }
+        run.Config.AdsRepairMode = (AdsRepairMode)999;
+        var count = run.RepairModes.Count;
+        run.Automation.RequestNpcRepair();
+        Assert.False(run.Automation.IsAdsInnRepairPending(out var unsupported));
+        Assert.Contains("Unsupported", unsupported);
+        Assert.Equal(count, run.RepairModes.Count);
+        run.Automation.CancelPendingOperations("test complete");
+        run.Config.AdsRepairMode = AdsRepairMode.NpcYesInnUldah;
+        run.AcceptRepair = false;
+        run.Automation.RequestNpcRepair();
+        var end = DateTime.UtcNow.AddSeconds(10);
+        while (!run.Automation.IsAdsRepairWaitingForCompletion && DateTime.UtcNow < end)
+        {
+            run.Pump();
+            await Task.Delay(10);
+        }
+        Assert.False(run.Automation.IsAdsInnRepairPending(out var rejected));
+        Assert.Contains("did not accept", rejected);
+    }
+
     private sealed class Run : IDisposable
     {
         internal readonly Configuration Config = new() { UseAdsExperimental = true, CombatProvider = CombatProvider.Wrath, EnableDetailedTracking = true, BailoutTimeout = 100 };
@@ -264,7 +338,10 @@ public sealed class DutyRecoveryTests
         internal readonly RunHistoryService History;
         internal uint[] PartyTerritories = [];
         internal string? ThrowOnCommand;
-        private readonly Queue<Action> scheduled = new();
+        internal readonly List<string> RepairModes = [];
+        internal string RepairStatus = "{}";
+        internal bool AcceptRepair = true;
+        private readonly System.Collections.Concurrent.ConcurrentQueue<Action> scheduled = new();
         private readonly Dictionary<string, object?> originalStatics = new();
 
         internal Run()
@@ -291,7 +368,23 @@ public sealed class DutyRecoveryTests
                 return Default(method.ReturnType);
             });
             var requests = new HashSet<string>();
-            var pi = Fake<IDalamudPluginInterface>((method, _) => method.Name == "GetOrCreateData" ? requests : Default(method.ReturnType));
+            var pi = Fake<IDalamudPluginInterface>((method, args) =>
+            {
+                if (method.Name == "GetOrCreateData") return requests;
+                if (method.Name == "GetIpcSubscriber" && args![0] is string name && name.StartsWith("ADS."))
+                {
+                    object? Call(MethodInfo member, object?[]? values)
+                    {
+                        if (member.Name != "InvokeFunc") return Default(member.ReturnType);
+                        if (name == "ADS.GetStatusJson") return RepairStatus;
+                        if (name == "ADS.StartRepair") { RepairModes.Add((string)values![0]!); return AcceptRepair; }
+                        return Default(member.ReturnType);
+                    }
+                    return typeof(DutyRecoveryTests).GetMethod(nameof(Fake), BindingFlags.Static | BindingFlags.NonPublic)!
+                        .MakeGenericMethod(method.ReturnType).Invoke(null, new object[] { (Func<MethodInfo, object?[]?, object?>)Call });
+                }
+                return Default(method.ReturnType);
+            });
             var party = Fake<IPartyList>((method, args) => method.Name switch
             {
                 "get_Length" => PartyTerritories.Length,

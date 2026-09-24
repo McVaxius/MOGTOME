@@ -376,7 +376,7 @@ public sealed class DutyAutomationService
             return;
         }
 
-        BeginAdsRepairHandoff(Config.AdsRepairMode == AdsRepairMode.NpcYesInn ? AdsNpcInnRepairCommand : AdsNpcRepairCommand, "npc repair");
+        BeginAdsRepairHandoff(RepairService.GetAdsRepairCommand(Config.AdsRepairMode), "npc repair");
     }
 
     public bool IsAdsInnRepairPending(out string failure)
@@ -1163,10 +1163,13 @@ public sealed class DutyAutomationService
             adsRepairHandoffActive = true;
             adsRepairWaitingForCompletion = false;
             adsRepairOutsideRestorePending = true;
-            adsRepairReturnsToInn = repairCommand == AdsNpcInnRepairCommand;
+            adsRepairReturnsToInn = repairCommand != AdsNpcRepairCommand && repairCommand != AdsSelfRepairCommand;
             adsInnRepairRequestedUtc = DateTime.MinValue;
-            adsInnRepairFailure = string.Empty;
+            adsInnRepairFailure = string.IsNullOrEmpty(repairCommand) ? "Unsupported ADS repair mode." : string.Empty;
         }
+
+        if (string.IsNullOrEmpty(repairCommand))
+            return;
 
         ResetAdsLeaveTracking();
         adsLeaderOutsideOwned = false;
@@ -1200,13 +1203,15 @@ public sealed class DutyAutomationService
             {
                 if (IsCurrentAdsRepairOperation(operationId) && Plugin.ClientState.IsLoggedIn && !DutyStartupService.IsInDuty())
                 {
-                    if (repairCommand == AdsNpcInnRepairCommand)
+                    if (repairCommand == AdsNpcInnRepairCommand || repairCommand.StartsWith(AdsNpcInnRepairCommand + " ", StringComparison.Ordinal))
                     {
                         lock (adsRepairStateLock)
                         {
                             adsInnRepairRequestedUtc = DateTime.UtcNow;
-                            if (!Plugin.PluginInterface.GetIpcSubscriber<string, bool>("ADS.StartRepair").InvokeFunc("npc-yes-inn"))
-                                adsInnRepairFailure = "ADS did not accept NPC repair + inn room.";
+                            var destination = repairCommand[AdsNpcInnRepairCommand.Length..].Trim();
+                            var mode = destination.Length == 0 ? "npc-yes-inn" : $"npc-yes-inn-{destination}";
+                            if (!Plugin.PluginInterface.GetIpcSubscriber<string, bool>("ADS.StartRepair").InvokeFunc(mode))
+                                adsInnRepairFailure = $"ADS did not accept repair mode {mode}.";
                         }
                     }
                     else
