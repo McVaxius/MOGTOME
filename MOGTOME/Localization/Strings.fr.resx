@@ -2022,4 +2022,22 @@ Résultats dans le journal Dalamud.</value>
   <data name="Config_UnsupportedADSRepairMode" xml:space="preserve">
     <value>Mode de réparation ADS non pris en charge</value>
   </data>
+  <data name="Window_BlundervilleFailer" xml:space="preserve">
+    <value>Blunderville Failer</value>
+  </data>
+  <data name="Plugin_CommandBlundervilleHelp" xml:space="preserve">
+    <value>Ouvrir l’aperçu de Blunderville Failer (/blunderville ou /bv).</value>
+  </data>
+  <data name="Blunderville_OpenMogtome" xml:space="preserve">
+    <value>Ouvrir MOGTOME</value>
+  </data>
+  <data name="Blunderville_FarmingUnavailable" xml:space="preserve">
+    <value>Aperçu uniquement : le farming de Blunderville est indisponible. Les boutons Démarrer et Arrêter sont désactivés.</value>
+  </data>
+  <data name="Blunderville_PurchasesUnavailable" xml:space="preserve">
+    <value>Aperçu uniquement : les achats via ADS sont indisponibles. La configuration des achats est désactivée.</value>
+  </data>
+  <data name="Blunderville_ConfigurePurchases" xml:space="preserve">
+    <value>Configurer les achats</value>
+  </data>
 </root>

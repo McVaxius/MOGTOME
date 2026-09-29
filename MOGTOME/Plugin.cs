@@ -51,9 +51,12 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static IDutyState DutyStateService { get; private set; } = null!;
     [PluginService] internal static IDataManager DataManager { get; private set; } = null!;
     [PluginService] internal static ISeStringEvaluator SeStringEvaluator { get; private set; } = null!;
+    [PluginService] internal static ITextureProvider TextureProvider { get; private set; } = null!;
 
     private const string CommandName = "/mogtome";
     private const string AliasCommandName = "/mog";
+    private const string BlundervilleCommandName = "/blunderville";
+    private const string BlundervilleAliasCommandName = "/bv";
     private const string AdsEnterInnCommand = "/ads enterinn";
     private const string XaSkipCutscenesCommand = "/xa skipcutscenes on";
 
@@ -92,6 +95,7 @@ public sealed class Plugin : IDalamudPlugin
     public readonly WindowSystem WindowSystem = new("MOGTOME");
     public ConfigWindow ConfigWindow { get; init; }
     public MainWindow MainWindow { get; init; }
+    public BlundervilleWindow BlundervilleWindow { get; init; }
     public StatsWindow StatsWindow { get; init; }
     public ActionWarningWindow ActionWarningWindow { get; init; }
     public WarningTextWindow WarningTextWindow { get; init; }
@@ -168,11 +172,13 @@ public sealed class Plugin : IDalamudPlugin
         // Windows
         ConfigWindow = new ConfigWindow(this, Log);
         MainWindow = new MainWindow(this);
+        BlundervilleWindow = new BlundervilleWindow(this);
         StatsWindow = new StatsWindow(this);
         ActionWarningWindow = new ActionWarningWindow();
         WarningTextWindow = new WarningTextWindow(this);
         WindowSystem.AddWindow(ConfigWindow);
         WindowSystem.AddWindow(MainWindow);
+        WindowSystem.AddWindow(BlundervilleWindow);
         WindowSystem.AddWindow(StatsWindow);
         WindowSystem.AddWindow(ActionWarningWindow);
         WindowSystem.AddWindow(WarningTextWindow);
@@ -186,8 +192,14 @@ public sealed class Plugin : IDalamudPlugin
         {
             HelpMessage = Ui.T("Plugin_CommandAliasHelp")
         };
+        blundervilleCommandInfo = new CommandInfo(OnBlundervilleCommand)
+        {
+            HelpMessage = Ui.T("Plugin_CommandBlundervilleHelp")
+        };
         CommandManager.AddHandler(CommandName, mainCommandInfo);
         CommandManager.AddHandler(AliasCommandName, aliasCommandInfo);
+        CommandManager.AddHandler(BlundervilleCommandName, blundervilleCommandInfo);
+        CommandManager.AddHandler(BlundervilleAliasCommandName, blundervilleCommandInfo);
 
         AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
         TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
@@ -237,6 +249,7 @@ public sealed class Plugin : IDalamudPlugin
         WindowSystem.RemoveAllWindows();
         ConfigWindow.Dispose();
         MainWindow.Dispose();
+        BlundervilleWindow.Dispose();
         StatsWindow.Dispose();
         ActionWarningWindow.Dispose();
         WarningTextWindow.Dispose();
@@ -251,6 +264,8 @@ public sealed class Plugin : IDalamudPlugin
 
         CommandManager.RemoveHandler(AliasCommandName);
         CommandManager.RemoveHandler(CommandName);
+        CommandManager.RemoveHandler(BlundervilleAliasCommandName);
+        CommandManager.RemoveHandler(BlundervilleCommandName);
 
         Log.Information("=== MOGTOME unloaded! ===");
     }
@@ -260,9 +275,15 @@ public sealed class Plugin : IDalamudPlugin
         MainWindow.Toggle();
     }
 
+    private void OnBlundervilleCommand(string command, string args)
+    {
+        BlundervilleWindow.IsOpen = true;
+    }
+
     private UiLanguage? commandHelpLanguage;
     private readonly CommandInfo mainCommandInfo;
     private readonly CommandInfo aliasCommandInfo;
+    private readonly CommandInfo blundervilleCommandInfo;
 
     private void DrawUi()
     {
@@ -272,6 +293,7 @@ public sealed class Plugin : IDalamudPlugin
         {
             mainCommandInfo.HelpMessage = Ui.T("Plugin_CommandMainHelp");
             aliasCommandInfo.HelpMessage = Ui.T("Plugin_CommandAliasHelp");
+            blundervilleCommandInfo.HelpMessage = Ui.T("Plugin_CommandBlundervilleHelp");
             commandHelpLanguage = Ui.Language;
         }
         WindowSystem.Draw();

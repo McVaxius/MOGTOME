@@ -2028,4 +2028,22 @@ Results logged to Dalamud log.</value>
   <data name="Config_UnsupportedADSRepairMode" xml:space="preserve">
     <value>Unsupported ADS repair mode</value>
   </data>
+  <data name="Window_BlundervilleFailer" xml:space="preserve">
+    <value>Blunderville Failer</value>
+  </data>
+  <data name="Plugin_CommandBlundervilleHelp" xml:space="preserve">
+    <value>Open the Blunderville Failer preview (/blunderville or /bv).</value>
+  </data>
+  <data name="Blunderville_OpenMogtome" xml:space="preserve">
+    <value>Open MOGTOME</value>
+  </data>
+  <data name="Blunderville_FarmingUnavailable" xml:space="preserve">
+    <value>Preview only: Blunderville farming is unavailable. Start and Stop are disabled.</value>
+  </data>
+  <data name="Blunderville_PurchasesUnavailable" xml:space="preserve">
+    <value>Preview only: ADS purchasing is unavailable. Purchase configuration is disabled.</value>
+  </data>
+  <data name="Blunderville_ConfigurePurchases" xml:space="preserve">
+    <value>Configure purchases</value>
+  </data>
 </root>

@@ -95,6 +95,14 @@ public class MainWindow : Window, IDisposable
         
         ImGui.Separator();
 
+        ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.65f, 0.18f, 0.40f, 1f));
+        ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.80f, 0.27f, 0.52f, 1f));
+        ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.56f, 0.12f, 0.32f, 1f));
+        if (UiLayout.Button(Ui.L("Window_BlundervilleFailer")))
+            plugin.BlundervilleWindow.IsOpen = true;
+        ImGui.PopStyleColor(3);
+        ImGui.Separator();
+
         ImGui.BeginDisabled(!plugin.CanSelectUiLanguage);
         var language = (int)Ui.Language;
         ImGui.SetNextItemWidth(200 * ImGuiHelpers.GlobalScale);

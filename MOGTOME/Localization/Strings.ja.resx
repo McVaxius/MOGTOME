@@ -2022,4 +2022,22 @@ DictionaryPathsとPathSelectionsByPathを比較します。
   <data name="Config_UnsupportedADSRepairMode" xml:space="preserve">
     <value>未対応のADS修理モード</value>
   </data>
+  <data name="Window_BlundervilleFailer" xml:space="preserve">
+    <value>Blunderville Failer</value>
+  </data>
+  <data name="Plugin_CommandBlundervilleHelp" xml:space="preserve">
+    <value>Blunderville Failer のプレビューを開きます（/blunderville または /bv）。</value>
+  </data>
+  <data name="Blunderville_OpenMogtome" xml:space="preserve">
+    <value>MOGTOMEを開く</value>
+  </data>
+  <data name="Blunderville_FarmingUnavailable" xml:space="preserve">
+    <value>プレビュー専用：ブランダーヴィルの周回機能は利用できません。開始・停止ボタンは無効です。</value>
+  </data>
+  <data name="Blunderville_PurchasesUnavailable" xml:space="preserve">
+    <value>プレビュー専用：ADSによる購入機能は利用できません。購入設定は無効です。</value>
+  </data>
+  <data name="Blunderville_ConfigurePurchases" xml:space="preserve">
+    <value>購入設定</value>
+  </data>
 </root>
