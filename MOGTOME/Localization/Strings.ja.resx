@@ -353,10 +353,13 @@ Dalamud設定 &gt; 試験的機能 &gt; カスタムプラグインリポジト�
     <value>クロスワールドパーティの場合は有効にしてください。</value>
   </data>
   <data name="Config_OnlyQueueWithExactlyVisiblePeople" xml:space="preserve">
-    <value>表示されているメンバーが4人の場合のみ申請</value>
+    <value>最低人数を必須にする</value>
+  </data>
+  <data name="Config_MinimumPartyMembers" xml:space="preserve">
+    <value>最低人数</value>
   </data>
   <data name="Config_AppliesOnlyToSameWorldLeadersIn" xml:space="preserve">
-    <value>クロスワールドではメンバー一覧が不確実なため、同一ワールドのリーダーによるレベルシンク時のみ適用します。制限解除テストモードは対象外です。</value>
+    <value>表示されているメンバーが設定した最低人数以上、4人以下の場合に申請します。ソロは1人として数えます。初期値は4人です。クロスワールドではメンバー一覧が不確実なため、同一ワールドのリーダーによるレベルシンク時のみ適用します。制限解除テストモードは対象外です。</value>
   </data>
   <data name="Config_RuntimePartyState" xml:space="preserve">
     <value>現在のパーティ状態：</value>
@@ -1287,7 +1290,7 @@ AutoDutyモードではADSは任意で、/mog inn の使用時だけ使われま
     <value>{0}：{1}</value>
   </data>
   <data name="Engine_WaitingForPeopleVisible" xml:space="preserve">
-    <value>4人を待機中（表示 {0}/4）</value>
+    <value>パーティ人数{1}～4人を待機中（表示 {0}人）</value>
   </data>
   <data name="Engine_WaitingForPartyMembersToLeaveDuty" xml:space="preserve">
     <value>パーティメンバーの退出を待機中。</value>

@@ -2038,7 +2038,8 @@ public class MogtomeEngine
                 ResetQueueRegistrationWatchdog();
                 CurrentState = EngineState.WaitingOutsideDuty;
                 if (dutyQueue.LastQueueBlockedForPartySize)
-                    Status = Ui.M("Engine_WaitingForPeopleVisible", dutyQueue.VisiblePartyMemberCount);
+                    Status = Ui.M("Engine_WaitingForPeopleVisible", dutyQueue.VisiblePartyMemberCount,
+                        Math.Clamp(config.MinimumPartyMembers, 1, 4));
                 else if (dutyQueue.LastQueueBlockedForPartyDuty)
                     Status = Ui.M("Engine_WaitingForPartyMembersToLeaveDuty");
                 return false;

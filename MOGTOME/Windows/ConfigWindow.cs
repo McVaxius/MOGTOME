@@ -838,12 +838,22 @@ public class ConfigWindow : Window, IDisposable
         }
         UiLayout.TextDisabled(Ui.T("Config_EnableIfYouReInACross"));
 
-        var onlyQueueWithFour = config.OnlyQueueWithFourPeople;
-        if (ImGui.Checkbox(Ui.L("Config_OnlyQueueWithExactlyVisiblePeople"), ref onlyQueueWithFour))
+        var requirePartyMinimum = config.OnlyQueueWithFourPeople;
+        if (ImGui.Checkbox(Ui.L("Config_OnlyQueueWithExactlyVisiblePeople"), ref requirePartyMinimum))
         {
-            config.OnlyQueueWithFourPeople = onlyQueueWithFour;
+            config.OnlyQueueWithFourPeople = requirePartyMinimum;
             changed = true;
         }
+        ImGui.SameLine();
+        ImGui.BeginDisabled(!requirePartyMinimum);
+        ImGui.SetNextItemWidth(90 * ImGuiHelpers.GlobalScale);
+        var minimumPartyMembers = Math.Clamp(config.MinimumPartyMembers, 1, 4);
+        if (ImGui.SliderInt(Ui.L("Config_MinimumPartyMembers"), ref minimumPartyMembers, 1, 4))
+        {
+            config.MinimumPartyMembers = Math.Clamp(minimumPartyMembers, 1, 4);
+            changed = true;
+        }
+        ImGui.EndDisabled();
         UiLayout.TextDisabled(Ui.T("Config_AppliesOnlyToSameWorldLeadersIn"));
 
         if (changed)

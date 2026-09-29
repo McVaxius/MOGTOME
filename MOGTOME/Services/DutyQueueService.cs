@@ -113,7 +113,11 @@ public class DutyQueueService
                 VisiblePartyMemberCount++;
         }
 
-        if (VisiblePartyMemberCount == 4)
+        if (Plugin.PartyList.Length == 0 && Plugin.ClientState.IsLoggedIn)
+            VisiblePartyMemberCount = 1;
+
+        var minimumPartyMembers = Math.Clamp(config.MinimumPartyMembers, 1, 4);
+        if (VisiblePartyMemberCount >= minimumPartyMembers && VisiblePartyMemberCount <= 4)
             return true;
 
         LastQueueBlockedForPartySize = true;
@@ -121,7 +125,7 @@ public class DutyQueueService
         if ((now - lastPartyEligibilityLogUtc).TotalSeconds >= PartyEligibilityLogIntervalSeconds)
         {
             lastPartyEligibilityLogUtc = now;
-            log.Warning($"[MOGTOME][DutyQueue] waiting for 4 people; visible party members={VisiblePartyMemberCount}, crossWorld={config.IsCrossWorldParty}");
+            log.Warning($"[MOGTOME][DutyQueue] waiting for party size {minimumPartyMembers}-4; visible party members={VisiblePartyMemberCount}, crossWorld={config.IsCrossWorldParty}");
         }
 
         return false;

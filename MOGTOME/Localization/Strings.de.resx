@@ -353,10 +353,13 @@ Dalamud-Einstellungen &gt; Experimentell &gt; Benutzerdefinierte Plugin-Reposito
     <value>Für weltenübergreifende Gruppen aktivieren.</value>
   </data>
   <data name="Config_OnlyQueueWithExactlyVisiblePeople" xml:space="preserve">
-    <value>Nur mit genau 4 sichtbaren Personen anmelden</value>
+    <value>Gruppenminimum voraussetzen</value>
+  </data>
+  <data name="Config_MinimumPartyMembers" xml:space="preserve">
+    <value>Mindestmitglieder</value>
   </data>
   <data name="Config_AppliesOnlyToSameWorldLeadersIn" xml:space="preserve">
-    <value>Gilt nur für Leiter auf derselben Welt im synchronisierten Modus, da die weltenübergreifende Liste unzuverlässig ist. Der unsynchronisierte Testmodus ist ausgenommen.</value>
+    <value>Mit dem gewählten Minimum bis zu 4 sichtbaren Mitgliedern anmelden. Solo zählt als 1. Standard: 4. Gilt nur für Leiter auf derselben Welt im synchronisierten Modus, da die weltenübergreifende Liste unzuverlässig ist. Der unsynchronisierte Testmodus ist ausgenommen.</value>
   </data>
   <data name="Config_RuntimePartyState" xml:space="preserve">
     <value>Aktueller Gruppenstatus:</value>
@@ -1287,7 +1290,7 @@ Im AutoDuty-Modus ist ADS optional und wird nur für /mog inn verwendet.</value>
     <value>{0}: {1}</value>
   </data>
   <data name="Engine_WaitingForPeopleVisible" xml:space="preserve">
-    <value>warte auf 4 Personen ({0}/4 sichtbar)</value>
+    <value>warte auf Gruppengröße {1}–4 ({0} sichtbar)</value>
   </data>
   <data name="Engine_WaitingForPartyMembersToLeaveDuty" xml:space="preserve">
     <value>Warte, bis Gruppenmitglieder den Inhalt verlassen.</value>

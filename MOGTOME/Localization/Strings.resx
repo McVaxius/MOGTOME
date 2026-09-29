@@ -359,10 +359,13 @@ Dalamud Settings &gt; Experimental &gt; Custom Plugin Repositories</value>
     <value>Enable if you're in a cross-world party.</value>
   </data>
   <data name="Config_OnlyQueueWithExactlyVisiblePeople" xml:space="preserve">
-    <value>Only queue with exactly 4 visible people</value>
+    <value>Require party minimum</value>
+  </data>
+  <data name="Config_MinimumPartyMembers" xml:space="preserve">
+    <value>Minimum members</value>
   </data>
   <data name="Config_AppliesOnlyToSameWorldLeadersIn" xml:space="preserve">
-    <value>Applies only to same-world leaders in synced modes because cross-world roster visibility is unreliable. Unsynced testing mode is exempt.</value>
+    <value>Queue with the selected minimum up to 4 visible members. Solo counts as 1. Default: 4. Applies only to same-world leaders in synced modes because cross-world roster visibility is unreliable. Unsynced testing mode is exempt.</value>
   </data>
   <data name="Config_RuntimePartyState" xml:space="preserve">
     <value>Runtime Party State:</value>
@@ -1293,7 +1296,7 @@ ADS is optional in AutoDuty mode and is used only when /mog inn is requested.</v
     <value>{0}: {1}</value>
   </data>
   <data name="Engine_WaitingForPeopleVisible" xml:space="preserve">
-    <value>waiting for 4 people (visible {0}/4)</value>
+    <value>waiting for party size {1}–4 (visible {0})</value>
   </data>
   <data name="Engine_WaitingForPartyMembersToLeaveDuty" xml:space="preserve">
     <value>Waiting for party members to leave duty.</value>

@@ -353,10 +353,13 @@ Paramètres Dalamud &gt; Expérimental &gt; Dépôts de plugins personnalisés</
     <value>Activez pour une équipe inter-Mondes.</value>
   </data>
   <data name="Config_OnlyQueueWithExactlyVisiblePeople" xml:space="preserve">
-    <value>S'inscrire uniquement avec exactement 4 personnes visibles</value>
+    <value>Exiger un groupe minimum</value>
+  </data>
+  <data name="Config_MinimumPartyMembers" xml:space="preserve">
+    <value>Membres minimum</value>
   </data>
   <data name="Config_AppliesOnlyToSameWorldLeadersIn" xml:space="preserve">
-    <value>Concerne uniquement les chefs du même Monde en mode synchronisé : la liste inter-Mondes est peu fiable. Le mode test non synchronisé est exempté.</value>
+    <value>S'inscrire avec le minimum choisi, jusqu'à 4 membres visibles. En solo, le nombre est 1. Par défaut : 4. Concerne uniquement les chefs du même Monde en mode synchronisé : la liste inter-Mondes est peu fiable. Le mode test non synchronisé est exempté.</value>
   </data>
   <data name="Config_RuntimePartyState" xml:space="preserve">
     <value>État actuel de l'équipe :</value>
@@ -1287,7 +1290,7 @@ En mode AutoDuty, ADS est facultatif et utilisé uniquement pour /mog inn.</valu
     <value>{0} : {1}</value>
   </data>
   <data name="Engine_WaitingForPeopleVisible" xml:space="preserve">
-    <value>attente de 4 personnes ({0}/4 visibles)</value>
+    <value>attente d'un groupe de {1} à 4 membres ({0} visibles)</value>
   </data>
   <data name="Engine_WaitingForPartyMembersToLeaveDuty" xml:space="preserve">
     <value>Attente de la sortie des équipiers.</value>

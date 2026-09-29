@@ -18,6 +18,7 @@ public class Configuration
     public bool IsPartyLeader { get; set; } = false;
     public bool IsCrossWorldParty { get; set; } = false;
     public bool OnlyQueueWithFourPeople { get; set; } = true;
+    public int MinimumPartyMembers { get; set; } = 4;
 
     // --- Duty Settings ---
     public int DutyCounter { get; set; } = 0;
