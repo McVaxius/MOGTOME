@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added regression coverage for all 16 client/interface language combinations, profile persistence and switching, resource keys and formatting, localized prompts and queue errors, inn identity, and native combat action selection. Live duty/backend and visual smoke tests remain outstanding. Version remains 0.3.1.0.
 
 ### Changed
+- Build only the plugin project in GitHub Actions so test and regression projects do not block production artifacts.
+
 - Made the per-account party-size restriction configurable from 1–4 members with a slider beside the existing checkbox, defaulting to 4 and preserving its saved enabled/disabled state. A logged-in solo player counts as one; same-world/synced-mode boundaries and all other queue guards, including forced queues, remain in place. Updated settings, waiting status, and diagnostics, with consistent English, French, German, and Japanese interface resources.
 - Replaced the ADS self-repair checkbox with NPC, Self, and NPC repair + inn room choices. New profiles default to inn return; configuration version 2 migrates legacy NPC profiles to inn return once while retaining Self, repair thresholds, disabled repair, AutoDuty, and unrelated settings. Later selections persist across reloads. Inn repair waits for ADS utility completion before retries or duty queues resume.
 - Every accepted Start, including DAD starts, disables loaded QSTCompanion through the existing plugin-disable flow and sends `/healbot off` when HealBot (Coppelia) is loaded. Stop leaves both off.
