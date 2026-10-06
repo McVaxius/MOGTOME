@@ -1,0 +1,2248 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms</value>
+  </resheader>
+  <data name="Config_SetupWizard" xml:space="preserve">
+    <value>Trình hướng dẫn thiết lập</value>
+  </data>
+  <data name="Config_DependencyCheck" xml:space="preserve">
+    <value>Kiểm tra thành phần phụ thuộc</value>
+  </data>
+  <data name="Config_Party" xml:space="preserve">
+    <value>Tổ đội</value>
+  </data>
+  <data name="Config_Duty" xml:space="preserve">
+    <value>Phụ bản</value>
+  </data>
+  <data name="Config_FoodPots" xml:space="preserve">
+    <value>Thức ăn &amp; thuốc</value>
+  </data>
+  <data name="Config_Repair" xml:space="preserve">
+    <value>Sửa chữa</value>
+  </data>
+  <data name="Config_Advanced" xml:space="preserve">
+    <value>Nâng cao</value>
+  </data>
+  <data name="Config_BackendMode" xml:space="preserve">
+    <value>Chế độ backend</value>
+  </data>
+  <data name="Config_UseADSPrimaryBackend" xml:space="preserve">
+    <value>Dùng ADS (backend chính)</value>
+  </data>
+  <data name="Config_ADSHandlesDutyAutomationAndInnReturn" xml:space="preserve">
+    <value>ADS xử lý tự động hóa phụ bản và trở về nhà trọ. AutoDuty là backend thay thế.</value>
+  </data>
+  <data name="Config_AutoDutyIsTheAlternativeDutyBackendADS" xml:space="preserve">
+    <value>AutoDuty là backend phụ bản thay thế. Chỉ cần ADS khi chọn chế độ ADS hoặc yêu cầu /mog inn.</value>
+  </data>
+  <data name="Config_RequiredPlugins" xml:space="preserve">
+    <value>Plugin bắt buộc</value>
+  </data>
+  <data name="Config_SetupRequirementsAreIncompleteTheWizardIs" xml:space="preserve">
+    <value>Chưa đáp ứng đầy đủ yêu cầu thiết lập. Trình hướng dẫn chỉ đưa ra lời khuyên và không chặn Bắt đầu.</value>
+  </data>
+  <data name="Config_RSRRotationSolverReborn" xml:space="preserve">
+    <value>RSR (RotationSolverReborn)</value>
+  </data>
+  <data name="Config_Installed" xml:space="preserve">
+    <value>Đã cài đặt</value>
+  </data>
+  <data name="Config_NOTFOUND" xml:space="preserve">
+    <value>KHÔNG TÌM THẤY</value>
+  </data>
+  <data name="Config_BossModPassiveSupportBMROrVBM" xml:space="preserve">
+    <value>Hỗ trợ thụ động BossMod (BMR hoặc VBM)</value>
+  </data>
+  <data name="Config_BMRLoaded" xml:space="preserve">
+    <value>Đã tải BMR</value>
+  </data>
+  <data name="Config_VBMLoaded" xml:space="preserve">
+    <value>Đã tải VBM</value>
+  </data>
+  <data name="Config_BossModRebornBMR" xml:space="preserve">
+    <value>BossModReborn (BMR)</value>
+  </data>
+  <data name="Config_BossModVBM" xml:space="preserve">
+    <value>BossMod (VBM)</value>
+  </data>
+  <data name="Config_RSRHandlesAttacksTheLoadedBossModVariant" xml:space="preserve">
+    <value>RSR xử lý tấn công; biến thể BossMod đã tải tự động dùng passive - tank/melee/ranged.</value>
+  </data>
+  <data name="Config_BMRHandlesAttacksAndMovementWithFRENRIDER" xml:space="preserve">
+    <value>BMR xử lý tấn công và di chuyển bằng FRENRIDER - TANK/MELEE/RANGED hoặc bộ thiết lập thủ công của bạn.</value>
+  </data>
+  <data name="Config_VBMHandlesAttacksAndMovementWithFRENRIDER" xml:space="preserve">
+    <value>VBM xử lý tấn công và di chuyển bằng FRENRIDER - TANK/MELEE/RANGED hoặc bộ thiết lập thủ công của bạn.</value>
+  </data>
+  <data name="Config_WrathHandlesAttacksUsingItsCurrentSettings" xml:space="preserve">
+    <value>Wrath xử lý tấn công theo cài đặt hiện tại.</value>
+  </data>
+  <data name="Config_UseManualBossModPreset" xml:space="preserve">
+    <value>Dùng bộ thiết lập BossMod thủ công</value>
+  </data>
+  <data name="Config_PresetName" xml:space="preserve">
+    <value>Tên bộ thiết lập</value>
+  </data>
+  <data name="Config_EnterAnExistingPresetNameBeforeStarting" xml:space="preserve">
+    <value>Nhập tên bộ thiết lập hiện có trước khi bắt đầu.</value>
+  </data>
+  <data name="Config_MOGTOMESelectsItsPackagedActivePresetBy" xml:space="preserve">
+    <value>MOGTOME chọn bộ thiết lập chủ động đi kèm theo vai trò hiện tại mỗi khi bắt đầu phụ bản.</value>
+  </data>
+  <data name="Config_BothBossModVariantsAreLoadedStartDisables" xml:space="preserve">
+    <value>Cả hai biến thể BossMod đều đã tải. Bắt đầu sẽ tắt VBM và tải lại BMR; lựa chọn VBM chuyển sang BMR, còn RSR vẫn được chọn.</value>
+  </data>
+  <data name="Config_MOGTOMERunsXaSkipcutscenesOnBeforeEvery" xml:space="preserve">
+    <value>MOGTOME chạy /xa skipcutscenes on trước mỗi lần bắt đầu thủ công.</value>
+  </data>
+  <data name="Config_OptionalEnablesMogInnDelegation" xml:space="preserve">
+    <value>Tùy chọn. Cho phép chuyển giao /mog inn.</value>
+  </data>
+  <data name="Config_OptionalPlugins" xml:space="preserve">
+    <value>Plugin tùy chọn</value>
+  </data>
+  <data name="Config_OptionalNotRequiredByMOGTOME" xml:space="preserve">
+    <value>Tùy chọn. MOGTOME không yêu cầu.</value>
+  </data>
+  <data name="Config_RecommendedAppearanceNameplateRandomizer" xml:space="preserve">
+    <value>Khuyên dùng. Ngẫu nhiên hóa diện mạo/bảng tên.</value>
+  </data>
+  <data name="Config_CustomResolutionPpByX0ade" xml:space="preserve">
+    <value>CustomResolution (1pp của 0x0ade)</value>
+  </data>
+  <data name="Config_ExperimentalAndNotRecommendedLowSpecHelper" xml:space="preserve">
+    <value>Thử nghiệm và không khuyên dùng. Trợ giúp máy cấu hình thấp.</value>
+  </data>
+  <data name="Config_MaybeCrashyWithClients" xml:space="preserve">
+    <value>Có thể gây lỗi với từ 2 client</value>
+  </data>
+  <data name="Config_WillCauseSomeIssuesSometimes" xml:space="preserve">
+    <value>Đôi khi sẽ gây ra một số vấn đề.</value>
+  </data>
+  <data name="Config_DPSDhogPotatoSystem" xml:space="preserve">
+    <value>DPS (Dhog Potato System)</value>
+  </data>
+  <data name="Config_MayHavePathingIssues" xml:space="preserve">
+    <value>Có thể gặp vấn đề tìm đường.</value>
+  </data>
+  <data name="Config_ExperimentalAndNotRecommendedRemoteHUDControl" xml:space="preserve">
+    <value>Thử nghiệm và không khuyên dùng. HUD + điều khiển từ xa.</value>
+  </data>
+  <data name="Config_VeryNewPluginUnknownIssues" xml:space="preserve">
+    <value>Plugin rất mới, chưa rõ các vấn đề.</value>
+  </data>
+  <data name="Config_ConflictingPlugins" xml:space="preserve">
+    <value>Plugin xung đột</value>
+  </data>
+  <data name="Config_AutoDutyPath" xml:space="preserve">
+    <value>Đường đi AutoDuty</value>
+  </data>
+  <data name="Config_PraetoriumPathINSTALLED" xml:space="preserve">
+    <value>Đường đi Praetorium: ĐÃ CÀI ({0})</value>
+  </data>
+  <data name="Config_PraetoriumPathNOTFOUND" xml:space="preserve">
+    <value>Đường đi Praetorium: KHÔNG TÌM THẤY ({0})</value>
+  </data>
+  <data name="Config_InstallBundledPraetoriumPaths" xml:space="preserve">
+    <value>Cài đường đi Praetorium đi kèm</value>
+  </data>
+  <data name="Config_ThisCopiesTheBundledW2WPraetoriumPath" xml:space="preserve">
+    <value>Sao chép các tệp đường đi Praetorium W2W đi kèm từ thư mục dữ liệu MOGTOME vào thư mục đường đi AutoDuty.</value>
+  </data>
+  <data name="Config_ADSIsOptionalInAutoDutyModeMog" xml:space="preserve">
+    <value>ADS là tùy chọn trong chế độ AutoDuty; /mog inn cần ADS khi được yêu cầu rõ ràng.</value>
+  </data>
+  <data name="Config_ADSModeNotes" xml:space="preserve">
+    <value>Lưu ý chế độ ADS</value>
+  </data>
+  <data name="Config_ADSModeDisablesAutoDutyImmediatelyAndAgain" xml:space="preserve">
+    <value>Chế độ ADS tắt AutoDuty ngay lập tức và lần nữa khi Bắt đầu. Vào hàng chờ dùng quyền điều khiển ADS cùng đăng ký trực tiếp qua Duty Finder.</value>
+  </data>
+  <data name="Config_RepairInnLeaveSwitchToAdsNpcrepair" xml:space="preserve">
+    <value>Sửa chữa/nhà trọ/rời phụ bản chuyển sang /ads npcrepair, /ads selfrepair, /ads enterinn và /ads leave.</value>
+  </data>
+  <data name="Config_TheCheckboxChangesTheDutyBackendADS" xml:space="preserve">
+    <value>Ô chọn thay đổi backend phụ bản. Chỉ cần ADS khi chọn chế độ ADS.</value>
+  </data>
+  <data name="Config_OK" xml:space="preserve">
+    <value>[OK]</value>
+  </data>
+  <data name="Config_CopyRepo" xml:space="preserve">
+    <value>Sao chép kho</value>
+  </data>
+  <data name="Config_CopyRepoURLToClipboardThenAdd" xml:space="preserve">
+    <value>Sao chép URL kho vào bộ nhớ tạm rồi thêm vào
+Dalamud Settings &gt; Experimental &gt; Custom Plugin Repositories</value>
+  </data>
+  <data name="Config_NotInstalledOptional" xml:space="preserve">
+    <value>Chưa cài đặt (tùy chọn)</value>
+  </data>
+  <data name="Config_EnabledKnownMOGTOMEConflict" xml:space="preserve">
+    <value>Đã bật - xung đột MOGTOME đã biết</value>
+  </data>
+  <data name="Config_InstalledButDisabled" xml:space="preserve">
+    <value>Đã cài nhưng bị tắt</value>
+  </data>
+  <data name="Config_NotInstalled" xml:space="preserve">
+    <value>Chưa cài đặt</value>
+  </data>
+  <data name="Config_DisableNow" xml:space="preserve">
+    <value>Tắt ngay</value>
+  </data>
+  <data name="Config_MOGTOMETriesXldisablepluginTwistOfFayteWhenYouStart" xml:space="preserve">
+    <value>MOGTOME thử /xldisableplugin TwistOfFayte khi bắt đầu, nhưng không còn chặn khởi động.</value>
+  </data>
+  <data name="Config_ThisGuideIsAdvisoryItNeverInstalls" xml:space="preserve">
+    <value>Hướng dẫn này chỉ đưa ra lời khuyên. Nó không cài đặt, bật, tắt hay cấu hình plugin khác. Chỉ lưu cài đặt MOGTOME khi bạn lựa chọn.</value>
+  </data>
+  <data name="Config_CompletedForThisAccountWizardVersion" xml:space="preserve">
+    <value>Đã hoàn tất cho tài khoản này (phiên bản hướng dẫn {0}).</value>
+  </data>
+  <data name="Config_RunSetupWizardAgain" xml:space="preserve">
+    <value>Chạy lại trình hướng dẫn thiết lập</value>
+  </data>
+  <data name="Config_Backend" xml:space="preserve">
+    <value>Backend</value>
+  </data>
+  <data name="Config_CombatProvider" xml:space="preserve">
+    <value>Bộ xử lý chiến đấu</value>
+  </data>
+  <data name="Config_RequiredPlugins2" xml:space="preserve">
+    <value>Plugin bắt buộc</value>
+  </data>
+  <data name="Config_PartySetup" xml:space="preserve">
+    <value>Thiết lập tổ đội</value>
+  </data>
+  <data name="Config_OptionalSettings" xml:space="preserve">
+    <value>Cài đặt tùy chọn</value>
+  </data>
+  <data name="Config_Review" xml:space="preserve">
+    <value>Xem lại</value>
+  </data>
+  <data name="Config_StepOf" xml:space="preserve">
+    <value>Bước {0}/{1}: {2}</value>
+  </data>
+  <data name="Config_ADSIsThePrimaryMOGTOMEBackendAutoDuty" xml:space="preserve">
+    <value>ADS là backend chính của MOGTOME. AutoDuty vẫn là lựa chọn thay thế. Lựa chọn này chỉ thay đổi backend đã lưu của MOGTOME.</value>
+  </data>
+  <data name="Config_ADSPrimaryBackend" xml:space="preserve">
+    <value>ADS (backend chính)</value>
+  </data>
+  <data name="Config_AutoDutyAlternativeBackend" xml:space="preserve">
+    <value>AutoDuty (backend thay thế)</value>
+  </data>
+  <data name="Config_ADSMustBeLoadedForThisSelection" xml:space="preserve">
+    <value>Phải tải ADS cho lựa chọn này.</value>
+  </data>
+  <data name="Config_AutoDutyAndTheSelectedPraetoriumPathMust" xml:space="preserve">
+    <value>Phải có AutoDuty và đường đi Praetorium đã chọn cho lựa chọn này.</value>
+  </data>
+  <data name="Config_ChooseTheCombatProviderMOGTOMEShouldRequest" xml:space="preserve">
+    <value>Chọn bộ xử lý chiến đấu mà MOGTOME yêu cầu cho backend đã chọn.</value>
+  </data>
+  <data name="Config_SelectedCombatProvider" xml:space="preserve">
+    <value>Bộ xử lý chiến đấu đã chọn</value>
+  </data>
+  <data name="Config_LoadTheSelectedProviderRSRAlsoRequires" xml:space="preserve">
+    <value>Tải bộ xử lý đã chọn; RSR cũng cần BMR hoặc VBM để hỗ trợ thụ động.</value>
+  </data>
+  <data name="Config_MarkTheClientThatQueuesDutiesAs" xml:space="preserve">
+    <value>Đánh dấu client đăng ký phụ bản là trưởng đội. Mỗi client tham gia nên tự xem lại thiết lập của mình.</value>
+  </data>
+  <data name="Config_IAmThePartyLeader" xml:space="preserve">
+    <value>Tôi là trưởng đội</value>
+  </data>
+  <data name="Config_CrossWorldParty" xml:space="preserve">
+    <value>Tổ đội liên thế giới</value>
+  </data>
+  <data name="Config_UsePartySettingsForTheFullQueue" xml:space="preserve">
+    <value>Dùng cài đặt Tổ đội để đặt toàn bộ chính sách hàng chờ và làm mới trạng thái tổ đội một lần bên ngoài phụ bản.</value>
+  </data>
+  <data name="Config_FoodPotionsAndRepairAreOptionalConfigure" xml:space="preserve">
+    <value>Thức ăn, thuốc và sửa chữa là tùy chọn. Cấu hình trong các thẻ tương ứng khi cần; có thể để chưa thiết lập.</value>
+  </data>
+  <data name="Config_FoodPotsAndRepairRemainAvailableAfter" xml:space="preserve">
+    <value>Thức ăn &amp; thuốc và Sửa chữa vẫn có sau trình hướng dẫn; không thay đổi cài đặt plugin bên ngoài ở đây.</value>
+  </data>
+  <data name="Config_FinishSetup" xml:space="preserve">
+    <value>Hoàn tất thiết lập</value>
+  </data>
+  <data name="Config_Back" xml:space="preserve">
+    <value>Quay lại</value>
+  </data>
+  <data name="Config_Next" xml:space="preserve">
+    <value>Tiếp</value>
+  </data>
+  <data name="Config_ADSSelectedBackend" xml:space="preserve">
+    <value>ADS (backend đã chọn)</value>
+  </data>
+  <data name="Config_AutoDutyPlusSelectedPraetoriumPath" xml:space="preserve">
+    <value>AutoDuty cùng đường đi Praetorium đã chọn</value>
+  </data>
+  <data name="Config_LoadADS" xml:space="preserve">
+    <value>Tải ADS.</value>
+  </data>
+  <data name="Config_LoadAutoDutyAndInstallTheSelectedPraetorium" xml:space="preserve">
+    <value>Tải AutoDuty và cài đường đi Praetorium đã chọn.</value>
+  </data>
+  <data name="Config_LoadTheProviderSelectedInStepRSR" xml:space="preserve">
+    <value>Tải bộ xử lý đã chọn ở bước 2; RSR cũng cần BMR hoặc VBM.</value>
+  </data>
+  <data name="Config_LoadVnavmesh" xml:space="preserve">
+    <value>Tải vnavmesh.</value>
+  </data>
+  <data name="Config_LoadXASlaveForXaSkipcutscenesOn" xml:space="preserve">
+    <value>Tải XA Slave cho /xa skipcutscenes on.</value>
+  </data>
+  <data name="Config_LoadYesAlreadyForDialogs" xml:space="preserve">
+    <value>Tải YesAlready cho các hộp thoại.</value>
+  </data>
+  <data name="Config_OperatorClickedOnlyCopiesMOGTOMESBundled" xml:space="preserve">
+    <value>Chỉ khi người dùng nhấp: sao chép tệp đi kèm MOGTOME vào thư mục đường đi AutoDuty.</value>
+  </data>
+  <data name="Config_LifestreamAndTextAdvanceAreOptionalAndDo" xml:space="preserve">
+    <value>Lifestream và TextAdvance là tùy chọn và không ảnh hưởng danh sách kiểm tra này.</value>
+  </data>
+  <data name="Config_ADSPrimary" xml:space="preserve">
+    <value>ADS (chính)</value>
+  </data>
+  <data name="Config_AutoDutyAlternative" xml:space="preserve">
+    <value>AutoDuty (thay thế)</value>
+  </data>
+  <data name="Config_Backend2" xml:space="preserve">
+    <value>Backend: {0}</value>
+  </data>
+  <data name="Config_Ready" xml:space="preserve">
+    <value>sẵn sàng</value>
+  </data>
+  <data name="Config_Incomplete" xml:space="preserve">
+    <value>chưa đầy đủ</value>
+  </data>
+  <data name="Config_RequiredChecks" xml:space="preserve">
+    <value>Kiểm tra bắt buộc: {0}</value>
+  </data>
+  <data name="Config_Leader" xml:space="preserve">
+    <value>trưởng đội</value>
+  </data>
+  <data name="Config_Participant" xml:space="preserve">
+    <value>thành viên</value>
+  </data>
+  <data name="Config_PartyRole" xml:space="preserve">
+    <value>Vai trò tổ đội: {0}</value>
+  </data>
+  <data name="Config_OptionalRepairThreshold" xml:space="preserve">
+    <value>Ngưỡng sửa chữa tùy chọn: {0}%</value>
+  </data>
+  <data name="Config_FinishRecordsOnlyThatThisAccountCompleted" xml:space="preserve">
+    <value>Hoàn tất chỉ ghi nhận tài khoản này đã hoàn thành phiên bản hướng dẫn này. Không chặn Bắt đầu hay thay đổi plugin khác.</value>
+  </data>
+  <data name="Config_Ready2" xml:space="preserve">
+    <value>Sẵn sàng</value>
+  </data>
+  <data name="Config_PartySettings" xml:space="preserve">
+    <value>Cài đặt tổ đội</value>
+  </data>
+  <data name="Config_RuntimeRoleFollowsThisSavedSettingUse" xml:space="preserve">
+    <value>Vai trò khi chạy theo cài đặt đã lưu này. Dùng Làm mới trạng thái tổ đội ngoài phụ bản để nhận diện một lần trong cùng thế giới.</value>
+  </data>
+  <data name="Config_EnableIfYouReInACross" xml:space="preserve">
+    <value>Bật nếu bạn ở trong tổ đội liên thế giới.</value>
+  </data>
+  <data name="Config_OnlyQueueWithExactlyVisiblePeople" xml:space="preserve">
+    <value>Yêu cầu số thành viên tối thiểu</value>
+  </data>
+  <data name="Config_MinimumPartyMembers" xml:space="preserve">
+    <value>Số thành viên tối thiểu</value>
+  </data>
+  <data name="Config_AppliesOnlyToSameWorldLeadersIn" xml:space="preserve">
+    <value>Vào hàng chờ với số thành viên hiển thị từ mức tối thiểu đã chọn đến 4. Chơi một mình tính là 1. Mặc định: 4. Chỉ áp dụng cho trưởng đội cùng thế giới trong chế độ đồng bộ vì danh sách liên thế giới hiển thị không đáng tin cậy. Chế độ thử nghiệm không đồng bộ được miễn.</value>
+  </data>
+  <data name="Config_RuntimePartyState" xml:space="preserve">
+    <value>Trạng thái tổ đội khi chạy:</value>
+  </data>
+  <data name="Config_Yes" xml:space="preserve">
+    <value>Có</value>
+  </data>
+  <data name="Config_No" xml:space="preserve">
+    <value>Không</value>
+  </data>
+  <data name="Config_LeaderRightNow" xml:space="preserve">
+    <value>Trưởng đội hiện tại: {0}</value>
+  </data>
+  <data name="Config_SourceConfiguredCrossWorldRole" xml:space="preserve">
+    <value>Nguồn: vai trò liên thế giới đã cấu hình.</value>
+  </data>
+  <data name="Config_SourceConfiguredRoleRefreshPartyStateOnly" xml:space="preserve">
+    <value>Nguồn: vai trò đã cấu hình. Làm mới trạng thái tổ đội chỉ kiểm tra danh sách tổ đội cùng thế giới hiện tại một lần.</value>
+  </data>
+  <data name="Config_RefreshPartyState" xml:space="preserve">
+    <value>Làm mới trạng thái tổ đội</value>
+  </data>
+  <data name="Config_OneTimeSameWorldLeaderDetectionUse" xml:space="preserve">
+    <value>Nhận diện trưởng đội cùng thế giới một lần. Chỉ dùng ngoài phụ bản khi toàn bộ tổ đội đã hiển thị.</value>
+  </data>
+  <data name="Config_PartyBehaviour" xml:space="preserve">
+    <value>Hành vi tổ đội:</value>
+  </data>
+  <data name="Config_LeaderQueuesDutiesAndControlsTheMOGTOME" xml:space="preserve">
+    <value>- Trưởng đội: Đăng ký phụ bản và điều khiển luồng chạy MOGTOME.</value>
+  </data>
+  <data name="Config_NonLeaderWaitsForPartyQueuePops" xml:space="preserve">
+    <value>- Thành viên: Chờ hàng chờ tổ đội xuất hiện và tự sửa chữa.</value>
+  </data>
+  <data name="Config_RepairMOGTOMEPausesItsOwnManualQueue" xml:space="preserve">
+    <value>- Sửa chữa: MOGTOME tạm dừng các lần đăng ký thủ công của mình khi đang sửa chữa, rồi tiếp tục sau đó.</value>
+  </data>
+  <data name="Config_DetectionRefreshPartyStateIsManualOnly" xml:space="preserve">
+    <value>- Nhận diện: Làm mới trạng thái tổ đội chỉ thực hiện thủ công, không tự coi dữ liệu một người hoặc một phần tổ đội là trưởng đội.</value>
+  </data>
+  <data name="Config_DutySettings" xml:space="preserve">
+    <value>Cài đặt phụ bản</value>
+  </data>
+  <data name="Config_DutyCounter" xml:space="preserve">
+    <value>Bộ đếm phụ bản</value>
+  </data>
+  <data name="Config_ReturnToEntranceDelaySeconds" xml:space="preserve">
+    <value>Độ trễ trở về lối vào (giây)</value>
+  </data>
+  <data name="Config_ReturnToEntranceDelayHelp" xml:space="preserve">
+    <value>Bắt đầu đếm khi phát hiện chết trong phụ bản đang hoạt động và tiếp tục khi hộp thoại trở về được thu nhỏ. Khi xác nhận cả đội bị hạ, bỏ qua độ trễ cho lần chết hiện tại, kể cả nếu thành viên khác hồi sinh trước. Sau độ trễ hoặc khi xác nhận cả đội bị hạ, hộp thoại Return hiển thị được chấp nhận ở lần cập nhật thường kế tiếp; hộp thoại thu nhỏ được mở lại và kiểm tra ở lần cập nhật sau. Mặc định: 60 giây; tối thiểu: 1. Áp dụng cho ADS và AutoDuty. Hồi sinh và di chuyển vào khu vực phong tỏa vẫn thực hiện ngay.</value>
+  </data>
+  <data name="Config_CurrentPraetoriumRunCountSetToFor" xml:space="preserve">
+    <value>Số lượt Praetorium hiện tại. Đặt 0 cho lượt đầu tiên trong ngày.</value>
+  </data>
+  <data name="Config_PraetoriumAutoDutyPath" xml:space="preserve">
+    <value>Đường đi Praetorium AutoDuty</value>
+  </data>
+  <data name="Config_BundledWithMOGTOMEAndCopiedIntoAutoDuty" xml:space="preserve">
+    <value>Đi kèm MOGTOME và được sao chép vào thư mục đường đi AutoDuty khi bắt đầu/cài đặt. Mặc định: phecda.</value>
+  </data>
+  <data name="Config_ADSModeIgnoresAutoDutyPathSelection" xml:space="preserve">
+    <value>Chế độ ADS bỏ qua lựa chọn đường đi AutoDuty.</value>
+  </data>
+  <data name="Config_PraetoriumThreshold" xml:space="preserve">
+    <value>Ngưỡng Praetorium</value>
+  </data>
+  <data name="Config_SwitchToDecumanaAfterThisManyPraetorium" xml:space="preserve">
+    <value>Chuyển sang Decumana sau số lượt Praetorium này.</value>
+  </data>
+  <data name="Config_PraetoriumDailyLimit" xml:space="preserve">
+    <value>Giới hạn Praetorium hằng ngày</value>
+  </data>
+  <data name="Config_StopAfterThisManySuccessfulPraetoriumClears" xml:space="preserve">
+    <value>Dừng sau số lượt Praetorium thành công này trong hôm nay. Không tính Decumana và lượt bị hủy.</value>
+  </data>
+  <data name="Config_QuitCommand" xml:space="preserve">
+    <value>Lệnh thoát</value>
+  </data>
+  <data name="Config_RunsOnceWhenThePraetoriumDailyLimit" xml:space="preserve">
+    <value>Chạy một lần khi đạt giới hạn Praetorium hằng ngày, sau khi rời phụ bản.</value>
+  </data>
+  <data name="Config_TestingModeUnsyncedUncheckLevelSyncYourself" xml:space="preserve">
+    <value>Chế độ thử nghiệm: Không đồng bộ (tự bỏ đồng bộ cấp nếu thực sự muốn. Không ghi thống kê)</value>
+  </data>
+  <data name="Config_WARNINGRunningUnsyncedWithoutLevelSyncTesting" xml:space="preserve">
+    <value>CẢNH BÁO: Chạy không đồng bộ và không đồng bộ cấp (chế độ thử nghiệm, không thống kê).</value>
+  </data>
+  <data name="Config_DefaultUnsyncLevelSyncSyncLevelSync" xml:space="preserve">
+    <value>Mặc định: Không đồng bộ + đồng bộ cấp (Đồng bộ + đồng bộ cấp để tránh vào hàng chờ với người lạ).</value>
+  </data>
+  <data name="Config_TestingModeActiveEnableDebugToChange" xml:space="preserve">
+    <value>[Chế độ thử nghiệm đang bật - bật debug để thay đổi]</value>
+  </data>
+  <data name="Config_Food" xml:space="preserve">
+    <value>Thức ăn</value>
+  </data>
+  <data name="Config_UseHQFood" xml:space="preserve">
+    <value>Dùng thức ăn HQ</value>
+  </data>
+  <data name="Config_UsesTheSelectedMealAsHQWhen" xml:space="preserve">
+    <value>Dùng món đã chọn ở chất lượng HQ khi bật; để tắt cho thức ăn chất lượng thường.</value>
+  </data>
+  <data name="Config_ClearFood" xml:space="preserve">
+    <value>Xóa thức ăn</value>
+  </data>
+  <data name="Config_NoFoodSelectedFoodIsOptional" xml:space="preserve">
+    <value>  Chưa chọn thức ăn. Thức ăn là tùy chọn.</value>
+  </data>
+  <data name="Config_Potions" xml:space="preserve">
+    <value>Thuốc</value>
+  </data>
+  <data name="Config_UseHQPotion" xml:space="preserve">
+    <value>Dùng thuốc HQ</value>
+  </data>
+  <data name="Config_UsesTheSelectedMedicineAsHQWhen" xml:space="preserve">
+    <value>Dùng thuốc đã chọn ở chất lượng HQ khi bật; để tắt cho thuốc/tincture chất lượng thường.</value>
+  </data>
+  <data name="Config_ClearPotion" xml:space="preserve">
+    <value>Xóa thuốc</value>
+  </data>
+  <data name="Config_PotOnGaius" xml:space="preserve">
+    <value>Dùng thuốc ở Gaius</value>
+  </data>
+  <data name="Config_PotOnPhantomGaius" xml:space="preserve">
+    <value>Dùng thuốc ở Phantom Gaius</value>
+  </data>
+  <data name="Config_NoPotionSelectedPotionsAreOptional" xml:space="preserve">
+    <value>  Chưa chọn thuốc. Thuốc là tùy chọn.</value>
+  </data>
+  <data name="Config_Select" xml:space="preserve">
+    <value>Chọn {0}...</value>
+  </data>
+  <data name="Config_Search" xml:space="preserve">
+    <value>Tìm kiếm</value>
+  </data>
+  <data name="Config_NoResultsTryADifferentSearchTerm" xml:space="preserve">
+    <value>Không có kết quả. Thử từ khóa khác.</value>
+  </data>
+  <data name="Config_TypeAtLeastCharactersToSearch" xml:space="preserve">
+    <value>Nhập ít nhất 2 ký tự để tìm kiếm...</value>
+  </data>
+  <data name="Config_RepairSettings" xml:space="preserve">
+    <value>Cài đặt sửa chữa</value>
+  </data>
+  <data name="Config_RepairThreshold" xml:space="preserve">
+    <value>Ngưỡng sửa chữa (%)</value>
+  </data>
+  <data name="Config_RepairWhenEquipmentDurabilityFallsBelowThis" xml:space="preserve">
+    <value>Sửa khi độ bền trang bị thấp hơn tỷ lệ này. Đặt 0 để tắt sửa tự động.</value>
+  </data>
+  <data name="Config_RepairMode" xml:space="preserve">
+    <value>Chế độ sửa chữa</value>
+  </data>
+  <data name="Config_RepairModeHelp" xml:space="preserve">
+    <value>Sửa bằng NPC + phòng nhà trọ chỉ hoàn tất sau khi ADS vào phòng.</value>
+  </data>
+  <data name="Config_RepairBehavior" xml:space="preserve">
+    <value>Hành vi sửa chữa:</value>
+  </data>
+  <data name="Config_LeaderRepairsAutomaticallyBetweenDutiesWhenThreshold" xml:space="preserve">
+    <value>- Trưởng đội: Tự sửa giữa các phụ bản khi đạt ngưỡng</value>
+  </data>
+  <data name="Config_NonLeaderRepairsIndependentlyAfterSecondOutside" xml:space="preserve">
+    <value>- Thành viên: Tự sửa sau 1 giây ngoài phụ bản</value>
+  </data>
+  <data name="Config_SoloTreatedAsLeaderAutomatically" xml:space="preserve">
+    <value>- Một mình: Tự coi là trưởng đội</value>
+  </data>
+  <data name="Config_ADSRepairCommand" xml:space="preserve">
+    <value>- Lệnh sửa chữa ADS: {0}</value>
+  </data>
+  <data name="Config_AutoDutyModeRepairMETHODSelfNPCIs" xml:space="preserve">
+    <value>- Chế độ AutoDuty: PHƯƠNG THỨC sửa (tự/NPC) được đặt trong AutoDuty; trở về nhà trọ dùng /ads enterinn</value>
+  </data>
+  <data name="Config_Status" xml:space="preserve">
+    <value>Trạng thái:</value>
+  </data>
+  <data name="Config_CurrentThreshold" xml:space="preserve">
+    <value>  Ngưỡng hiện tại: {0}%</value>
+  </data>
+  <data name="Config_Enabled" xml:space="preserve">
+    <value>Đã bật</value>
+  </data>
+  <data name="Config_Disabled" xml:space="preserve">
+    <value>Đã tắt</value>
+  </data>
+  <data name="Config_AutoRepair" xml:space="preserve">
+    <value>  Tự sửa: {0}</value>
+  </data>
+  <data name="Config_Self" xml:space="preserve">
+    <value>Tự sửa</value>
+  </data>
+  <data name="Config_NPC" xml:space="preserve">
+    <value>NPC</value>
+  </data>
+  <data name="Config_ADSRepairMethod" xml:space="preserve">
+    <value>  Phương thức sửa ADS: {0}</value>
+  </data>
+  <data name="Config_ExperimentalADS" xml:space="preserve">
+    <value>ADS thử nghiệm</value>
+  </data>
+  <data name="Config_ExperimentalFirstRoomSkipPraetorium" xml:space="preserve">
+    <value>Thử nghiệm bỏ qua phòng đầu (Praetorium)</value>
+  </data>
+  <data name="Config_ADSPraetoriumOnlyEveryParticipatingClientMust" xml:space="preserve">
+    <value>Chỉ ADS/Praetorium. Mỗi client tham gia phải tự bật. MOGTOME quay lại ADS sau khi thành công hoặc gặp bất kỳ lỗi nào.</value>
+  </data>
+  <data name="Config_AvailableOnlyWhenADSIsTheSelected" xml:space="preserve">
+    <value>Chỉ có khi chọn ADS làm backend; tùy chọn đã lưu không hoạt động trong chế độ AutoDuty.</value>
+  </data>
+  <data name="Config_Debug" xml:space="preserve">
+    <value>Debug</value>
+  </data>
+  <data name="Config_DebugCounter" xml:space="preserve">
+    <value>Bộ đếm debug</value>
+  </data>
+  <data name="Config_CrashRecoveryOffsetIfYouRestartedMid" xml:space="preserve">
+    <value>Điều chỉnh khôi phục sau lỗi. Nếu khởi động lại giữa phiên, đặt số lượt
+cuối cùng đã biết để tiếp tục theo dõi đúng cho hôm nay.</value>
+  </data>
+  <data name="Config_BailoutTimeoutSec" xml:space="preserve">
+    <value>Thời hạn thoát khẩn cấp (giây)</value>
+  </data>
+  <data name="Config_LeaveDutyIfStuckForThisMany" xml:space="preserve">
+    <value>Rời phụ bản nếu bị kẹt trong số giây này. Mặc định: 1200 (20 phút).</value>
+  </data>
+  <data name="Main_V" xml:space="preserve">
+    <value>v{0}</value>
+  </data>
+  <data name="Main_KoFi" xml:space="preserve">
+    <value>♡ Ko-fi ♡</value>
+  </data>
+  <data name="Main_SupportDevelopmentOnKoFi" xml:space="preserve">
+    <value>Hỗ trợ phát triển trên Ko-fi</value>
+  </data>
+  <data name="Main_StateInitializing" xml:space="preserve">
+    <value>Trạng thái: Đang khởi tạo</value>
+  </data>
+  <data name="Main_StatusWaitingForAccountAndEngineInitialization" xml:space="preserve">
+    <value>Tình trạng: Chờ khởi tạo tài khoản và engine.</value>
+  </data>
+  <data name="Main_Config" xml:space="preserve">
+    <value>Cấu hình</value>
+  </data>
+  <data name="Main_Stats" xml:space="preserve">
+    <value>Thống kê</value>
+  </data>
+  <data name="Main_Reset" xml:space="preserve">
+    <value>Đặt lại</value>
+  </data>
+  <data name="Main_State" xml:space="preserve">
+    <value>Trạng thái: {0}</value>
+  </data>
+  <data name="Main_Status" xml:space="preserve">
+    <value>Tình trạng: {0}</value>
+  </data>
+  <data name="Main_Start" xml:space="preserve">
+    <value>Bắt đầu</value>
+  </data>
+  <data name="Main_Stop" xml:space="preserve">
+    <value>Dừng</value>
+  </data>
+  <data name="Main_UnKrangle" xml:space="preserve">
+    <value>Bỏ xáo trộn</value>
+  </data>
+  <data name="Main_Krangle" xml:space="preserve">
+    <value>Xáo trộn</value>
+  </data>
+  <data name="Main_ObfuscateNamesWithMilitaryExerciseWordsUseful" xml:space="preserve">
+    <value>Che tên bằng từ ngữ quân sự/tập luyện.
+Hữu ích khi chụp màn hình.</value>
+  </data>
+  <data name="Main_CancelStopAfterNext" xml:space="preserve">
+    <value>Hủy dừng sau lượt tiếp</value>
+  </data>
+  <data name="Main_StopAfterNextSuccess" xml:space="preserve">
+    <value>Dừng sau lượt thành công tiếp theo</value>
+  </data>
+  <data name="Main_ArmedStopsAfterASuccessfulRunIs" xml:space="preserve">
+    <value>Đã bật: dừng sau khi ghi nhận lượt thành công và xác nhận rời phụ bản.</value>
+  </data>
+  <data name="Main_RuntimeOnlyAbortedRunsDoNotConsume" xml:space="preserve">
+    <value>Chỉ trong phiên chạy. Lượt bị hủy không dùng hết yêu cầu này.</value>
+  </data>
+  <data name="Main_HELP" xml:space="preserve">
+    <value>-&gt;!TRỢ GIÚP!&lt;-</value>
+  </data>
+  <data name="Main_MainWindowSettings" xml:space="preserve">
+    <value>Cài đặt cửa sổ chính</value>
+  </data>
+  <data name="Main_AIDutySolverADS" xml:space="preserve">
+    <value>AI Duty Solver (ADS)</value>
+  </data>
+  <data name="Main_DutyBackendSelectorEnablingADSImmediatelySends" xml:space="preserve">
+    <value>Bộ chọn backend phụ bản.
+Bật ADS sẽ gửi ngay /xldisableplugin AutoDuty.
+ADS là tùy chọn trong chế độ AutoDuty và chỉ dùng khi yêu cầu /mog inn.</value>
+  </data>
+  <data name="Main_ADSDutyBackendActiveADSAlsoHandles" xml:space="preserve">
+    <value>Backend phụ bản ADS đang hoạt động. ADS cũng xử lý vào nhà trọ.</value>
+  </data>
+  <data name="Main_AutoDutyDutyBackendActiveADSIsOptional" xml:space="preserve">
+    <value>Backend phụ bản AutoDuty đang hoạt động. ADS là tùy chọn cho /mog inn.</value>
+  </data>
+  <data name="Main_DutyInformation" xml:space="preserve">
+    <value>Thông tin phụ bản</value>
+  </data>
+  <data name="Main_CounterPraeDailyPraetoriumLimit" xml:space="preserve">
+    <value>Bộ đếm: {0} / {1} Prae | Giới hạn Praetorium hằng ngày: {2}</value>
+  </data>
+  <data name="Main_DailyDecuRunsToday" xml:space="preserve">
+    <value>Decu hằng ngày: {0} lượt hôm nay</value>
+  </data>
+  <data name="Main_Current" xml:space="preserve">
+    <value>Hiện tại: {0}</value>
+  </data>
+  <data name="Main_DailyReset" xml:space="preserve">
+    <value>Đặt lại hằng ngày: {0} ({1})</value>
+  </data>
+  <data name="Main_TESTINGMODEUnsynced" xml:space="preserve">
+    <value>[CHẾ ĐỘ THỬ NGHIỆM - Không đồng bộ]</value>
+  </data>
+  <data name="Main_LastClearS" xml:space="preserve">
+    <value>Lần hoàn tất gần nhất: {0:F0}s</value>
+  </data>
+  <data name="Main_TimeInDutyS" xml:space="preserve">
+    <value>Thời gian trong phụ bản: {0:F0}s</value>
+  </data>
+  <data name="Main_DeathsThisRunSelfOthersAll" xml:space="preserve">
+    <value>Số lần chết lượt này: Bản thân {0} | Khác {1} | Tất cả {2}</value>
+  </data>
+  <data name="Main_DebugTools" xml:space="preserve">
+    <value>Công cụ debug</value>
+  </data>
+  <data name="Main_FORCEPATHSELECTION" xml:space="preserve">
+    <value>ÉP CHỌN ĐƯỜNG ĐI</value>
+  </data>
+  <data name="Main_Result" xml:space="preserve">
+    <value>Kết quả: {0}</value>
+  </data>
+  <data name="Main_TESTPATHINDEX" xml:space="preserve">
+    <value>KIỂM TRA CHỈ MỤC ĐƯỜNG ĐI</value>
+  </data>
+  <data name="Main_LogADStructure" xml:space="preserve">
+    <value>Ghi cấu trúc AD</value>
+  </data>
+  <data name="Main_DumpAutoDutyPluginStructureToDalamudLog" xml:space="preserve">
+    <value>Ghi cấu trúc plugin AutoDuty vào log Dalamud để nghiên cứu.</value>
+  </data>
+  <data name="Main_LogConfig" xml:space="preserve">
+    <value>Ghi cấu hình</value>
+  </data>
+  <data name="Main_LogActions" xml:space="preserve">
+    <value>Ghi hành động</value>
+  </data>
+  <data name="Main_DumpAutoDutyActionsListCurrentlyEmptyBut" xml:space="preserve">
+    <value>Ghi danh sách hành động AutoDuty (hiện trống nhưng hiển thị cấu trúc).</value>
+  </data>
+  <data name="Main_LogManager" xml:space="preserve">
+    <value>Ghi bộ quản lý</value>
+  </data>
+  <data name="Main_DumpAutoDutyActionsManagerContainsActionsListWithCommand" xml:space="preserve">
+    <value>Ghi ActionsManager AutoDuty (chứa actionsList với định nghĩa lệnh).</value>
+  </data>
+  <data name="Main_ExplorePaths" xml:space="preserve">
+    <value>Khảo sát đường đi</value>
+  </data>
+  <data name="Main_ExploreDifferentLocationsForPathDataConfiguration" xml:space="preserve">
+    <value>Khảo sát các vị trí dữ liệu đường đi (Configuration, MainWindow, v.v.).</value>
+  </data>
+  <data name="Main_LogTuples" xml:space="preserve">
+    <value>Ghi tuple</value>
+  </data>
+  <data name="Main_IterateThroughActionsListAndLogEachTuple" xml:space="preserve">
+    <value>Duyệt actionsList và ghi nội dung từng tuple (định nghĩa lệnh).</value>
+  </data>
+  <data name="Main_PathSelections" xml:space="preserve">
+    <value>Lựa chọn đường đi</value>
+  </data>
+  <data name="Main_ExplorePathSelectionsByPathDictionaryTerritoryPathMappings" xml:space="preserve">
+    <value>Khảo sát từ điển PathSelectionsByPath (ánh xạ lãnh thổ → đường đi).</value>
+  </data>
+  <data name="Main_CheckCurrent" xml:space="preserve">
+    <value>Kiểm tra hiện tại</value>
+  </data>
+  <data name="Main_CheckWhatPathAutoDutyCurrentlyHasSelected" xml:space="preserve">
+    <value>Kiểm tra đường đi AutoDuty hiện đang chọn.</value>
+  </data>
+  <data name="Main_FindMethods" xml:space="preserve">
+    <value>Tìm phương thức</value>
+  </data>
+  <data name="Main_FindSaveApplyLoadMethodsInAutoDuty" xml:space="preserve">
+    <value>Tìm phương thức Save/Apply/Load trong AutoDuty.</value>
+  </data>
+  <data name="Main_ConfigFields" xml:space="preserve">
+    <value>Trường cấu hình</value>
+  </data>
+  <data name="Main_FindActualConfigFieldNamesForPath" xml:space="preserve">
+    <value>Tìm tên trường cấu hình thực tế cho lựa chọn đường đi.</value>
+  </data>
+  <data name="Main_CheckRepair" xml:space="preserve">
+    <value>Kiểm tra sửa chữa</value>
+  </data>
+  <data name="Main_Item" xml:space="preserve">
+    <value>Vật phẩm {0}</value>
+  </data>
+  <data name="Main_CheckEquipmentDurabilityAndRepairStatus" xml:space="preserve">
+    <value>Kiểm tra độ bền trang bị và trạng thái sửa chữa.</value>
+  </data>
+  <data name="Main_TestingModeUnsyncedNoStats" xml:space="preserve">
+    <value>Chế độ thử nghiệm: Không đồng bộ (không thống kê)</value>
+  </data>
+  <data name="Main_WARNINGRunningUnsyncedWithoutLevelSync" xml:space="preserve">
+    <value>CẢNH BÁO: Chạy không đồng bộ và không đồng bộ cấp.</value>
+  </data>
+  <data name="Main_TESTPRAEINDEX" xml:space="preserve">
+    <value>KIỂM TRA CHỈ MỤC PRAE</value>
+  </data>
+  <data name="Main_LogsPraetoriumCallbackIndexAndMissingOptional" xml:space="preserve">
+    <value>Ghi chỉ mục callback Praetorium và nội dung mở khóa tùy chọn còn thiếu. Không đăng ký hàng chờ.</value>
+  </data>
+  <data name="Main_PraetoriumCallback" xml:space="preserve">
+    <value>Callback Praetorium: {0}</value>
+  </data>
+  <data name="Main_MissingOptionalUnlocks" xml:space="preserve">
+    <value>Mở khóa tùy chọn còn thiếu: {0}</value>
+  </data>
+  <data name="Main_Unlocked" xml:space="preserve">
+    <value>Đã mở khóa</value>
+  </data>
+  <data name="Main_Missing" xml:space="preserve">
+    <value>Còn thiếu</value>
+  </data>
+  <data name="Main_QuestIDs" xml:space="preserve">
+    <value>ID nhiệm vụ: {0}</value>
+  </data>
+  <data name="Main_ADSModeActiveAutoDutyReflectionPathDebug" xml:space="preserve">
+    <value>Chế độ ADS đang hoạt động. Công cụ debug phản chiếu/đường đi AutoDuty được ẩn.</value>
+  </data>
+  <data name="Main_LeaderRuntime" xml:space="preserve">
+    <value>Trưởng đội (khi chạy): {0}</value>
+  </data>
+  <data name="Main_CrossWorld" xml:space="preserve">
+    <value>Liên thế giới: {0}</value>
+  </data>
+  <data name="Main_SourceConfiguredCrossWorldRole" xml:space="preserve">
+    <value>Nguồn: vai trò liên thế giới đã cấu hình</value>
+  </data>
+  <data name="Main_Subsystems" xml:space="preserve">
+    <value>Hệ thống con</value>
+  </data>
+  <data name="Main_PausedByMOGTOME" xml:space="preserve">
+    <value>Tạm dừng bởi MOGTOME</value>
+  </data>
+  <data name="Main_DutyBackend" xml:space="preserve">
+    <value>Backend phụ bản</value>
+  </data>
+  <data name="Main_LogAllConfiguration" xml:space="preserve">
+    <value>Ghi toàn bộ cấu hình</value>
+  </data>
+  <data name="Main_LogConfigPath" xml:space="preserve">
+    <value>Ghi đường dẫn cấu hình</value>
+  </data>
+  <data name="Main_QueueRole" xml:space="preserve">
+    <value>Vai trò hàng chờ</value>
+  </data>
+  <data name="Main_ADSRuntime" xml:space="preserve">
+    <value>Runtime ADS</value>
+  </data>
+  <data name="Main_Bailout" xml:space="preserve">
+    <value>Thoát khẩn cấp</value>
+  </data>
+  <data name="Main_S" xml:space="preserve">
+    <value>{0}s</value>
+  </data>
+  <data name="Main_NotConfigured" xml:space="preserve">
+    <value>Chưa cấu hình</value>
+  </data>
+  <data name="Main_HQ" xml:space="preserve">
+    <value>HQ</value>
+  </data>
+  <data name="Main_NQ" xml:space="preserve">
+    <value>NQ</value>
+  </data>
+  <data name="Main_X" xml:space="preserve">
+    <value>{0} [{1}] x{2}</value>
+  </data>
+  <data name="Stats_DutyStatistics" xml:space="preserve">
+    <value>Thống kê phụ bản</value>
+  </data>
+  <data name="Stats_OpenConfig" xml:space="preserve">
+    <value>Mở cấu hình</value>
+  </data>
+  <data name="Stats_OpenMOGTOMEConfigurationFolder" xml:space="preserve">
+    <value>Mở thư mục cấu hình MOGTOME</value>
+  </data>
+  <data name="Stats_KrangleNames" xml:space="preserve">
+    <value>Xáo trộn tên</value>
+  </data>
+  <data name="Stats_Summary" xml:space="preserve">
+    <value>Tổng quan</value>
+  </data>
+  <data name="Stats_Detailed" xml:space="preserve">
+    <value>Chi tiết</value>
+  </data>
+  <data name="Stats_ShowDebugRuns" xml:space="preserve">
+    <value>Hiện lượt debug</value>
+  </data>
+  <data name="Stats_UnsyncedRunsAreNowIncludedInStatistics" xml:space="preserve">
+    <value>Lượt không đồng bộ nay được tính vào thống kê</value>
+  </data>
+  <data name="Stats_UnsyncedRunsAreHiddenFromStatistics" xml:space="preserve">
+    <value>Lượt không đồng bộ được ẩn khỏi thống kê</value>
+  </data>
+  <data name="Stats_CombinedStats" xml:space="preserve">
+    <value>Thống kê tổng hợp</value>
+  </data>
+  <data name="Stats_TotalRuns" xml:space="preserve">
+    <value>Tổng số lượt: {0}</value>
+  </data>
+  <data name="Stats_TotalMogtomes" xml:space="preserve">
+    <value>Tổng Mogtome: {0}</value>
+  </data>
+  <data name="Stats_CurrentDailyCounter" xml:space="preserve">
+    <value>Bộ đếm hằng ngày hiện tại: {0}</value>
+  </data>
+  <data name="Stats_DailyDecumanaBest" xml:space="preserve">
+    <value>Decumana hằng ngày: {0} (Tốt nhất: {1})</value>
+  </data>
+  <data name="Stats_NextDailyReset" xml:space="preserve">
+    <value>Lần đặt lại hằng ngày tiếp theo: {0} ({1})</value>
+  </data>
+  <data name="Stats_TodaySDecumanaStats" xml:space="preserve">
+    <value>Thống kê Decumana hôm nay:</value>
+  </data>
+  <data name="Stats_BestToday" xml:space="preserve">
+    <value>  Tốt nhất hôm nay: {0}</value>
+  </data>
+  <data name="Stats_LongestToday" xml:space="preserve">
+    <value>  Lâu nhất hôm nay: {0}</value>
+  </data>
+  <data name="Stats_RunsToday" xml:space="preserve">
+    <value>  Số lượt hôm nay: {0}</value>
+  </data>
+  <data name="Stats_MogtomesToday" xml:space="preserve">
+    <value>  Mogtome hôm nay: {0}</value>
+  </data>
+  <data name="Stats_ResetAllStats" xml:space="preserve">
+    <value>Đặt lại toàn bộ thống kê</value>
+  </data>
+  <data name="Stats_JobPerformance" xml:space="preserve">
+    <value>Hiệu suất nghề</value>
+  </data>
+  <data name="Stats_PlayerStats" xml:space="preserve">
+    <value>Thống kê người chơi</value>
+  </data>
+  <data name="Stats_RecentRuns" xml:space="preserve">
+    <value>Lượt gần đây</value>
+  </data>
+  <data name="Stats_Trends" xml:space="preserve">
+    <value>Xu hướng</value>
+  </data>
+  <data name="Stats_Best" xml:space="preserve">
+    <value>Tốt nhất: {0}</value>
+  </data>
+  <data name="Stats_Date" xml:space="preserve">
+    <value>Ngày: {0}</value>
+  </data>
+  <data name="Stats_Party" xml:space="preserve">
+    <value>Tổ đội:</value>
+  </data>
+  <data name="Stats_BestNoRunsYet" xml:space="preserve">
+    <value>Tốt nhất: Chưa có lượt</value>
+  </data>
+  <data name="Stats_Longest" xml:space="preserve">
+    <value>Lâu nhất: {0}</value>
+  </data>
+  <data name="Stats_LongestNoRunsYet" xml:space="preserve">
+    <value>Lâu nhất: Chưa có lượt</value>
+  </data>
+  <data name="Stats_DeathsSingleRun" xml:space="preserve">
+    <value>Số lần chết (một lượt):</value>
+  </data>
+  <data name="Stats_SelfOthersAll" xml:space="preserve">
+    <value>Bản thân: {0} | Khác: {1} | Tất cả: {2}</value>
+  </data>
+  <data name="Stats_DeathsTotal" xml:space="preserve">
+    <value>Số lần chết (tổng):</value>
+  </data>
+  <data name="Stats_Runs" xml:space="preserve">
+    <value>Lượt: {0}</value>
+  </data>
+  <data name="Stats_Mogtomes" xml:space="preserve">
+    <value>Mogtome: {0}</value>
+  </data>
+  <data name="Stats_NotLoggedIn" xml:space="preserve">
+    <value>  Chưa đăng nhập.</value>
+  </data>
+  <data name="Stats_Name" xml:space="preserve">
+    <value>Tên</value>
+  </data>
+  <data name="Stats_Job" xml:space="preserve">
+    <value>Nghề</value>
+  </data>
+  <data name="Stats_Level" xml:space="preserve">
+    <value>Cấp</value>
+  </data>
+  <data name="Stats_HMS" xml:space="preserve">
+    <value>{0}g {1:D2}p {2:D2}s</value>
+  </data>
+  <data name="Stats_MS" xml:space="preserve">
+    <value>{0}p {1:D2}s</value>
+  </data>
+  <data name="Stats_None" xml:space="preserve">
+    <value>Không có</value>
+  </data>
+  <data name="Stats_NoRunDataAvailableEnableDetailedTracking" xml:space="preserve">
+    <value>Không có dữ liệu lượt. Bật theo dõi chi tiết và hoàn thành vài lượt.</value>
+  </data>
+  <data name="Stats_Avg" xml:space="preserve">
+    <value>Trung bình: {0}</value>
+  </data>
+  <data name="Stats_Deaths" xml:space="preserve">
+    <value>Số lần chết: {0}</value>
+  </data>
+  <data name="Stats_Rate" xml:space="preserve">
+    <value>Tỷ lệ: {0:F1}%</value>
+  </data>
+  <data name="Stats_PlayerStatistics" xml:space="preserve">
+    <value>Thống kê người chơi</value>
+  </data>
+  <data name="Stats_Player" xml:space="preserve">
+    <value>Người chơi███</value>
+  </data>
+  <data name="Stats_You" xml:space="preserve">
+    <value> (Bạn)</value>
+  </data>
+  <data name="Stats_Total" xml:space="preserve">
+    <value>Tổng: {0}</value>
+  </data>
+  <data name="Stats_PraeDecu" xml:space="preserve">
+    <value>Prae: {0} | Decu: {1}</value>
+  </data>
+  <data name="Stats_StreakBest" xml:space="preserve">
+    <value>Chuỗi: {0} (Tốt nhất: {1})</value>
+  </data>
+  <data name="Stats_Job2" xml:space="preserve">
+    <value>Nghề: {0}</value>
+  </data>
+  <data name="Stats_RecentRunsLast" xml:space="preserve">
+    <value>Lượt gần đây (25 lượt cuối)</value>
+  </data>
+  <data name="Stats_Time" xml:space="preserve">
+    <value>Thời gian</value>
+  </data>
+  <data name="Stats_Player2" xml:space="preserve">
+    <value>Người chơi</value>
+  </data>
+  <data name="Stats_Deaths2" xml:space="preserve">
+    <value>Số lần chết</value>
+  </data>
+  <data name="Stats_Status" xml:space="preserve">
+    <value>Trạng thái</value>
+  </data>
+  <data name="Stats_NotCaptured" xml:space="preserve">
+    <value>{0}: Không ghi nhận</value>
+  </data>
+  <data name="Stats_PartyDataNotCaptured" xml:space="preserve">
+    <value>Không ghi nhận dữ liệu tổ đội</value>
+  </data>
+  <data name="Stats_SelfOthersAll2" xml:space="preserve">
+    <value>Bản thân / Khác / Tất cả</value>
+  </data>
+  <data name="Stats_Success" xml:space="preserve">
+    <value>Thành công</value>
+  </data>
+  <data name="Stats_NoReasonRecorded" xml:space="preserve">
+    <value>Không ghi lý do</value>
+  </data>
+  <data name="Stats_Aborted" xml:space="preserve">
+    <value>Đã hủy: {0}</value>
+  </data>
+  <data name="Stats_PerformanceTrends" xml:space="preserve">
+    <value>Xu hướng hiệu suất</value>
+  </data>
+  <data name="Stats_NoSuccessfulRunDataAvailable" xml:space="preserve">
+    <value>Không có dữ liệu lượt thành công.</value>
+  </data>
+  <data name="Stats_AverageCompletionTimeLast" xml:space="preserve">
+    <value>Thời gian hoàn tất trung bình (10 lượt cuối): {0}</value>
+  </data>
+  <data name="Stats_AverageCompletionTimeLast2" xml:space="preserve">
+    <value>Thời gian hoàn tất trung bình (50 lượt cuối): {0}</value>
+  </data>
+  <data name="Stats_AverageCompletionTimeAllTime" xml:space="preserve">
+    <value>Thời gian hoàn tất trung bình (toàn bộ): {0}</value>
+  </data>
+  <data name="Stats_DeathRateLast" xml:space="preserve">
+    <value>Tỷ lệ chết (10 lượt cuối): {0:F1}%</value>
+  </data>
+  <data name="Stats_DeathRateAllTime" xml:space="preserve">
+    <value>Tỷ lệ chết (toàn bộ): {0:F1}%</value>
+  </data>
+  <data name="Stats_MostEfficientJobAvg" xml:space="preserve">
+    <value>Nghề hiệu quả nhất: {0} (trung bình {1})</value>
+  </data>
+  <data name="Stats_RecentPerformanceTrend" xml:space="preserve">
+    <value>Xu hướng hiệu suất gần đây:</value>
+  </data>
+  <data name="WarningText_SorryToMakeYouReadThis" xml:space="preserve">
+    <value>Xin lỗi vì bạn phải đọc phần này.</value>
+  </data>
+  <data name="WarningText_AFewNotesOnMOGTOMEVersionX" xml:space="preserve">
+    <value>Một vài lưu ý về MOGTOME.</value>
+  </data>
+  <data name="WarningText_ItSExperimentalAndWillBreakOccasionally" xml:space="preserve">
+    <value>đây là thử nghiệm và đôi khi sẽ gặp lỗi.</value>
+  </data>
+  <data name="WarningText_PleaseProvideLogsSoICanAnalyze" xml:space="preserve">
+    <value>vui lòng cung cấp log để tôi phân tích!</value>
+  </data>
+  <data name="WarningText_MultiplayerGuideDiscordLinkAndInfoAt" xml:space="preserve">
+    <value>Hướng dẫn nhiều người chơi, liên kết Discord và thông tin tại:</value>
+  </data>
+  <data name="WarningText_ThereAreWaysMOGTOMEIsCurrentlyCrashing" xml:space="preserve">
+    <value>Hiện có 3 cách MOGTOME làm client bị lỗi. (không phải do MOGTOME)</value>
+  </data>
+  <data name="WarningText_IfYouHaveRSRUISimulateThe" xml:space="preserve">
+    <value>(1) Nếu bật RSR -&gt; UI -&gt; Simulate the effect of pressing abilities, hãy tắt tính năng đó.</value>
+  </data>
+  <data name="WarningText_DoNotRunDalamudFromTheSame" xml:space="preserve">
+    <value>(2) Không chạy Dalamud nhiều lần từ cùng thư mục. Chạy nhiều client dễ gây lỗi.</value>
+  </data>
+  <data name="WarningText_AUTODUTYRSRNavmeshSometimesWILLHaveRace" xml:space="preserve">
+    <value>AUTODUTY/RSR/navmesh đôi khi gặp race/deadlock và thoát về desktop có hoặc không có lỗi.</value>
+  </data>
+  <data name="WarningText_YouWillNeedToUseMultiInstall" xml:space="preserve">
+    <value>Bạn cần dùng nhiều thư mục cài đặt để giải quyết việc này.</value>
+  </data>
+  <data name="WarningText_ItWillBeTheFirstThingI" xml:space="preserve">
+    <value>Đó là câu đầu tiên tôi hỏi sau phiên bản MOGTOME.</value>
+  </data>
+  <data name="WarningText_IfYouDonTHaveVeryMuch" xml:space="preserve">
+    <value>(3) Nếu ít RAM, bạn sẽ gặp vấn đề khi chạy nhiều client.</value>
+  </data>
+  <data name="WarningText_PlanForGBFreePerClientYou" xml:space="preserve">
+    <value>Chuẩn bị 5GB RAM trống cho mỗi client trước khi tải bất kỳ client nào.</value>
+  </data>
+  <data name="WarningText_SeeTheMultiplayerGuideOnHttpsAethertek" xml:space="preserve">
+    <value>Xem hướng dẫn nhiều người chơi tại https://aethertek.io/ để biết mẹo.</value>
+  </data>
+  <data name="WarningText_NowForSomeTipsAndTricksFor" xml:space="preserve">
+    <value>Giờ là vài mẹo cho MOGTOME.</value>
+  </data>
+  <data name="WarningText_IfYouAreSelfRepairingSetRepair" xml:space="preserve">
+    <value>1. Nếu tự sửa, đặt tỷ lệ sửa cao trong plugin backend đã chọn.</value>
+  </data>
+  <data name="WarningText_AutoDutyRepairIsStillWeirdSometimesADS" xml:space="preserve">
+    <value>Sửa chữa AutoDuty đôi khi vẫn bất thường. Chế độ ADS dùng lệnh sửa riêng và cần thử nghiệm.</value>
+  </data>
+  <data name="WarningText_MakeAnAutoDutyProfileJustForThis" xml:space="preserve">
+    <value>2. Tạo hồ sơ AutoDuty riêng cho mục đích này và chọn trước khi nhấn bắt đầu nếu chế độ ADS TẮT.</value>
+  </data>
+  <data name="WarningText_MOGTOMEChangesSomeSettingsSoThisKeeps" xml:space="preserve">
+    <value>MOGTOME thay đổi một số cài đặt nên cách này giữ an toàn cho hồ sơ lên cấp và các hồ sơ khác.</value>
+  </data>
+  <data name="WarningText_JoinTheAutoPartyDiscordHttpsDiscordGg" xml:space="preserve">
+    <value>3. Tham gia Discord AutoParty -&gt; https://discord.gg/KyfyAzG6</value>
+  </data>
+  <data name="WarningText_WhenStartingMogtomeMakeSureYouStart" xml:space="preserve">
+    <value>4. Khi bắt đầu MOGTOME, hãy khởi động thành viên không phải trưởng đội trước. Bạn cần</value>
+  </data>
+  <data name="WarningText_ConfigureWHOThePartyLeaderIsBy" xml:space="preserve">
+    <value>cấu hình AI là trưởng đội bằng cách nhấp làm mới trạng thái trên trưởng đội.</value>
+  </data>
+  <data name="WarningText_IDidThisBecauseItsASeriously" xml:space="preserve">
+    <value>Tôi làm vậy vì xác định ai thực sự là trưởng đội là một bài toán logic rất khó chịu.</value>
+  </data>
+  <data name="WarningText_IHaveSomeCommentedOutAndRetired" xml:space="preserve">
+    <value>Tôi có một số phương thức cũ đã vô hiệu hóa nhưng chúng không đáng tin cậy.</value>
+  </data>
+  <data name="WarningText_ReadThisBeforeRunningMOGTOME" xml:space="preserve">
+    <value>Đọc trước khi chạy MOGTOME</value>
+  </data>
+  <data name="WarningText_WarningV" xml:space="preserve">
+    <value>cảnh báo v{0}</value>
+  </data>
+  <data name="WarningText_OKIREADIT" xml:space="preserve">
+    <value>OK, TÔI ĐÃ ĐỌC</value>
+  </data>
+  <data name="Engine_HasNotBeenStartedSinceLoading" xml:space="preserve">
+    <value>Chưa bắt đầu kể từ khi tải.</value>
+  </data>
+  <data name="Engine_DutyStartupPendingAfterExperimentalOpener" xml:space="preserve">
+    <value>Khởi động phụ bản đang chờ sau mở đầu thử nghiệm: {0}</value>
+  </data>
+  <data name="Engine_Initializing" xml:space="preserve">
+    <value>Đang khởi tạo...</value>
+  </data>
+  <data name="Engine_PreparingBossModSupport" xml:space="preserve">
+    <value>Đang chuẩn bị hỗ trợ BossMod...</value>
+  </data>
+  <data name="Engine_CheckingConflictingPlugins" xml:space="preserve">
+    <value>Đang kiểm tra plugin xung đột...</value>
+  </data>
+  <data name="Engine_PreparingADS" xml:space="preserve">
+    <value>Đang chuẩn bị ADS...</value>
+  </data>
+  <data name="Engine_PreparingAutoDuty" xml:space="preserve">
+    <value>Đang chuẩn bị AutoDuty...</value>
+  </data>
+  <data name="Engine_ResumingInsideDuty" xml:space="preserve">
+    <value>Đang tiếp tục trong phụ bản...</value>
+  </data>
+  <data name="Engine_RunningDuty" xml:space="preserve">
+    <value>Đang chạy - Phụ bản #{0}</value>
+  </data>
+  <data name="Engine_Stopping" xml:space="preserve">
+    <value>Đang dừng...</value>
+  </data>
+  <data name="Engine_Stopped" xml:space="preserve">
+    <value>Đã dừng: {0}</value>
+  </data>
+  <data name="Engine_InDuty" xml:space="preserve">
+    <value>Trong phụ bản - #{0} ({1})</value>
+  </data>
+  <data name="Engine_SuspendedWaitingForLoginAndDutyContext" xml:space="preserve">
+    <value>Tạm ngưng - chờ đăng nhập và ngữ cảnh phụ bản.</value>
+  </data>
+  <data name="Engine_DutyTransitionWaitingForConfirmedDutyContext" xml:space="preserve">
+    <value>Chuyển phụ bản - chờ ngữ cảnh phụ bản được xác nhận...</value>
+  </data>
+  <data name="Engine_DutyPendingWaitingForMatchingSupportedTerritory" xml:space="preserve">
+    <value>Phụ bản đang chờ - chờ định danh lãnh thổ/CFC được hỗ trợ phù hợp.</value>
+  </data>
+  <data name="Engine_EnteringDutyWaitingForReadyDutyContext" xml:space="preserve">
+    <value>Đang vào phụ bản - chờ ngữ cảnh phụ bản sẵn sàng...</value>
+  </data>
+  <data name="Engine_EnteringDutyWaitingForTerritory" xml:space="preserve">
+    <value>Đang vào phụ bản - chờ lãnh thổ...</value>
+  </data>
+  <data name="Engine_DutyPendingUnexpectedOrMissingTerritoryCFC" xml:space="preserve">
+    <value>Phụ bản đang chờ - lãnh thổ/CFC khác dự kiến hoặc thiếu ({0}); chờ ngữ cảnh phụ bản được hỗ trợ.</value>
+  </data>
+  <data name="Engine_OutsideDutyNext" xml:space="preserve">
+    <value>Ngoài phụ bản - Tiếp theo: #{0}</value>
+  </data>
+  <data name="Engine_WaitingForLeader" xml:space="preserve">
+    <value>Chờ trưởng đội - #{0} ({1})</value>
+  </data>
+  <data name="Engine_WaitingForLeader2" xml:space="preserve">
+    <value>Chờ trưởng đội - #{0}</value>
+  </data>
+  <data name="Engine_DelayedRequeueInProgress" xml:space="preserve">
+    <value>Đang đăng ký lại có trì hoãn...</value>
+  </data>
+  <data name="Engine_WaitingAfterLeaveDutyS" xml:space="preserve">
+    <value>Chờ sau khi rời phụ bản ({0:F0}s)</value>
+  </data>
+  <data name="Engine_WaitingToStopS" xml:space="preserve">
+    <value>Chờ dừng {0} ({1:F0}s)</value>
+  </data>
+  <data name="Engine_Stopping2" xml:space="preserve">
+    <value>Đang dừng {0}...</value>
+  </data>
+  <data name="Engine_WaitingToQueueS" xml:space="preserve">
+    <value>Chờ vào hàng chờ ({0:F0}s)</value>
+  </data>
+  <data name="Engine_Queueing" xml:space="preserve">
+    <value>Đang đăng ký hàng chờ...</value>
+  </data>
+  <data name="Engine_QueueingRegistered" xml:space="preserve">
+    <value>Đang đăng ký hàng chờ: {0} (đã đăng ký, {1})</value>
+  </data>
+  <data name="Engine_QueueingRegistered2" xml:space="preserve">
+    <value>Đang đăng ký hàng chờ: {0} (đã đăng ký)</value>
+  </data>
+  <data name="Engine_QueueingContentsFinderRetryCooldownS" xml:space="preserve">
+    <value>Đang đăng ký hàng chờ: {0} (hồi chiêu thử lại ContentsFinder {1:F0}s, {2})</value>
+  </data>
+  <data name="Engine_QueueingWaitingForQueueRegistrationS" xml:space="preserve">
+    <value>Đang đăng ký hàng chờ: {0} (chờ đăng ký {1:F0}/{2:F0}s, {3})</value>
+  </data>
+  <data name="Engine_QueueingWaitingForQueueRegistrationS2" xml:space="preserve">
+    <value>Đang đăng ký hàng chờ: {0} (chờ đăng ký {1:F0}/{2:F0}s)</value>
+  </data>
+  <data name="Engine_QueueingWaiting" xml:space="preserve">
+    <value>Đang đăng ký hàng chờ: {0} (đang chờ, {1})</value>
+  </data>
+  <data name="Engine_QueueingWaiting2" xml:space="preserve">
+    <value>Đang đăng ký hàng chờ: {0} (đang chờ...)</value>
+  </data>
+  <data name="Engine_LeaveBlocked" xml:space="preserve">
+    <value>{0} - rời bị chặn ({1})</value>
+  </data>
+  <data name="Engine_LeaveRequestedWaitingForZoneOutS" xml:space="preserve">
+    <value>Đã yêu cầu rời - chờ chuyển khu ({0:F0}s)</value>
+  </data>
+  <data name="Engine_CombatPending" xml:space="preserve">
+    <value>Chiến đấu đang chờ: {0}.</value>
+  </data>
+  <data name="Engine_InDutyS" xml:space="preserve">
+    <value>Trong phụ bản #{0} - {1:F0}s</value>
+  </data>
+  <data name="Engine_Repairing" xml:space="preserve">
+    <value>Đang sửa...</value>
+  </data>
+  <data name="Engine_RepairDoneResuming" xml:space="preserve">
+    <value>Đã sửa xong, tiếp tục</value>
+  </data>
+  <data name="Engine_RepairingWaitingForTelepotTownS" xml:space="preserve">
+    <value>Đang sửa - chờ TelepotTown ({0:F0}s)</value>
+  </data>
+  <data name="Engine_RepairingWaitingFor" xml:space="preserve">
+    <value>Đang sửa - chờ {0}</value>
+  </data>
+  <data name="Engine_ContentsFinderQueueCooldownS" xml:space="preserve">
+    <value>Hồi chiêu hàng chờ ContentsFinder: {0} ({1:F0}s, {2})</value>
+  </data>
+  <data name="Engine_ContentsFinderQueueCooldownS2" xml:space="preserve">
+    <value>Hồi chiêu hàng chờ ContentsFinder: {0} ({1:F0}s)</value>
+  </data>
+  <data name="Engine_Value" xml:space="preserve">
+    <value>{0}: {1} ({2} / {3})</value>
+  </data>
+  <data name="Engine_Value2" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="Engine_WaitingForPeopleVisible" xml:space="preserve">
+    <value>chờ tổ đội có {1}–4 người (hiển thị {0})</value>
+  </data>
+  <data name="Engine_WaitingForPartyMembersToLeaveDuty" xml:space="preserve">
+    <value>Chờ thành viên tổ đội rời phụ bản.</value>
+  </data>
+  <data name="Engine_QueueRecoveryWaitingAfterS" xml:space="preserve">
+    <value>Khôi phục hàng chờ: chờ sau {0} ({1:F0}s)</value>
+  </data>
+  <data name="Engine_QueueRecoveryAllowingRepairsS" xml:space="preserve">
+    <value>Khôi phục hàng chờ: cho phép sửa ({0:F0}s)</value>
+  </data>
+  <data name="Engine_QueueRecoveryResumingDutyEntry" xml:space="preserve">
+    <value>Khôi phục hàng chờ: tiếp tục vào phụ bản</value>
+  </data>
+  <data name="Engine_RepairRecoveryWaitingToRequeueS" xml:space="preserve">
+    <value>Khôi phục sửa chữa: chờ đăng ký lại ({0:F0}s)</value>
+  </data>
+  <data name="Engine_RepairRecoveryRetryWaitingForLeader" xml:space="preserve">
+    <value>Lần thử khôi phục sửa chữa {0}: chờ trưởng đội</value>
+  </data>
+  <data name="Engine_RepairRecoveryRestarting" xml:space="preserve">
+    <value>Khôi phục sửa chữa: khởi động lại {0}</value>
+  </data>
+  <data name="Engine_RepairRecoveryWaitingForLeader" xml:space="preserve">
+    <value>Khôi phục sửa chữa: chờ trưởng đội</value>
+  </data>
+  <data name="Engine_LeaveRequestedViaADSAttemptWaitingFor" xml:space="preserve">
+    <value>Đã yêu cầu rời qua ADS (lần #{0}) - chờ chuyển khu</value>
+  </data>
+  <data name="Engine_LeaveRequestedAttemptWaitingForZoneOut" xml:space="preserve">
+    <value>Đã yêu cầu rời (lần #{0}) - chờ chuyển khu</value>
+  </data>
+  <data name="Engine_PluginUnloadedOrReloaded" xml:space="preserve">
+    <value>Plugin đã gỡ khỏi bộ nhớ hoặc tải lại.</value>
+  </data>
+  <data name="Engine_RepairingBeforeStart" xml:space="preserve">
+    <value>Đang sửa trước khi bắt đầu...</value>
+  </data>
+  <data name="Engine_StopAfterNextSuccessfulClearAndConfirmed" xml:space="preserve">
+    <value>Dừng sau lượt thành công tiếp theo và xác nhận rời.</value>
+  </data>
+  <data name="Engine_InitializationFailed" xml:space="preserve">
+    <value>Khởi tạo thất bại: {0}</value>
+  </data>
+  <data name="Engine_PraetoriumDailyLimitReached" xml:space="preserve">
+    <value>Đã đạt giới hạn Praetorium hằng ngày ({0}/{1}).</value>
+  </data>
+  <data name="Startup_WaitingForDutyReadiness" xml:space="preserve">
+    <value>Chờ phụ bản sẵn sàng.</value>
+  </data>
+  <data name="Startup_DutyStartupCancelled" xml:space="preserve">
+    <value>Đã hủy khởi động phụ bản.</value>
+  </data>
+  <data name="Startup_DutyStartupPending" xml:space="preserve">
+    <value>Khởi động phụ bản đang chờ: {0}.</value>
+  </data>
+  <data name="Startup_CombatRecoveryAfterDeathWaitingForContinuous" xml:space="preserve">
+    <value>khôi phục chiến đấu sau khi chết; chờ sẵn sàng liên tục</value>
+  </data>
+  <data name="Startup_WaitingForDuty" xml:space="preserve">
+    <value>chờ phụ bản</value>
+  </data>
+  <data name="Startup_ExperimentalOpenerActive" xml:space="preserve">
+    <value>mở đầu thử nghiệm đang hoạt động</value>
+  </data>
+  <data name="Startup_WaitingForLiveDutyTerritoryCFCIdentity" xml:space="preserve">
+    <value>chờ định danh lãnh thổ/CFC phụ bản thực tế</value>
+  </data>
+  <data name="Startup_ADSIsNotLoaded" xml:space="preserve">
+    <value>ADS chưa tải</value>
+  </data>
+  <data name="Startup_HasADSClearanceMWaitingForFour" xml:space="preserve">
+    <value>{0} có quyền ADS {1} (M{2}); chờ hỗ trợ M3 cho bốn người</value>
+  </data>
+  <data name="Startup_StartupInSOfContinuousReadiness" xml:space="preserve">
+    <value>khởi động sau {0:F1}s sẵn sàng liên tục</value>
+  </data>
+  <data name="Startup_WaitingForDutyStartSeam" xml:space="preserve">
+    <value>chờ điểm bắt đầu phụ bản</value>
+  </data>
+  <data name="Startup_WaitingForReadableADSOwnershipConfirmation" xml:space="preserve">
+    <value>chờ xác nhận quyền điều khiển ADS có thể đọc</value>
+  </data>
+  <data name="Startup_WaitingSForADSOwnershipConfirmation" xml:space="preserve">
+    <value>chờ {0:F1}s xác nhận quyền điều khiển ADS</value>
+  </data>
+  <data name="Startup_HandoffRetryBackoffUntil" xml:space="preserve">
+    <value>lùi lần thử chuyển giao đến {0:HH:mm:ss}</value>
+  </data>
+  <data name="Startup_AdStartWasNotHandled" xml:space="preserve">
+    <value>/ad start không được xử lý</value>
+  </data>
+  <data name="Startup_ADSStartDutyFromInsideAccepted" xml:space="preserve">
+    <value>ADS.StartDutyFromInside được chấp nhận</value>
+  </data>
+  <data name="Startup_ADSStartDutyFromInsideRejectedCommandFallbackSuppressed" xml:space="preserve">
+    <value>ADS.StartDutyFromInside bị từ chối; chặn lệnh dự phòng</value>
+  </data>
+  <data name="Startup_TypedEndpointUnavailableSentAdsInsideFallback" xml:space="preserve">
+    <value>endpoint có kiểu không khả dụng; đã gửi lệnh dự phòng /ads inside</value>
+  </data>
+  <data name="Startup_TypedEndpointUnavailableAndAdsInsideFallback" xml:space="preserve">
+    <value>endpoint có kiểu không khả dụng và lệnh dự phòng /ads inside thất bại</value>
+  </data>
+  <data name="Startup_DutyStartupFailed" xml:space="preserve">
+    <value>khởi động phụ bản thất bại: {0}</value>
+  </data>
+  <data name="Startup_CombatRecoveryBackoffUntil" xml:space="preserve">
+    <value>lùi khôi phục chiến đấu đến {0:HH:mm:ss}</value>
+  </data>
+  <data name="Startup_CombatActivationFailedRetryingAfterSAnd" xml:space="preserve">
+    <value>kích hoạt chiến đấu thất bại: {0}; thử lại sau 5s và sẵn sàng liên tục</value>
+  </data>
+  <data name="Startup_WaitingForAuthoritativeOwnership" xml:space="preserve">
+    <value>{0}; chờ quyền điều khiển có thẩm quyền</value>
+  </data>
+  <data name="Startup_RestartingReadinessDelayWithSRetryBackoff" xml:space="preserve">
+    <value>{0}; bắt đầu lại độ trễ sẵn sàng với thời gian lùi thử lại 5s</value>
+  </data>
+  <data name="Automation_AutoDutyPreparationFailed" xml:space="preserve">
+    <value>Chuẩn bị AutoDuty thất bại: {0}</value>
+  </data>
+  <data name="Automation_QueueLeader" xml:space="preserve">
+    <value>Trưởng đội hàng chờ</value>
+  </data>
+  <data name="Automation_FollowerWaitingOnLeader" xml:space="preserve">
+    <value>Thành viên chờ trưởng đội</value>
+  </data>
+  <data name="Automation_ADS" xml:space="preserve">
+    <value>ADS</value>
+  </data>
+  <data name="Automation_RepairWaiting" xml:space="preserve">
+    <value>chờ-sửa</value>
+  </data>
+  <data name="Automation_RepairHandoff" xml:space="preserve">
+    <value>chuyển-giao-sửa</value>
+  </data>
+  <data name="Automation_LeaveRequestedWaitingForZoneOut" xml:space="preserve">
+    <value>đã yêu cầu rời, chờ chuyển khu</value>
+  </data>
+  <data name="Automation_LeaveRequested" xml:space="preserve">
+    <value>đã yêu cầu rời</value>
+  </data>
+  <data name="Automation_ADSInsideOwned" xml:space="preserve">
+    <value>ADS điều khiển bên trong</value>
+  </data>
+  <data name="Automation_ADSOutsideOwned" xml:space="preserve">
+    <value>ADS điều khiển bên ngoài</value>
+  </data>
+  <data name="Automation_LeaderReady" xml:space="preserve">
+    <value>trưởng-đội-sẵn-sàng</value>
+  </data>
+  <data name="Automation_OutsideArmed" xml:space="preserve">
+    <value>sẵn-sàng-bên-ngoài</value>
+  </data>
+  <data name="Automation_WaitingForEntry" xml:space="preserve">
+    <value>chờ-vào</value>
+  </data>
+  <data name="Automation_InsideObserved" xml:space="preserve">
+    <value>đã-quan-sát-bên-trong</value>
+  </data>
+  <data name="Automation_Leaving" xml:space="preserve">
+    <value>đang-rời</value>
+  </data>
+  <data name="Automation_Recovered" xml:space="preserve">
+    <value>đã-khôi-phục</value>
+  </data>
+  <data name="Automation_Idle" xml:space="preserve">
+    <value>chờ</value>
+  </data>
+  <data name="Automation_ADSDutyBackendInnReturn" xml:space="preserve">
+    <value>Backend phụ bản ADS + trở về nhà trọ</value>
+  </data>
+  <data name="Automation_ADSMissing" xml:space="preserve">
+    <value>Thiếu ADS</value>
+  </data>
+  <data name="Automation_ADSInnReady" xml:space="preserve">
+    <value>Nhà trọ ADS sẵn sàng</value>
+  </data>
+  <data name="Automation_Value" xml:space="preserve">
+    <value>{0} / {1}</value>
+  </data>
+  <data name="Engine_ManualStop" xml:space="preserve">
+    <value>Dừng thủ công.</value>
+  </data>
+  <data name="Engine_CleanupFailed" xml:space="preserve">
+    <value>Dọn dẹp {0} {1} thất bại: {2}</value>
+  </data>
+  <data name="Role_Tank" xml:space="preserve">
+    <value>Tank</value>
+  </data>
+  <data name="Role_Healer" xml:space="preserve">
+    <value>Healer</value>
+  </data>
+  <data name="Role_Dps" xml:space="preserve">
+    <value>DPS</value>
+  </data>
+  <data name="Rotation_CouldNotDisableCombatComponentsFromThe" xml:space="preserve">
+    <value>Không thể tắt thành phần chiến đấu từ lượt trước.</value>
+  </data>
+  <data name="Rotation_BothBossModVariantsAreStillLoadedConflict" xml:space="preserve">
+    <value>Cả hai biến thể BossMod vẫn được tải; phải dọn xung đột xong trước khi chuẩn bị bộ thiết lập.</value>
+  </data>
+  <data name="Rotation_BMROrVBM" xml:space="preserve">
+    <value>BMR hoặc VBM</value>
+  </data>
+  <data name="Rotation_RequiresLoadedBossModSupport" xml:space="preserve">
+    <value>{0} cần hỗ trợ BossMod đã tải ({1}).</value>
+  </data>
+  <data name="Rotation_BossModPackagedPresetInstallationFailedCheckThat" xml:space="preserve">
+    <value>Cài bộ thiết lập BossMod đi kèm thất bại; kiểm tra IPC bộ thiết lập đã sẵn sàng và có đủ sáu tệp.</value>
+  </data>
+  <data name="Rotation_CombatActivationWasRequestedAfterThisDuty" xml:space="preserve">
+    <value>Đã yêu cầu kích hoạt chiến đấu sau khi phụ bản này kết thúc ({0}).</value>
+  </data>
+  <data name="Rotation_CombatActivationFailed" xml:space="preserve">
+    <value>Kích hoạt chiến đấu thất bại: {0}</value>
+  </data>
+  <data name="Rotation_CouldNotDisableAllMogTomeCombatComponents" xml:space="preserve">
+    <value>Không thể tắt mọi thành phần chiến đấu MogTome ({0}); xem lệnh thất bại trong log.</value>
+  </data>
+  <data name="Rotation_RSRHealthRecoveryFailed" xml:space="preserve">
+    <value>Khôi phục trạng thái RSR thất bại ({0}).</value>
+  </data>
+  <data name="Rotation_BossModAvailabilityOrSelectionChangedAfterStartup" xml:space="preserve">
+    <value>Tính khả dụng hoặc lựa chọn BossMod đã thay đổi sau khởi động. Dừng và Bắt đầu MogTome để chuẩn bị lại.</value>
+  </data>
+  <data name="Rotation_PresetPreparationFailedCombatWasNotEnabled" xml:space="preserve">
+    <value>Chuẩn bị bộ thiết lập {0} thất bại; chưa bật chiến đấu.</value>
+  </data>
+  <data name="Rotation_RSRAutoIPCAndRotationAutoBoth" xml:space="preserve">
+    <value>RSR Auto IPC và /rotation auto đều thất bại.</value>
+  </data>
+  <data name="Rotation_CouldNotEnableUsing" xml:space="preserve">
+    <value>Không thể bật {0} bằng {1}.</value>
+  </data>
+  <data name="Path_NotAttempted" xml:space="preserve">
+    <value>Chưa thử</value>
+  </data>
+  <data name="Path_FAILEDAutoDutyPluginNotFoundOrNot" xml:space="preserve">
+    <value>THẤT BẠI: Không tìm thấy hoặc chưa tải plugin AutoDuty</value>
+  </data>
+  <data name="Path_OKTerritoryPathSelectionSavedAndVerified" xml:space="preserve">
+    <value>OK: Territory={0}, Path={1} ({2}); lựa chọn đã lưu và xác minh</value>
+  </data>
+  <data name="Path_FAILED" xml:space="preserve">
+    <value>THẤT BẠI: {0}</value>
+  </data>
+  <data name="Conflict_StartupWasStoppedBeforeBossModCleanup" xml:space="preserve">
+    <value>Khởi động đã dừng trước khi dọn BossMod.</value>
+  </data>
+  <data name="Conflict_StartupCancelledDuringVBMCleanup" xml:space="preserve">
+    <value>Khởi động bị hủy khi dọn VBM.</value>
+  </data>
+  <data name="Conflict_VBMCouldNotBeDisabledWhileBoth" xml:space="preserve">
+    <value>Không thể tắt VBM khi cả hai biến thể BossMod được tải.</value>
+  </data>
+  <data name="Conflict_StartupCancelledDuringBMRCleanup" xml:space="preserve">
+    <value>Khởi động bị hủy khi dọn BMR.</value>
+  </data>
+  <data name="Conflict_BMRCouldNotBeTemporarilyDisabledTo" xml:space="preserve">
+    <value>Không thể tạm tắt BMR để khôi phục đăng ký IPC dùng chung.</value>
+  </data>
+  <data name="Conflict_TheNativeTemporaryBMREnableCommandWas" xml:space="preserve">
+    <value>Lệnh gốc tạm bật BMR không được xử lý.</value>
+  </data>
+  <data name="Conflict_StartupCancelledDuringBMRReadiness" xml:space="preserve">
+    <value>Khởi động bị hủy khi chờ BMR sẵn sàng.</value>
+  </data>
+  <data name="Conflict_BMRDidNotBecomeReadyAfterIts" xml:space="preserve">
+    <value>BMR chưa sẵn sàng sau khi tải lại, hoặc VBM đã tải lại.</value>
+  </data>
+  <data name="Conflict_WasEnabledAndHasBeenAutoDisabled" xml:space="preserve">
+    <value>{0} đã bật và được tự tắt cho MOGTOME.</value>
+  </data>
+  <data name="Conflict_MOGTOMEKeptRunningClickTheWarningWindow" xml:space="preserve">
+    <value>{0}
+
+MOGTOME vẫn chạy. Nhấp cửa sổ cảnh báo một lần để đóng, hoặc dùng nút tắt ở đó nếu plugin trở lại.</value>
+  </data>
+  <data name="Conflict_IsStillEnabledMOGTOMEWillKeepRunning" xml:space="preserve">
+    <value>{0} vẫn bật. MOGTOME vẫn chạy, nhưng bạn nên tắt bằng {1}.</value>
+  </data>
+  <data name="Conflict_UseTheWarningWindowButtonToTry" xml:space="preserve">
+    <value>{0}
+
+Dùng nút trên cửa sổ cảnh báo để thử tắt lại, hoặc đóng cảnh báo và tiếp tục.</value>
+  </data>
+  <data name="Conflict_WasEnabledAndHasBeenAutoDisabled2" xml:space="preserve">
+    <value>{0} đã bật và được tự tắt cho chế độ ADS.</value>
+  </data>
+  <data name="Conflict_IsStillEnabledADSModeExpects" xml:space="preserve">
+    <value>{0} vẫn bật. Chế độ ADS cần {1}.</value>
+  </data>
+  <data name="Blocker_WaitingForMatchingDutyIdentity" xml:space="preserve">
+    <value>chờ định danh phụ bản phù hợp</value>
+  </data>
+  <data name="Blocker_Loading" xml:space="preserve">
+    <value>đang tải</value>
+  </data>
+  <data name="Blocker_Combat" xml:space="preserve">
+    <value>chiến đấu</value>
+  </data>
+  <data name="Blocker_Cutscene" xml:space="preserve">
+    <value>cảnh phim</value>
+  </data>
+  <data name="Blocker_OccupiedTransition" xml:space="preserve">
+    <value>chuyển tiếp bận</value>
+  </data>
+  <data name="Blocker_WaitingForLogin" xml:space="preserve">
+    <value>chờ đăng nhập</value>
+  </data>
+  <data name="Blocker_WaitingForLocalPlayer" xml:space="preserve">
+    <value>chờ người chơi cục bộ</value>
+  </data>
+  <data name="Blocker_WaitingForLocalPlayerJob" xml:space="preserve">
+    <value>chờ nghề người chơi cục bộ</value>
+  </data>
+  <data name="Blocker_WaitingForUnconsciousStateToClear" xml:space="preserve">
+    <value>chờ hết trạng thái bất tỉnh</value>
+  </data>
+  <data name="Blocker_WaitingForLocalPlayerToBeAlive" xml:space="preserve">
+    <value>chờ người chơi cục bộ sống</value>
+  </data>
+  <data name="Blocker_WaitingForAreaTransitionToFinish" xml:space="preserve">
+    <value>chờ chuyển khu vực hoàn tất</value>
+  </data>
+  <data name="Blocker_WaitingForCutsceneToFinish" xml:space="preserve">
+    <value>chờ cảnh phim kết thúc</value>
+  </data>
+  <data name="Blocker_WaitingForCutsceneEventToFinish" xml:space="preserve">
+    <value>chờ sự kiện cảnh phim kết thúc</value>
+  </data>
+  <data name="Window_MOGTOMEStatus" xml:space="preserve">
+    <value>MOGTOME - Trạng thái</value>
+  </data>
+  <data name="Window_MOGTOMEConfiguration" xml:space="preserve">
+    <value>MOGTOME - Cấu hình</value>
+  </data>
+  <data name="Window_MOGTOMEStatistics" xml:space="preserve">
+    <value>MOGTOME - Thống kê</value>
+  </data>
+  <data name="Window_MOGTOMEWarningText" xml:space="preserve">
+    <value>Văn bản cảnh báo MOGTOME</value>
+  </data>
+  <data name="Config_CombatProvider2" xml:space="preserve">
+    <value>Bộ xử lý chiến đấu: {0}</value>
+  </data>
+  <data name="Config_NotConfigured" xml:space="preserve">
+    <value>chưa cấu hình</value>
+  </data>
+  <data name="Config_OptionalFood" xml:space="preserve">
+    <value>Thức ăn tùy chọn: {0}</value>
+  </data>
+  <data name="Config_HQ" xml:space="preserve">
+    <value>[HQ]</value>
+  </data>
+  <data name="Config_NQ" xml:space="preserve">
+    <value>[NQ]</value>
+  </data>
+  <data name="Config_SelectedID" xml:space="preserve">
+    <value>  Đã chọn: {0} {1} (ID: {2})</value>
+  </data>
+  <data name="Main_ForceAutoDutyToSelectModeLoopingDuty" xml:space="preserve">
+    <value>Ép AutoDuty chọn:
+Mode: Looping
+Duty Mode: Regular
+Duty: The Praetorium (1044)
+Path: {0}
+
+Ghi toàn bộ cấu trúc AutoDuty vào log Dalamud.</value>
+  </data>
+  <data name="Main_TestPathIndexDiscoveryMethodsComparesDictionaryPaths" xml:space="preserve">
+    <value>Kiểm tra cách tìm chỉ mục đường đi.
+So sánh DictionaryPaths với PathSelectionsByPath.
+Ghi kết quả vào log Dalamud.</value>
+  </data>
+  <data name="Main_DumpAutoDutyConfigurationStructureToDalamudLog" xml:space="preserve">
+    <value>Ghi cấu trúc Configuration AutoDuty vào log Dalamud.</value>
+  </data>
+  <data name="Plugin_ScrollDownToTheDumpsterFireChannel" xml:space="preserve">
+    <value>Cuộn xuống kênh &quot;The Dumpster Fire&quot; để báo vấn đề và góp ý riêng cho plugin.</value>
+  </data>
+  <data name="Plugin_CheckPartyLeaderSettingsIfTheDuty" xml:space="preserve">
+    <value>Kiểm tra cài đặt trưởng đội nếu phụ bản không bắt đầu</value>
+  </data>
+  <data name="Plugin_ADSDidNotHandleAdsEnterinnEnsure" xml:space="preserve">
+    <value>ADS không xử lý /ads enterinn. Đảm bảo ADS đã cài và tải.</value>
+  </data>
+  <data name="Warning_SharedMOGTOMEConfigPath" xml:space="preserve">
+    <value>Đường dẫn cấu hình MOGTOME dùng chung</value>
+  </data>
+  <data name="Warning_AnotherClientHoldsMOGTOMESConfigDirectory" xml:space="preserve">
+    <value>Client khác giữ khóa thư mục cấu hình MOGTOME. Chạy nhiều client cùng đường dẫn cấu hình có thể ghi đè cài đặt tài khoản. Số tiến trình game phù hợp: {0}.</value>
+  </data>
+  <data name="Warning_CancelStart" xml:space="preserve">
+    <value>Hủy bắt đầu</value>
+  </data>
+  <data name="Warning_AcknowledgeAndStart" xml:space="preserve">
+    <value>Xác nhận và bắt đầu</value>
+  </data>
+  <data name="Warning_TwistOfFayteConflict" xml:space="preserve">
+    <value>Xung đột Twist of Fayte</value>
+  </data>
+  <data name="Warning_AutoDutyConflict" xml:space="preserve">
+    <value>Xung đột AutoDuty</value>
+  </data>
+  <data name="Warning_PluginConflict" xml:space="preserve">
+    <value>Xung đột plugin</value>
+  </data>
+  <data name="Warning_DisableTwistOfFayte" xml:space="preserve">
+    <value>Tắt TwistOfFayte</value>
+  </data>
+  <data name="Warning_DisableAutoDuty" xml:space="preserve">
+    <value>Tắt AutoDuty</value>
+  </data>
+  <data name="Chat_MOGTOMEStoppedAndClearedPendingStartAnd" xml:space="preserve">
+    <value>[MOGTOME] Đã dừng và xóa trạng thái Bắt đầu đang chờ cùng dừng sau lượt tiếp.</value>
+  </data>
+  <data name="Chat_MOGTOMEAlreadyStopped" xml:space="preserve">
+    <value>[MOGTOME] Đã dừng: {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEEngineIsStillInitializing" xml:space="preserve">
+    <value>[MOGTOME] Engine vẫn đang khởi tạo.</value>
+  </data>
+  <data name="Chat_MOGTOMEStopAfterNextSuccessfulRunArmed" xml:space="preserve">
+    <value>[MOGTOME] Đã bật dừng sau lượt thành công tiếp theo.</value>
+  </data>
+  <data name="Chat_MOGTOMEStopAfterNextSuccessfulRunCancelled" xml:space="preserve">
+    <value>[MOGTOME] Đã hủy dừng sau lượt thành công tiếp theo.</value>
+  </data>
+  <data name="Chat_MOGTOMEMogInnIsOnlyAvailableWhile" xml:space="preserve">
+    <value>[MOGTOME] /mog inn chỉ có khi engine dừng hoặc đang sửa chữa.</value>
+  </data>
+  <data name="Chat_MOGTOMEStateDuty" xml:space="preserve">
+    <value>[MOGTOME] Trạng thái: {0} | Phụ bản #{1} | {2}</value>
+  </data>
+  <data name="Chat_MOGTOMEDebugMode" xml:space="preserve">
+    <value>[MOGTOME] Chế độ debug {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEDebugCheckboxNowVisibleInStats" xml:space="preserve">
+    <value>[MOGTOME] Ô chọn debug hiện trong cửa sổ thống kê</value>
+  </data>
+  <data name="Chat_MOGTOME" xml:space="preserve">
+    <value>[MOGTOME] {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEFailedToSendAdsEnterinnCheck" xml:space="preserve">
+    <value>[MOGTOME] Không gửi được /ads enterinn. Kiểm tra log Dalamud.</value>
+  </data>
+  <data name="Chat_MOGTOMEQueuedMainConfigStatsWindowReset" xml:space="preserve">
+    <value>[MOGTOME] Đã xếp lịch đặt lại cửa sổ chính/cấu hình/thống kê về 1,1.</value>
+  </data>
+  <data name="Chat_MOGTOMEQueuedRandomVisibleJumpsForMain" xml:space="preserve">
+    <value>[MOGTOME] Đã xếp lịch di chuyển ngẫu nhiên hiển thị cho cửa sổ chính/cấu hình/thống kê.</value>
+  </data>
+  <data name="Chat_MOGTOMEEngineIsStillInitializingTryAgain" xml:space="preserve">
+    <value>[MOGTOME] Engine vẫn đang khởi tạo. Thử lại sau giây lát.</value>
+  </data>
+  <data name="Chat_MOGTOMEAlreadyRunning" xml:space="preserve">
+    <value>[MOGTOME] Đang chạy rồi</value>
+  </data>
+  <data name="Chat_MOGTOMEStartAlreadyQueued" xml:space="preserve">
+    <value>[MOGTOME] Bắt đầu đã được xếp lịch.</value>
+  </data>
+  <data name="Chat_MOGTOMEStartQueued" xml:space="preserve">
+    <value>[MOGTOME] Đã xếp lịch bắt đầu.</value>
+  </data>
+  <data name="Chat_MOGTOMEWarningXASlaveDidNotHandle" xml:space="preserve">
+    <value>[MOGTOME] Cảnh báo: XA Slave không xử lý {0}; tiếp tục khởi động.</value>
+  </data>
+  <data name="Chat_MOGTOMEWarningFailedToSendContinuingStartup" xml:space="preserve">
+    <value>[MOGTOME] Cảnh báo: không gửi được {0}; tiếp tục khởi động.</value>
+  </data>
+  <data name="DutyAutomationService_AIDutySolverADSExperimentalModeIs" xml:space="preserve">
+    <value>Đã bật chế độ thử nghiệm AI Duty Solver (ADS), nhưng ADS chưa tải.</value>
+  </data>
+  <data name="DutyAutomationService_AutoDutyIsStillInitializingOrFaultedRetry" xml:space="preserve">
+    <value>AutoDuty vẫn khởi tạo hoặc lỗi; thử lại MOGTOME sau khi đăng nhập ổn định</value>
+  </data>
+  <data name="DutyAutomationService_BundledPraetoriumPathsCouldNotBeInstalled" xml:space="preserve">
+    <value>Không thể cài đường đi Praetorium đi kèm vào AutoDuty.</value>
+  </data>
+  <data name="DutyAutomationService_ADSDidNotHandleAdsEnterinnAfter" xml:space="preserve">
+    <value>ADS không xử lý /ads enterinn sau sửa chữa. Đảm bảo ADS đã cài và tải.</value>
+  </data>
+  <data name="Chat_MOGTOMEAutoDutyPreparationFailed" xml:space="preserve">
+    <value>[MOGTOME] Chuẩn bị AutoDuty thất bại: {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEPraetoriumCallbackTest" xml:space="preserve">
+    <value>[MOGTOME] Kiểm tra callback Praetorium: {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEMissingOptionalUnlocks" xml:space="preserve">
+    <value>[MOGTOME] Mở khóa tùy chọn còn thiếu: {0}</value>
+  </data>
+  <data name="MogtomeEngine_CombatCleanupFailedAfterDutyExitContinuing" xml:space="preserve">
+    <value>Dọn chiến đấu thất bại sau khi rời phụ bản; tiếp tục.</value>
+  </data>
+  <data name="MogtomeEngine_ManualPartyRefreshSkippedInsideDutyUse" xml:space="preserve">
+    <value>Bỏ qua làm mới tổ đội thủ công trong phụ bản. Chỉ dùng Làm mới trạng thái tổ đội bên ngoài phụ bản sau khi toàn đội đã chuyển ra và hiển thị.</value>
+  </data>
+  <data name="MogtomeEngine_NonLeader" xml:space="preserve">
+    <value>thành viên</value>
+  </data>
+  <data name="MogtomeEngine_ManualPartyRefreshCouldNotDetermineLeader" xml:space="preserve">
+    <value>Làm mới tổ đội thủ công không xác định được trưởng đội từ danh sách cùng thế giới hiện tại. Giữ vai trò {0}.</value>
+  </data>
+  <data name="Chat_MOGTOMEStopAfterNextCompletedStoppingBefore" xml:space="preserve">
+    <value>[MOGTOME] Đã hoàn tất dừng sau lượt tiếp. Dừng trước khi đăng ký lại.</value>
+  </data>
+  <data name="Chat_MOGTOMEAlreadyInsideInnTerritory" xml:space="preserve">
+    <value>[MOGTOME] Đã ở trong lãnh thổ nhà trọ: {0}.</value>
+  </data>
+  <data name="Chat_MOGTOMENoInnkeeperFoundWithinYMog" xml:space="preserve">
+    <value>[MOGTOME] Không tìm thấy chủ nhà trọ trong {0:F0}y. /mog inn không làm gì.</value>
+  </data>
+  <data name="Chat_MOGTOMEMogInnCancelled" xml:space="preserve">
+    <value>[MOGTOME] Đã hủy /mog inn: {0}</value>
+  </data>
+  <data name="Warning_Title" xml:space="preserve">
+    <value>Cảnh báo MOGTOME</value>
+  </data>
+  <data name="Warning_Dismiss" xml:space="preserve">
+    <value>Đóng</value>
+  </data>
+  <data name="Language_Label" xml:space="preserve">
+    <value>Ngôn ngữ giao diện</value>
+  </data>
+  <data name="Language_WaitForProfile" xml:space="preserve">
+    <value>Dùng ngôn ngữ client game cho đến khi có hồ sơ.</value>
+  </data>
+  <data name="Config_Potion" xml:space="preserve">
+    <value>Thuốc</value>
+  </data>
+  <data name="Chat_MessageAndReason" xml:space="preserve">
+    <value>[MOGTOME] {0} {1}</value>
+  </data>
+  <data name="EngineState_Idle" xml:space="preserve">
+    <value>Chờ</value>
+  </data>
+  <data name="EngineState_Initializing" xml:space="preserve">
+    <value>Đang khởi tạo</value>
+  </data>
+  <data name="EngineState_WaitingOutsideDuty" xml:space="preserve">
+    <value>Chờ ngoài phụ bản</value>
+  </data>
+  <data name="EngineState_Queueing" xml:space="preserve">
+    <value>Đang đăng ký hàng chờ</value>
+  </data>
+  <data name="EngineState_InDuty" xml:space="preserve">
+    <value>Trong phụ bản</value>
+  </data>
+  <data name="EngineState_RepairingOutside" xml:space="preserve">
+    <value>Đang sửa bên ngoài</value>
+  </data>
+  <data name="EngineState_Stopping" xml:space="preserve">
+    <value>Đang dừng</value>
+  </data>
+  <data name="EngineState_Stopped" xml:space="preserve">
+    <value>Đã dừng</value>
+  </data>
+  <data name="CombatProvider_Bmr" xml:space="preserve">
+    <value>BMR</value>
+  </data>
+  <data name="CombatProvider_Vbm" xml:space="preserve">
+    <value>VBM</value>
+  </data>
+  <data name="CombatProvider_Rsr" xml:space="preserve">
+    <value>RSR</value>
+  </data>
+  <data name="CombatProvider_Wrath" xml:space="preserve">
+    <value>Wrath Combo</value>
+  </data>
+  <data name="Inn_InteractingWithInnkeeper" xml:space="preserve">
+    <value>Tương tác với chủ nhà trọ {0}</value>
+  </data>
+  <data name="Inn_MovingToInnkeeper" xml:space="preserve">
+    <value>Di chuyển đến chủ nhà trọ {0}</value>
+  </data>
+  <data name="Inn_MOGTOMEMogInnRequiresALoggedIn" xml:space="preserve">
+    <value>[MOGTOME] /mog inn cần nhân vật đã đăng nhập.</value>
+  </data>
+  <data name="Inn_EnteredInnTerritorySuccessfully" xml:space="preserve">
+    <value>Đã vào lãnh thổ nhà trọ thành công.</value>
+  </data>
+  <data name="Inn_TimedOutWhileTryingToEnterThe" xml:space="preserve">
+    <value>Hết thời gian khi thử vào nhà trọ.</value>
+  </data>
+  <data name="Inn_InnEntryFailed" xml:space="preserve">
+    <value>Vào nhà trọ thất bại: {0}</value>
+  </data>
+  <data name="Inn_WaitingForInnZoneTransition" xml:space="preserve">
+    <value>Chờ chuyển khu nhà trọ</value>
+  </data>
+  <data name="Inn_InnkeeperIsNoLongerNearby" xml:space="preserve">
+    <value>Chủ nhà trọ {0} không còn ở gần.</value>
+  </data>
+  <data name="Inn_InteractingWith" xml:space="preserve">
+    <value>Tương tác với {0}</value>
+  </data>
+  <data name="Inn_DriftedTooFarAwayFromWhileWaiting" xml:space="preserve">
+    <value>Đã đi quá xa {0} khi chờ tương tác.</value>
+  </data>
+  <data name="Inn_RepositioningNear" xml:space="preserve">
+    <value>Đổi vị trí gần {0}</value>
+  </data>
+  <data name="Inn_Retrying" xml:space="preserve">
+    <value>Thử lại {0}</value>
+  </data>
+  <data name="Time_Calculating" xml:space="preserve">
+    <value>Đang tính...</value>
+  </data>
+  <data name="Time_Unknown" xml:space="preserve">
+    <value>Không rõ</value>
+  </data>
+  <data name="Time_DH" xml:space="preserve">
+    <value>{0}n {1}g</value>
+  </data>
+  <data name="Time_HM" xml:space="preserve">
+    <value>{0}g {1}p</value>
+  </data>
+  <data name="Time_MS" xml:space="preserve">
+    <value>{0}p {1}s</value>
+  </data>
+  <data name="Engine_DutyComplete" xml:space="preserve">
+    <value>Đã hoàn tất phụ bản</value>
+  </data>
+  <data name="Engine_BailoutPending" xml:space="preserve">
+    <value>Chờ thoát khẩn cấp</value>
+  </data>
+  <data name="Config_CombatRotation" xml:space="preserve">
+    <value>Chuỗi kỹ năng chiến đấu</value>
+  </data>
+  <data name="Config_PotOnBoss" xml:space="preserve">
+    <value>Dùng thuốc ở {0}</value>
+  </data>
+  <data name="RepairBlocker_DutyState" xml:space="preserve">
+    <value>trạng thái phụ bản</value>
+  </data>
+  <data name="RepairBlocker_ZoneTransition" xml:space="preserve">
+    <value>chuyển khu</value>
+  </data>
+  <data name="RepairBlocker_QueueRegistration" xml:space="preserve">
+    <value>đăng ký hàng chờ</value>
+  </data>
+  <data name="RepairBlocker_DutyConfirmation" xml:space="preserve">
+    <value>hộp thoại xác nhận phụ bản</value>
+  </data>
+  <data name="RepairBlocker_MinimizedDutyConfirmation" xml:space="preserve">
+    <value>hộp thoại xác nhận phụ bản thu nhỏ</value>
+  </data>
+  <data name="RepairBlocker_CancelDutyConfirmation" xml:space="preserve">
+    <value>trình tự hủy xác nhận phụ bản</value>
+  </data>
+  <data name="RepairBlocker_YesNoDialog" xml:space="preserve">
+    <value>hộp thoại SelectYesno</value>
+  </data>
+  <data name="RepairBlocker_Cutscene" xml:space="preserve">
+    <value>cảnh phim</value>
+  </data>
+  <data name="RepairBlocker_Occupied" xml:space="preserve">
+    <value>chuyển tiếp bận</value>
+  </data>
+  <data name="Plugin_CommandMainHelp" xml:space="preserve">
+    <value>Mở cửa sổ chính MOGTOME.</value>
+  </data>
+  <data name="Plugin_CommandAliasHelp" xml:space="preserve">
+    <value>MOGTOME: /mog [start|stop|stopnext|inn|config|status|debug|ws|j] hoặc /mog để mở UI.</value>
+  </data>
+  <data name="Ads_Empty" xml:space="preserve">
+    <value>ADS.GetStatusJson trả về dữ liệu trống</value>
+  </data>
+  <data name="Ads_Inactive" xml:space="preserve">
+    <value>Trạng thái ADS không xác định phụ bản riêng đang hoạt động</value>
+  </data>
+  <data name="Ads_NoCatalog" xml:space="preserve">
+    <value>Phụ bản ADS hiện tại không có metadata danh mục</value>
+  </data>
+  <data name="Ads_NoName" xml:space="preserve">
+    <value>Hàng danh mục phụ bản ADS hiện tại không có tên phụ bản</value>
+  </data>
+  <data name="Ads_NoTerritory" xml:space="preserve">
+    <value>Hàng danh mục phụ bản ADS hiện tại không có định danh lãnh thổ</value>
+  </data>
+  <data name="Ads_NoCfc" xml:space="preserve">
+    <value>Hàng danh mục phụ bản ADS hiện tại không có định danh CFC</value>
+  </data>
+  <data name="Ads_Category" xml:space="preserve">
+    <value>Hàng danh mục phụ bản ADS hiện tại có loại không được hỗ trợ '{0}'</value>
+  </data>
+  <data name="Ads_Support" xml:space="preserve">
+    <value>Hàng danh mục phụ bản ADS hiện tại có mức hỗ trợ không được hỗ trợ '{0}'</value>
+  </data>
+  <data name="Ads_Clearance" xml:space="preserve">
+    <value>Hàng danh mục phụ bản ADS hiện tại có trạng thái quyền không được hỗ trợ '{0}'</value>
+  </data>
+  <data name="Ads_InvalidJson" xml:space="preserve">
+    <value>ADS.GetStatusJson trả về JSON không hợp lệ: {0}</value>
+  </data>
+  <data name="Ads_Unvalidated" xml:space="preserve">
+    <value>Chưa có ảnh chụp trạng thái phụ bản ADS hiện tại được xác thực.</value>
+  </data>
+  <data name="Ads_Unloaded" xml:space="preserve">
+    <value>ADS đã gỡ khỏi bộ nhớ.</value>
+  </data>
+  <data name="Ads_Outside" xml:space="preserve">
+    <value>Client thực tế ở ngoài phụ bản riêng.</value>
+  </data>
+  <data name="Ads_NoLiveIdentity" xml:space="preserve">
+    <value>GameMain không cung cấp định danh lãnh thổ phụ bản thực tế.</value>
+  </data>
+  <data name="Ads_Changed" xml:space="preserve">
+    <value>Định danh phụ bản thực tế đổi từ lãnh thổ/CFC {0}/{1} sang {2}/{3}.</value>
+  </data>
+  <data name="Ads_Mismatch" xml:space="preserve">
+    <value>Định danh phụ bản ADS hiện tại {0}/{1} không khớp định danh GameMain thực tế {2}/{3}.</value>
+  </data>
+  <data name="Ads_Validated" xml:space="preserve">
+    <value>Đã xác thực ảnh chụp trạng thái phụ bản ADS hiện tại cho lãnh thổ/CFC {0}/{1}.</value>
+  </data>
+  <data name="Ads_Unavailable" xml:space="preserve">
+    <value>ADS.GetStatusJson không khả dụng: {0}</value>
+  </data>
+  <data name="Ads_Retained" xml:space="preserve">
+    <value>ADS.GetStatusJson không khả dụng; giữ ảnh chụp trạng thái phụ bản hiện tại đã xác thực cho cùng định danh thực tế: {0}</value>
+  </data>
+  <data name="Opener_Timeout" xml:space="preserve">
+    <value>hết thời gian thử nghiệm 10 giây</value>
+  </data>
+  <data name="Opener_NoTarget" xml:space="preserve">
+    <value>mục tiêu nhóm mở đầu không khả dụng</value>
+  </data>
+  <data name="Opener_NoArea" xml:space="preserve">
+    <value>kỹ năng vùng {0} không khả dụng</value>
+  </data>
+  <data name="Opener_NoInvulnerability" xml:space="preserve">
+    <value>bất tử {0} không khả dụng</value>
+  </data>
+  <data name="Opener_NoTerminal" xml:space="preserve">
+    <value>Magitek Terminal 2012811 không khả dụng</value>
+  </data>
+  <data name="Opener_NoPlayerAtTerminal" xml:space="preserve">
+    <value>người chơi cục bộ không khả dụng tại terminal</value>
+  </data>
+  <data name="Opener_Descended" xml:space="preserve">
+    <value>phát hiện đi xuống bằng terminal cục bộ</value>
+  </data>
+  <data name="Opener_NoInteract" xml:space="preserve">
+    <value>tương tác Magitek Terminal không khả dụng</value>
+  </data>
+  <data name="Opener_NoPlayerBeforeMove" xml:space="preserve">
+    <value>người chơi cục bộ không khả dụng trước khi di chuyển đến {0}</value>
+  </data>
+  <data name="Opener_NoMove" xml:space="preserve">
+    <value>di chuyển vnav đến {0} không khả dụng</value>
+  </data>
+  <data name="Opener_NoPlayerMoving" xml:space="preserve">
+    <value>người chơi cục bộ không khả dụng khi di chuyển</value>
+  </data>
+  <data name="Opener_NoProgress" xml:space="preserve">
+    <value>di chuyển vnav không tiến triển</value>
+  </data>
+  <data name="Opener_Pack" xml:space="preserve">
+    <value>nhóm mở đầu</value>
+  </data>
+  <data name="Opener_Terminal" xml:space="preserve">
+    <value>Magitek Terminal</value>
+  </data>
+  <data name="Engine_AutoQueueing" xml:space="preserve">
+    <value>Tự đăng ký hàng chờ</value>
+  </data>
+  <data name="Engine_RepairRecoveryRetry" xml:space="preserve">
+    <value>Lần thử khôi phục sửa chữa {0}</value>
+  </data>
+  <data name="Config_ObstacleMapsOn" xml:space="preserve">
+    <value>Bật bản đồ chướng ngại</value>
+  </data>
+  <data name="Config_ObstacleMapsOnTooltip" xml:space="preserve">
+    <value>Chỉ điều khiển BossMod Reborn. Mặc định: tắt. Áp dụng khi Bắt đầu sau khi BossMod sẵn sàng và thiết lập chuỗi kỹ năng, bất kể bộ xử lý chiến đấu.</value>
+  </data>
+  <data name="Config_NPCRepairInn" xml:space="preserve">
+    <value>Sửa bằng NPC + phòng nhà trọ</value>
+  </data>
+  <data name="Engine_InnRepairFailed" xml:space="preserve">
+    <value>Sửa ở nhà trọ thất bại: {0}</value>
+  </data>
+  <data name="Config_NPCRepairInnUldah" xml:space="preserve">
+    <value>Sửa bằng NPC + phòng nhà trọ — Ul’dah</value>
+  </data>
+  <data name="Config_NPCRepairInnGridania" xml:space="preserve">
+    <value>Sửa bằng NPC + phòng nhà trọ — Gridania</value>
+  </data>
+  <data name="Config_NPCRepairInnLimsa" xml:space="preserve">
+    <value>Sửa bằng NPC + phòng nhà trọ — Limsa Lominsa</value>
+  </data>
+  <data name="Config_NPCRepairInnIshgard" xml:space="preserve">
+    <value>Sửa bằng NPC + phòng nhà trọ — Ishgard</value>
+  </data>
+  <data name="Config_NPCRepairInnCrystarium" xml:space="preserve">
+    <value>Sửa bằng NPC + phòng nhà trọ — Crystarium</value>
+  </data>
+  <data name="Config_NPCRepairInnSharlayan" xml:space="preserve">
+    <value>Sửa bằng NPC + phòng nhà trọ — Old Sharlayan</value>
+  </data>
+  <data name="Config_NPCRepairInnTuliyollal" xml:space="preserve">
+    <value>Sửa bằng NPC + phòng nhà trọ — Tuliyollal</value>
+  </data>
+  <data name="Config_UnsupportedADSRepairMode" xml:space="preserve">
+    <value>Chế độ sửa ADS không được hỗ trợ</value>
+  </data>
+  <data name="Window_BlundervilleFailer" xml:space="preserve">
+    <value>Blunderville Failer</value>
+  </data>
+  <data name="Plugin_CommandBlundervilleHelp" xml:space="preserve">
+    <value>Mở bản xem trước Blunderville Failer (/blunderville hoặc /bv).</value>
+  </data>
+  <data name="Blunderville_OpenMogtome" xml:space="preserve">
+    <value>Mở MOGTOME</value>
+  </data>
+  <data name="Blunderville_FarmingUnavailable" xml:space="preserve">
+    <value>Chỉ xem trước: Chưa có farm Blunderville. Bắt đầu và Dừng bị tắt.</value>
+  </data>
+  <data name="Blunderville_PurchasesUnavailable" xml:space="preserve">
+    <value>Chỉ xem trước: Chưa có mua hàng ADS. Cấu hình mua hàng bị tắt.</value>
+  </data>
+  <data name="Blunderville_ConfigurePurchases" xml:space="preserve">
+    <value>Cấu hình mua hàng</value>
+  </data>
+  <data name="Ui_Color" xml:space="preserve">
+    <value>Màu</value>
+  </data>
+  <data name="Ui_Teal" xml:space="preserve">
+    <value>Xanh ngọc</value>
+  </data>
+  <data name="Ui_Blue" xml:space="preserve">
+    <value>Xanh dương</value>
+  </data>
+  <data name="Ui_Pink" xml:space="preserve">
+    <value>Hồng</value>
+  </data>
+  <data name="Ui_CustomRgb" xml:space="preserve">
+    <value>RGB tùy chỉnh</value>
+  </data>
+  <data name="Ui_CompactMode" xml:space="preserve">
+    <value>Chế độ gọn</value>
+  </data>
+  <data name="Ui_LoadingFonts" xml:space="preserve">
+    <value>Đang tải phông UI...</value>
+  </data>
+  <data name="Ui_FontFailure" xml:space="preserve">
+    <value>Không tải được phông UI. Xem log plugin.</value>
+  </data>
+  <data name="Main_Subtitle" xml:space="preserve">
+    <value>Quản lý hoạt động Grand Tome &amp; Engine quản lý</value>
+  </data>
+  <data name="Main_OpenBlunderville" xml:space="preserve">
+    <value>Mở Blunderville Failer</value>
+  </data>
+  <data name="Main_StateHeading" xml:space="preserve">
+    <value>Trạng thái</value>
+  </data>
+  <data name="Main_StatusHeading" xml:space="preserve">
+    <value>Tình trạng</value>
+  </data>
+  <data name="Main_Running" xml:space="preserve">
+    <value>Đang chạy</value>
+  </data>
+  <data name="Main_Stopped" xml:space="preserve">
+    <value>Đã dừng</value>
+  </data>
+  <data name="Main_DutyCurrent" xml:space="preserve">
+    <value>Hiện tại</value>
+  </data>
+  <data name="Main_DutyCounter" xml:space="preserve">
+    <value>Bộ đếm</value>
+  </data>
+  <data name="Main_DailyDecuHeading" xml:space="preserve">
+    <value>Lượt Decu hằng ngày</value>
+  </data>
+  <data name="Main_DailyResetHeading" xml:space="preserve">
+    <value>Đặt lại hằng ngày</value>
+  </data>
+  <data name="Main_PartySummary" xml:space="preserve">
+    <value>Tóm tắt tổ đội</value>
+  </data>
+  <data name="Main_InParty" xml:space="preserve">
+    <value>Trong tổ đội</value>
+  </data>
+  <data name="Main_NoParty" xml:space="preserve">
+    <value>Chưa thấy thành viên tổ đội.</value>
+  </data>
+  <data name="Main_PartyDetails" xml:space="preserve">
+    <value>Chi tiết tổ đội</value>
+  </data>
+  <data name="Main_DutyDetails" xml:space="preserve">
+    <value>Chi tiết phụ bản</value>
+  </data>
+  <data name="Main_CounterValue" xml:space="preserve">
+    <value>{0} / {1}</value>
+  </data>
+  <data name="Main_ResetUtc" xml:space="preserve">
+    <value>{0:HH:mm} UTC</value>
+  </data>
+  <data name="Main_CurrentProfile" xml:space="preserve">
+    <value>Hồ sơ hiện tại: {0}</value>
+  </data>
+  <data name="Main_HelpTitle" xml:space="preserve">
+    <value>TRỢ GIÚP</value>
+  </data>
+  <data name="Blunderville_FarmingHeading" xml:space="preserve">
+    <value>Không có farm trong bản dựng này.</value>
+  </data>
+  <data name="Blunderville_FarmingDetail" xml:space="preserve">
+    <value>Hiện chưa thể dùng Blunderville Failer để farm tự động.</value>
+  </data>
+  <data name="Blunderville_PurchasesHeading" xml:space="preserve">
+    <value>Chưa có tự động hóa mua hàng.</value>
+  </data>
+  <data name="Blunderville_PurchasesDetail" xml:space="preserve">
+    <value>Chức năng mua tự động không có trong bản dựng này.</value>
+  </data>
+  <data name="Cleanup_Opener" xml:space="preserve">
+    <value>mở đầu</value>
+  </data>
+  <data name="Cleanup_Backend" xml:space="preserve">
+    <value>backend</value>
+  </data>
+  <data name="Cleanup_Dialogs" xml:space="preserve">
+    <value>hộp thoại</value>
+  </data>
+  <data name="Cleanup_RepairQueue" xml:space="preserve">
+    <value>hàng chờ sửa</value>
+  </data>
+  <data name="Cleanup_DeathTracking" xml:space="preserve">
+    <value>theo dõi số lần chết</value>
+  </data>
+  <data name="Cleanup_Combat" xml:space="preserve">
+    <value>chiến đấu</value>
+  </data>
+  <data name="Main_Open" xml:space="preserve">
+    <value>Mở</value>
+  </data>
+  <data name="Window appearance" xml:space="preserve"><value>Giao diện cửa sổ</value></data>
+  <data name="Compact visible on main window" xml:space="preserve"><value>Hiển thị chế độ gọn trên cửa sổ chính</value></data>
+  <data name="Language visible on main window" xml:space="preserve"><value>Hiển thị lựa chọn ngôn ngữ trên cửa sổ chính</value></data>
+  <data name="Transparency" xml:space="preserve"><value>Độ trong suốt</value></data>
+  <data name="Opacity (%)" xml:space="preserve"><value>Độ đục (%)</value></data>
+  <data name="Auto-fade when unfocused" xml:space="preserve"><value>Tự giảm độ đục khi mất tiêu điểm</value></data>
+  <data name="Unfocused opacity (%)" xml:space="preserve"><value>Độ đục khi mất tiêu điểm (%)</value></data>
+  <data name="Unfocused delay (seconds)" xml:space="preserve"><value>Độ trễ khi mất tiêu điểm (giây)</value></data>
+</root>

@@ -1,0 +1,2098 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms</value>
+  </resheader>
+  <data name="Config_SetupWizard" xml:space="preserve">
+    <value>设置向导</value>
+  </data>
+  <data name="Config_DependencyCheck" xml:space="preserve">
+    <value>依赖检查</value>
+  </data>
+  <data name="Config_Party" xml:space="preserve">
+    <value>小队</value>
+  </data>
+  <data name="Config_Duty" xml:space="preserve">
+    <value>任务</value>
+  </data>
+  <data name="Config_FoodPots" xml:space="preserve">
+    <value>食物与药水</value>
+  </data>
+  <data name="Config_Repair" xml:space="preserve">
+    <value>修理</value>
+  </data>
+  <data name="Config_Advanced" xml:space="preserve">
+    <value>高级</value>
+  </data>
+  <data name="Config_BackendMode" xml:space="preserve">
+    <value>后端模式</value>
+  </data>
+  <data name="Config_UseADSPrimaryBackend" xml:space="preserve">
+    <value>使用 ADS（主要后端）</value>
+  </data>
+  <data name="Config_ADSHandlesDutyAutomationAndInnReturn" xml:space="preserve">
+    <value>ADS 负责自动执行任务和返回旅馆。AutoDuty 是备选后端。</value>
+  </data>
+  <data name="Config_AutoDutyIsTheAlternativeDutyBackendADS" xml:space="preserve">
+    <value>AutoDuty 是备选任务后端。只有选择 ADS 模式或请求 /mog inn 时才需要 ADS。</value>
+  </data>
+  <data name="Config_RequiredPlugins" xml:space="preserve">
+    <value>必需插件</value>
+  </data>
+  <data name="Config_SetupRequirementsAreIncompleteTheWizardIs" xml:space="preserve">
+    <value>必需设置尚未完成。向导仅供参考，不会阻止启动。</value>
+  </data>
+  <data name="Config_RSRRotationSolverReborn" xml:space="preserve">
+    <value>RSR (RotationSolverReborn)</value>
+  </data>
+  <data name="Config_Installed" xml:space="preserve">
+    <value>已安装</value>
+  </data>
+  <data name="Config_NOTFOUND" xml:space="preserve">
+    <value>未找到</value>
+  </data>
+  <data name="Config_BossModPassiveSupportBMROrVBM" xml:space="preserve">
+    <value>BossMod 被动支持（BMR 或 VBM）</value>
+  </data>
+  <data name="Config_BMRLoaded" xml:space="preserve">
+    <value>BMR 已加载</value>
+  </data>
+  <data name="Config_VBMLoaded" xml:space="preserve">
+    <value>VBM 已加载</value>
+  </data>
+  <data name="Config_BossModRebornBMR" xml:space="preserve">
+    <value>BossModReborn (BMR)</value>
+  </data>
+  <data name="Config_BossModVBM" xml:space="preserve">
+    <value>BossMod (VBM)</value>
+  </data>
+  <data name="Config_RSRHandlesAttacksTheLoadedBossModVariant" xml:space="preserve">
+    <value>RSR 负责攻击；已加载的 BossMod 版本会自动使用 passive - tank/melee/ranged。</value>
+  </data>
+  <data name="Config_BMRHandlesAttacksAndMovementWithFRENRIDER" xml:space="preserve">
+    <value>BMR 使用 FRENRIDER - TANK/MELEE/RANGED 或手动预设处理攻击和移动。</value>
+  </data>
+  <data name="Config_VBMHandlesAttacksAndMovementWithFRENRIDER" xml:space="preserve">
+    <value>VBM 使用 FRENRIDER - TANK/MELEE/RANGED 或手动预设处理攻击和移动。</value>
+  </data>
+  <data name="Config_WrathHandlesAttacksUsingItsCurrentSettings" xml:space="preserve">
+    <value>Wrath 使用当前设置处理攻击。</value>
+  </data>
+  <data name="Config_UseManualBossModPreset" xml:space="preserve">
+    <value>使用手动 BossMod 预设</value>
+  </data>
+  <data name="Config_PresetName" xml:space="preserve">
+    <value>预设名称</value>
+  </data>
+  <data name="Config_EnterAnExistingPresetNameBeforeStarting" xml:space="preserve">
+    <value>启动前请输入现有预设名称。</value>
+  </data>
+  <data name="Config_MOGTOMESelectsItsPackagedActivePresetBy" xml:space="preserve">
+    <value>MOGTOME 在每次任务开始时根据当前职责选择内置的启用预设。</value>
+  </data>
+  <data name="Config_BothBossModVariantsAreLoadedStartDisables" xml:space="preserve">
+    <value>两个 BossMod 版本都已加载。启动会禁用 VBM 并重新加载 BMR；VBM 选择会改为 BMR，RSR 选择保持不变。</value>
+  </data>
+  <data name="Config_MOGTOMERunsXaSkipcutscenesOnBeforeEvery" xml:space="preserve">
+    <value>MOGTOME 在每次手动启动前运行 /xa skipcutscenes on。</value>
+  </data>
+  <data name="Config_OptionalEnablesMogInnDelegation" xml:space="preserve">
+    <value>可选。允许委托执行 /mog inn。</value>
+  </data>
+  <data name="Config_OptionalPlugins" xml:space="preserve">
+    <value>可选插件</value>
+  </data>
+  <data name="Config_OptionalNotRequiredByMOGTOME" xml:space="preserve">
+    <value>可选。MOGTOME 不要求安装。</value>
+  </data>
+  <data name="Config_RecommendedAppearanceNameplateRandomizer" xml:space="preserve">
+    <value>推荐。随机更改外观和姓名牌。</value>
+  </data>
+  <data name="Config_CustomResolutionPpByX0ade" xml:space="preserve">
+    <value>CustomResolution (1pp by 0x0ade)</value>
+  </data>
+  <data name="Config_ExperimentalAndNotRecommendedLowSpecHelper" xml:space="preserve">
+    <value>实验性功能，不推荐使用。低配置辅助工具。</value>
+  </data>
+  <data name="Config_MaybeCrashyWithClients" xml:space="preserve">
+    <value>运行 2 个或更多客户端时可能崩溃</value>
+  </data>
+  <data name="Config_WillCauseSomeIssuesSometimes" xml:space="preserve">
+    <value>有时会导致问题。</value>
+  </data>
+  <data name="Config_DPSDhogPotatoSystem" xml:space="preserve">
+    <value>DPS (Dhog Potato System)</value>
+  </data>
+  <data name="Config_MayHavePathingIssues" xml:space="preserve">
+    <value>可能存在寻路问题。</value>
+  </data>
+  <data name="Config_ExperimentalAndNotRecommendedRemoteHUDControl" xml:space="preserve">
+    <value>实验性功能，不推荐使用。远程 HUD 与控制。</value>
+  </data>
+  <data name="Config_VeryNewPluginUnknownIssues" xml:space="preserve">
+    <value>很新的插件，问题尚不明确。</value>
+  </data>
+  <data name="Config_ConflictingPlugins" xml:space="preserve">
+    <value>冲突插件</value>
+  </data>
+  <data name="Config_AutoDutyPath" xml:space="preserve">
+    <value>AutoDuty 路径</value>
+  </data>
+  <data name="Config_PraetoriumPathINSTALLED" xml:space="preserve">
+    <value>Praetorium 路径：已安装（{0}）</value>
+  </data>
+  <data name="Config_PraetoriumPathNOTFOUND" xml:space="preserve">
+    <value>Praetorium 路径：未找到（{0}）</value>
+  </data>
+  <data name="Config_InstallBundledPraetoriumPaths" xml:space="preserve">
+    <value>安装内置 Praetorium 路径</value>
+  </data>
+  <data name="Config_ThisCopiesTheBundledW2WPraetoriumPath" xml:space="preserve">
+    <value>将 MOGTOME 数据文件夹中的内置 W2W Praetorium 路径文件复制到 AutoDuty 路径文件夹。</value>
+  </data>
+  <data name="Config_ADSIsOptionalInAutoDutyModeMog" xml:space="preserve">
+    <value>AutoDuty 模式下 ADS 可选；明确请求 /mog inn 时需要 ADS。</value>
+  </data>
+  <data name="Config_ADSModeNotes" xml:space="preserve">
+    <value>ADS 模式说明</value>
+  </data>
+  <data name="Config_ADSModeDisablesAutoDutyImmediatelyAndAgain" xml:space="preserve">
+    <value>ADS 模式会立即禁用 AutoDuty，并在启动时再次禁用。排队使用 ADS 控制和直接注册任务查找器。</value>
+  </data>
+  <data name="Config_RepairInnLeaveSwitchToAdsNpcrepair" xml:space="preserve">
+    <value>修理、旅馆和离开改为使用 /ads npcrepair、/ads selfrepair、/ads enterinn 和 /ads leave。</value>
+  </data>
+  <data name="Config_TheCheckboxChangesTheDutyBackendADS" xml:space="preserve">
+    <value>此复选框更改任务后端。只有选择 ADS 模式时才需要 ADS。</value>
+  </data>
+  <data name="Config_OK" xml:space="preserve">
+    <value>[OK]</value>
+  </data>
+  <data name="Config_CopyRepo" xml:space="preserve">
+    <value>复制仓库</value>
+  </data>
+  <data name="Config_CopyRepoURLToClipboardThenAdd" xml:space="preserve">
+    <value>将仓库 URL 复制到剪贴板，然后添加到
+Dalamud Settings &gt; Experimental &gt; Custom Plugin Repositories</value>
+  </data>
+  <data name="Config_NotInstalledOptional" xml:space="preserve">
+    <value>未安装（可选）</value>
+  </data>
+  <data name="Config_EnabledKnownMOGTOMEConflict" xml:space="preserve">
+    <value>已启用 — 已知与 MOGTOME 冲突</value>
+  </data>
+  <data name="Config_InstalledButDisabled" xml:space="preserve">
+    <value>已安装但已禁用</value>
+  </data>
+  <data name="Config_NotInstalled" xml:space="preserve">
+    <value>未安装</value>
+  </data>
+  <data name="Config_DisableNow" xml:space="preserve">
+    <value>立即禁用</value>
+  </data>
+  <data name="Config_MOGTOMETriesXldisablepluginTwistOfFayteWhenYouStart" xml:space="preserve">
+    <value>MOGTOME 启动时会尝试 /xldisableplugin TwistOfFayte，但不再因此阻止启动。</value>
+  </data>
+  <data name="Config_ThisGuideIsAdvisoryItNeverInstalls" xml:space="preserve">
+    <value>此指南仅供参考。不会安装、启用、禁用或配置其他插件，只会保存你选择的 MOGTOME 设置。</value>
+  </data>
+  <data name="Config_CompletedForThisAccountWizardVersion" xml:space="preserve">
+    <value>此账号已完成（向导版本 {0}）。</value>
+  </data>
+  <data name="Config_RunSetupWizardAgain" xml:space="preserve">
+    <value>重新运行设置向导</value>
+  </data>
+  <data name="Config_Backend" xml:space="preserve">
+    <value>后端</value>
+  </data>
+  <data name="Config_CombatProvider" xml:space="preserve">
+    <value>战斗提供者</value>
+  </data>
+  <data name="Config_RequiredPlugins2" xml:space="preserve">
+    <value>必需插件</value>
+  </data>
+  <data name="Config_PartySetup" xml:space="preserve">
+    <value>小队设置</value>
+  </data>
+  <data name="Config_OptionalSettings" xml:space="preserve">
+    <value>可选设置</value>
+  </data>
+  <data name="Config_Review" xml:space="preserve">
+    <value>检查</value>
+  </data>
+  <data name="Config_StepOf" xml:space="preserve">
+    <value>第 {0}/{1} 步：{2}</value>
+  </data>
+  <data name="Config_ADSIsThePrimaryMOGTOMEBackendAutoDuty" xml:space="preserve">
+    <value>ADS 是 MOGTOME 的主要后端，AutoDuty 仍是备选。此选择只更改 MOGTOME 保存的后端设置。</value>
+  </data>
+  <data name="Config_ADSPrimaryBackend" xml:space="preserve">
+    <value>ADS（主要后端）</value>
+  </data>
+  <data name="Config_AutoDutyAlternativeBackend" xml:space="preserve">
+    <value>AutoDuty（备选后端）</value>
+  </data>
+  <data name="Config_ADSMustBeLoadedForThisSelection" xml:space="preserve">
+    <value>此选择需要已加载的 ADS。</value>
+  </data>
+  <data name="Config_AutoDutyAndTheSelectedPraetoriumPathMust" xml:space="preserve">
+    <value>此选择需要 AutoDuty 和选定的 Praetorium 路径。</value>
+  </data>
+  <data name="Config_ChooseTheCombatProviderMOGTOMEShouldRequest" xml:space="preserve">
+    <value>选择 MOGTOME 为所选后端使用的战斗提供者。</value>
+  </data>
+  <data name="Config_SelectedCombatProvider" xml:space="preserve">
+    <value>选定的战斗提供者</value>
+  </data>
+  <data name="Config_LoadTheSelectedProviderRSRAlsoRequires" xml:space="preserve">
+    <value>加载选定的提供者；RSR 还需要 BMR 或 VBM 提供被动支持。</value>
+  </data>
+  <data name="Config_MarkTheClientThatQueuesDutiesAs" xml:space="preserve">
+    <value>将负责排队的客户端标记为队长。每个参与客户端应独立检查自己的设置。</value>
+  </data>
+  <data name="Config_IAmThePartyLeader" xml:space="preserve">
+    <value>我是队长</value>
+  </data>
+  <data name="Config_CrossWorldParty" xml:space="preserve">
+    <value>跨服小队</value>
+  </data>
+  <data name="Config_UsePartySettingsForTheFullQueue" xml:space="preserve">
+    <value>使用小队设置配置完整排队策略，并在任务外执行一次小队状态刷新。</value>
+  </data>
+  <data name="Config_FoodPotionsAndRepairAreOptionalConfigure" xml:space="preserve">
+    <value>食物、药水和修理均可选。需要时在对应选项卡中配置，也支持保持未设置。</value>
+  </data>
+  <data name="Config_FoodPotsAndRepairRemainAvailableAfter" xml:space="preserve">
+    <value>完成向导后仍可使用食物与药水及修理；此处不更改其他插件设置。</value>
+  </data>
+  <data name="Config_FinishSetup" xml:space="preserve">
+    <value>完成设置</value>
+  </data>
+  <data name="Config_Back" xml:space="preserve">
+    <value>上一步</value>
+  </data>
+  <data name="Config_Next" xml:space="preserve">
+    <value>下一步</value>
+  </data>
+  <data name="Config_ADSSelectedBackend" xml:space="preserve">
+    <value>ADS（选定后端）</value>
+  </data>
+  <data name="Config_AutoDutyPlusSelectedPraetoriumPath" xml:space="preserve">
+    <value>AutoDuty 与选定的 Praetorium 路径</value>
+  </data>
+  <data name="Config_LoadADS" xml:space="preserve">
+    <value>加载 ADS。</value>
+  </data>
+  <data name="Config_LoadAutoDutyAndInstallTheSelectedPraetorium" xml:space="preserve">
+    <value>加载 AutoDuty 并安装选定的 Praetorium 路径。</value>
+  </data>
+  <data name="Config_LoadTheProviderSelectedInStepRSR" xml:space="preserve">
+    <value>加载第 2 步选择的提供者；RSR 还需要 BMR 或 VBM。</value>
+  </data>
+  <data name="Config_LoadVnavmesh" xml:space="preserve">
+    <value>加载 vnavmesh。</value>
+  </data>
+  <data name="Config_LoadXASlaveForXaSkipcutscenesOn" xml:space="preserve">
+    <value>加载 XA Slave 以使用 /xa skipcutscenes on。</value>
+  </data>
+  <data name="Config_LoadYesAlreadyForDialogs" xml:space="preserve">
+    <value>加载 YesAlready 以处理对话框。</value>
+  </data>
+  <data name="Config_OperatorClickedOnlyCopiesMOGTOMESBundled" xml:space="preserve">
+    <value>仅在操作员点击时执行：将 MOGTOME 内置文件复制到 AutoDuty 路径文件夹。</value>
+  </data>
+  <data name="Config_LifestreamAndTextAdvanceAreOptionalAndDo" xml:space="preserve">
+    <value>Lifestream 和 TextAdvance 均可选，不影响这些检查。</value>
+  </data>
+  <data name="Config_ADSPrimary" xml:space="preserve">
+    <value>ADS（主要）</value>
+  </data>
+  <data name="Config_AutoDutyAlternative" xml:space="preserve">
+    <value>AutoDuty（备选）</value>
+  </data>
+  <data name="Config_Backend2" xml:space="preserve">
+    <value>后端：{0}</value>
+  </data>
+  <data name="Config_Ready" xml:space="preserve">
+    <value>就绪</value>
+  </data>
+  <data name="Config_Incomplete" xml:space="preserve">
+    <value>未完成</value>
+  </data>
+  <data name="Config_RequiredChecks" xml:space="preserve">
+    <value>必需检查：{0}</value>
+  </data>
+  <data name="Config_Leader" xml:space="preserve">
+    <value>队长</value>
+  </data>
+  <data name="Config_Participant" xml:space="preserve">
+    <value>参与者</value>
+  </data>
+  <data name="Config_PartyRole" xml:space="preserve">
+    <value>小队职责：{0}</value>
+  </data>
+  <data name="Config_OptionalRepairThreshold" xml:space="preserve">
+    <value>可选修理阈值：{0}%</value>
+  </data>
+  <data name="Config_FinishRecordsOnlyThatThisAccountCompleted" xml:space="preserve">
+    <value>完成只记录此账号已完成该版本向导。不会限制启动，也不会修改其他插件。</value>
+  </data>
+  <data name="Config_Ready2" xml:space="preserve">
+    <value>就绪</value>
+  </data>
+  <data name="Config_PartySettings" xml:space="preserve">
+    <value>小队设置</value>
+  </data>
+  <data name="Config_RuntimeRoleFollowsThisSavedSettingUse" xml:space="preserve">
+    <value>运行职责遵循保存的设置。在任务外使用刷新小队状态，可执行一次同服队长检测。</value>
+  </data>
+  <data name="Config_EnableIfYouReInACross" xml:space="preserve">
+    <value>加入跨服小队时启用。</value>
+  </data>
+  <data name="Config_OnlyQueueWithExactlyVisiblePeople" xml:space="preserve">
+    <value>要求小队最低人数</value>
+  </data>
+  <data name="Config_MinimumPartyMembers" xml:space="preserve">
+    <value>最低人数</value>
+  </data>
+  <data name="Config_AppliesOnlyToSameWorldLeadersIn" xml:space="preserve">
+    <value>按所选最低人数到最多 4 名可见成员排队。单人计为 1。默认：4。由于跨服队伍成员可见性不可靠，仅适用于同服队长的等级同步模式。非同步测试模式不受限制。</value>
+  </data>
+  <data name="Config_RuntimePartyState" xml:space="preserve">
+    <value>当前小队状态：</value>
+  </data>
+  <data name="Config_Yes" xml:space="preserve">
+    <value>是</value>
+  </data>
+  <data name="Config_No" xml:space="preserve">
+    <value>否</value>
+  </data>
+  <data name="Config_LeaderRightNow" xml:space="preserve">
+    <value>当前队长：{0}</value>
+  </data>
+  <data name="Config_SourceConfiguredCrossWorldRole" xml:space="preserve">
+    <value>来源：配置的跨服职责。</value>
+  </data>
+  <data name="Config_SourceConfiguredRoleRefreshPartyStateOnly" xml:space="preserve">
+    <value>来源：配置的职责。刷新小队状态只检查一次当前同服小队列表。</value>
+  </data>
+  <data name="Config_RefreshPartyState" xml:space="preserve">
+    <value>刷新小队状态</value>
+  </data>
+  <data name="Config_OneTimeSameWorldLeaderDetectionUse" xml:space="preserve">
+    <value>执行一次同服队长检测。仅在任务外且全队可见时使用。</value>
+  </data>
+  <data name="Config_PartyBehaviour" xml:space="preserve">
+    <value>小队行为：</value>
+  </data>
+  <data name="Config_LeaderQueuesDutiesAndControlsTheMOGTOME" xml:space="preserve">
+    <value>- 队长：负责排队并控制 MOGTOME 运行流程。</value>
+  </data>
+  <data name="Config_NonLeaderWaitsForPartyQueuePops" xml:space="preserve">
+    <value>- 参与者：等待小队的任务入场，并独立修理。</value>
+  </data>
+  <data name="Config_RepairMOGTOMEPausesItsOwnManualQueue" xml:space="preserve">
+    <value>- 修理：修理期间 MOGTOME 暂停自身的手动排队尝试，修理后恢复。</value>
+  </data>
+  <data name="Config_DetectionRefreshPartyStateIsManualOnly" xml:space="preserve">
+    <value>- 检测：刷新小队状态仅手动执行，不会根据单人或不完整的小队数据自动设为队长。</value>
+  </data>
+  <data name="Config_DutySettings" xml:space="preserve">
+    <value>任务设置</value>
+  </data>
+  <data name="Config_DutyCounter" xml:space="preserve">
+    <value>任务计数</value>
+  </data>
+  <data name="Config_ReturnToEntranceDelaySeconds" xml:space="preserve">
+    <value>返回入口延迟（秒）</value>
+  </data>
+  <data name="Config_ReturnToEntranceDelayHelp" xml:space="preserve">
+    <value>在活动任务中检测到死亡后开始计时，即使返回提示已最小化也会继续。确认全队团灭后会跳过当前死亡的延迟，即使其他成员先复活。延迟结束或确认团灭后，可见的 Return 提示会在下次正常更新时接受；最小化的提示会重新打开，并在随后一次更新时检查。默认：60 秒；最小：1 秒。适用于 ADS 和 AutoDuty。复活及移动到封锁区域仍立即处理。</value>
+  </data>
+  <data name="Config_CurrentPraetoriumRunCountSetToFor" xml:space="preserve">
+    <value>当前 Praetorium 完成次数。当天首次运行请设为 0。</value>
+  </data>
+  <data name="Config_PraetoriumAutoDutyPath" xml:space="preserve">
+    <value>Praetorium AutoDuty 路径</value>
+  </data>
+  <data name="Config_BundledWithMOGTOMEAndCopiedIntoAutoDuty" xml:space="preserve">
+    <value>随 MOGTOME 提供，在启动或安装时复制到 AutoDuty 路径文件夹。默认：phecda。</value>
+  </data>
+  <data name="Config_ADSModeIgnoresAutoDutyPathSelection" xml:space="preserve">
+    <value>ADS 模式忽略 AutoDuty 路径选择。</value>
+  </data>
+  <data name="Config_PraetoriumThreshold" xml:space="preserve">
+    <value>Praetorium 切换阈值</value>
+  </data>
+  <data name="Config_SwitchToDecumanaAfterThisManyPraetorium" xml:space="preserve">
+    <value>完成此次数的 Praetorium 后切换到 Decumana。</value>
+  </data>
+  <data name="Config_PraetoriumDailyLimit" xml:space="preserve">
+    <value>Praetorium 每日上限</value>
+  </data>
+  <data name="Config_StopAfterThisManySuccessfulPraetoriumClears" xml:space="preserve">
+    <value>今天成功完成此次数的 Praetorium 后停止。Decumana 和中止的运行不计入。</value>
+  </data>
+  <data name="Config_QuitCommand" xml:space="preserve">
+    <value>退出命令</value>
+  </data>
+  <data name="Config_RunsOnceWhenThePraetoriumDailyLimit" xml:space="preserve">
+    <value>达到 Praetorium 每日上限并离开任务后执行一次。</value>
+  </data>
+  <data name="Config_TestingModeUnsyncedUncheckLevelSyncYourself" xml:space="preserve">
+    <value>测试模式：非同步（如果确实要使用，请自行取消 level sync。不会记录统计）</value>
+  </data>
+  <data name="Config_WARNINGRunningUnsyncedWithoutLevelSyncTesting" xml:space="preserve">
+    <value>警告：正在不进行等级同步的情况下运行（测试模式，无统计）。</value>
+  </data>
+  <data name="Config_DefaultUnsyncLevelSyncSyncLevelSync" xml:space="preserve">
+    <value>默认：Unsync+Level Sync（使用 Sync+Level Sync 可避免与随机玩家排队）。</value>
+  </data>
+  <data name="Config_TestingModeActiveEnableDebugToChange" xml:space="preserve">
+    <value>[测试模式已启用 — 启用调试后可更改]</value>
+  </data>
+  <data name="Config_Food" xml:space="preserve">
+    <value>食物</value>
+  </data>
+  <data name="Config_UseHQFood" xml:space="preserve">
+    <value>使用 HQ 食物</value>
+  </data>
+  <data name="Config_UsesTheSelectedMealAsHQWhen" xml:space="preserve">
+    <value>启用时使用所选食物的 HQ 版本；普通品质食物请关闭。</value>
+  </data>
+  <data name="Config_ClearFood" xml:space="preserve">
+    <value>清除食物</value>
+  </data>
+  <data name="Config_NoFoodSelectedFoodIsOptional" xml:space="preserve">
+    <value>  未选择食物。食物可选。</value>
+  </data>
+  <data name="Config_Potions" xml:space="preserve">
+    <value>药水</value>
+  </data>
+  <data name="Config_UseHQPotion" xml:space="preserve">
+    <value>使用 HQ 药水</value>
+  </data>
+  <data name="Config_UsesTheSelectedMedicineAsHQWhen" xml:space="preserve">
+    <value>启用时使用所选药品的 HQ 版本；普通品质药品请关闭。</value>
+  </data>
+  <data name="Config_ClearPotion" xml:space="preserve">
+    <value>清除药水</value>
+  </data>
+  <data name="Config_PotOnGaius" xml:space="preserve">
+    <value>在 Gaius 时使用药水</value>
+  </data>
+  <data name="Config_PotOnPhantomGaius" xml:space="preserve">
+    <value>在 Phantom Gaius 时使用药水</value>
+  </data>
+  <data name="Config_NoPotionSelectedPotionsAreOptional" xml:space="preserve">
+    <value>  未选择药水。药水可选。</value>
+  </data>
+  <data name="Config_Select" xml:space="preserve">
+    <value>选择 {0}...</value>
+  </data>
+  <data name="Config_Search" xml:space="preserve">
+    <value>搜索</value>
+  </data>
+  <data name="Config_NoResultsTryADifferentSearchTerm" xml:space="preserve">
+    <value>没有结果，请尝试其他搜索词。</value>
+  </data>
+  <data name="Config_TypeAtLeastCharactersToSearch" xml:space="preserve">
+    <value>输入至少 2 个字符进行搜索...</value>
+  </data>
+  <data name="Config_RepairSettings" xml:space="preserve">
+    <value>修理设置</value>
+  </data>
+  <data name="Config_RepairThreshold" xml:space="preserve">
+    <value>修理阈值（%）</value>
+  </data>
+  <data name="Config_RepairWhenEquipmentDurabilityFallsBelowThis" xml:space="preserve">
+    <value>装备耐久度低于此百分比时修理。设为 0 可禁用自动修理。</value>
+  </data>
+  <data name="Config_RepairMode" xml:space="preserve">
+    <value>修理模式</value>
+  </data>
+  <data name="Config_RepairModeHelp" xml:space="preserve">
+    <value>NPC 修理 + 旅馆房间仅在 ADS 进入房间后完成。</value>
+  </data>
+  <data name="Config_RepairBehavior" xml:space="preserve">
+    <value>修理行为：</value>
+  </data>
+  <data name="Config_LeaderRepairsAutomaticallyBetweenDutiesWhenThreshold" xml:space="preserve">
+    <value>- 队长：达到阈值后在任务之间自动修理</value>
+  </data>
+  <data name="Config_NonLeaderRepairsIndependentlyAfterSecondOutside" xml:space="preserve">
+    <value>- 参与者：离开任务 1 秒后独立修理</value>
+  </data>
+  <data name="Config_SoloTreatedAsLeaderAutomatically" xml:space="preserve">
+    <value>- 单人：自动视为队长</value>
+  </data>
+  <data name="Config_ADSRepairCommand" xml:space="preserve">
+    <value>- ADS 修理命令：{0}</value>
+  </data>
+  <data name="Config_AutoDutyModeRepairMETHODSelfNPCIs" xml:space="preserve">
+    <value>- AutoDuty 模式：修理方式（自行/NPC）在 AutoDuty 设置中配置；返回旅馆使用 /ads enterinn</value>
+  </data>
+  <data name="Config_Status" xml:space="preserve">
+    <value>状态：</value>
+  </data>
+  <data name="Config_CurrentThreshold" xml:space="preserve">
+    <value>  当前阈值：{0}%</value>
+  </data>
+  <data name="Config_Enabled" xml:space="preserve">
+    <value>已启用</value>
+  </data>
+  <data name="Config_Disabled" xml:space="preserve">
+    <value>已禁用</value>
+  </data>
+  <data name="Config_AutoRepair" xml:space="preserve">
+    <value>  自动修理：{0}</value>
+  </data>
+  <data name="Config_Self" xml:space="preserve">
+    <value>自行</value>
+  </data>
+  <data name="Config_NPC" xml:space="preserve">
+    <value>NPC</value>
+  </data>
+  <data name="Config_ADSRepairMethod" xml:space="preserve">
+    <value>  ADS 修理方式：{0}</value>
+  </data>
+  <data name="Config_ExperimentalADS" xml:space="preserve">
+    <value>实验性 ADS</value>
+  </data>
+  <data name="Config_ExperimentalFirstRoomSkipPraetorium" xml:space="preserve">
+    <value>实验性跳过第一房间（Praetorium）</value>
+  </data>
+  <data name="Config_ADSPraetoriumOnlyEveryParticipatingClientMust" xml:space="preserve">
+    <value>仅限 ADS/Praetorium。每个参与客户端必须在本地启用。成功或任何失败后 MOGTOME 都会交回 ADS。</value>
+  </data>
+  <data name="Config_AvailableOnlyWhenADSIsTheSelected" xml:space="preserve">
+    <value>仅在选择 ADS 后端时可用；保存的选项在 AutoDuty 模式下不生效。</value>
+  </data>
+  <data name="Config_Debug" xml:space="preserve">
+    <value>调试</value>
+  </data>
+  <data name="Config_DebugCounter" xml:space="preserve">
+    <value>调试计数</value>
+  </data>
+  <data name="Config_CrashRecoveryOffsetIfYouRestartedMid" xml:space="preserve">
+    <value>崩溃恢复偏移。如果在会话中途重启，请设置为最后
+已知的运行次数，以正确继续今天的统计。</value>
+  </data>
+  <data name="Config_BailoutTimeoutSec" xml:space="preserve">
+    <value>紧急退出超时（秒）</value>
+  </data>
+  <data name="Config_LeaveDutyIfStuckForThisMany" xml:space="preserve">
+    <value>卡住此秒数后离开任务。默认：1200（20 分钟）。</value>
+  </data>
+  <data name="Main_V" xml:space="preserve">
+    <value>v{0}</value>
+  </data>
+  <data name="Main_KoFi" xml:space="preserve">
+    <value>♡ Ko-fi ♡</value>
+  </data>
+  <data name="Main_SupportDevelopmentOnKoFi" xml:space="preserve">
+    <value>在 Ko-fi 支持开发</value>
+  </data>
+  <data name="Main_StateInitializing" xml:space="preserve">
+    <value>状态：初始化中</value>
+  </data>
+  <data name="Main_StatusWaitingForAccountAndEngineInitialization" xml:space="preserve">
+    <value>状态：等待账号和引擎初始化。</value>
+  </data>
+  <data name="Main_Config" xml:space="preserve">
+    <value>设置</value>
+  </data>
+  <data name="Main_Stats" xml:space="preserve">
+    <value>统计</value>
+  </data>
+  <data name="Main_Reset" xml:space="preserve">
+    <value>重置</value>
+  </data>
+  <data name="Main_State" xml:space="preserve">
+    <value>状态：{0}</value>
+  </data>
+  <data name="Main_Status" xml:space="preserve">
+    <value>状态：{0}</value>
+  </data>
+  <data name="Main_Start" xml:space="preserve">
+    <value>启动</value>
+  </data>
+  <data name="Main_Stop" xml:space="preserve">
+    <value>停止</value>
+  </data>
+  <data name="Main_UnKrangle" xml:space="preserve">
+    <value>取消 Krangle</value>
+  </data>
+  <data name="Main_Krangle" xml:space="preserve">
+    <value>Krangle</value>
+  </data>
+  <data name="Main_ObfuscateNamesWithMilitaryExerciseWordsUseful" xml:space="preserve">
+    <value>用军事或训练词语替换姓名。
+适合截图。</value>
+  </data>
+  <data name="Main_CancelStopAfterNext" xml:space="preserve">
+    <value>取消下次成功后停止</value>
+  </data>
+  <data name="Main_StopAfterNextSuccess" xml:space="preserve">
+    <value>下次成功后停止</value>
+  </data>
+  <data name="Main_ArmedStopsAfterASuccessfulRunIs" xml:space="preserve">
+    <value>已预约：成功运行被记录且任务退出得到确认后停止。</value>
+  </data>
+  <data name="Main_RuntimeOnlyAbortedRunsDoNotConsume" xml:space="preserve">
+    <value>仅当前会话有效。中止的运行不会消耗此请求。</value>
+  </data>
+  <data name="Main_HELP" xml:space="preserve">
+    <value>-&gt;!帮助!&lt;-</value>
+  </data>
+  <data name="Main_MainWindowSettings" xml:space="preserve">
+    <value>主窗口设置</value>
+  </data>
+  <data name="Main_AIDutySolverADS" xml:space="preserve">
+    <value>AI Duty Solver (ADS)</value>
+  </data>
+  <data name="Main_DutyBackendSelectorEnablingADSImmediatelySends" xml:space="preserve">
+    <value>任务后端选择。
+启用 ADS 会立即发送 /xldisableplugin AutoDuty。
+AutoDuty 模式下 ADS 可选，仅在请求 /mog inn 时使用。</value>
+  </data>
+  <data name="Main_ADSDutyBackendActiveADSAlsoHandles" xml:space="preserve">
+    <value>ADS 任务后端已启用。ADS 也负责进入旅馆。</value>
+  </data>
+  <data name="Main_AutoDutyDutyBackendActiveADSIsOptional" xml:space="preserve">
+    <value>AutoDuty 任务后端已启用。/mog inn 可选择使用 ADS。</value>
+  </data>
+  <data name="Main_DutyInformation" xml:space="preserve">
+    <value>任务信息</value>
+  </data>
+  <data name="Main_CounterPraeDailyPraetoriumLimit" xml:space="preserve">
+    <value>计数：{0} / {1} Prae | Praetorium 每日上限：{2}</value>
+  </data>
+  <data name="Main_DailyDecuRunsToday" xml:space="preserve">
+    <value>每日 Decu：今天 {0} 次</value>
+  </data>
+  <data name="Main_Current" xml:space="preserve">
+    <value>当前：{0}</value>
+  </data>
+  <data name="Main_DailyReset" xml:space="preserve">
+    <value>每日重置：{0}（{1}）</value>
+  </data>
+  <data name="Main_TESTINGMODEUnsynced" xml:space="preserve">
+    <value>[测试模式 — 非同步]</value>
+  </data>
+  <data name="Main_LastClearS" xml:space="preserve">
+    <value>上次完成：{0:F0}秒</value>
+  </data>
+  <data name="Main_TimeInDutyS" xml:space="preserve">
+    <value>任务内时间：{0:F0}秒</value>
+  </data>
+  <data name="Main_DeathsThisRunSelfOthersAll" xml:space="preserve">
+    <value>本次死亡：自己 {0} | 其他 {1} | 全部 {2}</value>
+  </data>
+  <data name="Main_DebugTools" xml:space="preserve">
+    <value>调试工具</value>
+  </data>
+  <data name="Main_FORCEPATHSELECTION" xml:space="preserve">
+    <value>强制选择路径</value>
+  </data>
+  <data name="Main_Result" xml:space="preserve">
+    <value>结果：{0}</value>
+  </data>
+  <data name="Main_TESTPATHINDEX" xml:space="preserve">
+    <value>测试路径索引</value>
+  </data>
+  <data name="Main_LogADStructure" xml:space="preserve">
+    <value>记录 AD 结构</value>
+  </data>
+  <data name="Main_DumpAutoDutyPluginStructureToDalamudLog" xml:space="preserve">
+    <value>将 AutoDuty 插件结构写入 Dalamud 日志以供研究。</value>
+  </data>
+  <data name="Main_LogConfig" xml:space="preserve">
+    <value>记录设置</value>
+  </data>
+  <data name="Main_LogActions" xml:space="preserve">
+    <value>记录动作</value>
+  </data>
+  <data name="Main_DumpAutoDutyActionsListCurrentlyEmptyBut" xml:space="preserve">
+    <value>记录 AutoDuty Actions 列表（当前为空，但会显示结构）。</value>
+  </data>
+  <data name="Main_LogManager" xml:space="preserve">
+    <value>记录管理器</value>
+  </data>
+  <data name="Main_DumpAutoDutyActionsManagerContainsActionsListWithCommand" xml:space="preserve">
+    <value>记录 AutoDuty ActionsManager（包含带命令定义的 actionsList）。</value>
+  </data>
+  <data name="Main_ExplorePaths" xml:space="preserve">
+    <value>探索路径</value>
+  </data>
+  <data name="Main_ExploreDifferentLocationsForPathDataConfiguration" xml:space="preserve">
+    <value>探索路径数据的不同位置（Configuration、MainWindow 等）。</value>
+  </data>
+  <data name="Main_LogTuples" xml:space="preserve">
+    <value>记录元组</value>
+  </data>
+  <data name="Main_IterateThroughActionsListAndLogEachTuple" xml:space="preserve">
+    <value>遍历 actionsList 并记录每个元组的内容（命令定义）。</value>
+  </data>
+  <data name="Main_PathSelections" xml:space="preserve">
+    <value>路径选择</value>
+  </data>
+  <data name="Main_ExplorePathSelectionsByPathDictionaryTerritoryPathMappings" xml:space="preserve">
+    <value>探索 PathSelectionsByPath 字典（区域 → 路径）。</value>
+  </data>
+  <data name="Main_CheckCurrent" xml:space="preserve">
+    <value>检查当前选择</value>
+  </data>
+  <data name="Main_CheckWhatPathAutoDutyCurrentlyHasSelected" xml:space="preserve">
+    <value>检查 AutoDuty 当前选择的路径。</value>
+  </data>
+  <data name="Main_FindMethods" xml:space="preserve">
+    <value>查找方法</value>
+  </data>
+  <data name="Main_FindSaveApplyLoadMethodsInAutoDuty" xml:space="preserve">
+    <value>查找 AutoDuty 中的 Save/Apply/Load 方法。</value>
+  </data>
+  <data name="Main_ConfigFields" xml:space="preserve">
+    <value>设置字段</value>
+  </data>
+  <data name="Main_FindActualConfigFieldNamesForPath" xml:space="preserve">
+    <value>查找路径选择的实际设置字段名称。</value>
+  </data>
+  <data name="Main_CheckRepair" xml:space="preserve">
+    <value>检查修理</value>
+  </data>
+  <data name="Main_Item" xml:space="preserve">
+    <value>物品 {0}</value>
+  </data>
+  <data name="Main_CheckEquipmentDurabilityAndRepairStatus" xml:space="preserve">
+    <value>检查装备耐久度和修理状态。</value>
+  </data>
+  <data name="Main_TestingModeUnsyncedNoStats" xml:space="preserve">
+    <value>测试模式：非同步（无统计）</value>
+  </data>
+  <data name="Main_WARNINGRunningUnsyncedWithoutLevelSync" xml:space="preserve">
+    <value>警告：正在不进行等级同步的情况下运行。</value>
+  </data>
+  <data name="Main_TESTPRAEINDEX" xml:space="preserve">
+    <value>测试 PRAE 索引</value>
+  </data>
+  <data name="Main_LogsPraetoriumCallbackIndexAndMissingOptional" xml:space="preserve">
+    <value>记录 Praetorium 回调索引和缺少的可选解锁内容，不会排队。</value>
+  </data>
+  <data name="Main_PraetoriumCallback" xml:space="preserve">
+    <value>Praetorium 回调：{0}</value>
+  </data>
+  <data name="Main_MissingOptionalUnlocks" xml:space="preserve">
+    <value>缺少的可选解锁：{0}</value>
+  </data>
+  <data name="Main_Unlocked" xml:space="preserve">
+    <value>已解锁</value>
+  </data>
+  <data name="Main_Missing" xml:space="preserve">
+    <value>缺少</value>
+  </data>
+  <data name="Main_QuestIDs" xml:space="preserve">
+    <value>任务 ID：{0}</value>
+  </data>
+  <data name="Main_ADSModeActiveAutoDutyReflectionPathDebug" xml:space="preserve">
+    <value>ADS 模式已启用。AutoDuty 反射与路径调试工具已隐藏。</value>
+  </data>
+  <data name="Main_LeaderRuntime" xml:space="preserve">
+    <value>队长（运行时）：{0}</value>
+  </data>
+  <data name="Main_CrossWorld" xml:space="preserve">
+    <value>跨服：{0}</value>
+  </data>
+  <data name="Main_SourceConfiguredCrossWorldRole" xml:space="preserve">
+    <value>来源：配置的跨服职责</value>
+  </data>
+  <data name="Main_Subsystems" xml:space="preserve">
+    <value>子系统</value>
+  </data>
+  <data name="Main_PausedByMOGTOME" xml:space="preserve">
+    <value>已被 MOGTOME 暂停</value>
+  </data>
+  <data name="Main_DutyBackend" xml:space="preserve">
+    <value>任务后端</value>
+  </data>
+  <data name="Main_LogAllConfiguration" xml:space="preserve">
+    <value>记录全部设置</value>
+  </data>
+  <data name="Main_LogConfigPath" xml:space="preserve">
+    <value>记录设置路径</value>
+  </data>
+  <data name="Main_QueueRole" xml:space="preserve">
+    <value>排队职责</value>
+  </data>
+  <data name="Main_ADSRuntime" xml:space="preserve">
+    <value>ADS 运行状态</value>
+  </data>
+  <data name="Main_Bailout" xml:space="preserve">
+    <value>紧急退出</value>
+  </data>
+  <data name="Main_S" xml:space="preserve">
+    <value>{0}秒</value>
+  </data>
+  <data name="Main_NotConfigured" xml:space="preserve">
+    <value>未设置</value>
+  </data>
+  <data name="Main_HQ" xml:space="preserve">
+    <value>HQ</value>
+  </data>
+  <data name="Main_NQ" xml:space="preserve">
+    <value>NQ</value>
+  </data>
+  <data name="Main_X" xml:space="preserve">
+    <value>{0} [{1}] x{2}</value>
+  </data>
+  <data name="Stats_DutyStatistics" xml:space="preserve">
+    <value>任务统计</value>
+  </data>
+  <data name="Stats_OpenConfig" xml:space="preserve">
+    <value>打开设置</value>
+  </data>
+  <data name="Stats_OpenMOGTOMEConfigurationFolder" xml:space="preserve">
+    <value>打开 MOGTOME 设置文件夹</value>
+  </data>
+  <data name="Stats_KrangleNames" xml:space="preserve">
+    <value>用 Krangle 隐藏姓名</value>
+  </data>
+  <data name="Stats_Summary" xml:space="preserve">
+    <value>摘要</value>
+  </data>
+  <data name="Stats_Detailed" xml:space="preserve">
+    <value>详细</value>
+  </data>
+  <data name="Stats_ShowDebugRuns" xml:space="preserve">
+    <value>显示调试运行</value>
+  </data>
+  <data name="Stats_UnsyncedRunsAreNowIncludedInStatistics" xml:space="preserve">
+    <value>非同步运行已计入统计</value>
+  </data>
+  <data name="Stats_UnsyncedRunsAreHiddenFromStatistics" xml:space="preserve">
+    <value>非同步运行在统计中隐藏</value>
+  </data>
+  <data name="Stats_CombinedStats" xml:space="preserve">
+    <value>综合统计</value>
+  </data>
+  <data name="Stats_TotalRuns" xml:space="preserve">
+    <value>运行总数：{0}</value>
+  </data>
+  <data name="Stats_TotalMogtomes" xml:space="preserve">
+    <value>Mogtomes 总数：{0}</value>
+  </data>
+  <data name="Stats_CurrentDailyCounter" xml:space="preserve">
+    <value>当前每日计数：{0}</value>
+  </data>
+  <data name="Stats_DailyDecumanaBest" xml:space="preserve">
+    <value>每日 Decumana：{0}（最佳：{1}）</value>
+  </data>
+  <data name="Stats_NextDailyReset" xml:space="preserve">
+    <value>下次每日重置：{0}（{1}）</value>
+  </data>
+  <data name="Stats_TodaySDecumanaStats" xml:space="preserve">
+    <value>今天的 Decumana 统计：</value>
+  </data>
+  <data name="Stats_BestToday" xml:space="preserve">
+    <value>  今天最佳：{0}</value>
+  </data>
+  <data name="Stats_LongestToday" xml:space="preserve">
+    <value>  今天最长：{0}</value>
+  </data>
+  <data name="Stats_RunsToday" xml:space="preserve">
+    <value>  今天运行：{0}</value>
+  </data>
+  <data name="Stats_MogtomesToday" xml:space="preserve">
+    <value>  今天 Mogtomes：{0}</value>
+  </data>
+  <data name="Stats_ResetAllStats" xml:space="preserve">
+    <value>重置全部统计</value>
+  </data>
+  <data name="Stats_JobPerformance" xml:space="preserve">
+    <value>职业表现</value>
+  </data>
+  <data name="Stats_PlayerStats" xml:space="preserve">
+    <value>玩家统计</value>
+  </data>
+  <data name="Stats_RecentRuns" xml:space="preserve">
+    <value>近期运行</value>
+  </data>
+  <data name="Stats_Trends" xml:space="preserve">
+    <value>趋势</value>
+  </data>
+  <data name="Stats_Best" xml:space="preserve">
+    <value>最佳：{0}</value>
+  </data>
+  <data name="Stats_Date" xml:space="preserve">
+    <value>日期：{0}</value>
+  </data>
+  <data name="Stats_Party" xml:space="preserve">
+    <value>小队：</value>
+  </data>
+  <data name="Stats_BestNoRunsYet" xml:space="preserve">
+    <value>最佳：暂无运行记录</value>
+  </data>
+  <data name="Stats_Longest" xml:space="preserve">
+    <value>最长：{0}</value>
+  </data>
+  <data name="Stats_LongestNoRunsYet" xml:space="preserve">
+    <value>最长：暂无运行记录</value>
+  </data>
+  <data name="Stats_DeathsSingleRun" xml:space="preserve">
+    <value>死亡（单次运行）：</value>
+  </data>
+  <data name="Stats_SelfOthersAll" xml:space="preserve">
+    <value>自己：{0} | 其他：{1} | 全部：{2}</value>
+  </data>
+  <data name="Stats_DeathsTotal" xml:space="preserve">
+    <value>死亡（总计）：</value>
+  </data>
+  <data name="Stats_Runs" xml:space="preserve">
+    <value>运行：{0}</value>
+  </data>
+  <data name="Stats_Mogtomes" xml:space="preserve">
+    <value>Mogtomes：{0}</value>
+  </data>
+  <data name="Stats_NotLoggedIn" xml:space="preserve">
+    <value>  未登录。</value>
+  </data>
+  <data name="Stats_Name" xml:space="preserve">
+    <value>姓名</value>
+  </data>
+  <data name="Stats_Job" xml:space="preserve">
+    <value>职业</value>
+  </data>
+  <data name="Stats_Level" xml:space="preserve">
+    <value>等级</value>
+  </data>
+  <data name="Stats_HMS" xml:space="preserve">
+    <value>{0}小时 {1:D2}分 {2:D2}秒</value>
+  </data>
+  <data name="Stats_MS" xml:space="preserve">
+    <value>{0}分 {1:D2}秒</value>
+  </data>
+  <data name="Stats_None" xml:space="preserve">
+    <value>无</value>
+  </data>
+  <data name="Stats_NoRunDataAvailableEnableDetailedTracking" xml:space="preserve">
+    <value>没有运行数据。请启用详细追踪并完成几次任务。</value>
+  </data>
+  <data name="Stats_Avg" xml:space="preserve">
+    <value>平均：{0}</value>
+  </data>
+  <data name="Stats_Deaths" xml:space="preserve">
+    <value>死亡：{0}</value>
+  </data>
+  <data name="Stats_Rate" xml:space="preserve">
+    <value>比率：{0:F1}%</value>
+  </data>
+  <data name="Stats_PlayerStatistics" xml:space="preserve">
+    <value>玩家统计</value>
+  </data>
+  <data name="Stats_Player" xml:space="preserve">
+    <value>玩家███</value>
+  </data>
+  <data name="Stats_You" xml:space="preserve">
+    <value>（你）</value>
+  </data>
+  <data name="Stats_Total" xml:space="preserve">
+    <value>总计：{0}</value>
+  </data>
+  <data name="Stats_PraeDecu" xml:space="preserve">
+    <value>Prae：{0} | Decu：{1}</value>
+  </data>
+  <data name="Stats_StreakBest" xml:space="preserve">
+    <value>连续：{0}（最佳：{1}）</value>
+  </data>
+  <data name="Stats_Job2" xml:space="preserve">
+    <value>职业：{0}</value>
+  </data>
+  <data name="Stats_RecentRunsLast" xml:space="preserve">
+    <value>近期运行（最近 25 次）</value>
+  </data>
+  <data name="Stats_Time" xml:space="preserve">
+    <value>时间</value>
+  </data>
+  <data name="Stats_Player2" xml:space="preserve">
+    <value>玩家</value>
+  </data>
+  <data name="Stats_Deaths2" xml:space="preserve">
+    <value>死亡</value>
+  </data>
+  <data name="Stats_Status" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="Stats_NotCaptured" xml:space="preserve">
+    <value>{0}：未记录</value>
+  </data>
+  <data name="Stats_PartyDataNotCaptured" xml:space="preserve">
+    <value>未记录小队数据</value>
+  </data>
+  <data name="Stats_SelfOthersAll2" xml:space="preserve">
+    <value>自己 / 其他 / 全部</value>
+  </data>
+  <data name="Stats_Success" xml:space="preserve">
+    <value>成功</value>
+  </data>
+  <data name="Stats_NoReasonRecorded" xml:space="preserve">
+    <value>未记录原因</value>
+  </data>
+  <data name="Stats_Aborted" xml:space="preserve">
+    <value>中止：{0}</value>
+  </data>
+  <data name="Stats_PerformanceTrends" xml:space="preserve">
+    <value>表现趋势</value>
+  </data>
+  <data name="Stats_NoSuccessfulRunDataAvailable" xml:space="preserve">
+    <value>没有成功运行的数据。</value>
+  </data>
+  <data name="Stats_AverageCompletionTimeLast" xml:space="preserve">
+    <value>平均完成时间（最近 10 次）：{0}</value>
+  </data>
+  <data name="Stats_AverageCompletionTimeLast2" xml:space="preserve">
+    <value>平均完成时间（最近 50 次）：{0}</value>
+  </data>
+  <data name="Stats_AverageCompletionTimeAllTime" xml:space="preserve">
+    <value>平均完成时间（全部）：{0}</value>
+  </data>
+  <data name="Stats_DeathRateLast" xml:space="preserve">
+    <value>死亡率（最近 10 次）：{0:F1}%</value>
+  </data>
+  <data name="Stats_DeathRateAllTime" xml:space="preserve">
+    <value>死亡率（全部）：{0:F1}%</value>
+  </data>
+  <data name="Stats_MostEfficientJobAvg" xml:space="preserve">
+    <value>最高效职业：{0}（平均 {1}）</value>
+  </data>
+  <data name="Stats_RecentPerformanceTrend" xml:space="preserve">
+    <value>近期表现趋势：</value>
+  </data>
+  <data name="WarningText_SorryToMakeYouReadThis" xml:space="preserve">
+    <value>抱歉需要你阅读这些内容。</value>
+  </data>
+  <data name="WarningText_AFewNotesOnMOGTOMEVersionX" xml:space="preserve">
+    <value>关于 MOGTOME 的一些说明。</value>
+  </data>
+  <data name="WarningText_ItSExperimentalAndWillBreakOccasionally" xml:space="preserve">
+    <value>它是实验性功能，偶尔会出问题。</value>
+  </data>
+  <data name="WarningText_PleaseProvideLogsSoICanAnalyze" xml:space="preserve">
+    <value>请提供日志以便分析！</value>
+  </data>
+  <data name="WarningText_MultiplayerGuideDiscordLinkAndInfoAt" xml:space="preserve">
+    <value>多人使用指南、Discord 链接及信息：</value>
+  </data>
+  <data name="WarningText_ThereAreWaysMOGTOMEIsCurrentlyCrashing" xml:space="preserve">
+    <value>目前有 3 种情况会在使用 MOGTOME 时导致客户端崩溃。（原因并非 MOGTOME。）</value>
+  </data>
+  <data name="WarningText_IfYouHaveRSRUISimulateThe" xml:space="preserve">
+    <value>(1) 如果启用了 RSR -&gt; UI -&gt; Simulate the effect of pressing abilities，请关闭此功能。</value>
+  </data>
+  <data name="WarningText_DoNotRunDalamudFromTheSame" xml:space="preserve">
+    <value>(2) 不要从同一个文件夹多次运行 Dalamud。多客户端运行时可能崩溃。</value>
+  </data>
+  <data name="WarningText_AUTODUTYRSRNavmeshSometimesWILLHaveRace" xml:space="preserve">
+    <value>AUTODUTY/RSR/navmesh 有时会发生竞争或死锁，并在有或没有错误提示的情况下退出游戏。</value>
+  </data>
+  <data name="WarningText_YouWillNeedToUseMultiInstall" xml:space="preserve">
+    <value>需要使用多个独立安装文件夹来解决此问题。</value>
+  </data>
+  <data name="WarningText_ItWillBeTheFirstThingI" xml:space="preserve">
+    <value>在确认 MOGTOME 版本之后，我首先会询问此项。</value>
+  </data>
+  <data name="WarningText_IfYouDonTHaveVeryMuch" xml:space="preserve">
+    <value>(3) 如果 RAM 较少，运行很多客户端时会遇到问题。</value>
+  </data>
+  <data name="WarningText_PlanForGBFreePerClientYou" xml:space="preserve">
+    <value>加载客户端前，请为每个计划运行的客户端预留 5GB 可用内存。</value>
+  </data>
+  <data name="WarningText_SeeTheMultiplayerGuideOnHttpsAethertek" xml:space="preserve">
+    <value>可在 https://aethertek.io/ 的多人使用指南中查看一些技巧。</value>
+  </data>
+  <data name="WarningText_NowForSomeTipsAndTricksFor" xml:space="preserve">
+    <value>接下来是 MOGTOME 使用技巧。</value>
+  </data>
+  <data name="WarningText_IfYouAreSelfRepairingSetRepair" xml:space="preserve">
+    <value>1. 如果自行修理，请在选定的后端插件中设置较高的修理百分比。</value>
+  </data>
+  <data name="WarningText_AutoDutyRepairIsStillWeirdSometimesADS" xml:space="preserve">
+    <value>AutoDuty 修理有时仍然不正常。ADS 模式使用自己的修理命令，需要测试。</value>
+  </data>
+  <data name="WarningText_MakeAnAutoDutyProfileJustForThis" xml:space="preserve">
+    <value>2. 为此用途单独创建 AutoDuty 配置，并在 ADS 模式关闭时启动前选择它。</value>
+  </data>
+  <data name="WarningText_MOGTOMEChangesSomeSettingsSoThisKeeps" xml:space="preserve">
+    <value>MOGTOME 会更改一些设置，独立配置可以保护你的练级等配置。</value>
+  </data>
+  <data name="WarningText_JoinTheAutoPartyDiscordHttpsDiscordGg" xml:space="preserve">
+    <value>3. 加入 AutoParty Discord -&gt; https://discord.gg/KyfyAzG6</value>
+  </data>
+  <data name="WarningText_WhenStartingMogtomeMakeSureYouStart" xml:space="preserve">
+    <value>4. 启动 MOGTOME 时，请先启动非队长客户端。还需要</value>
+  </data>
+  <data name="WarningText_ConfigureWHOThePartyLeaderIsBy" xml:space="preserve">
+    <value>在队长客户端点击刷新状态，设置谁是队长。</value>
+  </data>
+  <data name="WarningText_IDidThisBecauseItsASeriously" xml:space="preserve">
+    <value>这样做是因为可靠判断实际队长是非常棘手的逻辑问题。</value>
+  </data>
+  <data name="WarningText_IHaveSomeCommentedOutAndRetired" xml:space="preserve">
+    <value>我保留了一些已注释和弃用的方法，但它们不可靠。</value>
+  </data>
+  <data name="WarningText_ReadThisBeforeRunningMOGTOME" xml:space="preserve">
+    <value>运行 MOGTOME 前请阅读</value>
+  </data>
+  <data name="WarningText_WarningV" xml:space="preserve">
+    <value>警告 v{0}</value>
+  </data>
+  <data name="WarningText_OKIREADIT" xml:space="preserve">
+    <value>好，我已阅读</value>
+  </data>
+  <data name="Engine_HasNotBeenStartedSinceLoading" xml:space="preserve">
+    <value>加载后尚未启动。</value>
+  </data>
+  <data name="Engine_DutyStartupPendingAfterExperimentalOpener" xml:space="preserve">
+    <value>实验性开场后等待任务启动：{0}</value>
+  </data>
+  <data name="Engine_Initializing" xml:space="preserve">
+    <value>初始化中...</value>
+  </data>
+  <data name="Engine_PreparingBossModSupport" xml:space="preserve">
+    <value>准备 BossMod 支持...</value>
+  </data>
+  <data name="Engine_CheckingConflictingPlugins" xml:space="preserve">
+    <value>检查冲突插件...</value>
+  </data>
+  <data name="Engine_PreparingADS" xml:space="preserve">
+    <value>准备 ADS...</value>
+  </data>
+  <data name="Engine_PreparingAutoDuty" xml:space="preserve">
+    <value>准备 AutoDuty...</value>
+  </data>
+  <data name="Engine_ResumingInsideDuty" xml:space="preserve">
+    <value>在任务内恢复...</value>
+  </data>
+  <data name="Engine_RunningDuty" xml:space="preserve">
+    <value>运行中 — 任务 #{0}</value>
+  </data>
+  <data name="Engine_Stopping" xml:space="preserve">
+    <value>停止中...</value>
+  </data>
+  <data name="Engine_Stopped" xml:space="preserve">
+    <value>已停止：{0}</value>
+  </data>
+  <data name="Engine_InDuty" xml:space="preserve">
+    <value>任务内 — #{0}（{1}）</value>
+  </data>
+  <data name="Engine_SuspendedWaitingForLoginAndDutyContext" xml:space="preserve">
+    <value>已暂停 — 等待登录及任务信息。</value>
+  </data>
+  <data name="Engine_DutyTransitionWaitingForConfirmedDutyContext" xml:space="preserve">
+    <value>任务切换 — 等待确认的任务信息...</value>
+  </data>
+  <data name="Engine_DutyPendingWaitingForMatchingSupportedTerritory" xml:space="preserve">
+    <value>任务等待中 — 等待匹配且受支持的区域/CFC 标识。</value>
+  </data>
+  <data name="Engine_EnteringDutyWaitingForReadyDutyContext" xml:space="preserve">
+    <value>进入任务 — 等待任务信息就绪...</value>
+  </data>
+  <data name="Engine_EnteringDutyWaitingForTerritory" xml:space="preserve">
+    <value>进入任务 — 等待区域...</value>
+  </data>
+  <data name="Engine_DutyPendingUnexpectedOrMissingTerritoryCFC" xml:space="preserve">
+    <value>任务等待中 — 区域/CFC 异常或缺失（{0}）；等待受支持的任务信息。</value>
+  </data>
+  <data name="Engine_OutsideDutyNext" xml:space="preserve">
+    <value>任务外 — 下次：#{0}</value>
+  </data>
+  <data name="Engine_WaitingForLeader" xml:space="preserve">
+    <value>等待队长 — #{0}（{1}）</value>
+  </data>
+  <data name="Engine_WaitingForLeader2" xml:space="preserve">
+    <value>等待队长 — #{0}</value>
+  </data>
+  <data name="Engine_DelayedRequeueInProgress" xml:space="preserve">
+    <value>延迟重新排队中...</value>
+  </data>
+  <data name="Engine_WaitingAfterLeaveDutyS" xml:space="preserve">
+    <value>离开任务后等待（{0:F0}秒）</value>
+  </data>
+  <data name="Engine_WaitingToStopS" xml:space="preserve">
+    <value>等待停止 {0}（{1:F0}秒）</value>
+  </data>
+  <data name="Engine_Stopping2" xml:space="preserve">
+    <value>停止 {0}...</value>
+  </data>
+  <data name="Engine_WaitingToQueueS" xml:space="preserve">
+    <value>等待排队（{0:F0}秒）</value>
+  </data>
+  <data name="Engine_Queueing" xml:space="preserve">
+    <value>排队中...</value>
+  </data>
+  <data name="Engine_QueueingRegistered" xml:space="preserve">
+    <value>排队：{0}（已注册，{1}）</value>
+  </data>
+  <data name="Engine_QueueingRegistered2" xml:space="preserve">
+    <value>排队：{0}（已注册）</value>
+  </data>
+  <data name="Engine_QueueingContentsFinderRetryCooldownS" xml:space="preserve">
+    <value>排队：{0}（ContentsFinder 重试冷却 {1:F0}秒，{2}）</value>
+  </data>
+  <data name="Engine_QueueingWaitingForQueueRegistrationS" xml:space="preserve">
+    <value>排队：{0}（等待注册 {1:F0}/{2:F0}秒，{3}）</value>
+  </data>
+  <data name="Engine_QueueingWaitingForQueueRegistrationS2" xml:space="preserve">
+    <value>排队：{0}（等待注册 {1:F0}/{2:F0}秒）</value>
+  </data>
+  <data name="Engine_QueueingWaiting" xml:space="preserve">
+    <value>排队：{0}（等待中，{1}）</value>
+  </data>
+  <data name="Engine_QueueingWaiting2" xml:space="preserve">
+    <value>排队：{0}（等待中...）</value>
+  </data>
+  <data name="Engine_LeaveBlocked" xml:space="preserve">
+    <value>{0} — 离开被阻止（{1}）</value>
+  </data>
+  <data name="Engine_LeaveRequestedWaitingForZoneOutS" xml:space="preserve">
+    <value>已请求离开 — 等待切换区域（{0:F0}秒）</value>
+  </data>
+  <data name="Engine_CombatPending" xml:space="preserve">
+    <value>战斗等待中：{0}。</value>
+  </data>
+  <data name="Engine_InDutyS" xml:space="preserve">
+    <value>任务 #{0} — {1:F0}秒</value>
+  </data>
+  <data name="Engine_Repairing" xml:space="preserve">
+    <value>修理中...</value>
+  </data>
+  <data name="Engine_RepairDoneResuming" xml:space="preserve">
+    <value>修理完成，恢复运行</value>
+  </data>
+  <data name="Engine_RepairingWaitingForTelepotTownS" xml:space="preserve">
+    <value>修理中 — 等待 TelepotTown（{0:F0}秒）</value>
+  </data>
+  <data name="Engine_RepairingWaitingFor" xml:space="preserve">
+    <value>修理中 — 等待 {0}</value>
+  </data>
+  <data name="Engine_ContentsFinderQueueCooldownS" xml:space="preserve">
+    <value>ContentsFinder 排队冷却：{0}（{1:F0}秒，{2}）</value>
+  </data>
+  <data name="Engine_ContentsFinderQueueCooldownS2" xml:space="preserve">
+    <value>ContentsFinder 排队冷却：{0}（{1:F0}秒）</value>
+  </data>
+  <data name="Engine_Value" xml:space="preserve">
+    <value>{0}：{1}（{2} / {3}）</value>
+  </data>
+  <data name="Engine_Value2" xml:space="preserve">
+    <value>{0}：{1}</value>
+  </data>
+  <data name="Engine_WaitingForPeopleVisible" xml:space="preserve">
+    <value>等待小队人数达到 {1}–4（可见 {0}）</value>
+  </data>
+  <data name="Engine_WaitingForPartyMembersToLeaveDuty" xml:space="preserve">
+    <value>等待小队成员离开任务。</value>
+  </data>
+  <data name="Engine_QueueRecoveryWaitingAfterS" xml:space="preserve">
+    <value>排队恢复：在 {0} 后等待（{1:F0}秒）</value>
+  </data>
+  <data name="Engine_QueueRecoveryAllowingRepairsS" xml:space="preserve">
+    <value>排队恢复：允许修理（{0:F0}秒）</value>
+  </data>
+  <data name="Engine_QueueRecoveryResumingDutyEntry" xml:space="preserve">
+    <value>排队恢复：恢复进入任务</value>
+  </data>
+  <data name="Engine_RepairRecoveryWaitingToRequeueS" xml:space="preserve">
+    <value>修理恢复：等待重新排队（{0:F0}秒）</value>
+  </data>
+  <data name="Engine_RepairRecoveryRetryWaitingForLeader" xml:space="preserve">
+    <value>修理恢复重试 {0}：等待队长</value>
+  </data>
+  <data name="Engine_RepairRecoveryRestarting" xml:space="preserve">
+    <value>修理恢复：重新启动 {0}</value>
+  </data>
+  <data name="Engine_RepairRecoveryWaitingForLeader" xml:space="preserve">
+    <value>修理恢复：等待队长</value>
+  </data>
+  <data name="Engine_LeaveRequestedViaADSAttemptWaitingFor" xml:space="preserve">
+    <value>通过 ADS 请求离开（尝试 #{0}）— 等待切换区域</value>
+  </data>
+  <data name="Engine_LeaveRequestedAttemptWaitingForZoneOut" xml:space="preserve">
+    <value>已请求离开（尝试 #{0}）— 等待切换区域</value>
+  </data>
+  <data name="Engine_PluginUnloadedOrReloaded" xml:space="preserve">
+    <value>插件已卸载或重新加载。</value>
+  </data>
+  <data name="Engine_RepairingBeforeStart" xml:space="preserve">
+    <value>启动前修理中...</value>
+  </data>
+  <data name="Engine_StopAfterNextSuccessfulClearAndConfirmed" xml:space="preserve">
+    <value>下次成功完成且确认离开后停止。</value>
+  </data>
+  <data name="Engine_InitializationFailed" xml:space="preserve">
+    <value>初始化失败：{0}</value>
+  </data>
+  <data name="Engine_PraetoriumDailyLimitReached" xml:space="preserve">
+    <value>已达到 Praetorium 每日上限（{0}/{1}）。</value>
+  </data>
+  <data name="Startup_WaitingForDutyReadiness" xml:space="preserve">
+    <value>等待任务就绪。</value>
+  </data>
+  <data name="Startup_DutyStartupCancelled" xml:space="preserve">
+    <value>任务启动已取消。</value>
+  </data>
+  <data name="Startup_DutyStartupPending" xml:space="preserve">
+    <value>任务启动等待中：{0}。</value>
+  </data>
+  <data name="Startup_CombatRecoveryAfterDeathWaitingForContinuous" xml:space="preserve">
+    <value>死亡后恢复战斗；等待持续就绪</value>
+  </data>
+  <data name="Startup_WaitingForDuty" xml:space="preserve">
+    <value>等待任务</value>
+  </data>
+  <data name="Startup_ExperimentalOpenerActive" xml:space="preserve">
+    <value>实验性开场已启用</value>
+  </data>
+  <data name="Startup_WaitingForLiveDutyTerritoryCFCIdentity" xml:space="preserve">
+    <value>等待当前任务区域/CFC 标识</value>
+  </data>
+  <data name="Startup_ADSIsNotLoaded" xml:space="preserve">
+    <value>ADS 未加载</value>
+  </data>
+  <data name="Startup_HasADSClearanceMWaitingForFour" xml:space="preserve">
+    <value>{0} 的 ADS 许可为 {1}（M{2}）；等待四人 M3 支持</value>
+  </data>
+  <data name="Startup_StartupInSOfContinuousReadiness" xml:space="preserve">
+    <value>持续就绪 {0:F1}秒后启动</value>
+  </data>
+  <data name="Startup_WaitingForDutyStartSeam" xml:space="preserve">
+    <value>等待任务开始过渡</value>
+  </data>
+  <data name="Startup_WaitingForReadableADSOwnershipConfirmation" xml:space="preserve">
+    <value>等待可读取的 ADS 控制确认</value>
+  </data>
+  <data name="Startup_WaitingSForADSOwnershipConfirmation" xml:space="preserve">
+    <value>等待 {0:F1}秒以确认 ADS 控制</value>
+  </data>
+  <data name="Startup_HandoffRetryBackoffUntil" xml:space="preserve">
+    <value>控制移交重试等待至 {0:HH:mm:ss}</value>
+  </data>
+  <data name="Startup_AdStartWasNotHandled" xml:space="preserve">
+    <value>/ad start 未被处理</value>
+  </data>
+  <data name="Startup_ADSStartDutyFromInsideAccepted" xml:space="preserve">
+    <value>ADS.StartDutyFromInside 已接受</value>
+  </data>
+  <data name="Startup_ADSStartDutyFromInsideRejectedCommandFallbackSuppressed" xml:space="preserve">
+    <value>ADS.StartDutyFromInside 被拒绝；已抑制后备命令</value>
+  </data>
+  <data name="Startup_TypedEndpointUnavailableSentAdsInsideFallback" xml:space="preserve">
+    <value>类型化端点不可用；已发送后备 /ads inside</value>
+  </data>
+  <data name="Startup_TypedEndpointUnavailableAndAdsInsideFallback" xml:space="preserve">
+    <value>类型化端点不可用且后备 /ads inside 失败</value>
+  </data>
+  <data name="Startup_DutyStartupFailed" xml:space="preserve">
+    <value>任务启动失败：{0}</value>
+  </data>
+  <data name="Startup_CombatRecoveryBackoffUntil" xml:space="preserve">
+    <value>战斗恢复等待至 {0:HH:mm:ss}</value>
+  </data>
+  <data name="Startup_CombatActivationFailedRetryingAfterSAnd" xml:space="preserve">
+    <value>战斗启用失败：{0}；5秒后且持续就绪时重试</value>
+  </data>
+  <data name="Startup_WaitingForAuthoritativeOwnership" xml:space="preserve">
+    <value>{0}；等待权威控制确认</value>
+  </data>
+  <data name="Startup_RestartingReadinessDelayWithSRetryBackoff" xml:space="preserve">
+    <value>{0}；重新开始就绪延迟，并等待5秒重试</value>
+  </data>
+  <data name="Automation_AutoDutyPreparationFailed" xml:space="preserve">
+    <value>AutoDuty 准备失败：{0}</value>
+  </data>
+  <data name="Automation_QueueLeader" xml:space="preserve">
+    <value>排队队长</value>
+  </data>
+  <data name="Automation_FollowerWaitingOnLeader" xml:space="preserve">
+    <value>参与者等待队长</value>
+  </data>
+  <data name="Automation_ADS" xml:space="preserve">
+    <value>ADS</value>
+  </data>
+  <data name="Automation_RepairWaiting" xml:space="preserve">
+    <value>等待修理</value>
+  </data>
+  <data name="Automation_RepairHandoff" xml:space="preserve">
+    <value>修理移交</value>
+  </data>
+  <data name="Automation_LeaveRequestedWaitingForZoneOut" xml:space="preserve">
+    <value>已请求离开，等待切换区域</value>
+  </data>
+  <data name="Automation_LeaveRequested" xml:space="preserve">
+    <value>已请求离开</value>
+  </data>
+  <data name="Automation_ADSInsideOwned" xml:space="preserve">
+    <value>ADS 内部控制</value>
+  </data>
+  <data name="Automation_ADSOutsideOwned" xml:space="preserve">
+    <value>ADS 外部控制</value>
+  </data>
+  <data name="Automation_LeaderReady" xml:space="preserve">
+    <value>队长就绪</value>
+  </data>
+  <data name="Automation_OutsideArmed" xml:space="preserve">
+    <value>外部已预约</value>
+  </data>
+  <data name="Automation_WaitingForEntry" xml:space="preserve">
+    <value>等待进入</value>
+  </data>
+  <data name="Automation_InsideObserved" xml:space="preserve">
+    <value>已确认内部状态</value>
+  </data>
+  <data name="Automation_Leaving" xml:space="preserve">
+    <value>离开中</value>
+  </data>
+  <data name="Automation_Recovered" xml:space="preserve">
+    <value>已恢复</value>
+  </data>
+  <data name="Automation_Idle" xml:space="preserve">
+    <value>空闲</value>
+  </data>
+  <data name="Automation_ADSDutyBackendInnReturn" xml:space="preserve">
+    <value>ADS 任务后端 + 返回旅馆</value>
+  </data>
+  <data name="Automation_ADSMissing" xml:space="preserve">
+    <value>缺少 ADS</value>
+  </data>
+  <data name="Automation_ADSInnReady" xml:space="preserve">
+    <value>ADS 旅馆就绪</value>
+  </data>
+  <data name="Automation_Value" xml:space="preserve">
+    <value>{0} / {1}</value>
+  </data>
+  <data name="Engine_ManualStop" xml:space="preserve">
+    <value>手动停止。</value>
+  </data>
+  <data name="Engine_CleanupFailed" xml:space="preserve">
+    <value>{0} {1} 清理失败：{2}</value>
+  </data>
+  <data name="Role_Tank" xml:space="preserve">
+    <value>防护</value>
+  </data>
+  <data name="Role_Healer" xml:space="preserve">
+    <value>治疗</value>
+  </data>
+  <data name="Role_Dps" xml:space="preserve">
+    <value>输出</value>
+  </data>
+  <data name="Rotation_CouldNotDisableCombatComponentsFromThe" xml:space="preserve">
+    <value>无法禁用上次运行的战斗组件。</value>
+  </data>
+  <data name="Rotation_BothBossModVariantsAreStillLoadedConflict" xml:space="preserve">
+    <value>两个 BossMod 版本仍已加载；准备预设前必须完成冲突清理。</value>
+  </data>
+  <data name="Rotation_BMROrVBM" xml:space="preserve">
+    <value>BMR 或 VBM</value>
+  </data>
+  <data name="Rotation_RequiresLoadedBossModSupport" xml:space="preserve">
+    <value>{0} 需要已加载的 BossMod 支持（{1}）。</value>
+  </data>
+  <data name="Rotation_BossModPackagedPresetInstallationFailedCheckThat" xml:space="preserve">
+    <value>BossMod 内置预设安装失败；请检查预设 IPC 已就绪且六个预设文件齐全。</value>
+  </data>
+  <data name="Rotation_CombatActivationWasRequestedAfterThisDuty" xml:space="preserve">
+    <value>此任务结束后请求了战斗启用（{0}）。</value>
+  </data>
+  <data name="Rotation_CombatActivationFailed" xml:space="preserve">
+    <value>战斗启用失败：{0}</value>
+  </data>
+  <data name="Rotation_CouldNotDisableAllMogTomeCombatComponents" xml:space="preserve">
+    <value>无法禁用全部 MogTome 战斗组件（{0}）；请查看日志中失败的命令。</value>
+  </data>
+  <data name="Rotation_RSRHealthRecoveryFailed" xml:space="preserve">
+    <value>RSR 生命恢复失败（{0}）。</value>
+  </data>
+  <data name="Rotation_BossModAvailabilityOrSelectionChangedAfterStartup" xml:space="preserve">
+    <value>启动后 BossMod 的可用状态或选择已更改。停止并重新启动 MogTome 以再次准备。</value>
+  </data>
+  <data name="Rotation_PresetPreparationFailedCombatWasNotEnabled" xml:space="preserve">
+    <value>{0} 预设准备失败；战斗未启用。</value>
+  </data>
+  <data name="Rotation_RSRAutoIPCAndRotationAutoBoth" xml:space="preserve">
+    <value>RSR Auto IPC 和 /rotation auto 均失败。</value>
+  </data>
+  <data name="Rotation_CouldNotEnableUsing" xml:space="preserve">
+    <value>无法通过 {1} 启用 {0}。</value>
+  </data>
+  <data name="Path_NotAttempted" xml:space="preserve">
+    <value>尚未尝试</value>
+  </data>
+  <data name="Path_FAILEDAutoDutyPluginNotFoundOrNot" xml:space="preserve">
+    <value>失败：未找到或未加载 AutoDuty 插件</value>
+  </data>
+  <data name="Path_OKTerritoryPathSelectionSavedAndVerified" xml:space="preserve">
+    <value>OK: Territory={0}, Path={1} ({2}); 选择已保存并验证</value>
+  </data>
+  <data name="Path_FAILED" xml:space="preserve">
+    <value>失败：{0}</value>
+  </data>
+  <data name="Conflict_StartupWasStoppedBeforeBossModCleanup" xml:space="preserve">
+    <value>BossMod 清理前启动已停止。</value>
+  </data>
+  <data name="Conflict_StartupCancelledDuringVBMCleanup" xml:space="preserve">
+    <value>VBM 清理期间启动已取消。</value>
+  </data>
+  <data name="Conflict_VBMCouldNotBeDisabledWhileBoth" xml:space="preserve">
+    <value>两个 BossMod 版本都已加载时无法禁用 VBM。</value>
+  </data>
+  <data name="Conflict_StartupCancelledDuringBMRCleanup" xml:space="preserve">
+    <value>BMR 清理期间启动已取消。</value>
+  </data>
+  <data name="Conflict_BMRCouldNotBeTemporarilyDisabledTo" xml:space="preserve">
+    <value>无法临时禁用 BMR 以恢复共享 IPC 注册。</value>
+  </data>
+  <data name="Conflict_TheNativeTemporaryBMREnableCommandWas" xml:space="preserve">
+    <value>原生 BMR 临时启用命令未被处理。</value>
+  </data>
+  <data name="Conflict_StartupCancelledDuringBMRReadiness" xml:space="preserve">
+    <value>BMR 准备期间启动已取消。</value>
+  </data>
+  <data name="Conflict_BMRDidNotBecomeReadyAfterIts" xml:space="preserve">
+    <value>BMR 重新加载后未就绪，或 VBM 再次加载。</value>
+  </data>
+  <data name="Conflict_WasEnabledAndHasBeenAutoDisabled" xml:space="preserve">
+    <value>{0} 已启用，现已为 MOGTOME 自动禁用。</value>
+  </data>
+  <data name="Conflict_MOGTOMEKeptRunningClickTheWarningWindow" xml:space="preserve">
+    <value>{0}
+
+MOGTOME 继续运行。点击一次警告窗口可关闭；如果插件再次启用，可使用该窗口中的禁用按钮。</value>
+  </data>
+  <data name="Conflict_IsStillEnabledMOGTOMEWillKeepRunning" xml:space="preserve">
+    <value>{0} 仍已启用。MOGTOME 将继续运行，但建议使用 {1} 将其禁用。</value>
+  </data>
+  <data name="Conflict_UseTheWarningWindowButtonToTry" xml:space="preserve">
+    <value>{0}
+
+使用警告窗口按钮再次尝试禁用，或关闭警告后继续。</value>
+  </data>
+  <data name="Conflict_WasEnabledAndHasBeenAutoDisabled2" xml:space="preserve">
+    <value>{0} 已启用，现已为 ADS 模式自动禁用。</value>
+  </data>
+  <data name="Conflict_IsStillEnabledADSModeExpects" xml:space="preserve">
+    <value>{0} 仍已启用。ADS 模式要求 {1}。</value>
+  </data>
+  <data name="Blocker_WaitingForMatchingDutyIdentity" xml:space="preserve">
+    <value>等待匹配的任务标识</value>
+  </data>
+  <data name="Blocker_Loading" xml:space="preserve">
+    <value>加载中</value>
+  </data>
+  <data name="Blocker_Combat" xml:space="preserve">
+    <value>战斗</value>
+  </data>
+  <data name="Blocker_Cutscene" xml:space="preserve">
+    <value>过场动画</value>
+  </data>
+  <data name="Blocker_OccupiedTransition" xml:space="preserve">
+    <value>占用状态切换</value>
+  </data>
+  <data name="Blocker_WaitingForLogin" xml:space="preserve">
+    <value>等待登录</value>
+  </data>
+  <data name="Blocker_WaitingForLocalPlayer" xml:space="preserve">
+    <value>等待本地玩家</value>
+  </data>
+  <data name="Blocker_WaitingForLocalPlayerJob" xml:space="preserve">
+    <value>等待本地玩家职业</value>
+  </data>
+  <data name="Blocker_WaitingForUnconsciousStateToClear" xml:space="preserve">
+    <value>等待昏迷状态结束</value>
+  </data>
+  <data name="Blocker_WaitingForLocalPlayerToBeAlive" xml:space="preserve">
+    <value>等待本地玩家存活</value>
+  </data>
+  <data name="Blocker_WaitingForAreaTransitionToFinish" xml:space="preserve">
+    <value>等待区域切换结束</value>
+  </data>
+  <data name="Blocker_WaitingForCutsceneToFinish" xml:space="preserve">
+    <value>等待过场动画结束</value>
+  </data>
+  <data name="Blocker_WaitingForCutsceneEventToFinish" xml:space="preserve">
+    <value>等待过场动画事件结束</value>
+  </data>
+  <data name="Window_MOGTOMEStatus" xml:space="preserve">
+    <value>MOGTOME - 状态</value>
+  </data>
+  <data name="Window_MOGTOMEConfiguration" xml:space="preserve">
+    <value>MOGTOME - 设置</value>
+  </data>
+  <data name="Window_MOGTOMEStatistics" xml:space="preserve">
+    <value>MOGTOME - 统计</value>
+  </data>
+  <data name="Window_MOGTOMEWarningText" xml:space="preserve">
+    <value>MOGTOME 警告说明</value>
+  </data>
+  <data name="Config_CombatProvider2" xml:space="preserve">
+    <value>战斗提供者：{0}</value>
+  </data>
+  <data name="Config_NotConfigured" xml:space="preserve">
+    <value>未设置</value>
+  </data>
+  <data name="Config_OptionalFood" xml:space="preserve">
+    <value>可选食物：{0}</value>
+  </data>
+  <data name="Config_HQ" xml:space="preserve">
+    <value>[HQ]</value>
+  </data>
+  <data name="Config_NQ" xml:space="preserve">
+    <value>[NQ]</value>
+  </data>
+  <data name="Config_SelectedID" xml:space="preserve">
+    <value>  已选择：{0} {1}（ID: {2}）</value>
+  </data>
+  <data name="Main_ForceAutoDutyToSelectModeLoopingDuty" xml:space="preserve">
+    <value>强制 AutoDuty 选择：
+Mode: Looping
+Duty Mode: Regular
+Duty: The Praetorium (1044)
+Path: {0}
+
+将完整 AutoDuty 结构写入 Dalamud 日志。</value>
+  </data>
+  <data name="Main_TestPathIndexDiscoveryMethodsComparesDictionaryPaths" xml:space="preserve">
+    <value>测试路径索引查找方法。
+比较 DictionaryPaths 与 PathSelectionsByPath。
+结果写入 Dalamud 日志。</value>
+  </data>
+  <data name="Main_DumpAutoDutyConfigurationStructureToDalamudLog" xml:space="preserve">
+    <value>将 AutoDuty Configuration 结构写入 Dalamud 日志。</value>
+  </data>
+  <data name="Plugin_ScrollDownToTheDumpsterFireChannel" xml:space="preserve">
+    <value>请滚动到 "The Dumpster Fire" 频道反馈插件相关问题和建议。</value>
+  </data>
+  <data name="Plugin_CheckPartyLeaderSettingsIfTheDuty" xml:space="preserve">
+    <value>任务未开始时请检查队长设置</value>
+  </data>
+  <data name="Plugin_ADSDidNotHandleAdsEnterinnEnsure" xml:space="preserve">
+    <value>ADS 未处理 /ads enterinn。请确认 ADS 已安装并加载。</value>
+  </data>
+  <data name="Warning_SharedMOGTOMEConfigPath" xml:space="preserve">
+    <value>共享 MOGTOME 设置路径</value>
+  </data>
+  <data name="Warning_AnotherClientHoldsMOGTOMESConfigDirectory" xml:space="preserve">
+    <value>另一客户端持有 MOGTOME 设置目录锁。使用相同设置路径启动多个客户端可能覆盖账号设置。匹配的游戏进程数：{0}。</value>
+  </data>
+  <data name="Warning_CancelStart" xml:space="preserve">
+    <value>取消启动</value>
+  </data>
+  <data name="Warning_AcknowledgeAndStart" xml:space="preserve">
+    <value>确认并启动</value>
+  </data>
+  <data name="Warning_TwistOfFayteConflict" xml:space="preserve">
+    <value>Twist of Fayte 冲突</value>
+  </data>
+  <data name="Warning_AutoDutyConflict" xml:space="preserve">
+    <value>AutoDuty 冲突</value>
+  </data>
+  <data name="Warning_PluginConflict" xml:space="preserve">
+    <value>插件冲突</value>
+  </data>
+  <data name="Warning_DisableTwistOfFayte" xml:space="preserve">
+    <value>禁用 TwistOfFayte</value>
+  </data>
+  <data name="Warning_DisableAutoDuty" xml:space="preserve">
+    <value>禁用 AutoDuty</value>
+  </data>
+  <data name="Chat_MOGTOMEStoppedAndClearedPendingStartAnd" xml:space="preserve">
+    <value>[MOGTOME] 已停止并清除待启动及下次成功后停止状态。</value>
+  </data>
+  <data name="Chat_MOGTOMEAlreadyStopped" xml:space="preserve">
+    <value>[MOGTOME] 已经停止：{0}</value>
+  </data>
+  <data name="Chat_MOGTOMEEngineIsStillInitializing" xml:space="preserve">
+    <value>[MOGTOME] 引擎仍在初始化。</value>
+  </data>
+  <data name="Chat_MOGTOMEStopAfterNextSuccessfulRunArmed" xml:space="preserve">
+    <value>[MOGTOME] 已预约下次成功运行后停止。</value>
+  </data>
+  <data name="Chat_MOGTOMEStopAfterNextSuccessfulRunCancelled" xml:space="preserve">
+    <value>[MOGTOME] 已取消下次成功运行后停止。</value>
+  </data>
+  <data name="Chat_MOGTOMEMogInnIsOnlyAvailableWhile" xml:space="preserve">
+    <value>[MOGTOME] /mog inn 仅在引擎停止或正在修理时可用。</value>
+  </data>
+  <data name="Chat_MOGTOMEStateDuty" xml:space="preserve">
+    <value>[MOGTOME] 状态：{0} | 任务 #{1} | {2}</value>
+  </data>
+  <data name="Chat_MOGTOMEDebugMode" xml:space="preserve">
+    <value>[MOGTOME] 调试模式 {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEDebugCheckboxNowVisibleInStats" xml:space="preserve">
+    <value>[MOGTOME] 调试复选框现已在统计窗口显示</value>
+  </data>
+  <data name="Chat_MOGTOME" xml:space="preserve">
+    <value>[MOGTOME] {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEFailedToSendAdsEnterinnCheck" xml:space="preserve">
+    <value>[MOGTOME] 发送 /ads enterinn 失败。请检查 Dalamud 日志。</value>
+  </data>
+  <data name="Chat_MOGTOMEQueuedMainConfigStatsWindowReset" xml:space="preserve">
+    <value>[MOGTOME] 已预约将主窗口、设置和统计窗口重置到 1,1。</value>
+  </data>
+  <data name="Chat_MOGTOMEQueuedRandomVisibleJumpsForMain" xml:space="preserve">
+    <value>[MOGTOME] 已预约主窗口、设置和统计窗口在可见区域内随机移动。</value>
+  </data>
+  <data name="Chat_MOGTOMEEngineIsStillInitializingTryAgain" xml:space="preserve">
+    <value>[MOGTOME] 引擎仍在初始化，请稍后重试。</value>
+  </data>
+  <data name="Chat_MOGTOMEAlreadyRunning" xml:space="preserve">
+    <value>[MOGTOME] 已经运行</value>
+  </data>
+  <data name="Chat_MOGTOMEStartAlreadyQueued" xml:space="preserve">
+    <value>[MOGTOME] 启动已在队列中。</value>
+  </data>
+  <data name="Chat_MOGTOMEStartQueued" xml:space="preserve">
+    <value>[MOGTOME] 启动已排队。</value>
+  </data>
+  <data name="Chat_MOGTOMEWarningXASlaveDidNotHandle" xml:space="preserve">
+    <value>[MOGTOME] 警告：XA Slave 未处理 {0}；继续启动。</value>
+  </data>
+  <data name="Chat_MOGTOMEWarningFailedToSendContinuingStartup" xml:space="preserve">
+    <value>[MOGTOME] 警告：发送 {0} 失败；继续启动。</value>
+  </data>
+  <data name="DutyAutomationService_AIDutySolverADSExperimentalModeIs" xml:space="preserve">
+    <value>AI Duty Solver（ADS）实验模式已启用，但 ADS 未加载。</value>
+  </data>
+  <data name="DutyAutomationService_AutoDutyIsStillInitializingOrFaultedRetry" xml:space="preserve">
+    <value>AutoDuty 仍在初始化或处于故障状态；请在登录稳定后重试 MOGTOME</value>
+  </data>
+  <data name="DutyAutomationService_BundledPraetoriumPathsCouldNotBeInstalled" xml:space="preserve">
+    <value>无法将内置 Praetorium 路径安装到 AutoDuty。</value>
+  </data>
+  <data name="DutyAutomationService_ADSDidNotHandleAdsEnterinnAfter" xml:space="preserve">
+    <value>修理后 ADS 未处理 /ads enterinn。请确认 ADS 已安装并加载。</value>
+  </data>
+  <data name="Chat_MOGTOMEAutoDutyPreparationFailed" xml:space="preserve">
+    <value>[MOGTOME] AutoDuty 准备失败：{0}</value>
+  </data>
+  <data name="Chat_MOGTOMEPraetoriumCallbackTest" xml:space="preserve">
+    <value>[MOGTOME] Praetorium 回调测试：{0}</value>
+  </data>
+  <data name="Chat_MOGTOMEMissingOptionalUnlocks" xml:space="preserve">
+    <value>[MOGTOME] 缺少的可选解锁：{0}</value>
+  </data>
+  <data name="MogtomeEngine_CombatCleanupFailedAfterDutyExitContinuing" xml:space="preserve">
+    <value>离开任务后战斗清理失败；继续运行。</value>
+  </data>
+  <data name="MogtomeEngine_ManualPartyRefreshSkippedInsideDutyUse" xml:space="preserve">
+    <value>已跳过任务内的手动小队刷新。仅在全队离开任务并可见后，于任务外使用刷新小队状态。</value>
+  </data>
+  <data name="MogtomeEngine_NonLeader" xml:space="preserve">
+    <value>参与者</value>
+  </data>
+  <data name="MogtomeEngine_ManualPartyRefreshCouldNotDetermineLeader" xml:space="preserve">
+    <value>手动刷新无法从当前同服小队列表确定队长。保持 {0} 职责。</value>
+  </data>
+  <data name="Chat_MOGTOMEStopAfterNextCompletedStoppingBefore" xml:space="preserve">
+    <value>[MOGTOME] 下次成功后停止已完成，在重新排队前停止。</value>
+  </data>
+  <data name="Chat_MOGTOMEAlreadyInsideInnTerritory" xml:space="preserve">
+    <value>[MOGTOME] 已在旅馆区域内：{0}。</value>
+  </data>
+  <data name="Chat_MOGTOMENoInnkeeperFoundWithinYMog" xml:space="preserve">
+    <value>[MOGTOME] 在 {0:F0}y 内未找到旅馆接待员。/mog inn 未执行任何操作。</value>
+  </data>
+  <data name="Chat_MOGTOMEMogInnCancelled" xml:space="preserve">
+    <value>[MOGTOME] /mog inn 已取消：{0}</value>
+  </data>
+  <data name="Warning_Title" xml:space="preserve">
+    <value>MOGTOME 警告</value>
+  </data>
+  <data name="Warning_Dismiss" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="Language_Label" xml:space="preserve">
+    <value>界面语言</value>
+  </data>
+  <data name="Language_WaitForProfile" xml:space="preserve">
+    <value>在可用账号配置出现前使用游戏客户端语言。</value>
+  </data>
+  <data name="Config_Potion" xml:space="preserve">
+    <value>药水</value>
+  </data>
+  <data name="Chat_MessageAndReason" xml:space="preserve">
+    <value>[MOGTOME] {0} {1}</value>
+  </data>
+  <data name="EngineState_Idle" xml:space="preserve">
+    <value>空闲</value>
+  </data>
+  <data name="EngineState_Initializing" xml:space="preserve">
+    <value>初始化中</value>
+  </data>
+  <data name="EngineState_WaitingOutsideDuty" xml:space="preserve">
+    <value>任务外等待</value>
+  </data>
+  <data name="EngineState_Queueing" xml:space="preserve">
+    <value>排队中</value>
+  </data>
+  <data name="EngineState_InDuty" xml:space="preserve">
+    <value>任务内</value>
+  </data>
+  <data name="EngineState_RepairingOutside" xml:space="preserve">
+    <value>任务外修理</value>
+  </data>
+  <data name="EngineState_Stopping" xml:space="preserve">
+    <value>停止中</value>
+  </data>
+  <data name="EngineState_Stopped" xml:space="preserve">
+    <value>已停止</value>
+  </data>
+  <data name="CombatProvider_Bmr" xml:space="preserve">
+    <value>BMR</value>
+  </data>
+  <data name="CombatProvider_Vbm" xml:space="preserve">
+    <value>VBM</value>
+  </data>
+  <data name="CombatProvider_Rsr" xml:space="preserve">
+    <value>RSR</value>
+  </data>
+  <data name="CombatProvider_Wrath" xml:space="preserve">
+    <value>Wrath Combo</value>
+  </data>
+  <data name="Inn_InteractingWithInnkeeper" xml:space="preserve">
+    <value>与旅馆接待员 {0} 交互</value>
+  </data>
+  <data name="Inn_MovingToInnkeeper" xml:space="preserve">
+    <value>移动至旅馆接待员 {0}</value>
+  </data>
+  <data name="Inn_MOGTOMEMogInnRequiresALoggedIn" xml:space="preserve">
+    <value>[MOGTOME] /mog inn 需要已登录的角色。</value>
+  </data>
+  <data name="Inn_EnteredInnTerritorySuccessfully" xml:space="preserve">
+    <value>已成功进入旅馆区域。</value>
+  </data>
+  <data name="Inn_TimedOutWhileTryingToEnterThe" xml:space="preserve">
+    <value>进入旅馆超时。</value>
+  </data>
+  <data name="Inn_InnEntryFailed" xml:space="preserve">
+    <value>进入旅馆失败：{0}</value>
+  </data>
+  <data name="Inn_WaitingForInnZoneTransition" xml:space="preserve">
+    <value>等待旅馆区域切换</value>
+  </data>
+  <data name="Inn_InnkeeperIsNoLongerNearby" xml:space="preserve">
+    <value>旅馆接待员 {0} 已不在附近。</value>
+  </data>
+  <data name="Inn_InteractingWith" xml:space="preserve">
+    <value>与 {0} 交互</value>
+  </data>
+  <data name="Inn_DriftedTooFarAwayFromWhileWaiting" xml:space="preserve">
+    <value>等待交互时距离 {0} 太远。</value>
+  </data>
+  <data name="Inn_RepositioningNear" xml:space="preserve">
+    <value>调整位置至 {0} 附近</value>
+  </data>
+  <data name="Inn_Retrying" xml:space="preserve">
+    <value>重试 {0}</value>
+  </data>
+  <data name="Time_Calculating" xml:space="preserve">
+    <value>计算中...</value>
+  </data>
+  <data name="Time_Unknown" xml:space="preserve">
+    <value>未知</value>
+  </data>
+  <data name="Time_DH" xml:space="preserve">
+    <value>{0}天 {1}小时</value>
+  </data>
+  <data name="Time_HM" xml:space="preserve">
+    <value>{0}小时 {1}分钟</value>
+  </data>
+  <data name="Time_MS" xml:space="preserve">
+    <value>{0}分钟 {1}秒</value>
+  </data>
+  <data name="Engine_DutyComplete" xml:space="preserve">
+    <value>任务完成</value>
+  </data>
+  <data name="Engine_BailoutPending" xml:space="preserve">
+    <value>紧急退出等待中</value>
+  </data>
+  <data name="Config_CombatRotation" xml:space="preserve">
+    <value>战斗循环</value>
+  </data>
+  <data name="Config_PotOnBoss" xml:space="preserve">
+    <value>在 {0} 时使用药水</value>
+  </data>
+  <data name="RepairBlocker_DutyState" xml:space="preserve">
+    <value>任务状态</value>
+  </data>
+  <data name="RepairBlocker_ZoneTransition" xml:space="preserve">
+    <value>区域切换</value>
+  </data>
+  <data name="RepairBlocker_QueueRegistration" xml:space="preserve">
+    <value>排队注册</value>
+  </data>
+  <data name="RepairBlocker_DutyConfirmation" xml:space="preserve">
+    <value>任务确认窗口</value>
+  </data>
+  <data name="RepairBlocker_MinimizedDutyConfirmation" xml:space="preserve">
+    <value>已最小化的任务确认窗口</value>
+  </data>
+  <data name="RepairBlocker_CancelDutyConfirmation" xml:space="preserve">
+    <value>任务确认取消序列</value>
+  </data>
+  <data name="RepairBlocker_YesNoDialog" xml:space="preserve">
+    <value>SelectYesno 对话框</value>
+  </data>
+  <data name="RepairBlocker_Cutscene" xml:space="preserve">
+    <value>过场动画</value>
+  </data>
+  <data name="RepairBlocker_Occupied" xml:space="preserve">
+    <value>占用状态切换</value>
+  </data>
+  <data name="Plugin_CommandMainHelp" xml:space="preserve">
+    <value>打开 MOGTOME 主窗口。</value>
+  </data>
+  <data name="Plugin_CommandAliasHelp" xml:space="preserve">
+    <value>MOGTOME: /mog [start|stop|stopnext|inn|config|status|debug|ws|j] 或 /mog 打开界面。</value>
+  </data>
+  <data name="Ads_Empty" xml:space="preserve"><value>ADS.GetStatusJson 返回了空数据</value></data>
+  <data name="Ads_Inactive" xml:space="preserve"><value>ADS 状态未指明活动的副本任务</value></data>
+  <data name="Ads_NoCatalog" xml:space="preserve"><value>ADS 当前任务没有目录元数据</value></data>
+  <data name="Ads_NoName" xml:space="preserve"><value>ADS 当前任务目录行没有任务名称</value></data>
+  <data name="Ads_NoTerritory" xml:space="preserve"><value>ADS 当前任务目录行没有区域标识</value></data>
+  <data name="Ads_NoCfc" xml:space="preserve"><value>ADS 当前任务目录行没有 CFC 标识</value></data>
+  <data name="Ads_Category" xml:space="preserve"><value>ADS 当前任务目录行的类别 '{0}' 不受支持</value></data>
+  <data name="Ads_Support" xml:space="preserve"><value>ADS 当前任务目录行的支持级别 '{0}' 不受支持</value></data>
+  <data name="Ads_Clearance" xml:space="preserve"><value>ADS 当前任务目录行的许可状态 '{0}' 不受支持</value></data>
+  <data name="Ads_InvalidJson" xml:space="preserve"><value>ADS.GetStatusJson 的 JSON 无效：{0}</value></data>
+  <data name="Ads_Unvalidated" xml:space="preserve"><value>没有经过验证的 ADS 当前任务快照。</value></data>
+  <data name="Ads_Unloaded" xml:space="preserve"><value>ADS 已卸载。</value></data>
+  <data name="Ads_Outside" xml:space="preserve"><value>当前客户端位于副本任务外。</value></data>
+  <data name="Ads_NoLiveIdentity" xml:space="preserve"><value>GameMain 未提供当前任务区域标识。</value></data>
+  <data name="Ads_Changed" xml:space="preserve"><value>当前任务标识已从区域/CFC {0}/{1} 变为 {2}/{3}。</value></data>
+  <data name="Ads_Mismatch" xml:space="preserve"><value>ADS 当前任务标识 {0}/{1} 与当前 GameMain 标识 {2}/{3} 不匹配。</value></data>
+  <data name="Ads_Validated" xml:space="preserve"><value>已验证区域/CFC {0}/{1} 的 ADS 当前任务快照。</value></data>
+  <data name="Ads_Unavailable" xml:space="preserve"><value>ADS.GetStatusJson 不可用：{0}</value></data>
+  <data name="Ads_Retained" xml:space="preserve"><value>ADS.GetStatusJson 不可用；保留相同当前标识的已验证任务快照：{0}</value></data>
+  <data name="Opener_Timeout" xml:space="preserve"><value>实验超过 10 秒</value></data>
+  <data name="Opener_NoTarget" xml:space="preserve"><value>开场怪群目标不可用</value></data>
+  <data name="Opener_NoArea" xml:space="preserve"><value>{0} 范围技能不可用</value></data>
+  <data name="Opener_NoInvulnerability" xml:space="preserve"><value>{0} 无敌技能不可用</value></data>
+  <data name="Opener_NoTerminal" xml:space="preserve"><value>Magitek Terminal 2012811 不可用</value></data>
+  <data name="Opener_NoPlayerAtTerminal" xml:space="preserve"><value>终端处本地玩家不可用</value></data>
+  <data name="Opener_Descended" xml:space="preserve"><value>检测到本地终端下降</value></data>
+  <data name="Opener_NoInteract" xml:space="preserve"><value>Magitek Terminal 交互不可用</value></data>
+  <data name="Opener_NoPlayerBeforeMove" xml:space="preserve"><value>移动至 {0} 前本地玩家不可用</value></data>
+  <data name="Opener_NoMove" xml:space="preserve"><value>vnav 移动至 {0} 不可用</value></data>
+  <data name="Opener_NoPlayerMoving" xml:space="preserve"><value>移动时本地玩家不可用</value></data>
+  <data name="Opener_NoProgress" xml:space="preserve"><value>vnav 移动没有进展</value></data>
+  <data name="Opener_Pack" xml:space="preserve"><value>开场怪群</value></data>
+  <data name="Opener_Terminal" xml:space="preserve"><value>魔导终端</value></data>
+  <data name="Engine_AutoQueueing" xml:space="preserve"><value>自动排队</value></data>
+  <data name="Engine_RepairRecoveryRetry" xml:space="preserve"><value>修理恢复重试 {0}</value></data>
+  <data name="Config_ObstacleMapsOn" xml:space="preserve"><value>启用障碍地图</value></data>
+  <data name="Config_ObstacleMapsOnTooltip" xml:space="preserve"><value>仅控制 BossMod Reborn。默认关闭。在启动时、BossMod 就绪和战斗循环设置后应用，不受战斗提供者选择影响。</value></data>
+  <data name="Config_NPCRepairInn" xml:space="preserve">
+    <value>NPC 修理 + 旅馆房间</value>
+  </data>
+  <data name="Engine_InnRepairFailed" xml:space="preserve">
+    <value>旅馆修理失败：{0}</value>
+  </data>
+  <data name="Config_NPCRepairInnUldah" xml:space="preserve">
+    <value>NPC 修理 + 旅馆房间 — Ul’dah</value>
+  </data>
+  <data name="Config_NPCRepairInnGridania" xml:space="preserve">
+    <value>NPC 修理 + 旅馆房间 — Gridania</value>
+  </data>
+  <data name="Config_NPCRepairInnLimsa" xml:space="preserve">
+    <value>NPC 修理 + 旅馆房间 — Limsa Lominsa</value>
+  </data>
+  <data name="Config_NPCRepairInnIshgard" xml:space="preserve">
+    <value>NPC 修理 + 旅馆房间 — Ishgard</value>
+  </data>
+  <data name="Config_NPCRepairInnCrystarium" xml:space="preserve">
+    <value>NPC 修理 + 旅馆房间 — Crystarium</value>
+  </data>
+  <data name="Config_NPCRepairInnSharlayan" xml:space="preserve">
+    <value>NPC 修理 + 旅馆房间 — Old Sharlayan</value>
+  </data>
+  <data name="Config_NPCRepairInnTuliyollal" xml:space="preserve">
+    <value>NPC 修理 + 旅馆房间 — Tuliyollal</value>
+  </data>
+  <data name="Config_UnsupportedADSRepairMode" xml:space="preserve">
+    <value>不支持的 ADS 修理模式</value>
+  </data>
+  <data name="Window_BlundervilleFailer" xml:space="preserve">
+    <value>Blunderville Failer</value>
+  </data>
+  <data name="Plugin_CommandBlundervilleHelp" xml:space="preserve">
+    <value>打开 Blunderville Failer 预览（/blunderville 或 /bv）。</value>
+  </data>
+  <data name="Blunderville_OpenMogtome" xml:space="preserve">
+    <value>打开 MOGTOME</value>
+  </data>
+  <data name="Blunderville_FarmingUnavailable" xml:space="preserve">
+    <value>仅预览：Blunderville 自动刷取不可用。启动和停止已禁用。</value>
+  </data>
+  <data name="Blunderville_PurchasesUnavailable" xml:space="preserve">
+    <value>仅预览：ADS 购买不可用。购买设置已禁用。</value>
+  </data>
+  <data name="Blunderville_ConfigurePurchases" xml:space="preserve">
+    <value>配置购买</value>
+  </data>
+  <data name="Ui_Color" xml:space="preserve"><value>颜色</value></data>
+  <data name="Ui_Teal" xml:space="preserve"><value>青绿</value></data>
+  <data name="Ui_Blue" xml:space="preserve"><value>蓝色</value></data>
+  <data name="Ui_Pink" xml:space="preserve"><value>粉色</value></data>
+  <data name="Ui_CustomRgb" xml:space="preserve"><value>自定义 RGB</value></data>
+  <data name="Ui_CompactMode" xml:space="preserve"><value>紧凑模式</value></data>
+  <data name="Ui_LoadingFonts" xml:space="preserve"><value>正在加载界面字体...</value></data>
+  <data name="Ui_FontFailure" xml:space="preserve"><value>界面字体加载失败，请查看插件日志。</value></data>
+  <data name="Main_Subtitle" xml:space="preserve"><value>Management Of Grand Tome Operations &amp; Management Engine</value></data>
+  <data name="Main_OpenBlunderville" xml:space="preserve"><value>打开 Blunderville Failer</value></data>
+  <data name="Main_StateHeading" xml:space="preserve"><value>状态</value></data>
+  <data name="Main_StatusHeading" xml:space="preserve"><value>状态</value></data>
+  <data name="Main_Running" xml:space="preserve"><value>运行中</value></data>
+  <data name="Main_Stopped" xml:space="preserve"><value>已停止</value></data>
+  <data name="Main_DutyCurrent" xml:space="preserve"><value>当前</value></data>
+  <data name="Main_DutyCounter" xml:space="preserve"><value>计数</value></data>
+  <data name="Main_DailyDecuHeading" xml:space="preserve"><value>每日 Decu 次数</value></data>
+  <data name="Main_DailyResetHeading" xml:space="preserve"><value>每日重置</value></data>
+  <data name="Main_PartySummary" xml:space="preserve"><value>小队摘要</value></data>
+  <data name="Main_InParty" xml:space="preserve"><value>小队中</value></data>
+  <data name="Main_NoParty" xml:space="preserve"><value>未观察到小队成员。</value></data>
+  <data name="Main_PartyDetails" xml:space="preserve"><value>小队详情</value></data>
+  <data name="Main_DutyDetails" xml:space="preserve"><value>任务详情</value></data>
+  <data name="Main_CounterValue" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="Main_ResetUtc" xml:space="preserve"><value>{0:HH:mm} UTC</value></data>
+  <data name="Main_CurrentProfile" xml:space="preserve"><value>当前配置：{0}</value></data>
+  <data name="Main_HelpTitle" xml:space="preserve"><value>帮助</value></data>
+  <data name="Blunderville_FarmingHeading" xml:space="preserve"><value>此版本无法自动刷取。</value></data>
+  <data name="Blunderville_FarmingDetail" xml:space="preserve"><value>目前无法使用 Blunderville Failer 进行自动刷取。</value></data>
+  <data name="Blunderville_PurchasesHeading" xml:space="preserve"><value>自动购买不可用。</value></data>
+  <data name="Blunderville_PurchasesDetail" xml:space="preserve"><value>此版本没有自动购买功能。</value></data>
+  <data name="Cleanup_Opener" xml:space="preserve"><value>开场序列</value></data>
+  <data name="Cleanup_Backend" xml:space="preserve"><value>后端</value></data>
+  <data name="Cleanup_Dialogs" xml:space="preserve"><value>对话框</value></data>
+  <data name="Cleanup_RepairQueue" xml:space="preserve"><value>修理队列</value></data>
+  <data name="Cleanup_DeathTracking" xml:space="preserve"><value>死亡追踪</value></data>
+  <data name="Cleanup_Combat" xml:space="preserve"><value>战斗</value></data>
+  <data name="Main_Open" xml:space="preserve"><value>打开</value></data>
+  <data name="Window appearance" xml:space="preserve"><value>窗口外观</value></data>
+  <data name="Compact visible on main window" xml:space="preserve"><value>在主窗口显示紧凑模式开关</value></data>
+  <data name="Language visible on main window" xml:space="preserve"><value>在主窗口显示语言选择</value></data>
+  <data name="Transparency" xml:space="preserve"><value>透明度</value></data>
+  <data name="Opacity (%)" xml:space="preserve"><value>不透明度 (%)</value></data>
+  <data name="Auto-fade when unfocused" xml:space="preserve"><value>失去焦点后自动淡化</value></data>
+  <data name="Unfocused opacity (%)" xml:space="preserve"><value>未聚焦时的不透明度 (%)</value></data>
+  <data name="Unfocused delay (seconds)" xml:space="preserve"><value>失去焦点后的等待时间 (秒)</value></data>
+</root>

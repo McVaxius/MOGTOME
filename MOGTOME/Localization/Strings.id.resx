@@ -1,0 +1,2248 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms</value>
+  </resheader>
+  <data name="Config_SetupWizard" xml:space="preserve">
+    <value>Panduan penyiapan</value>
+  </data>
+  <data name="Config_DependencyCheck" xml:space="preserve">
+    <value>Pemeriksaan dependensi</value>
+  </data>
+  <data name="Config_Party" xml:space="preserve">
+    <value>Grup</value>
+  </data>
+  <data name="Config_Duty" xml:space="preserve">
+    <value>Duty</value>
+  </data>
+  <data name="Config_FoodPots" xml:space="preserve">
+    <value>Makanan &amp; ramuan</value>
+  </data>
+  <data name="Config_Repair" xml:space="preserve">
+    <value>Perbaikan</value>
+  </data>
+  <data name="Config_Advanced" xml:space="preserve">
+    <value>Lanjutan</value>
+  </data>
+  <data name="Config_BackendMode" xml:space="preserve">
+    <value>Mode backend</value>
+  </data>
+  <data name="Config_UseADSPrimaryBackend" xml:space="preserve">
+    <value>Gunakan ADS (backend utama)</value>
+  </data>
+  <data name="Config_ADSHandlesDutyAutomationAndInnReturn" xml:space="preserve">
+    <value>ADS menangani otomatisasi duty dan kembali ke penginapan. AutoDuty merupakan backend alternatif.</value>
+  </data>
+  <data name="Config_AutoDutyIsTheAlternativeDutyBackendADS" xml:space="preserve">
+    <value>AutoDuty merupakan backend duty alternatif. ADS hanya diperlukan saat mode ADS dipilih atau /mog inn diminta.</value>
+  </data>
+  <data name="Config_RequiredPlugins" xml:space="preserve">
+    <value>Plugin wajib</value>
+  </data>
+  <data name="Config_SetupRequirementsAreIncompleteTheWizardIs" xml:space="preserve">
+    <value>Persyaratan penyiapan belum lengkap. Panduan hanya memberi saran dan tidak memblokir Mulai.</value>
+  </data>
+  <data name="Config_RSRRotationSolverReborn" xml:space="preserve">
+    <value>RSR (RotationSolverReborn)</value>
+  </data>
+  <data name="Config_Installed" xml:space="preserve">
+    <value>Terpasang</value>
+  </data>
+  <data name="Config_NOTFOUND" xml:space="preserve">
+    <value>TIDAK DITEMUKAN</value>
+  </data>
+  <data name="Config_BossModPassiveSupportBMROrVBM" xml:space="preserve">
+    <value>Dukungan pasif BossMod (BMR atau VBM)</value>
+  </data>
+  <data name="Config_BMRLoaded" xml:space="preserve">
+    <value>BMR dimuat</value>
+  </data>
+  <data name="Config_VBMLoaded" xml:space="preserve">
+    <value>VBM dimuat</value>
+  </data>
+  <data name="Config_BossModRebornBMR" xml:space="preserve">
+    <value>BossModReborn (BMR)</value>
+  </data>
+  <data name="Config_BossModVBM" xml:space="preserve">
+    <value>BossMod (VBM)</value>
+  </data>
+  <data name="Config_RSRHandlesAttacksTheLoadedBossModVariant" xml:space="preserve">
+    <value>RSR menangani serangan; varian BossMod yang dimuat otomatis memakai passive - tank/melee/ranged.</value>
+  </data>
+  <data name="Config_BMRHandlesAttacksAndMovementWithFRENRIDER" xml:space="preserve">
+    <value>BMR menangani serangan dan pergerakan dengan FRENRIDER - TANK/MELEE/RANGED atau preset manual Anda.</value>
+  </data>
+  <data name="Config_VBMHandlesAttacksAndMovementWithFRENRIDER" xml:space="preserve">
+    <value>VBM menangani serangan dan pergerakan dengan FRENRIDER - TANK/MELEE/RANGED atau preset manual Anda.</value>
+  </data>
+  <data name="Config_WrathHandlesAttacksUsingItsCurrentSettings" xml:space="preserve">
+    <value>Wrath menangani serangan memakai pengaturannya saat ini.</value>
+  </data>
+  <data name="Config_UseManualBossModPreset" xml:space="preserve">
+    <value>Gunakan preset BossMod manual</value>
+  </data>
+  <data name="Config_PresetName" xml:space="preserve">
+    <value>Nama preset</value>
+  </data>
+  <data name="Config_EnterAnExistingPresetNameBeforeStarting" xml:space="preserve">
+    <value>Masukkan nama preset yang sudah ada sebelum memulai.</value>
+  </data>
+  <data name="Config_MOGTOMESelectsItsPackagedActivePresetBy" xml:space="preserve">
+    <value>MOGTOME memilih preset aktif bawaannya sesuai peran saat ini pada setiap awal duty.</value>
+  </data>
+  <data name="Config_BothBossModVariantsAreLoadedStartDisables" xml:space="preserve">
+    <value>Kedua varian BossMod dimuat. Mulai menonaktifkan VBM dan memuat ulang BMR; pilihan VBM berubah ke BMR, sedangkan RSR tetap dipilih.</value>
+  </data>
+  <data name="Config_MOGTOMERunsXaSkipcutscenesOnBeforeEvery" xml:space="preserve">
+    <value>MOGTOME menjalankan /xa skipcutscenes on sebelum setiap mulai manual.</value>
+  </data>
+  <data name="Config_OptionalEnablesMogInnDelegation" xml:space="preserve">
+    <value>Opsional. Mengaktifkan delegasi /mog inn.</value>
+  </data>
+  <data name="Config_OptionalPlugins" xml:space="preserve">
+    <value>Plugin opsional</value>
+  </data>
+  <data name="Config_OptionalNotRequiredByMOGTOME" xml:space="preserve">
+    <value>Opsional. Tidak diwajibkan oleh MOGTOME.</value>
+  </data>
+  <data name="Config_RecommendedAppearanceNameplateRandomizer" xml:space="preserve">
+    <value>Disarankan. Pengacak tampilan/papan nama.</value>
+  </data>
+  <data name="Config_CustomResolutionPpByX0ade" xml:space="preserve">
+    <value>CustomResolution (1pp oleh 0x0ade)</value>
+  </data>
+  <data name="Config_ExperimentalAndNotRecommendedLowSpecHelper" xml:space="preserve">
+    <value>Eksperimental dan tidak disarankan. Pembantu spesifikasi rendah.</value>
+  </data>
+  <data name="Config_MaybeCrashyWithClients" xml:space="preserve">
+    <value>Dapat mengalami crash dengan 2+ klien</value>
+  </data>
+  <data name="Config_WillCauseSomeIssuesSometimes" xml:space="preserve">
+    <value>Kadang akan menimbulkan masalah.</value>
+  </data>
+  <data name="Config_DPSDhogPotatoSystem" xml:space="preserve">
+    <value>DPS (Dhog Potato System)</value>
+  </data>
+  <data name="Config_MayHavePathingIssues" xml:space="preserve">
+    <value>Dapat mengalami masalah penentuan jalur.</value>
+  </data>
+  <data name="Config_ExperimentalAndNotRecommendedRemoteHUDControl" xml:space="preserve">
+    <value>Eksperimental dan tidak disarankan. HUD + kontrol jarak jauh.</value>
+  </data>
+  <data name="Config_VeryNewPluginUnknownIssues" xml:space="preserve">
+    <value>Plugin sangat baru dengan masalah yang belum diketahui.</value>
+  </data>
+  <data name="Config_ConflictingPlugins" xml:space="preserve">
+    <value>Plugin yang bertentangan</value>
+  </data>
+  <data name="Config_AutoDutyPath" xml:space="preserve">
+    <value>Jalur AutoDuty</value>
+  </data>
+  <data name="Config_PraetoriumPathINSTALLED" xml:space="preserve">
+    <value>Jalur Praetorium: TERPASANG ({0})</value>
+  </data>
+  <data name="Config_PraetoriumPathNOTFOUND" xml:space="preserve">
+    <value>Jalur Praetorium: TIDAK DITEMUKAN ({0})</value>
+  </data>
+  <data name="Config_InstallBundledPraetoriumPaths" xml:space="preserve">
+    <value>Pasang jalur Praetorium bawaan</value>
+  </data>
+  <data name="Config_ThisCopiesTheBundledW2WPraetoriumPath" xml:space="preserve">
+    <value>Menyalin berkas jalur W2W Praetorium bawaan dari folder data MOGTOME ke folder jalur AutoDuty.</value>
+  </data>
+  <data name="Config_ADSIsOptionalInAutoDutyModeMog" xml:space="preserve">
+    <value>ADS opsional dalam mode AutoDuty; /mog inn memerlukan ADS jika diminta secara eksplisit.</value>
+  </data>
+  <data name="Config_ADSModeNotes" xml:space="preserve">
+    <value>Catatan mode ADS</value>
+  </data>
+  <data name="Config_ADSModeDisablesAutoDutyImmediatelyAndAgain" xml:space="preserve">
+    <value>Mode ADS langsung menonaktifkan AutoDuty dan mengulanginya saat Mulai. Antrean memakai kepemilikan ADS serta pendaftaran Duty Finder langsung.</value>
+  </data>
+  <data name="Config_RepairInnLeaveSwitchToAdsNpcrepair" xml:space="preserve">
+    <value>Perbaikan/penginapan/keluar beralih ke /ads npcrepair, /ads selfrepair, /ads enterinn, dan /ads leave.</value>
+  </data>
+  <data name="Config_TheCheckboxChangesTheDutyBackendADS" xml:space="preserve">
+    <value>Kotak centang mengubah backend duty. ADS hanya diperlukan selama mode ADS dipilih.</value>
+  </data>
+  <data name="Config_OK" xml:space="preserve">
+    <value>[OK]</value>
+  </data>
+  <data name="Config_CopyRepo" xml:space="preserve">
+    <value>Salin repositori</value>
+  </data>
+  <data name="Config_CopyRepoURLToClipboardThenAdd" xml:space="preserve">
+    <value>Salin URL repositori ke papan klip, lalu tambahkan ke
+Dalamud Settings &gt; Experimental &gt; Custom Plugin Repositories</value>
+  </data>
+  <data name="Config_NotInstalledOptional" xml:space="preserve">
+    <value>Tidak terpasang (opsional)</value>
+  </data>
+  <data name="Config_EnabledKnownMOGTOMEConflict" xml:space="preserve">
+    <value>Aktif - konflik MOGTOME yang diketahui</value>
+  </data>
+  <data name="Config_InstalledButDisabled" xml:space="preserve">
+    <value>Terpasang tetapi nonaktif</value>
+  </data>
+  <data name="Config_NotInstalled" xml:space="preserve">
+    <value>Tidak terpasang</value>
+  </data>
+  <data name="Config_DisableNow" xml:space="preserve">
+    <value>Nonaktifkan sekarang</value>
+  </data>
+  <data name="Config_MOGTOMETriesXldisablepluginTwistOfFayteWhenYouStart" xml:space="preserve">
+    <value>MOGTOME mencoba /xldisableplugin TwistOfFayte saat Anda memulainya, tetapi kegagalannya tidak lagi memblokir proses mulai.</value>
+  </data>
+  <data name="Config_ThisGuideIsAdvisoryItNeverInstalls" xml:space="preserve">
+    <value>Panduan ini hanya memberi saran. Tidak pernah memasang, mengaktifkan, menonaktifkan, atau mengatur plugin lain. Hanya menyimpan pengaturan MOGTOME yang Anda pilih.</value>
+  </data>
+  <data name="Config_CompletedForThisAccountWizardVersion" xml:space="preserve">
+    <value>Selesai untuk akun ini (versi panduan {0}).</value>
+  </data>
+  <data name="Config_RunSetupWizardAgain" xml:space="preserve">
+    <value>Jalankan panduan penyiapan lagi</value>
+  </data>
+  <data name="Config_Backend" xml:space="preserve">
+    <value>Backend</value>
+  </data>
+  <data name="Config_CombatProvider" xml:space="preserve">
+    <value>Penyedia pertempuran</value>
+  </data>
+  <data name="Config_RequiredPlugins2" xml:space="preserve">
+    <value>Plugin wajib</value>
+  </data>
+  <data name="Config_PartySetup" xml:space="preserve">
+    <value>Penyiapan grup</value>
+  </data>
+  <data name="Config_OptionalSettings" xml:space="preserve">
+    <value>Pengaturan opsional</value>
+  </data>
+  <data name="Config_Review" xml:space="preserve">
+    <value>Tinjau</value>
+  </data>
+  <data name="Config_StepOf" xml:space="preserve">
+    <value>Langkah {0} dari {1}: {2}</value>
+  </data>
+  <data name="Config_ADSIsThePrimaryMOGTOMEBackendAutoDuty" xml:space="preserve">
+    <value>ADS merupakan backend utama MOGTOME. AutoDuty tetap menjadi alternatif. Pilihan ini hanya mengubah backend tersimpan MOGTOME.</value>
+  </data>
+  <data name="Config_ADSPrimaryBackend" xml:space="preserve">
+    <value>ADS (backend utama)</value>
+  </data>
+  <data name="Config_AutoDutyAlternativeBackend" xml:space="preserve">
+    <value>AutoDuty (backend alternatif)</value>
+  </data>
+  <data name="Config_ADSMustBeLoadedForThisSelection" xml:space="preserve">
+    <value>ADS harus dimuat untuk pilihan ini.</value>
+  </data>
+  <data name="Config_AutoDutyAndTheSelectedPraetoriumPathMust" xml:space="preserve">
+    <value>AutoDuty dan jalur Praetorium terpilih harus tersedia untuk pilihan ini.</value>
+  </data>
+  <data name="Config_ChooseTheCombatProviderMOGTOMEShouldRequest" xml:space="preserve">
+    <value>Pilih penyedia pertempuran yang harus diminta MOGTOME untuk backend terpilih.</value>
+  </data>
+  <data name="Config_SelectedCombatProvider" xml:space="preserve">
+    <value>Penyedia pertempuran terpilih</value>
+  </data>
+  <data name="Config_LoadTheSelectedProviderRSRAlsoRequires" xml:space="preserve">
+    <value>Muat penyedia terpilih; RSR juga memerlukan BMR atau VBM untuk dukungan pasif.</value>
+  </data>
+  <data name="Config_MarkTheClientThatQueuesDutiesAs" xml:space="preserve">
+    <value>Tandai klien yang mengantrekan duty sebagai pemimpin grup. Setiap klien peserta harus meninjau penyiapannya sendiri.</value>
+  </data>
+  <data name="Config_IAmThePartyLeader" xml:space="preserve">
+    <value>Saya pemimpin grup</value>
+  </data>
+  <data name="Config_CrossWorldParty" xml:space="preserve">
+    <value>Grup lintas dunia</value>
+  </data>
+  <data name="Config_UsePartySettingsForTheFullQueue" xml:space="preserve">
+    <value>Gunakan pengaturan Grup untuk kebijakan antrean lengkap dan penyegaran sekali pada status grup di luar duty.</value>
+  </data>
+  <data name="Config_FoodPotionsAndRepairAreOptionalConfigure" xml:space="preserve">
+    <value>Makanan, ramuan, dan perbaikan bersifat opsional. Atur di tab masing-masing jika diinginkan; membiarkannya kosong juga didukung.</value>
+  </data>
+  <data name="Config_FoodPotsAndRepairRemainAvailableAfter" xml:space="preserve">
+    <value>Makanan &amp; Ramuan serta Perbaikan tetap tersedia setelah panduan ini; pengaturan plugin lain tidak diubah di sini.</value>
+  </data>
+  <data name="Config_FinishSetup" xml:space="preserve">
+    <value>Selesaikan penyiapan</value>
+  </data>
+  <data name="Config_Back" xml:space="preserve">
+    <value>Kembali</value>
+  </data>
+  <data name="Config_Next" xml:space="preserve">
+    <value>Berikutnya</value>
+  </data>
+  <data name="Config_ADSSelectedBackend" xml:space="preserve">
+    <value>ADS (backend terpilih)</value>
+  </data>
+  <data name="Config_AutoDutyPlusSelectedPraetoriumPath" xml:space="preserve">
+    <value>AutoDuty serta jalur Praetorium terpilih</value>
+  </data>
+  <data name="Config_LoadADS" xml:space="preserve">
+    <value>Muat ADS.</value>
+  </data>
+  <data name="Config_LoadAutoDutyAndInstallTheSelectedPraetorium" xml:space="preserve">
+    <value>Muat AutoDuty dan pasang jalur Praetorium terpilih.</value>
+  </data>
+  <data name="Config_LoadTheProviderSelectedInStepRSR" xml:space="preserve">
+    <value>Muat penyedia terpilih pada langkah 2; RSR juga memerlukan BMR atau VBM.</value>
+  </data>
+  <data name="Config_LoadVnavmesh" xml:space="preserve">
+    <value>Muat vnavmesh.</value>
+  </data>
+  <data name="Config_LoadXASlaveForXaSkipcutscenesOn" xml:space="preserve">
+    <value>Muat XA Slave untuk /xa skipcutscenes on.</value>
+  </data>
+  <data name="Config_LoadYesAlreadyForDialogs" xml:space="preserve">
+    <value>Muat YesAlready untuk dialog.</value>
+  </data>
+  <data name="Config_OperatorClickedOnlyCopiesMOGTOMESBundled" xml:space="preserve">
+    <value>Hanya melalui klik operator: menyalin berkas bawaan MOGTOME ke folder jalur AutoDuty.</value>
+  </data>
+  <data name="Config_LifestreamAndTextAdvanceAreOptionalAndDo" xml:space="preserve">
+    <value>Lifestream dan TextAdvance bersifat opsional dan tidak memengaruhi daftar persyaratan ini.</value>
+  </data>
+  <data name="Config_ADSPrimary" xml:space="preserve">
+    <value>ADS (utama)</value>
+  </data>
+  <data name="Config_AutoDutyAlternative" xml:space="preserve">
+    <value>AutoDuty (alternatif)</value>
+  </data>
+  <data name="Config_Backend2" xml:space="preserve">
+    <value>Backend: {0}</value>
+  </data>
+  <data name="Config_Ready" xml:space="preserve">
+    <value>siap</value>
+  </data>
+  <data name="Config_Incomplete" xml:space="preserve">
+    <value>belum lengkap</value>
+  </data>
+  <data name="Config_RequiredChecks" xml:space="preserve">
+    <value>Pemeriksaan wajib: {0}</value>
+  </data>
+  <data name="Config_Leader" xml:space="preserve">
+    <value>pemimpin</value>
+  </data>
+  <data name="Config_Participant" xml:space="preserve">
+    <value>peserta</value>
+  </data>
+  <data name="Config_PartyRole" xml:space="preserve">
+    <value>Peran grup: {0}</value>
+  </data>
+  <data name="Config_OptionalRepairThreshold" xml:space="preserve">
+    <value>Ambang perbaikan opsional: {0}%</value>
+  </data>
+  <data name="Config_FinishRecordsOnlyThatThisAccountCompleted" xml:space="preserve">
+    <value>Selesai hanya mencatat bahwa akun ini menyelesaikan versi panduan ini. Tidak membatasi Mulai atau mengubah plugin lain.</value>
+  </data>
+  <data name="Config_Ready2" xml:space="preserve">
+    <value>Siap</value>
+  </data>
+  <data name="Config_PartySettings" xml:space="preserve">
+    <value>Pengaturan grup</value>
+  </data>
+  <data name="Config_RuntimeRoleFollowsThisSavedSettingUse" xml:space="preserve">
+    <value>Peran saat berjalan mengikuti pengaturan tersimpan ini. Gunakan Segarkan status grup di luar duty untuk deteksi grup satu dunia sekali.</value>
+  </data>
+  <data name="Config_EnableIfYouReInACross" xml:space="preserve">
+    <value>Aktifkan jika berada dalam grup lintas dunia.</value>
+  </data>
+  <data name="Config_OnlyQueueWithExactlyVisiblePeople" xml:space="preserve">
+    <value>Wajibkan jumlah minimum grup</value>
+  </data>
+  <data name="Config_MinimumPartyMembers" xml:space="preserve">
+    <value>Minimum anggota</value>
+  </data>
+  <data name="Config_AppliesOnlyToSameWorldLeadersIn" xml:space="preserve">
+    <value>Antrekan dengan minimum terpilih hingga 4 anggota terlihat. Solo dihitung sebagai 1. Bawaan: 4. Hanya berlaku untuk pemimpin satu dunia dalam mode tersinkron karena visibilitas grup lintas dunia tidak andal. Mode uji tanpa sinkronisasi dikecualikan.</value>
+  </data>
+  <data name="Config_RuntimePartyState" xml:space="preserve">
+    <value>Status grup saat berjalan:</value>
+  </data>
+  <data name="Config_Yes" xml:space="preserve">
+    <value>Ya</value>
+  </data>
+  <data name="Config_No" xml:space="preserve">
+    <value>Tidak</value>
+  </data>
+  <data name="Config_LeaderRightNow" xml:space="preserve">
+    <value>Pemimpin saat ini: {0}</value>
+  </data>
+  <data name="Config_SourceConfiguredCrossWorldRole" xml:space="preserve">
+    <value>Sumber: peran lintas dunia yang dikonfigurasi.</value>
+  </data>
+  <data name="Config_SourceConfiguredRoleRefreshPartyStateOnly" xml:space="preserve">
+    <value>Sumber: peran yang dikonfigurasi. Segarkan status grup hanya memeriksa daftar grup satu dunia saat ini sekali.</value>
+  </data>
+  <data name="Config_RefreshPartyState" xml:space="preserve">
+    <value>Segarkan status grup</value>
+  </data>
+  <data name="Config_OneTimeSameWorldLeaderDetectionUse" xml:space="preserve">
+    <value>Deteksi pemimpin satu dunia sekali. Gunakan hanya di luar duty setelah seluruh grup terlihat.</value>
+  </data>
+  <data name="Config_PartyBehaviour" xml:space="preserve">
+    <value>Perilaku grup:</value>
+  </data>
+  <data name="Config_LeaderQueuesDutiesAndControlsTheMOGTOME" xml:space="preserve">
+    <value>- Pemimpin: Mengantrekan duty dan mengontrol alur MOGTOME.</value>
+  </data>
+  <data name="Config_NonLeaderWaitsForPartyQueuePops" xml:space="preserve">
+    <value>- Bukan pemimpin: Menunggu antrean grup muncul dan memperbaiki sendiri.</value>
+  </data>
+  <data name="Config_RepairMOGTOMEPausesItsOwnManualQueue" xml:space="preserve">
+    <value>- Perbaikan: MOGTOME menjeda percobaan antrean manualnya sendiri selama perbaikan, lalu melanjutkan setelahnya.</value>
+  </data>
+  <data name="Config_DetectionRefreshPartyStateIsManualOnly" xml:space="preserve">
+    <value>- Deteksi: Segarkan status grup hanya manual dan tidak otomatis menganggap data solo atau grup parsial sebagai pemimpin.</value>
+  </data>
+  <data name="Config_DutySettings" xml:space="preserve">
+    <value>Pengaturan duty</value>
+  </data>
+  <data name="Config_DutyCounter" xml:space="preserve">
+    <value>Penghitung duty</value>
+  </data>
+  <data name="Config_ReturnToEntranceDelaySeconds" xml:space="preserve">
+    <value>Penundaan kembali ke pintu masuk (detik)</value>
+  </data>
+  <data name="Config_ReturnToEntranceDelayHelp" xml:space="preserve">
+    <value>Penundaan dimulai saat kematian terdeteksi dalam duty aktif dan tetap berjalan saat dialog kembali diminimalkan. Kematian seluruh grup yang terkonfirmasi melewati penundaan untuk kematian ini, meskipun anggota lain hidup kembali lebih dahulu. Setelah penundaan atau konfirmasi tersebut, dialog Return yang terlihat diterima pada pembaruan normal berikutnya; dialog yang diminimalkan dibuka kembali dan diperiksa pada pembaruan selanjutnya. Bawaan: 60 detik; minimum: 1. Berlaku untuk ADS dan AutoDuty. Kebangkitan dan perpindahan ke area tersegel tetap segera dilakukan.</value>
+  </data>
+  <data name="Config_CurrentPraetoriumRunCountSetToFor" xml:space="preserve">
+    <value>Jumlah perjalanan Praetorium saat ini. Atur ke 0 untuk perjalanan pertama hari ini.</value>
+  </data>
+  <data name="Config_PraetoriumAutoDutyPath" xml:space="preserve">
+    <value>Jalur Praetorium AutoDuty</value>
+  </data>
+  <data name="Config_BundledWithMOGTOMEAndCopiedIntoAutoDuty" xml:space="preserve">
+    <value>Disertakan dengan MOGTOME dan disalin ke folder jalur AutoDuty saat mulai/pemasangan. Bawaan: phecda.</value>
+  </data>
+  <data name="Config_ADSModeIgnoresAutoDutyPathSelection" xml:space="preserve">
+    <value>Mode ADS mengabaikan pilihan jalur AutoDuty.</value>
+  </data>
+  <data name="Config_PraetoriumThreshold" xml:space="preserve">
+    <value>Ambang Praetorium</value>
+  </data>
+  <data name="Config_SwitchToDecumanaAfterThisManyPraetorium" xml:space="preserve">
+    <value>Beralih ke Decumana setelah jumlah perjalanan Praetorium ini.</value>
+  </data>
+  <data name="Config_PraetoriumDailyLimit" xml:space="preserve">
+    <value>Batas harian Praetorium</value>
+  </data>
+  <data name="Config_StopAfterThisManySuccessfulPraetoriumClears" xml:space="preserve">
+    <value>Berhenti setelah jumlah penyelesaian Praetorium berhasil ini hari ini. Decumana dan perjalanan dibatalkan tidak dihitung.</value>
+  </data>
+  <data name="Config_QuitCommand" xml:space="preserve">
+    <value>Perintah saat berhenti</value>
+  </data>
+  <data name="Config_RunsOnceWhenThePraetoriumDailyLimit" xml:space="preserve">
+    <value>Dijalankan sekali saat batas harian Praetorium tercapai, setelah keluar dari duty.</value>
+  </data>
+  <data name="Config_TestingModeUnsyncedUncheckLevelSyncYourself" xml:space="preserve">
+    <value>Mode uji: tanpa sinkronisasi (hapus centang sinkronisasi level sendiri jika benar-benar menginginkannya. Statistik tidak akan dicatat)</value>
+  </data>
+  <data name="Config_WARNINGRunningUnsyncedWithoutLevelSyncTesting" xml:space="preserve">
+    <value>PERINGATAN: Berjalan tanpa sinkronisasi dan tanpa sinkronisasi level (mode uji. Tanpa statistik).</value>
+  </data>
+  <data name="Config_DefaultUnsyncLevelSyncSyncLevelSync" xml:space="preserve">
+    <value>Bawaan: tanpa sinkronisasi + sinkronisasi level (sinkronisasi + sinkronisasi level agar tidak mengantre dengan pemain acak).</value>
+  </data>
+  <data name="Config_TestingModeActiveEnableDebugToChange" xml:space="preserve">
+    <value>[Mode uji aktif - aktifkan debug untuk mengubah]</value>
+  </data>
+  <data name="Config_Food" xml:space="preserve">
+    <value>Makanan</value>
+  </data>
+  <data name="Config_UseHQFood" xml:space="preserve">
+    <value>Gunakan makanan HQ</value>
+  </data>
+  <data name="Config_UsesTheSelectedMealAsHQWhen" xml:space="preserve">
+    <value>Menggunakan makanan terpilih sebagai HQ saat aktif; nonaktifkan untuk kualitas normal.</value>
+  </data>
+  <data name="Config_ClearFood" xml:space="preserve">
+    <value>Kosongkan makanan</value>
+  </data>
+  <data name="Config_NoFoodSelectedFoodIsOptional" xml:space="preserve">
+    <value>  Tidak ada makanan dipilih. Makanan opsional.</value>
+  </data>
+  <data name="Config_Potions" xml:space="preserve">
+    <value>Ramuan</value>
+  </data>
+  <data name="Config_UseHQPotion" xml:space="preserve">
+    <value>Gunakan ramuan HQ</value>
+  </data>
+  <data name="Config_UsesTheSelectedMedicineAsHQWhen" xml:space="preserve">
+    <value>Menggunakan obat terpilih sebagai HQ saat aktif; nonaktifkan untuk tincture/ramuan kualitas normal.</value>
+  </data>
+  <data name="Config_ClearPotion" xml:space="preserve">
+    <value>Kosongkan ramuan</value>
+  </data>
+  <data name="Config_PotOnGaius" xml:space="preserve">
+    <value>Gunakan ramuan pada Gaius</value>
+  </data>
+  <data name="Config_PotOnPhantomGaius" xml:space="preserve">
+    <value>Gunakan ramuan pada Phantom Gaius</value>
+  </data>
+  <data name="Config_NoPotionSelectedPotionsAreOptional" xml:space="preserve">
+    <value>  Tidak ada ramuan dipilih. Ramuan opsional.</value>
+  </data>
+  <data name="Config_Select" xml:space="preserve">
+    <value>Pilih {0}...</value>
+  </data>
+  <data name="Config_Search" xml:space="preserve">
+    <value>Cari</value>
+  </data>
+  <data name="Config_NoResultsTryADifferentSearchTerm" xml:space="preserve">
+    <value>Tidak ada hasil. Coba istilah pencarian lain.</value>
+  </data>
+  <data name="Config_TypeAtLeastCharactersToSearch" xml:space="preserve">
+    <value>Ketik setidaknya 2 karakter untuk mencari...</value>
+  </data>
+  <data name="Config_RepairSettings" xml:space="preserve">
+    <value>Pengaturan perbaikan</value>
+  </data>
+  <data name="Config_RepairThreshold" xml:space="preserve">
+    <value>Ambang perbaikan (%)</value>
+  </data>
+  <data name="Config_RepairWhenEquipmentDurabilityFallsBelowThis" xml:space="preserve">
+    <value>Perbaiki saat ketahanan perlengkapan turun di bawah persentase ini. Atur ke 0 untuk menonaktifkan perbaikan otomatis.</value>
+  </data>
+  <data name="Config_RepairMode" xml:space="preserve">
+    <value>Mode perbaikan</value>
+  </data>
+  <data name="Config_RepairModeHelp" xml:space="preserve">
+    <value>Perbaikan NPC + kamar penginapan hanya selesai setelah ADS masuk ke kamar.</value>
+  </data>
+  <data name="Config_RepairBehavior" xml:space="preserve">
+    <value>Perilaku perbaikan:</value>
+  </data>
+  <data name="Config_LeaderRepairsAutomaticallyBetweenDutiesWhenThreshold" xml:space="preserve">
+    <value>- Pemimpin: Memperbaiki otomatis antar-duty saat ambang tercapai</value>
+  </data>
+  <data name="Config_NonLeaderRepairsIndependentlyAfterSecondOutside" xml:space="preserve">
+    <value>- Bukan pemimpin: Memperbaiki sendiri setelah 1 detik di luar duty</value>
+  </data>
+  <data name="Config_SoloTreatedAsLeaderAutomatically" xml:space="preserve">
+    <value>- Solo: Otomatis dianggap pemimpin</value>
+  </data>
+  <data name="Config_ADSRepairCommand" xml:space="preserve">
+    <value>- Perintah perbaikan ADS: {0}</value>
+  </data>
+  <data name="Config_AutoDutyModeRepairMETHODSelfNPCIs" xml:space="preserve">
+    <value>- Mode AutoDuty: METODE perbaikan (sendiri/NPC) diatur pada pengaturan AutoDuty; kembali ke penginapan memakai /ads enterinn</value>
+  </data>
+  <data name="Config_Status" xml:space="preserve">
+    <value>Status:</value>
+  </data>
+  <data name="Config_CurrentThreshold" xml:space="preserve">
+    <value>  Ambang saat ini: {0}%</value>
+  </data>
+  <data name="Config_Enabled" xml:space="preserve">
+    <value>Aktif</value>
+  </data>
+  <data name="Config_Disabled" xml:space="preserve">
+    <value>Nonaktif</value>
+  </data>
+  <data name="Config_AutoRepair" xml:space="preserve">
+    <value>  Perbaikan otomatis: {0}</value>
+  </data>
+  <data name="Config_Self" xml:space="preserve">
+    <value>Sendiri</value>
+  </data>
+  <data name="Config_NPC" xml:space="preserve">
+    <value>NPC</value>
+  </data>
+  <data name="Config_ADSRepairMethod" xml:space="preserve">
+    <value>  Metode perbaikan ADS: {0}</value>
+  </data>
+  <data name="Config_ExperimentalADS" xml:space="preserve">
+    <value>ADS eksperimental</value>
+  </data>
+  <data name="Config_ExperimentalFirstRoomSkipPraetorium" xml:space="preserve">
+    <value>Lewati ruang pertama secara eksperimental (Praetorium)</value>
+  </data>
+  <data name="Config_ADSPraetoriumOnlyEveryParticipatingClientMust" xml:space="preserve">
+    <value>Hanya ADS/Praetorium. Setiap klien peserta harus mengaktifkannya secara lokal. MOGTOME kembali ke ADS setelah berhasil maupun gagal.</value>
+  </data>
+  <data name="Config_AvailableOnlyWhenADSIsTheSelected" xml:space="preserve">
+    <value>Hanya tersedia jika ADS menjadi backend terpilih; opsi tersimpan tidak aktif dalam mode AutoDuty.</value>
+  </data>
+  <data name="Config_Debug" xml:space="preserve">
+    <value>Debug</value>
+  </data>
+  <data name="Config_DebugCounter" xml:space="preserve">
+    <value>Penghitung debug</value>
+  </data>
+  <data name="Config_CrashRecoveryOffsetIfYouRestartedMid" xml:space="preserve">
+    <value>Offset pemulihan crash. Jika memulai ulang di tengah sesi, atur ke jumlah
+perjalanan terakhir yang diketahui agar pelacakan hari ini tetap benar.</value>
+  </data>
+  <data name="Config_BailoutTimeoutSec" xml:space="preserve">
+    <value>Batas waktu keluar darurat (dtk)</value>
+  </data>
+  <data name="Config_LeaveDutyIfStuckForThisMany" xml:space="preserve">
+    <value>Keluar dari duty jika macet selama jumlah detik ini. Bawaan: 1200 (20 menit).</value>
+  </data>
+  <data name="Main_V" xml:space="preserve">
+    <value>v{0}</value>
+  </data>
+  <data name="Main_KoFi" xml:space="preserve">
+    <value>♡ Ko-fi ♡</value>
+  </data>
+  <data name="Main_SupportDevelopmentOnKoFi" xml:space="preserve">
+    <value>Dukung pengembangan di Ko-fi</value>
+  </data>
+  <data name="Main_StateInitializing" xml:space="preserve">
+    <value>Status: Menginisialisasi</value>
+  </data>
+  <data name="Main_StatusWaitingForAccountAndEngineInitialization" xml:space="preserve">
+    <value>Status: Menunggu inisialisasi akun dan mesin.</value>
+  </data>
+  <data name="Main_Config" xml:space="preserve">
+    <value>Konfigurasi</value>
+  </data>
+  <data name="Main_Stats" xml:space="preserve">
+    <value>Statistik</value>
+  </data>
+  <data name="Main_Reset" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="Main_State" xml:space="preserve">
+    <value>Status: {0}</value>
+  </data>
+  <data name="Main_Status" xml:space="preserve">
+    <value>Status: {0}</value>
+  </data>
+  <data name="Main_Start" xml:space="preserve">
+    <value>Mulai</value>
+  </data>
+  <data name="Main_Stop" xml:space="preserve">
+    <value>Berhenti</value>
+  </data>
+  <data name="Main_UnKrangle" xml:space="preserve">
+    <value>Batalkan Krangle</value>
+  </data>
+  <data name="Main_Krangle" xml:space="preserve">
+    <value>Krangle</value>
+  </data>
+  <data name="Main_ObfuscateNamesWithMilitaryExerciseWordsUseful" xml:space="preserve">
+    <value>Samarkan nama dengan kata militer/latihan.
+Berguna untuk tangkapan layar.</value>
+  </data>
+  <data name="Main_CancelStopAfterNext" xml:space="preserve">
+    <value>Batalkan berhenti setelah berikutnya</value>
+  </data>
+  <data name="Main_StopAfterNextSuccess" xml:space="preserve">
+    <value>Berhenti setelah keberhasilan berikutnya</value>
+  </data>
+  <data name="Main_ArmedStopsAfterASuccessfulRunIs" xml:space="preserve">
+    <value>Disiapkan: berhenti setelah perjalanan berhasil dicatat dan keluar dari duty terkonfirmasi.</value>
+  </data>
+  <data name="Main_RuntimeOnlyAbortedRunsDoNotConsume" xml:space="preserve">
+    <value>Hanya saat berjalan. Perjalanan dibatalkan tidak menghabiskan permintaan ini.</value>
+  </data>
+  <data name="Main_HELP" xml:space="preserve">
+    <value>-&gt;!BANTUAN!&lt;-</value>
+  </data>
+  <data name="Main_MainWindowSettings" xml:space="preserve">
+    <value>Pengaturan jendela utama</value>
+  </data>
+  <data name="Main_AIDutySolverADS" xml:space="preserve">
+    <value>AI Duty Solver (ADS)</value>
+  </data>
+  <data name="Main_DutyBackendSelectorEnablingADSImmediatelySends" xml:space="preserve">
+    <value>Pemilih backend duty.
+Mengaktifkan ADS langsung mengirim /xldisableplugin AutoDuty.
+ADS opsional dalam mode AutoDuty dan hanya digunakan saat /mog inn diminta.</value>
+  </data>
+  <data name="Main_ADSDutyBackendActiveADSAlsoHandles" xml:space="preserve">
+    <value>Backend duty ADS aktif. ADS juga menangani masuk penginapan.</value>
+  </data>
+  <data name="Main_AutoDutyDutyBackendActiveADSIsOptional" xml:space="preserve">
+    <value>Backend duty AutoDuty aktif. ADS opsional untuk /mog inn.</value>
+  </data>
+  <data name="Main_DutyInformation" xml:space="preserve">
+    <value>Informasi duty</value>
+  </data>
+  <data name="Main_CounterPraeDailyPraetoriumLimit" xml:space="preserve">
+    <value>Penghitung: {0} / {1} Prae | Batas harian Praetorium: {2}</value>
+  </data>
+  <data name="Main_DailyDecuRunsToday" xml:space="preserve">
+    <value>Decu harian: {0} perjalanan hari ini</value>
+  </data>
+  <data name="Main_Current" xml:space="preserve">
+    <value>Saat ini: {0}</value>
+  </data>
+  <data name="Main_DailyReset" xml:space="preserve">
+    <value>Reset harian: {0} ({1})</value>
+  </data>
+  <data name="Main_TESTINGMODEUnsynced" xml:space="preserve">
+    <value>[MODE UJI - Tanpa sinkronisasi]</value>
+  </data>
+  <data name="Main_LastClearS" xml:space="preserve">
+    <value>Penyelesaian terakhir: {0:F0}s</value>
+  </data>
+  <data name="Main_TimeInDutyS" xml:space="preserve">
+    <value>Waktu dalam duty: {0:F0}s</value>
+  </data>
+  <data name="Main_DeathsThisRunSelfOthersAll" xml:space="preserve">
+    <value>Kematian perjalanan ini: Diri {0} | Lainnya {1} | Semua {2}</value>
+  </data>
+  <data name="Main_DebugTools" xml:space="preserve">
+    <value>Alat debug</value>
+  </data>
+  <data name="Main_FORCEPATHSELECTION" xml:space="preserve">
+    <value>PAKSA PILIHAN JALUR</value>
+  </data>
+  <data name="Main_Result" xml:space="preserve">
+    <value>Hasil: {0}</value>
+  </data>
+  <data name="Main_TESTPATHINDEX" xml:space="preserve">
+    <value>UJI INDEKS JALUR</value>
+  </data>
+  <data name="Main_LogADStructure" xml:space="preserve">
+    <value>Catat struktur AD</value>
+  </data>
+  <data name="Main_DumpAutoDutyPluginStructureToDalamudLog" xml:space="preserve">
+    <value>Catat struktur plugin AutoDuty ke log Dalamud untuk penelitian.</value>
+  </data>
+  <data name="Main_LogConfig" xml:space="preserve">
+    <value>Catat konfigurasi</value>
+  </data>
+  <data name="Main_LogActions" xml:space="preserve">
+    <value>Catat tindakan</value>
+  </data>
+  <data name="Main_DumpAutoDutyActionsListCurrentlyEmptyBut" xml:space="preserve">
+    <value>Catat daftar Actions AutoDuty (saat ini kosong, tetapi menunjukkan strukturnya).</value>
+  </data>
+  <data name="Main_LogManager" xml:space="preserve">
+    <value>Catat pengelola</value>
+  </data>
+  <data name="Main_DumpAutoDutyActionsManagerContainsActionsListWithCommand" xml:space="preserve">
+    <value>Catat ActionsManager AutoDuty (berisi actionsList dengan definisi perintah).</value>
+  </data>
+  <data name="Main_ExplorePaths" xml:space="preserve">
+    <value>Jelajahi jalur</value>
+  </data>
+  <data name="Main_ExploreDifferentLocationsForPathDataConfiguration" xml:space="preserve">
+    <value>Jelajahi berbagai lokasi data jalur (Configuration, MainWindow, dan sebagainya).</value>
+  </data>
+  <data name="Main_LogTuples" xml:space="preserve">
+    <value>Catat tuple</value>
+  </data>
+  <data name="Main_IterateThroughActionsListAndLogEachTuple" xml:space="preserve">
+    <value>Telusuri actionsList dan catat isi setiap tuple (definisi perintah).</value>
+  </data>
+  <data name="Main_PathSelections" xml:space="preserve">
+    <value>Pilihan jalur</value>
+  </data>
+  <data name="Main_ExplorePathSelectionsByPathDictionaryTerritoryPathMappings" xml:space="preserve">
+    <value>Jelajahi kamus PathSelectionsByPath (pemetaan territory → jalur).</value>
+  </data>
+  <data name="Main_CheckCurrent" xml:space="preserve">
+    <value>Periksa saat ini</value>
+  </data>
+  <data name="Main_CheckWhatPathAutoDutyCurrentlyHasSelected" xml:space="preserve">
+    <value>Periksa jalur yang saat ini dipilih AutoDuty.</value>
+  </data>
+  <data name="Main_FindMethods" xml:space="preserve">
+    <value>Temukan metode</value>
+  </data>
+  <data name="Main_FindSaveApplyLoadMethodsInAutoDuty" xml:space="preserve">
+    <value>Temukan metode Save/Apply/Load di AutoDuty.</value>
+  </data>
+  <data name="Main_ConfigFields" xml:space="preserve">
+    <value>Medan konfigurasi</value>
+  </data>
+  <data name="Main_FindActualConfigFieldNamesForPath" xml:space="preserve">
+    <value>Temukan nama medan konfigurasi sebenarnya untuk pilihan jalur.</value>
+  </data>
+  <data name="Main_CheckRepair" xml:space="preserve">
+    <value>Periksa perbaikan</value>
+  </data>
+  <data name="Main_Item" xml:space="preserve">
+    <value>Item {0}</value>
+  </data>
+  <data name="Main_CheckEquipmentDurabilityAndRepairStatus" xml:space="preserve">
+    <value>Periksa ketahanan perlengkapan dan status perbaikan.</value>
+  </data>
+  <data name="Main_TestingModeUnsyncedNoStats" xml:space="preserve">
+    <value>Mode uji: tanpa sinkronisasi (tanpa statistik)</value>
+  </data>
+  <data name="Main_WARNINGRunningUnsyncedWithoutLevelSync" xml:space="preserve">
+    <value>PERINGATAN: Berjalan tanpa sinkronisasi dan tanpa sinkronisasi level.</value>
+  </data>
+  <data name="Main_TESTPRAEINDEX" xml:space="preserve">
+    <value>UJI INDEKS PRAE</value>
+  </data>
+  <data name="Main_LogsPraetoriumCallbackIndexAndMissingOptional" xml:space="preserve">
+    <value>Mencatat indeks callback Praetorium dan pembukaan opsional yang belum tersedia. Tidak mendaftarkan antrean.</value>
+  </data>
+  <data name="Main_PraetoriumCallback" xml:space="preserve">
+    <value>Callback Praetorium: {0}</value>
+  </data>
+  <data name="Main_MissingOptionalUnlocks" xml:space="preserve">
+    <value>Pembukaan opsional yang belum tersedia: {0}</value>
+  </data>
+  <data name="Main_Unlocked" xml:space="preserve">
+    <value>Terbuka</value>
+  </data>
+  <data name="Main_Missing" xml:space="preserve">
+    <value>Belum tersedia</value>
+  </data>
+  <data name="Main_QuestIDs" xml:space="preserve">
+    <value>ID quest: {0}</value>
+  </data>
+  <data name="Main_ADSModeActiveAutoDutyReflectionPathDebug" xml:space="preserve">
+    <value>Mode ADS aktif. Alat debug refleksi/jalur AutoDuty disembunyikan.</value>
+  </data>
+  <data name="Main_LeaderRuntime" xml:space="preserve">
+    <value>Pemimpin (saat berjalan): {0}</value>
+  </data>
+  <data name="Main_CrossWorld" xml:space="preserve">
+    <value>Lintas dunia: {0}</value>
+  </data>
+  <data name="Main_SourceConfiguredCrossWorldRole" xml:space="preserve">
+    <value>Sumber: peran lintas dunia yang dikonfigurasi</value>
+  </data>
+  <data name="Main_Subsystems" xml:space="preserve">
+    <value>Subsistem</value>
+  </data>
+  <data name="Main_PausedByMOGTOME" xml:space="preserve">
+    <value>Dijeda oleh MOGTOME</value>
+  </data>
+  <data name="Main_DutyBackend" xml:space="preserve">
+    <value>Backend duty</value>
+  </data>
+  <data name="Main_LogAllConfiguration" xml:space="preserve">
+    <value>Catat semua konfigurasi</value>
+  </data>
+  <data name="Main_LogConfigPath" xml:space="preserve">
+    <value>Catat jalur konfigurasi</value>
+  </data>
+  <data name="Main_QueueRole" xml:space="preserve">
+    <value>Peran antrean</value>
+  </data>
+  <data name="Main_ADSRuntime" xml:space="preserve">
+    <value>Runtime ADS</value>
+  </data>
+  <data name="Main_Bailout" xml:space="preserve">
+    <value>Penghentian darurat</value>
+  </data>
+  <data name="Main_S" xml:space="preserve">
+    <value>{0}s</value>
+  </data>
+  <data name="Main_NotConfigured" xml:space="preserve">
+    <value>Belum dikonfigurasi</value>
+  </data>
+  <data name="Main_HQ" xml:space="preserve">
+    <value>HQ</value>
+  </data>
+  <data name="Main_NQ" xml:space="preserve">
+    <value>NQ</value>
+  </data>
+  <data name="Main_X" xml:space="preserve">
+    <value>{0} [{1}] x{2}</value>
+  </data>
+  <data name="Stats_DutyStatistics" xml:space="preserve">
+    <value>Statistik duty</value>
+  </data>
+  <data name="Stats_OpenConfig" xml:space="preserve">
+    <value>Buka konfigurasi</value>
+  </data>
+  <data name="Stats_OpenMOGTOMEConfigurationFolder" xml:space="preserve">
+    <value>Buka folder konfigurasi MOGTOME</value>
+  </data>
+  <data name="Stats_KrangleNames" xml:space="preserve">
+    <value>Acak nama</value>
+  </data>
+  <data name="Stats_Summary" xml:space="preserve">
+    <value>Ringkasan</value>
+  </data>
+  <data name="Stats_Detailed" xml:space="preserve">
+    <value>Terperinci</value>
+  </data>
+  <data name="Stats_ShowDebugRuns" xml:space="preserve">
+    <value>Tampilkan run debug</value>
+  </data>
+  <data name="Stats_UnsyncedRunsAreNowIncludedInStatistics" xml:space="preserve">
+    <value>Run tanpa sinkronisasi kini disertakan dalam statistik</value>
+  </data>
+  <data name="Stats_UnsyncedRunsAreHiddenFromStatistics" xml:space="preserve">
+    <value>Run tanpa sinkronisasi disembunyikan dari statistik</value>
+  </data>
+  <data name="Stats_CombinedStats" xml:space="preserve">
+    <value>Statistik gabungan</value>
+  </data>
+  <data name="Stats_TotalRuns" xml:space="preserve">
+    <value>Total run: {0}</value>
+  </data>
+  <data name="Stats_TotalMogtomes" xml:space="preserve">
+    <value>Total Mogtome: {0}</value>
+  </data>
+  <data name="Stats_CurrentDailyCounter" xml:space="preserve">
+    <value>Penghitung harian saat ini: {0}</value>
+  </data>
+  <data name="Stats_DailyDecumanaBest" xml:space="preserve">
+    <value>Decumana harian: {0} (Terbaik: {1})</value>
+  </data>
+  <data name="Stats_NextDailyReset" xml:space="preserve">
+    <value>Reset harian berikutnya: {0} ({1})</value>
+  </data>
+  <data name="Stats_TodaySDecumanaStats" xml:space="preserve">
+    <value>Statistik Decumana hari ini:</value>
+  </data>
+  <data name="Stats_BestToday" xml:space="preserve">
+    <value>  Terbaik hari ini: {0}</value>
+  </data>
+  <data name="Stats_LongestToday" xml:space="preserve">
+    <value>  Terlama hari ini: {0}</value>
+  </data>
+  <data name="Stats_RunsToday" xml:space="preserve">
+    <value>  Run hari ini: {0}</value>
+  </data>
+  <data name="Stats_MogtomesToday" xml:space="preserve">
+    <value>  Mogtome hari ini: {0}</value>
+  </data>
+  <data name="Stats_ResetAllStats" xml:space="preserve">
+    <value>Reset semua statistik</value>
+  </data>
+  <data name="Stats_JobPerformance" xml:space="preserve">
+    <value>Performa job</value>
+  </data>
+  <data name="Stats_PlayerStats" xml:space="preserve">
+    <value>Statistik pemain</value>
+  </data>
+  <data name="Stats_RecentRuns" xml:space="preserve">
+    <value>Run terbaru</value>
+  </data>
+  <data name="Stats_Trends" xml:space="preserve">
+    <value>Tren</value>
+  </data>
+  <data name="Stats_Best" xml:space="preserve">
+    <value>Terbaik: {0}</value>
+  </data>
+  <data name="Stats_Date" xml:space="preserve">
+    <value>Tanggal: {0}</value>
+  </data>
+  <data name="Stats_Party" xml:space="preserve">
+    <value>Party:</value>
+  </data>
+  <data name="Stats_BestNoRunsYet" xml:space="preserve">
+    <value>Terbaik: Belum ada run</value>
+  </data>
+  <data name="Stats_Longest" xml:space="preserve">
+    <value>Terlama: {0}</value>
+  </data>
+  <data name="Stats_LongestNoRunsYet" xml:space="preserve">
+    <value>Terlama: Belum ada run</value>
+  </data>
+  <data name="Stats_DeathsSingleRun" xml:space="preserve">
+    <value>Kematian (satu run):</value>
+  </data>
+  <data name="Stats_SelfOthersAll" xml:space="preserve">
+    <value>Diri sendiri: {0} | Lainnya: {1} | Semua: {2}</value>
+  </data>
+  <data name="Stats_DeathsTotal" xml:space="preserve">
+    <value>Kematian (total):</value>
+  </data>
+  <data name="Stats_Runs" xml:space="preserve">
+    <value>Run: {0}</value>
+  </data>
+  <data name="Stats_Mogtomes" xml:space="preserve">
+    <value>Mogtome: {0}</value>
+  </data>
+  <data name="Stats_NotLoggedIn" xml:space="preserve">
+    <value>  Belum masuk.</value>
+  </data>
+  <data name="Stats_Name" xml:space="preserve">
+    <value>Nama</value>
+  </data>
+  <data name="Stats_Job" xml:space="preserve">
+    <value>Job</value>
+  </data>
+  <data name="Stats_Level" xml:space="preserve">
+    <value>Level</value>
+  </data>
+  <data name="Stats_HMS" xml:space="preserve">
+    <value>{0}j {1:D2}m {2:D2}d</value>
+  </data>
+  <data name="Stats_MS" xml:space="preserve">
+    <value>{0}m {1:D2}d</value>
+  </data>
+  <data name="Stats_None" xml:space="preserve">
+    <value>Tidak ada</value>
+  </data>
+  <data name="Stats_NoRunDataAvailableEnableDetailedTracking" xml:space="preserve">
+    <value>Tidak ada data run. Aktifkan pelacakan terperinci dan selesaikan beberapa run.</value>
+  </data>
+  <data name="Stats_Avg" xml:space="preserve">
+    <value>Rata-rata: {0}</value>
+  </data>
+  <data name="Stats_Deaths" xml:space="preserve">
+    <value>Kematian: {0}</value>
+  </data>
+  <data name="Stats_Rate" xml:space="preserve">
+    <value>Tingkat: {0:F1}%</value>
+  </data>
+  <data name="Stats_PlayerStatistics" xml:space="preserve">
+    <value>Statistik pemain</value>
+  </data>
+  <data name="Stats_Player" xml:space="preserve">
+    <value>Pemain███</value>
+  </data>
+  <data name="Stats_You" xml:space="preserve">
+    <value> (Anda)</value>
+  </data>
+  <data name="Stats_Total" xml:space="preserve">
+    <value>Total: {0}</value>
+  </data>
+  <data name="Stats_PraeDecu" xml:space="preserve">
+    <value>Prae: {0} | Decu: {1}</value>
+  </data>
+  <data name="Stats_StreakBest" xml:space="preserve">
+    <value>Berturut-turut: {0} (Terbaik: {1})</value>
+  </data>
+  <data name="Stats_Job2" xml:space="preserve">
+    <value>Job: {0}</value>
+  </data>
+  <data name="Stats_RecentRunsLast" xml:space="preserve">
+    <value>Run terbaru (25 terakhir)</value>
+  </data>
+  <data name="Stats_Time" xml:space="preserve">
+    <value>Waktu</value>
+  </data>
+  <data name="Stats_Player2" xml:space="preserve">
+    <value>Pemain</value>
+  </data>
+  <data name="Stats_Deaths2" xml:space="preserve">
+    <value>Kematian</value>
+  </data>
+  <data name="Stats_Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Stats_NotCaptured" xml:space="preserve">
+    <value>{0}: Tidak direkam</value>
+  </data>
+  <data name="Stats_PartyDataNotCaptured" xml:space="preserve">
+    <value>Data party tidak direkam</value>
+  </data>
+  <data name="Stats_SelfOthersAll2" xml:space="preserve">
+    <value>Diri sendiri / Lainnya / Semua</value>
+  </data>
+  <data name="Stats_Success" xml:space="preserve">
+    <value>Berhasil</value>
+  </data>
+  <data name="Stats_NoReasonRecorded" xml:space="preserve">
+    <value>Tidak ada alasan tercatat</value>
+  </data>
+  <data name="Stats_Aborted" xml:space="preserve">
+    <value>Dibatalkan: {0}</value>
+  </data>
+  <data name="Stats_PerformanceTrends" xml:space="preserve">
+    <value>Tren performa</value>
+  </data>
+  <data name="Stats_NoSuccessfulRunDataAvailable" xml:space="preserve">
+    <value>Tidak ada data run yang berhasil.</value>
+  </data>
+  <data name="Stats_AverageCompletionTimeLast" xml:space="preserve">
+    <value>Waktu penyelesaian rata-rata (10 terakhir): {0}</value>
+  </data>
+  <data name="Stats_AverageCompletionTimeLast2" xml:space="preserve">
+    <value>Waktu penyelesaian rata-rata (50 terakhir): {0}</value>
+  </data>
+  <data name="Stats_AverageCompletionTimeAllTime" xml:space="preserve">
+    <value>Waktu penyelesaian rata-rata (sepanjang waktu): {0}</value>
+  </data>
+  <data name="Stats_DeathRateLast" xml:space="preserve">
+    <value>Tingkat kematian (10 terakhir): {0:F1}%</value>
+  </data>
+  <data name="Stats_DeathRateAllTime" xml:space="preserve">
+    <value>Tingkat kematian (sepanjang waktu): {0:F1}%</value>
+  </data>
+  <data name="Stats_MostEfficientJobAvg" xml:space="preserve">
+    <value>Job paling efisien: {0} (rata-rata {1})</value>
+  </data>
+  <data name="Stats_RecentPerformanceTrend" xml:space="preserve">
+    <value>Tren performa terbaru:</value>
+  </data>
+  <data name="WarningText_SorryToMakeYouReadThis" xml:space="preserve">
+    <value>Maaf karena Anda harus membaca ini.</value>
+  </data>
+  <data name="WarningText_AFewNotesOnMOGTOMEVersionX" xml:space="preserve">
+    <value>Beberapa catatan tentang MOGTOME.</value>
+  </data>
+  <data name="WarningText_ItSExperimentalAndWillBreakOccasionally" xml:space="preserve">
+    <value>ini eksperimental dan sesekali akan bermasalah.</value>
+  </data>
+  <data name="WarningText_PleaseProvideLogsSoICanAnalyze" xml:space="preserve">
+    <value>mohon berikan log agar saya dapat menganalisisnya!</value>
+  </data>
+  <data name="WarningText_MultiplayerGuideDiscordLinkAndInfoAt" xml:space="preserve">
+    <value>Panduan multipemain, tautan Discord, dan informasi di:</value>
+  </data>
+  <data name="WarningText_ThereAreWaysMOGTOMEIsCurrentlyCrashing" xml:space="preserve">
+    <value>Saat ini ada 3 hal yang membuat klien crash saat memakai MOGTOME. (bukan MOGTOME penyebabnya)</value>
+  </data>
+  <data name="WarningText_IfYouHaveRSRUISimulateThe" xml:space="preserve">
+    <value>(1) Jika RSR -&gt; UI -&gt; Simulate the effect of pressing abilities aktif, matikan fitur itu.</value>
+  </data>
+  <data name="WarningText_DoNotRunDalamudFromTheSame" xml:space="preserve">
+    <value>(2) Jangan menjalankan Dalamud berkali-kali dari folder yang sama. Multiboxing dapat menyebabkan crash.</value>
+  </data>
+  <data name="WarningText_AUTODUTYRSRNavmeshSometimesWILLHaveRace" xml:space="preserve">
+    <value>AUTODUTY/RSR/navmesh terkadang mengalami race/deadlock dan CTD dengan atau tanpa pesan kesalahan.</value>
+  </data>
+  <data name="WarningText_YouWillNeedToUseMultiInstall" xml:space="preserve">
+    <value>Gunakan beberapa folder instalasi untuk mengatasinya.</value>
+  </data>
+  <data name="WarningText_ItWillBeTheFirstThingI" xml:space="preserve">
+    <value>Itu pertanyaan pertama saya setelah menanyakan versi MOGTOME.</value>
+  </data>
+  <data name="WarningText_IfYouDonTHaveVeryMuch" xml:space="preserve">
+    <value>(3) Jika RAM Anda terbatas, banyak klien akan menimbulkan masalah.</value>
+  </data>
+  <data name="WarningText_PlanForGBFreePerClientYou" xml:space="preserve">
+    <value>Siapkan 5GB RAM kosong per klien sebelum memuat klien apa pun.</value>
+  </data>
+  <data name="WarningText_SeeTheMultiplayerGuideOnHttpsAethertek" xml:space="preserve">
+    <value>Lihat panduan multipemain di https://aethertek.io/ untuk tips dan trik.</value>
+  </data>
+  <data name="WarningText_NowForSomeTipsAndTricksFor" xml:space="preserve">
+    <value>Sekarang beberapa tips dan trik MOGTOME.</value>
+  </data>
+  <data name="WarningText_IfYouAreSelfRepairingSetRepair" xml:space="preserve">
+    <value>1. Jika memperbaiki sendiri, atur persentase perbaikan tinggi di plugin backend pilihan Anda.</value>
+  </data>
+  <data name="WarningText_AutoDutyRepairIsStillWeirdSometimesADS" xml:space="preserve">
+    <value>Perbaikan AutoDuty terkadang masih aneh. Mode ADS memakai perintah perbaikan sendiri dan perlu diuji.</value>
+  </data>
+  <data name="WarningText_MakeAnAutoDutyProfileJustForThis" xml:space="preserve">
+    <value>2. Buat profil AutoDuty khusus untuk ini dan pilih sebelum menekan mulai ketika mode ADS NONAKTIF.</value>
+  </data>
+  <data name="WarningText_MOGTOMEChangesSomeSettingsSoThisKeeps" xml:space="preserve">
+    <value>MOGTOME mengubah beberapa pengaturan, jadi profil leveling dan lainnya tetap aman.</value>
+  </data>
+  <data name="WarningText_JoinTheAutoPartyDiscordHttpsDiscordGg" xml:space="preserve">
+    <value>3. Bergabunglah dengan Discord AutoParty -&gt; https://discord.gg/KyfyAzG6</value>
+  </data>
+  <data name="WarningText_WhenStartingMogtomeMakeSureYouStart" xml:space="preserve">
+    <value>4. Saat memulai MOGTOME, jalankan anggota yang bukan pemimpin party terlebih dahulu. Anda harus</value>
+  </data>
+  <data name="WarningText_ConfigureWHOThePartyLeaderIsBy" xml:space="preserve">
+    <value>menentukan SIAPA pemimpin party dengan mengeklik segarkan status pada pemimpin party.</value>
+  </data>
+  <data name="WarningText_IDidThisBecauseItsASeriously" xml:space="preserve">
+    <value>Saya membuat ini karena menentukan siapa pemimpin party sebenarnya merupakan teka-teki logika yang sangat menjengkelkan.</value>
+  </data>
+  <data name="WarningText_IHaveSomeCommentedOutAndRetired" xml:space="preserve">
+    <value>Saya punya beberapa metode lama yang dinonaktifkan, tetapi metode itu tidak andal.</value>
+  </data>
+  <data name="WarningText_ReadThisBeforeRunningMOGTOME" xml:space="preserve">
+    <value>Baca ini sebelum menjalankan MOGTOME</value>
+  </data>
+  <data name="WarningText_WarningV" xml:space="preserve">
+    <value>peringatan v{0}</value>
+  </data>
+  <data name="WarningText_OKIREADIT" xml:space="preserve">
+    <value>OK, SUDAH SAYA BACA</value>
+  </data>
+  <data name="Engine_HasNotBeenStartedSinceLoading" xml:space="preserve">
+    <value>Belum dimulai sejak dimuat.</value>
+  </data>
+  <data name="Engine_DutyStartupPendingAfterExperimentalOpener" xml:space="preserve">
+    <value>Startup duty menunggu setelah pembuka eksperimental: {0}</value>
+  </data>
+  <data name="Engine_Initializing" xml:space="preserve">
+    <value>Menginisialisasi...</value>
+  </data>
+  <data name="Engine_PreparingBossModSupport" xml:space="preserve">
+    <value>Menyiapkan dukungan BossMod...</value>
+  </data>
+  <data name="Engine_CheckingConflictingPlugins" xml:space="preserve">
+    <value>Memeriksa plugin yang bentrok...</value>
+  </data>
+  <data name="Engine_PreparingADS" xml:space="preserve">
+    <value>Menyiapkan ADS...</value>
+  </data>
+  <data name="Engine_PreparingAutoDuty" xml:space="preserve">
+    <value>Menyiapkan AutoDuty...</value>
+  </data>
+  <data name="Engine_ResumingInsideDuty" xml:space="preserve">
+    <value>Melanjutkan di dalam duty...</value>
+  </data>
+  <data name="Engine_RunningDuty" xml:space="preserve">
+    <value>Berjalan - Duty #{0}</value>
+  </data>
+  <data name="Engine_Stopping" xml:space="preserve">
+    <value>Menghentikan...</value>
+  </data>
+  <data name="Engine_Stopped" xml:space="preserve">
+    <value>Dihentikan: {0}</value>
+  </data>
+  <data name="Engine_InDuty" xml:space="preserve">
+    <value>Di dalam duty - #{0} ({1})</value>
+  </data>
+  <data name="Engine_SuspendedWaitingForLoginAndDutyContext" xml:space="preserve">
+    <value>Ditangguhkan - menunggu login dan konteks duty.</value>
+  </data>
+  <data name="Engine_DutyTransitionWaitingForConfirmedDutyContext" xml:space="preserve">
+    <value>Transisi duty - menunggu konteks duty terkonfirmasi...</value>
+  </data>
+  <data name="Engine_DutyPendingWaitingForMatchingSupportedTerritory" xml:space="preserve">
+    <value>Duty menunggu - menunggu identitas wilayah/CFC yang didukung dan cocok.</value>
+  </data>
+  <data name="Engine_EnteringDutyWaitingForReadyDutyContext" xml:space="preserve">
+    <value>Memasuki duty - menunggu konteks duty siap...</value>
+  </data>
+  <data name="Engine_EnteringDutyWaitingForTerritory" xml:space="preserve">
+    <value>Memasuki duty - menunggu wilayah...</value>
+  </data>
+  <data name="Engine_DutyPendingUnexpectedOrMissingTerritoryCFC" xml:space="preserve">
+    <value>Duty menunggu - wilayah/CFC tidak sesuai atau tidak ada ({0}); menunggu konteks duty yang didukung.</value>
+  </data>
+  <data name="Engine_OutsideDutyNext" xml:space="preserve">
+    <value>Di luar duty - Berikutnya: #{0}</value>
+  </data>
+  <data name="Engine_WaitingForLeader" xml:space="preserve">
+    <value>Menunggu pemimpin - #{0} ({1})</value>
+  </data>
+  <data name="Engine_WaitingForLeader2" xml:space="preserve">
+    <value>Menunggu pemimpin - #{0}</value>
+  </data>
+  <data name="Engine_DelayedRequeueInProgress" xml:space="preserve">
+    <value>Pendaftaran ulang tertunda sedang berlangsung...</value>
+  </data>
+  <data name="Engine_WaitingAfterLeaveDutyS" xml:space="preserve">
+    <value>Menunggu setelah meninggalkan duty ({0:F0}s)</value>
+  </data>
+  <data name="Engine_WaitingToStopS" xml:space="preserve">
+    <value>Menunggu untuk menghentikan {0} ({1:F0}s)</value>
+  </data>
+  <data name="Engine_Stopping2" xml:space="preserve">
+    <value>Menghentikan {0}...</value>
+  </data>
+  <data name="Engine_WaitingToQueueS" xml:space="preserve">
+    <value>Menunggu antrean ({0:F0}s)</value>
+  </data>
+  <data name="Engine_Queueing" xml:space="preserve">
+    <value>Mendaftarkan antrean...</value>
+  </data>
+  <data name="Engine_QueueingRegistered" xml:space="preserve">
+    <value>Mendaftarkan antrean: {0} (terdaftar, {1})</value>
+  </data>
+  <data name="Engine_QueueingRegistered2" xml:space="preserve">
+    <value>Mendaftarkan antrean: {0} (terdaftar)</value>
+  </data>
+  <data name="Engine_QueueingContentsFinderRetryCooldownS" xml:space="preserve">
+    <value>Mendaftarkan antrean: {0} (jeda percobaan ulang ContentsFinder {1:F0}s, {2})</value>
+  </data>
+  <data name="Engine_QueueingWaitingForQueueRegistrationS" xml:space="preserve">
+    <value>Mendaftarkan antrean: {0} (menunggu pendaftaran antrean {1:F0}/{2:F0}s, {3})</value>
+  </data>
+  <data name="Engine_QueueingWaitingForQueueRegistrationS2" xml:space="preserve">
+    <value>Mendaftarkan antrean: {0} (menunggu pendaftaran antrean {1:F0}/{2:F0}s)</value>
+  </data>
+  <data name="Engine_QueueingWaiting" xml:space="preserve">
+    <value>Mendaftarkan antrean: {0} (menunggu, {1})</value>
+  </data>
+  <data name="Engine_QueueingWaiting2" xml:space="preserve">
+    <value>Mendaftarkan antrean: {0} (menunggu...)</value>
+  </data>
+  <data name="Engine_LeaveBlocked" xml:space="preserve">
+    <value>{0} - keluar diblokir ({1})</value>
+  </data>
+  <data name="Engine_LeaveRequestedWaitingForZoneOutS" xml:space="preserve">
+    <value>Keluar diminta - menunggu pergantian zona ({0:F0}s)</value>
+  </data>
+  <data name="Engine_CombatPending" xml:space="preserve">
+    <value>Pertempuran menunggu: {0}.</value>
+  </data>
+  <data name="Engine_InDutyS" xml:space="preserve">
+    <value>Di dalam duty #{0} - {1:F0}s</value>
+  </data>
+  <data name="Engine_Repairing" xml:space="preserve">
+    <value>Memperbaiki...</value>
+  </data>
+  <data name="Engine_RepairDoneResuming" xml:space="preserve">
+    <value>Perbaikan selesai, melanjutkan</value>
+  </data>
+  <data name="Engine_RepairingWaitingForTelepotTownS" xml:space="preserve">
+    <value>Memperbaiki - menunggu TelepotTown ({0:F0}s)</value>
+  </data>
+  <data name="Engine_RepairingWaitingFor" xml:space="preserve">
+    <value>Memperbaiki - menunggu {0}</value>
+  </data>
+  <data name="Engine_ContentsFinderQueueCooldownS" xml:space="preserve">
+    <value>Jeda antrean ContentsFinder: {0} ({1:F0}s, {2})</value>
+  </data>
+  <data name="Engine_ContentsFinderQueueCooldownS2" xml:space="preserve">
+    <value>Jeda antrean ContentsFinder: {0} ({1:F0}s)</value>
+  </data>
+  <data name="Engine_Value" xml:space="preserve">
+    <value>{0}: {1} ({2} / {3})</value>
+  </data>
+  <data name="Engine_Value2" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="Engine_WaitingForPeopleVisible" xml:space="preserve">
+    <value>menunggu ukuran party {1}–4 (terlihat {0})</value>
+  </data>
+  <data name="Engine_WaitingForPartyMembersToLeaveDuty" xml:space="preserve">
+    <value>Menunggu anggota party meninggalkan duty.</value>
+  </data>
+  <data name="Engine_QueueRecoveryWaitingAfterS" xml:space="preserve">
+    <value>Pemulihan antrean: menunggu setelah {0} ({1:F0}s)</value>
+  </data>
+  <data name="Engine_QueueRecoveryAllowingRepairsS" xml:space="preserve">
+    <value>Pemulihan antrean: mengizinkan perbaikan ({0:F0}s)</value>
+  </data>
+  <data name="Engine_QueueRecoveryResumingDutyEntry" xml:space="preserve">
+    <value>Pemulihan antrean: melanjutkan masuk duty</value>
+  </data>
+  <data name="Engine_RepairRecoveryWaitingToRequeueS" xml:space="preserve">
+    <value>Pemulihan perbaikan: menunggu mendaftar ulang ({0:F0}s)</value>
+  </data>
+  <data name="Engine_RepairRecoveryRetryWaitingForLeader" xml:space="preserve">
+    <value>Percobaan pemulihan perbaikan {0}: menunggu pemimpin</value>
+  </data>
+  <data name="Engine_RepairRecoveryRestarting" xml:space="preserve">
+    <value>Pemulihan perbaikan: memulai ulang {0}</value>
+  </data>
+  <data name="Engine_RepairRecoveryWaitingForLeader" xml:space="preserve">
+    <value>Pemulihan perbaikan: menunggu pemimpin</value>
+  </data>
+  <data name="Engine_LeaveRequestedViaADSAttemptWaitingFor" xml:space="preserve">
+    <value>Keluar diminta melalui ADS (percobaan #{0}) - menunggu pergantian zona</value>
+  </data>
+  <data name="Engine_LeaveRequestedAttemptWaitingForZoneOut" xml:space="preserve">
+    <value>Keluar diminta (percobaan #{0}) - menunggu pergantian zona</value>
+  </data>
+  <data name="Engine_PluginUnloadedOrReloaded" xml:space="preserve">
+    <value>Plugin dibongkar atau dimuat ulang.</value>
+  </data>
+  <data name="Engine_RepairingBeforeStart" xml:space="preserve">
+    <value>Memperbaiki sebelum mulai...</value>
+  </data>
+  <data name="Engine_StopAfterNextSuccessfulClearAndConfirmed" xml:space="preserve">
+    <value>Berhenti setelah penyelesaian berikutnya yang berhasil dan keluar terkonfirmasi.</value>
+  </data>
+  <data name="Engine_InitializationFailed" xml:space="preserve">
+    <value>Inisialisasi gagal: {0}</value>
+  </data>
+  <data name="Engine_PraetoriumDailyLimitReached" xml:space="preserve">
+    <value>Batas harian Praetorium tercapai ({0}/{1}).</value>
+  </data>
+  <data name="Startup_WaitingForDutyReadiness" xml:space="preserve">
+    <value>Menunggu kesiapan duty.</value>
+  </data>
+  <data name="Startup_DutyStartupCancelled" xml:space="preserve">
+    <value>Startup duty dibatalkan.</value>
+  </data>
+  <data name="Startup_DutyStartupPending" xml:space="preserve">
+    <value>Startup duty menunggu: {0}.</value>
+  </data>
+  <data name="Startup_CombatRecoveryAfterDeathWaitingForContinuous" xml:space="preserve">
+    <value>pemulihan pertempuran setelah mati; menunggu kesiapan berkelanjutan</value>
+  </data>
+  <data name="Startup_WaitingForDuty" xml:space="preserve">
+    <value>menunggu duty</value>
+  </data>
+  <data name="Startup_ExperimentalOpenerActive" xml:space="preserve">
+    <value>pembuka eksperimental aktif</value>
+  </data>
+  <data name="Startup_WaitingForLiveDutyTerritoryCFCIdentity" xml:space="preserve">
+    <value>menunggu identitas wilayah/CFC duty aktif</value>
+  </data>
+  <data name="Startup_ADSIsNotLoaded" xml:space="preserve">
+    <value>ADS belum dimuat</value>
+  </data>
+  <data name="Startup_HasADSClearanceMWaitingForFour" xml:space="preserve">
+    <value>{0} memiliki izin ADS {1} (M{2}); menunggu dukungan M3 untuk empat pemain</value>
+  </data>
+  <data name="Startup_StartupInSOfContinuousReadiness" xml:space="preserve">
+    <value>mulai setelah {0:F1}s kesiapan berkelanjutan</value>
+  </data>
+  <data name="Startup_WaitingForDutyStartSeam" xml:space="preserve">
+    <value>menunggu titik awal duty</value>
+  </data>
+  <data name="Startup_WaitingForReadableADSOwnershipConfirmation" xml:space="preserve">
+    <value>menunggu konfirmasi kepemilikan ADS yang dapat dibaca</value>
+  </data>
+  <data name="Startup_WaitingSForADSOwnershipConfirmation" xml:space="preserve">
+    <value>menunggu {0:F1}s untuk konfirmasi kepemilikan ADS</value>
+  </data>
+  <data name="Startup_HandoffRetryBackoffUntil" xml:space="preserve">
+    <value>jeda percobaan ulang penyerahan hingga {0:HH:mm:ss}</value>
+  </data>
+  <data name="Startup_AdStartWasNotHandled" xml:space="preserve">
+    <value>/ad start tidak ditangani</value>
+  </data>
+  <data name="Startup_ADSStartDutyFromInsideAccepted" xml:space="preserve">
+    <value>ADS.StartDutyFromInside diterima</value>
+  </data>
+  <data name="Startup_ADSStartDutyFromInsideRejectedCommandFallbackSuppressed" xml:space="preserve">
+    <value>ADS.StartDutyFromInside ditolak; perintah cadangan dinonaktifkan</value>
+  </data>
+  <data name="Startup_TypedEndpointUnavailableSentAdsInsideFallback" xml:space="preserve">
+    <value>endpoint bertipe tidak tersedia; perintah cadangan /ads inside dikirim</value>
+  </data>
+  <data name="Startup_TypedEndpointUnavailableAndAdsInsideFallback" xml:space="preserve">
+    <value>endpoint bertipe tidak tersedia dan perintah cadangan /ads inside gagal</value>
+  </data>
+  <data name="Startup_DutyStartupFailed" xml:space="preserve">
+    <value>startup duty gagal: {0}</value>
+  </data>
+  <data name="Startup_CombatRecoveryBackoffUntil" xml:space="preserve">
+    <value>jeda pemulihan pertempuran hingga {0:HH:mm:ss}</value>
+  </data>
+  <data name="Startup_CombatActivationFailedRetryingAfterSAnd" xml:space="preserve">
+    <value>aktivasi pertempuran gagal: {0}; mencoba lagi setelah 5s dan kesiapan berkelanjutan</value>
+  </data>
+  <data name="Startup_WaitingForAuthoritativeOwnership" xml:space="preserve">
+    <value>{0}; menunggu kepemilikan otoritatif</value>
+  </data>
+  <data name="Startup_RestartingReadinessDelayWithSRetryBackoff" xml:space="preserve">
+    <value>{0}; memulai ulang penundaan kesiapan dengan jeda percobaan ulang 5s</value>
+  </data>
+  <data name="Automation_AutoDutyPreparationFailed" xml:space="preserve">
+    <value>Persiapan AutoDuty gagal: {0}</value>
+  </data>
+  <data name="Automation_QueueLeader" xml:space="preserve">
+    <value>Pemimpin antrean</value>
+  </data>
+  <data name="Automation_FollowerWaitingOnLeader" xml:space="preserve">
+    <value>Pengikut menunggu pemimpin</value>
+  </data>
+  <data name="Automation_ADS" xml:space="preserve">
+    <value>ADS</value>
+  </data>
+  <data name="Automation_RepairWaiting" xml:space="preserve">
+    <value>menunggu-perbaikan</value>
+  </data>
+  <data name="Automation_RepairHandoff" xml:space="preserve">
+    <value>penyerahan-perbaikan</value>
+  </data>
+  <data name="Automation_LeaveRequestedWaitingForZoneOut" xml:space="preserve">
+    <value>keluar diminta, menunggu pergantian zona</value>
+  </data>
+  <data name="Automation_LeaveRequested" xml:space="preserve">
+    <value>keluar diminta</value>
+  </data>
+  <data name="Automation_ADSInsideOwned" xml:space="preserve">
+    <value>ADS memiliki kendali di dalam</value>
+  </data>
+  <data name="Automation_ADSOutsideOwned" xml:space="preserve">
+    <value>ADS memiliki kendali di luar</value>
+  </data>
+  <data name="Automation_LeaderReady" xml:space="preserve">
+    <value>pemimpin-siap</value>
+  </data>
+  <data name="Automation_OutsideArmed" xml:space="preserve">
+    <value>siaga-di-luar</value>
+  </data>
+  <data name="Automation_WaitingForEntry" xml:space="preserve">
+    <value>menunggu-masuk</value>
+  </data>
+  <data name="Automation_InsideObserved" xml:space="preserve">
+    <value>teramati-di-dalam</value>
+  </data>
+  <data name="Automation_Leaving" xml:space="preserve">
+    <value>keluar</value>
+  </data>
+  <data name="Automation_Recovered" xml:space="preserve">
+    <value>dipulihkan</value>
+  </data>
+  <data name="Automation_Idle" xml:space="preserve">
+    <value>siaga</value>
+  </data>
+  <data name="Automation_ADSDutyBackendInnReturn" xml:space="preserve">
+    <value>Backend duty ADS + kembali ke penginapan</value>
+  </data>
+  <data name="Automation_ADSMissing" xml:space="preserve">
+    <value>ADS tidak tersedia</value>
+  </data>
+  <data name="Automation_ADSInnReady" xml:space="preserve">
+    <value>Penginapan ADS siap</value>
+  </data>
+  <data name="Automation_Value" xml:space="preserve">
+    <value>{0} / {1}</value>
+  </data>
+  <data name="Engine_ManualStop" xml:space="preserve">
+    <value>Berhenti manual.</value>
+  </data>
+  <data name="Engine_CleanupFailed" xml:space="preserve">
+    <value>Pembersihan {0} {1} gagal: {2}</value>
+  </data>
+  <data name="Role_Tank" xml:space="preserve">
+    <value>Tank</value>
+  </data>
+  <data name="Role_Healer" xml:space="preserve">
+    <value>Healer</value>
+  </data>
+  <data name="Role_Dps" xml:space="preserve">
+    <value>DPS</value>
+  </data>
+  <data name="Rotation_CouldNotDisableCombatComponentsFromThe" xml:space="preserve">
+    <value>Komponen pertempuran dari run sebelumnya tidak dapat dinonaktifkan.</value>
+  </data>
+  <data name="Rotation_BothBossModVariantsAreStillLoadedConflict" xml:space="preserve">
+    <value>Kedua varian BossMod masih dimuat; pembersihan konflik harus selesai sebelum persiapan preset.</value>
+  </data>
+  <data name="Rotation_BMROrVBM" xml:space="preserve">
+    <value>BMR atau VBM</value>
+  </data>
+  <data name="Rotation_RequiresLoadedBossModSupport" xml:space="preserve">
+    <value>{0} memerlukan dukungan BossMod yang dimuat ({1}).</value>
+  </data>
+  <data name="Rotation_BossModPackagedPresetInstallationFailedCheckThat" xml:space="preserve">
+    <value>Instalasi preset paket BossMod gagal; pastikan IPC preset siap dan keenam berkas preset tersedia.</value>
+  </data>
+  <data name="Rotation_CombatActivationWasRequestedAfterThisDuty" xml:space="preserve">
+    <value>Aktivasi pertempuran diminta setelah duty ini berakhir ({0}).</value>
+  </data>
+  <data name="Rotation_CombatActivationFailed" xml:space="preserve">
+    <value>Aktivasi pertempuran gagal: {0}</value>
+  </data>
+  <data name="Rotation_CouldNotDisableAllMogTomeCombatComponents" xml:space="preserve">
+    <value>Tidak dapat menonaktifkan semua komponen pertempuran MogTome ({0}); lihat perintah yang gagal di log.</value>
+  </data>
+  <data name="Rotation_RSRHealthRecoveryFailed" xml:space="preserve">
+    <value>Pemulihan kesehatan RSR gagal ({0}).</value>
+  </data>
+  <data name="Rotation_BossModAvailabilityOrSelectionChangedAfterStartup" xml:space="preserve">
+    <value>Ketersediaan atau pilihan BossMod berubah setelah startup. Hentikan lalu mulai MogTome untuk menyiapkannya kembali.</value>
+  </data>
+  <data name="Rotation_PresetPreparationFailedCombatWasNotEnabled" xml:space="preserve">
+    <value>Persiapan preset {0} gagal; pertempuran tidak diaktifkan.</value>
+  </data>
+  <data name="Rotation_RSRAutoIPCAndRotationAutoBoth" xml:space="preserve">
+    <value>RSR Auto IPC dan /rotation auto sama-sama gagal.</value>
+  </data>
+  <data name="Rotation_CouldNotEnableUsing" xml:space="preserve">
+    <value>Tidak dapat mengaktifkan {0} menggunakan {1}.</value>
+  </data>
+  <data name="Path_NotAttempted" xml:space="preserve">
+    <value>Belum dicoba</value>
+  </data>
+  <data name="Path_FAILEDAutoDutyPluginNotFoundOrNot" xml:space="preserve">
+    <value>GAGAL: Plugin AutoDuty tidak ditemukan atau belum dimuat</value>
+  </data>
+  <data name="Path_OKTerritoryPathSelectionSavedAndVerified" xml:space="preserve">
+    <value>OK: Territory={0}, Path={1} ({2}); pilihan disimpan dan diverifikasi</value>
+  </data>
+  <data name="Path_FAILED" xml:space="preserve">
+    <value>GAGAL: {0}</value>
+  </data>
+  <data name="Conflict_StartupWasStoppedBeforeBossModCleanup" xml:space="preserve">
+    <value>Startup dihentikan sebelum pembersihan BossMod.</value>
+  </data>
+  <data name="Conflict_StartupCancelledDuringVBMCleanup" xml:space="preserve">
+    <value>Startup dibatalkan selama pembersihan VBM.</value>
+  </data>
+  <data name="Conflict_VBMCouldNotBeDisabledWhileBoth" xml:space="preserve">
+    <value>VBM tidak dapat dinonaktifkan saat kedua varian BossMod dimuat.</value>
+  </data>
+  <data name="Conflict_StartupCancelledDuringBMRCleanup" xml:space="preserve">
+    <value>Startup dibatalkan selama pembersihan BMR.</value>
+  </data>
+  <data name="Conflict_BMRCouldNotBeTemporarilyDisabledTo" xml:space="preserve">
+    <value>BMR tidak dapat dinonaktifkan sementara untuk memulihkan registrasi IPC bersama.</value>
+  </data>
+  <data name="Conflict_TheNativeTemporaryBMREnableCommandWas" xml:space="preserve">
+    <value>Perintah bawaan untuk mengaktifkan BMR sementara tidak ditangani.</value>
+  </data>
+  <data name="Conflict_StartupCancelledDuringBMRReadiness" xml:space="preserve">
+    <value>Startup dibatalkan selama persiapan BMR.</value>
+  </data>
+  <data name="Conflict_BMRDidNotBecomeReadyAfterIts" xml:space="preserve">
+    <value>BMR belum siap setelah dimuat ulang, atau VBM dimuat lagi.</value>
+  </data>
+  <data name="Conflict_WasEnabledAndHasBeenAutoDisabled" xml:space="preserve">
+    <value>{0} aktif dan telah dinonaktifkan otomatis untuk MOGTOME.</value>
+  </data>
+  <data name="Conflict_MOGTOMEKeptRunningClickTheWarningWindow" xml:space="preserve">
+    <value>{0}
+
+MOGTOME tetap berjalan. Klik jendela peringatan sekali untuk menutupnya, atau gunakan tombol nonaktifkan di sana jika plugin kembali.</value>
+  </data>
+  <data name="Conflict_IsStillEnabledMOGTOMEWillKeepRunning" xml:space="preserve">
+    <value>{0} masih aktif. MOGTOME akan tetap berjalan, tetapi Anda perlu menonaktifkannya dengan {1}.</value>
+  </data>
+  <data name="Conflict_UseTheWarningWindowButtonToTry" xml:space="preserve">
+    <value>{0}
+
+Gunakan tombol jendela peringatan untuk mencoba menonaktifkannya lagi, atau tutup peringatan dan lanjutkan.</value>
+  </data>
+  <data name="Conflict_WasEnabledAndHasBeenAutoDisabled2" xml:space="preserve">
+    <value>{0} aktif dan telah dinonaktifkan otomatis untuk mode ADS.</value>
+  </data>
+  <data name="Conflict_IsStillEnabledADSModeExpects" xml:space="preserve">
+    <value>{0} masih aktif. Mode ADS mengharapkan {1}.</value>
+  </data>
+  <data name="Blocker_WaitingForMatchingDutyIdentity" xml:space="preserve">
+    <value>menunggu identitas duty yang cocok</value>
+  </data>
+  <data name="Blocker_Loading" xml:space="preserve">
+    <value>memuat</value>
+  </data>
+  <data name="Blocker_Combat" xml:space="preserve">
+    <value>pertempuran</value>
+  </data>
+  <data name="Blocker_Cutscene" xml:space="preserve">
+    <value>cutscene</value>
+  </data>
+  <data name="Blocker_OccupiedTransition" xml:space="preserve">
+    <value>transisi sibuk</value>
+  </data>
+  <data name="Blocker_WaitingForLogin" xml:space="preserve">
+    <value>menunggu login</value>
+  </data>
+  <data name="Blocker_WaitingForLocalPlayer" xml:space="preserve">
+    <value>menunggu pemain lokal</value>
+  </data>
+  <data name="Blocker_WaitingForLocalPlayerJob" xml:space="preserve">
+    <value>menunggu job pemain lokal</value>
+  </data>
+  <data name="Blocker_WaitingForUnconsciousStateToClear" xml:space="preserve">
+    <value>menunggu status tidak sadar berakhir</value>
+  </data>
+  <data name="Blocker_WaitingForLocalPlayerToBeAlive" xml:space="preserve">
+    <value>menunggu pemain lokal hidup</value>
+  </data>
+  <data name="Blocker_WaitingForAreaTransitionToFinish" xml:space="preserve">
+    <value>menunggu transisi area selesai</value>
+  </data>
+  <data name="Blocker_WaitingForCutsceneToFinish" xml:space="preserve">
+    <value>menunggu cutscene selesai</value>
+  </data>
+  <data name="Blocker_WaitingForCutsceneEventToFinish" xml:space="preserve">
+    <value>menunggu event cutscene selesai</value>
+  </data>
+  <data name="Window_MOGTOMEStatus" xml:space="preserve">
+    <value>MOGTOME - Status</value>
+  </data>
+  <data name="Window_MOGTOMEConfiguration" xml:space="preserve">
+    <value>MOGTOME - Konfigurasi</value>
+  </data>
+  <data name="Window_MOGTOMEStatistics" xml:space="preserve">
+    <value>MOGTOME - Statistik</value>
+  </data>
+  <data name="Window_MOGTOMEWarningText" xml:space="preserve">
+    <value>Teks peringatan MOGTOME</value>
+  </data>
+  <data name="Config_CombatProvider2" xml:space="preserve">
+    <value>Penyedia pertempuran: {0}</value>
+  </data>
+  <data name="Config_NotConfigured" xml:space="preserve">
+    <value>belum dikonfigurasi</value>
+  </data>
+  <data name="Config_OptionalFood" xml:space="preserve">
+    <value>Makanan opsional: {0}</value>
+  </data>
+  <data name="Config_HQ" xml:space="preserve">
+    <value>[HQ]</value>
+  </data>
+  <data name="Config_NQ" xml:space="preserve">
+    <value>[NQ]</value>
+  </data>
+  <data name="Config_SelectedID" xml:space="preserve">
+    <value>  Dipilih: {0} {1} (ID: {2})</value>
+  </data>
+  <data name="Main_ForceAutoDutyToSelectModeLoopingDuty" xml:space="preserve">
+    <value>Paksa AutoDuty memilih:
+Mode: Looping
+Duty Mode: Regular
+Duty: The Praetorium (1044)
+Path: {0}
+
+Mencatat struktur AutoDuty lengkap ke log Dalamud.</value>
+  </data>
+  <data name="Main_TestPathIndexDiscoveryMethodsComparesDictionaryPaths" xml:space="preserve">
+    <value>Uji metode penemuan indeks jalur.
+Bandingkan DictionaryPaths dengan PathSelectionsByPath.
+Hasil dicatat ke log Dalamud.</value>
+  </data>
+  <data name="Main_DumpAutoDutyConfigurationStructureToDalamudLog" xml:space="preserve">
+    <value>Catat struktur konfigurasi AutoDuty ke log Dalamud.</value>
+  </data>
+  <data name="Plugin_ScrollDownToTheDumpsterFireChannel" xml:space="preserve">
+    <value>Gulir ke saluran &quot;The Dumpster Fire&quot; untuk masalah dan saran terkait plugin.</value>
+  </data>
+  <data name="Plugin_CheckPartyLeaderSettingsIfTheDuty" xml:space="preserve">
+    <value>Periksa pengaturan pemimpin party jika duty tidak dimulai</value>
+  </data>
+  <data name="Plugin_ADSDidNotHandleAdsEnterinnEnsure" xml:space="preserve">
+    <value>ADS tidak menangani /ads enterinn. Pastikan ADS terpasang dan dimuat.</value>
+  </data>
+  <data name="Warning_SharedMOGTOMEConfigPath" xml:space="preserve">
+    <value>Jalur konfigurasi MOGTOME bersama</value>
+  </data>
+  <data name="Warning_AnotherClientHoldsMOGTOMESConfigDirectory" xml:space="preserve">
+    <value>Klien lain memegang kunci direktori konfigurasi MOGTOME. Menjalankan beberapa klien dengan jalur konfigurasi yang sama dapat menimpa pengaturan akun. Jumlah proses game yang cocok: {0}.</value>
+  </data>
+  <data name="Warning_CancelStart" xml:space="preserve">
+    <value>Batalkan mulai</value>
+  </data>
+  <data name="Warning_AcknowledgeAndStart" xml:space="preserve">
+    <value>Pahami dan mulai</value>
+  </data>
+  <data name="Warning_TwistOfFayteConflict" xml:space="preserve">
+    <value>Konflik Twist of Fayte</value>
+  </data>
+  <data name="Warning_AutoDutyConflict" xml:space="preserve">
+    <value>Konflik AutoDuty</value>
+  </data>
+  <data name="Warning_PluginConflict" xml:space="preserve">
+    <value>Konflik plugin</value>
+  </data>
+  <data name="Warning_DisableTwistOfFayte" xml:space="preserve">
+    <value>Nonaktifkan TwistOfFayte</value>
+  </data>
+  <data name="Warning_DisableAutoDuty" xml:space="preserve">
+    <value>Nonaktifkan AutoDuty</value>
+  </data>
+  <data name="Chat_MOGTOMEStoppedAndClearedPendingStartAnd" xml:space="preserve">
+    <value>[MOGTOME] Dihentikan dan status mulai tertunda serta berhenti setelah berikutnya dihapus.</value>
+  </data>
+  <data name="Chat_MOGTOMEAlreadyStopped" xml:space="preserve">
+    <value>[MOGTOME] Sudah berhenti: {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEEngineIsStillInitializing" xml:space="preserve">
+    <value>[MOGTOME] Engine masih menginisialisasi.</value>
+  </data>
+  <data name="Chat_MOGTOMEStopAfterNextSuccessfulRunArmed" xml:space="preserve">
+    <value>[MOGTOME] Berhenti setelah run berhasil berikutnya diaktifkan.</value>
+  </data>
+  <data name="Chat_MOGTOMEStopAfterNextSuccessfulRunCancelled" xml:space="preserve">
+    <value>[MOGTOME] Berhenti setelah run berhasil berikutnya dibatalkan.</value>
+  </data>
+  <data name="Chat_MOGTOMEMogInnIsOnlyAvailableWhile" xml:space="preserve">
+    <value>[MOGTOME] /mog inn hanya tersedia saat engine berhenti atau sedang memperbaiki.</value>
+  </data>
+  <data name="Chat_MOGTOMEStateDuty" xml:space="preserve">
+    <value>[MOGTOME] Status: {0} | Duty #{1} | {2}</value>
+  </data>
+  <data name="Chat_MOGTOMEDebugMode" xml:space="preserve">
+    <value>[MOGTOME] Mode debug {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEDebugCheckboxNowVisibleInStats" xml:space="preserve">
+    <value>[MOGTOME] Kotak centang debug kini terlihat di jendela statistik</value>
+  </data>
+  <data name="Chat_MOGTOME" xml:space="preserve">
+    <value>[MOGTOME] {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEFailedToSendAdsEnterinnCheck" xml:space="preserve">
+    <value>[MOGTOME] Gagal mengirim /ads enterinn. Periksa log Dalamud.</value>
+  </data>
+  <data name="Chat_MOGTOMEQueuedMainConfigStatsWindowReset" xml:space="preserve">
+    <value>[MOGTOME] Reset jendela utama/konfigurasi/statistik ke 1,1 dijadwalkan.</value>
+  </data>
+  <data name="Chat_MOGTOMEQueuedRandomVisibleJumpsForMain" xml:space="preserve">
+    <value>[MOGTOME] Perpindahan acak yang terlihat untuk jendela utama/konfigurasi/statistik dijadwalkan.</value>
+  </data>
+  <data name="Chat_MOGTOMEEngineIsStillInitializingTryAgain" xml:space="preserve">
+    <value>[MOGTOME] Engine masih menginisialisasi. Coba lagi sebentar.</value>
+  </data>
+  <data name="Chat_MOGTOMEAlreadyRunning" xml:space="preserve">
+    <value>[MOGTOME] Sudah berjalan</value>
+  </data>
+  <data name="Chat_MOGTOMEStartAlreadyQueued" xml:space="preserve">
+    <value>[MOGTOME] Mulai sudah dijadwalkan.</value>
+  </data>
+  <data name="Chat_MOGTOMEStartQueued" xml:space="preserve">
+    <value>[MOGTOME] Mulai dijadwalkan.</value>
+  </data>
+  <data name="Chat_MOGTOMEWarningXASlaveDidNotHandle" xml:space="preserve">
+    <value>[MOGTOME] Peringatan: XA Slave tidak menangani {0}; melanjutkan startup.</value>
+  </data>
+  <data name="Chat_MOGTOMEWarningFailedToSendContinuingStartup" xml:space="preserve">
+    <value>[MOGTOME] Peringatan: gagal mengirim {0}; melanjutkan startup.</value>
+  </data>
+  <data name="DutyAutomationService_AIDutySolverADSExperimentalModeIs" xml:space="preserve">
+    <value>Mode eksperimental AI Duty Solver (ADS) aktif, tetapi ADS belum dimuat.</value>
+  </data>
+  <data name="DutyAutomationService_AutoDutyIsStillInitializingOrFaultedRetry" xml:space="preserve">
+    <value>AutoDuty masih menginisialisasi atau bermasalah; coba MOGTOME lagi setelah login stabil</value>
+  </data>
+  <data name="DutyAutomationService_BundledPraetoriumPathsCouldNotBeInstalled" xml:space="preserve">
+    <value>Jalur Praetorium bawaan tidak dapat dipasang ke AutoDuty.</value>
+  </data>
+  <data name="DutyAutomationService_ADSDidNotHandleAdsEnterinnAfter" xml:space="preserve">
+    <value>ADS tidak menangani /ads enterinn setelah perbaikan. Pastikan ADS terpasang dan dimuat.</value>
+  </data>
+  <data name="Chat_MOGTOMEAutoDutyPreparationFailed" xml:space="preserve">
+    <value>[MOGTOME] Persiapan AutoDuty gagal: {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEPraetoriumCallbackTest" xml:space="preserve">
+    <value>[MOGTOME] Uji callback Praetorium: {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEMissingOptionalUnlocks" xml:space="preserve">
+    <value>[MOGTOME] Pembukaan opsional yang belum tersedia: {0}</value>
+  </data>
+  <data name="MogtomeEngine_CombatCleanupFailedAfterDutyExitContinuing" xml:space="preserve">
+    <value>Pembersihan pertempuran gagal setelah keluar duty; melanjutkan.</value>
+  </data>
+  <data name="MogtomeEngine_ManualPartyRefreshSkippedInsideDutyUse" xml:space="preserve">
+    <value>Penyegaran party manual dilewati di dalam duty. Gunakan Segarkan status party hanya di luar duty setelah semua anggota keluar zona dan terlihat.</value>
+  </data>
+  <data name="MogtomeEngine_NonLeader" xml:space="preserve">
+    <value>bukan pemimpin</value>
+  </data>
+  <data name="MogtomeEngine_ManualPartyRefreshCouldNotDetermineLeader" xml:space="preserve">
+    <value>Penyegaran party manual tidak dapat menentukan pemimpin dari daftar party sedunia saat ini. Mempertahankan peran {0}.</value>
+  </data>
+  <data name="Chat_MOGTOMEStopAfterNextCompletedStoppingBefore" xml:space="preserve">
+    <value>[MOGTOME] Berhenti setelah berikutnya selesai. Menghentikan sebelum mendaftar ulang.</value>
+  </data>
+  <data name="Chat_MOGTOMEAlreadyInsideInnTerritory" xml:space="preserve">
+    <value>[MOGTOME] Sudah berada di wilayah penginapan: {0}.</value>
+  </data>
+  <data name="Chat_MOGTOMENoInnkeeperFoundWithinYMog" xml:space="preserve">
+    <value>[MOGTOME] Tidak ditemukan penjaga penginapan dalam {0:F0}y. /mog inn tidak melakukan apa pun.</value>
+  </data>
+  <data name="Chat_MOGTOMEMogInnCancelled" xml:space="preserve">
+    <value>[MOGTOME] /mog inn dibatalkan: {0}</value>
+  </data>
+  <data name="Warning_Title" xml:space="preserve">
+    <value>Peringatan MOGTOME</value>
+  </data>
+  <data name="Warning_Dismiss" xml:space="preserve">
+    <value>Tutup</value>
+  </data>
+  <data name="Language_Label" xml:space="preserve">
+    <value>Bahasa antarmuka</value>
+  </data>
+  <data name="Language_WaitForProfile" xml:space="preserve">
+    <value>Menggunakan bahasa klien game hingga profil tersedia.</value>
+  </data>
+  <data name="Config_Potion" xml:space="preserve">
+    <value>Potion</value>
+  </data>
+  <data name="Chat_MessageAndReason" xml:space="preserve">
+    <value>[MOGTOME] {0} {1}</value>
+  </data>
+  <data name="EngineState_Idle" xml:space="preserve">
+    <value>Siaga</value>
+  </data>
+  <data name="EngineState_Initializing" xml:space="preserve">
+    <value>Menginisialisasi</value>
+  </data>
+  <data name="EngineState_WaitingOutsideDuty" xml:space="preserve">
+    <value>Menunggu di luar duty</value>
+  </data>
+  <data name="EngineState_Queueing" xml:space="preserve">
+    <value>Mendaftarkan antrean</value>
+  </data>
+  <data name="EngineState_InDuty" xml:space="preserve">
+    <value>Di dalam duty</value>
+  </data>
+  <data name="EngineState_RepairingOutside" xml:space="preserve">
+    <value>Memperbaiki di luar</value>
+  </data>
+  <data name="EngineState_Stopping" xml:space="preserve">
+    <value>Menghentikan</value>
+  </data>
+  <data name="EngineState_Stopped" xml:space="preserve">
+    <value>Dihentikan</value>
+  </data>
+  <data name="CombatProvider_Bmr" xml:space="preserve">
+    <value>BMR</value>
+  </data>
+  <data name="CombatProvider_Vbm" xml:space="preserve">
+    <value>VBM</value>
+  </data>
+  <data name="CombatProvider_Rsr" xml:space="preserve">
+    <value>RSR</value>
+  </data>
+  <data name="CombatProvider_Wrath" xml:space="preserve">
+    <value>Wrath Combo</value>
+  </data>
+  <data name="Inn_InteractingWithInnkeeper" xml:space="preserve">
+    <value>Berinteraksi dengan penjaga penginapan {0}</value>
+  </data>
+  <data name="Inn_MovingToInnkeeper" xml:space="preserve">
+    <value>Bergerak menuju penjaga penginapan {0}</value>
+  </data>
+  <data name="Inn_MOGTOMEMogInnRequiresALoggedIn" xml:space="preserve">
+    <value>[MOGTOME] /mog inn memerlukan karakter yang sudah masuk.</value>
+  </data>
+  <data name="Inn_EnteredInnTerritorySuccessfully" xml:space="preserve">
+    <value>Berhasil memasuki wilayah penginapan.</value>
+  </data>
+  <data name="Inn_TimedOutWhileTryingToEnterThe" xml:space="preserve">
+    <value>Waktu habis saat mencoba memasuki penginapan.</value>
+  </data>
+  <data name="Inn_InnEntryFailed" xml:space="preserve">
+    <value>Gagal memasuki penginapan: {0}</value>
+  </data>
+  <data name="Inn_WaitingForInnZoneTransition" xml:space="preserve">
+    <value>Menunggu transisi zona penginapan</value>
+  </data>
+  <data name="Inn_InnkeeperIsNoLongerNearby" xml:space="preserve">
+    <value>Penjaga penginapan {0} tidak lagi berada di dekat.</value>
+  </data>
+  <data name="Inn_InteractingWith" xml:space="preserve">
+    <value>Berinteraksi dengan {0}</value>
+  </data>
+  <data name="Inn_DriftedTooFarAwayFromWhileWaiting" xml:space="preserve">
+    <value>Terlalu jauh dari {0} saat menunggu interaksi.</value>
+  </data>
+  <data name="Inn_RepositioningNear" xml:space="preserve">
+    <value>Mengubah posisi di dekat {0}</value>
+  </data>
+  <data name="Inn_Retrying" xml:space="preserve">
+    <value>Mencoba lagi {0}</value>
+  </data>
+  <data name="Time_Calculating" xml:space="preserve">
+    <value>Menghitung...</value>
+  </data>
+  <data name="Time_Unknown" xml:space="preserve">
+    <value>Tidak diketahui</value>
+  </data>
+  <data name="Time_DH" xml:space="preserve">
+    <value>{0}h {1}j</value>
+  </data>
+  <data name="Time_HM" xml:space="preserve">
+    <value>{0}j {1}m</value>
+  </data>
+  <data name="Time_MS" xml:space="preserve">
+    <value>{0}m {1}d</value>
+  </data>
+  <data name="Engine_DutyComplete" xml:space="preserve">
+    <value>Duty selesai</value>
+  </data>
+  <data name="Engine_BailoutPending" xml:space="preserve">
+    <value>Penghentian darurat menunggu</value>
+  </data>
+  <data name="Config_CombatRotation" xml:space="preserve">
+    <value>Rotasi pertempuran</value>
+  </data>
+  <data name="Config_PotOnBoss" xml:space="preserve">
+    <value>Gunakan potion pada {0}</value>
+  </data>
+  <data name="RepairBlocker_DutyState" xml:space="preserve">
+    <value>status duty</value>
+  </data>
+  <data name="RepairBlocker_ZoneTransition" xml:space="preserve">
+    <value>transisi zona</value>
+  </data>
+  <data name="RepairBlocker_QueueRegistration" xml:space="preserve">
+    <value>pendaftaran antrean</value>
+  </data>
+  <data name="RepairBlocker_DutyConfirmation" xml:space="preserve">
+    <value>popup konfirmasi duty</value>
+  </data>
+  <data name="RepairBlocker_MinimizedDutyConfirmation" xml:space="preserve">
+    <value>popup konfirmasi duty diminimalkan</value>
+  </data>
+  <data name="RepairBlocker_CancelDutyConfirmation" xml:space="preserve">
+    <value>urutan pembatalan konfirmasi duty</value>
+  </data>
+  <data name="RepairBlocker_YesNoDialog" xml:space="preserve">
+    <value>dialog SelectYesno</value>
+  </data>
+  <data name="RepairBlocker_Cutscene" xml:space="preserve">
+    <value>cutscene</value>
+  </data>
+  <data name="RepairBlocker_Occupied" xml:space="preserve">
+    <value>transisi sibuk</value>
+  </data>
+  <data name="Plugin_CommandMainHelp" xml:space="preserve">
+    <value>Buka jendela utama MOGTOME.</value>
+  </data>
+  <data name="Plugin_CommandAliasHelp" xml:space="preserve">
+    <value>MOGTOME: /mog [start|stop|stopnext|inn|config|status|debug|ws|j] atau /mog untuk membuka UI.</value>
+  </data>
+  <data name="Ads_Empty" xml:space="preserve">
+    <value>ADS.GetStatusJson mengembalikan payload kosong</value>
+  </data>
+  <data name="Ads_Inactive" xml:space="preserve">
+    <value>Status ADS tidak menunjukkan duty instans aktif</value>
+  </data>
+  <data name="Ads_NoCatalog" xml:space="preserve">
+    <value>Duty ADS saat ini tidak memiliki metadata katalog</value>
+  </data>
+  <data name="Ads_NoName" xml:space="preserve">
+    <value>Baris katalog duty ADS saat ini tidak memiliki nama duty</value>
+  </data>
+  <data name="Ads_NoTerritory" xml:space="preserve">
+    <value>Baris katalog duty ADS saat ini tidak memiliki identitas wilayah</value>
+  </data>
+  <data name="Ads_NoCfc" xml:space="preserve">
+    <value>Baris katalog duty ADS saat ini tidak memiliki identitas CFC</value>
+  </data>
+  <data name="Ads_Category" xml:space="preserve">
+    <value>Baris katalog duty ADS saat ini memiliki kategori tidak didukung '{0}'</value>
+  </data>
+  <data name="Ads_Support" xml:space="preserve">
+    <value>Baris katalog duty ADS saat ini memiliki tingkat dukungan tidak didukung '{0}'</value>
+  </data>
+  <data name="Ads_Clearance" xml:space="preserve">
+    <value>Baris katalog duty ADS saat ini memiliki status izin tidak didukung '{0}'</value>
+  </data>
+  <data name="Ads_InvalidJson" xml:space="preserve">
+    <value>ADS.GetStatusJson menghasilkan JSON tidak valid: {0}</value>
+  </data>
+  <data name="Ads_Unvalidated" xml:space="preserve">
+    <value>Tidak ada snapshot duty ADS saat ini yang tervalidasi.</value>
+  </data>
+  <data name="Ads_Unloaded" xml:space="preserve">
+    <value>ADS dibongkar.</value>
+  </data>
+  <data name="Ads_Outside" xml:space="preserve">
+    <value>Klien aktif berada di luar duty instans.</value>
+  </data>
+  <data name="Ads_NoLiveIdentity" xml:space="preserve">
+    <value>GameMain tidak menyediakan identitas wilayah duty aktif.</value>
+  </data>
+  <data name="Ads_Changed" xml:space="preserve">
+    <value>Identitas duty aktif berubah dari wilayah/CFC {0}/{1} menjadi {2}/{3}.</value>
+  </data>
+  <data name="Ads_Mismatch" xml:space="preserve">
+    <value>Identitas duty ADS saat ini {0}/{1} tidak cocok dengan identitas GameMain aktif {2}/{3}.</value>
+  </data>
+  <data name="Ads_Validated" xml:space="preserve">
+    <value>Snapshot duty ADS saat ini tervalidasi untuk wilayah/CFC {0}/{1}.</value>
+  </data>
+  <data name="Ads_Unavailable" xml:space="preserve">
+    <value>ADS.GetStatusJson tidak tersedia: {0}</value>
+  </data>
+  <data name="Ads_Retained" xml:space="preserve">
+    <value>ADS.GetStatusJson tidak tersedia; mempertahankan snapshot duty saat ini yang tervalidasi untuk identitas aktif yang sama: {0}</value>
+  </data>
+  <data name="Opener_Timeout" xml:space="preserve">
+    <value>waktu eksperimen habis setelah 10 detik</value>
+  </data>
+  <data name="Opener_NoTarget" xml:space="preserve">
+    <value>target kelompok pembuka tidak tersedia</value>
+  </data>
+  <data name="Opener_NoArea" xml:space="preserve">
+    <value>aksi area {0} tidak tersedia</value>
+  </data>
+  <data name="Opener_NoInvulnerability" xml:space="preserve">
+    <value>kekebalan {0} tidak tersedia</value>
+  </data>
+  <data name="Opener_NoTerminal" xml:space="preserve">
+    <value>Magitek Terminal 2012811 tidak tersedia</value>
+  </data>
+  <data name="Opener_NoPlayerAtTerminal" xml:space="preserve">
+    <value>pemain lokal tidak tersedia di terminal</value>
+  </data>
+  <data name="Opener_Descended" xml:space="preserve">
+    <value>penurunan melalui terminal lokal terdeteksi</value>
+  </data>
+  <data name="Opener_NoInteract" xml:space="preserve">
+    <value>interaksi Magitek Terminal tidak tersedia</value>
+  </data>
+  <data name="Opener_NoPlayerBeforeMove" xml:space="preserve">
+    <value>pemain lokal tidak tersedia sebelum bergerak menuju {0}</value>
+  </data>
+  <data name="Opener_NoMove" xml:space="preserve">
+    <value>pergerakan vnav menuju {0} tidak tersedia</value>
+  </data>
+  <data name="Opener_NoPlayerMoving" xml:space="preserve">
+    <value>pemain lokal tidak tersedia saat bergerak</value>
+  </data>
+  <data name="Opener_NoProgress" xml:space="preserve">
+    <value>pergerakan vnav tidak menunjukkan kemajuan</value>
+  </data>
+  <data name="Opener_Pack" xml:space="preserve">
+    <value>kelompok pembuka</value>
+  </data>
+  <data name="Opener_Terminal" xml:space="preserve">
+    <value>Magitek Terminal</value>
+  </data>
+  <data name="Engine_AutoQueueing" xml:space="preserve">
+    <value>Mendaftarkan antrean otomatis</value>
+  </data>
+  <data name="Engine_RepairRecoveryRetry" xml:space="preserve">
+    <value>Percobaan pemulihan perbaikan {0}</value>
+  </data>
+  <data name="Config_ObstacleMapsOn" xml:space="preserve">
+    <value>Aktifkan peta rintangan</value>
+  </data>
+  <data name="Config_ObstacleMapsOnTooltip" xml:space="preserve">
+    <value>Hanya mengendalikan BossMod Reborn. Default: nonaktif. Diterapkan saat Mulai setelah BossMod siap dan rotasi diatur, terlepas dari penyedia pertempuran.</value>
+  </data>
+  <data name="Config_NPCRepairInn" xml:space="preserve">
+    <value>Perbaikan NPC + kamar penginapan</value>
+  </data>
+  <data name="Engine_InnRepairFailed" xml:space="preserve">
+    <value>Perbaikan penginapan gagal: {0}</value>
+  </data>
+  <data name="Config_NPCRepairInnUldah" xml:space="preserve">
+    <value>Perbaikan NPC + kamar penginapan — Ul’dah</value>
+  </data>
+  <data name="Config_NPCRepairInnGridania" xml:space="preserve">
+    <value>Perbaikan NPC + kamar penginapan — Gridania</value>
+  </data>
+  <data name="Config_NPCRepairInnLimsa" xml:space="preserve">
+    <value>Perbaikan NPC + kamar penginapan — Limsa Lominsa</value>
+  </data>
+  <data name="Config_NPCRepairInnIshgard" xml:space="preserve">
+    <value>Perbaikan NPC + kamar penginapan — Ishgard</value>
+  </data>
+  <data name="Config_NPCRepairInnCrystarium" xml:space="preserve">
+    <value>Perbaikan NPC + kamar penginapan — Crystarium</value>
+  </data>
+  <data name="Config_NPCRepairInnSharlayan" xml:space="preserve">
+    <value>Perbaikan NPC + kamar penginapan — Old Sharlayan</value>
+  </data>
+  <data name="Config_NPCRepairInnTuliyollal" xml:space="preserve">
+    <value>Perbaikan NPC + kamar penginapan — Tuliyollal</value>
+  </data>
+  <data name="Config_UnsupportedADSRepairMode" xml:space="preserve">
+    <value>Mode perbaikan ADS tidak didukung</value>
+  </data>
+  <data name="Window_BlundervilleFailer" xml:space="preserve">
+    <value>Blunderville Failer</value>
+  </data>
+  <data name="Plugin_CommandBlundervilleHelp" xml:space="preserve">
+    <value>Buka pratinjau Blunderville Failer (/blunderville atau /bv).</value>
+  </data>
+  <data name="Blunderville_OpenMogtome" xml:space="preserve">
+    <value>Buka MOGTOME</value>
+  </data>
+  <data name="Blunderville_FarmingUnavailable" xml:space="preserve">
+    <value>Hanya pratinjau: farming Blunderville tidak tersedia. Mulai dan Berhenti dinonaktifkan.</value>
+  </data>
+  <data name="Blunderville_PurchasesUnavailable" xml:space="preserve">
+    <value>Hanya pratinjau: pembelian ADS tidak tersedia. Konfigurasi pembelian dinonaktifkan.</value>
+  </data>
+  <data name="Blunderville_ConfigurePurchases" xml:space="preserve">
+    <value>Konfigurasi pembelian</value>
+  </data>
+  <data name="Ui_Color" xml:space="preserve">
+    <value>Warna</value>
+  </data>
+  <data name="Ui_Teal" xml:space="preserve">
+    <value>Hijau kebiruan</value>
+  </data>
+  <data name="Ui_Blue" xml:space="preserve">
+    <value>Biru</value>
+  </data>
+  <data name="Ui_Pink" xml:space="preserve">
+    <value>Merah muda</value>
+  </data>
+  <data name="Ui_CustomRgb" xml:space="preserve">
+    <value>RGB khusus</value>
+  </data>
+  <data name="Ui_CompactMode" xml:space="preserve">
+    <value>Mode ringkas</value>
+  </data>
+  <data name="Ui_LoadingFonts" xml:space="preserve">
+    <value>Memuat font UI...</value>
+  </data>
+  <data name="Ui_FontFailure" xml:space="preserve">
+    <value>Font UI gagal dimuat. Lihat log plugin.</value>
+  </data>
+  <data name="Main_Subtitle" xml:space="preserve">
+    <value>Pengelolaan Operasi Grand Tome &amp; Engine Manajemen</value>
+  </data>
+  <data name="Main_OpenBlunderville" xml:space="preserve">
+    <value>Buka Blunderville Failer</value>
+  </data>
+  <data name="Main_StateHeading" xml:space="preserve">
+    <value>Keadaan</value>
+  </data>
+  <data name="Main_StatusHeading" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Main_Running" xml:space="preserve">
+    <value>Berjalan</value>
+  </data>
+  <data name="Main_Stopped" xml:space="preserve">
+    <value>Dihentikan</value>
+  </data>
+  <data name="Main_DutyCurrent" xml:space="preserve">
+    <value>Saat ini</value>
+  </data>
+  <data name="Main_DutyCounter" xml:space="preserve">
+    <value>Penghitung</value>
+  </data>
+  <data name="Main_DailyDecuHeading" xml:space="preserve">
+    <value>Run Decu harian</value>
+  </data>
+  <data name="Main_DailyResetHeading" xml:space="preserve">
+    <value>Reset harian</value>
+  </data>
+  <data name="Main_PartySummary" xml:space="preserve">
+    <value>Ringkasan party</value>
+  </data>
+  <data name="Main_InParty" xml:space="preserve">
+    <value>Di dalam party</value>
+  </data>
+  <data name="Main_NoParty" xml:space="preserve">
+    <value>Tidak ada anggota party yang teramati.</value>
+  </data>
+  <data name="Main_PartyDetails" xml:space="preserve">
+    <value>Detail party</value>
+  </data>
+  <data name="Main_DutyDetails" xml:space="preserve">
+    <value>Detail duty</value>
+  </data>
+  <data name="Main_CounterValue" xml:space="preserve">
+    <value>{0} / {1}</value>
+  </data>
+  <data name="Main_ResetUtc" xml:space="preserve">
+    <value>{0:HH:mm} UTC</value>
+  </data>
+  <data name="Main_CurrentProfile" xml:space="preserve">
+    <value>Profil saat ini: {0}</value>
+  </data>
+  <data name="Main_HelpTitle" xml:space="preserve">
+    <value>BANTUAN</value>
+  </data>
+  <data name="Blunderville_FarmingHeading" xml:space="preserve">
+    <value>Farming tidak tersedia dalam build ini.</value>
+  </data>
+  <data name="Blunderville_FarmingDetail" xml:space="preserve">
+    <value>Blunderville Failer saat ini tidak dapat dipakai untuk farming otomatis.</value>
+  </data>
+  <data name="Blunderville_PurchasesHeading" xml:space="preserve">
+    <value>Otomatisasi pembelian tidak tersedia.</value>
+  </data>
+  <data name="Blunderville_PurchasesDetail" xml:space="preserve">
+    <value>Fungsi pembelian otomatis tidak tersedia dalam build ini.</value>
+  </data>
+  <data name="Cleanup_Opener" xml:space="preserve">
+    <value>pembuka</value>
+  </data>
+  <data name="Cleanup_Backend" xml:space="preserve">
+    <value>backend</value>
+  </data>
+  <data name="Cleanup_Dialogs" xml:space="preserve">
+    <value>dialog</value>
+  </data>
+  <data name="Cleanup_RepairQueue" xml:space="preserve">
+    <value>antrean perbaikan</value>
+  </data>
+  <data name="Cleanup_DeathTracking" xml:space="preserve">
+    <value>pelacakan kematian</value>
+  </data>
+  <data name="Cleanup_Combat" xml:space="preserve">
+    <value>pertempuran</value>
+  </data>
+  <data name="Main_Open" xml:space="preserve">
+    <value>Buka</value>
+  </data>
+  <data name="Window appearance" xml:space="preserve"><value>Tampilan jendela</value></data>
+  <data name="Compact visible on main window" xml:space="preserve"><value>Tampilkan mode ringkas di jendela utama</value></data>
+  <data name="Language visible on main window" xml:space="preserve"><value>Tampilkan pilihan bahasa di jendela utama</value></data>
+  <data name="Transparency" xml:space="preserve"><value>Transparansi</value></data>
+  <data name="Opacity (%)" xml:space="preserve"><value>Opasitas (%)</value></data>
+  <data name="Auto-fade when unfocused" xml:space="preserve"><value>Redupkan otomatis saat tidak fokus</value></data>
+  <data name="Unfocused opacity (%)" xml:space="preserve"><value>Opasitas saat tidak fokus (%)</value></data>
+  <data name="Unfocused delay (seconds)" xml:space="preserve"><value>Jeda saat tidak fokus (detik)</value></data>
+</root>

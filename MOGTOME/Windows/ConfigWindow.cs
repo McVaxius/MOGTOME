@@ -15,6 +15,7 @@ namespace MOGTOME.Windows;
 
 public class ConfigWindow : Window, IDisposable
 {
+    private readonly AethertekUI.Dalamud.MaterialWindowMotion windowMotion = new();
     private readonly Plugin plugin;
     private readonly IPluginLog Log;
     private Vector2? pendingWindowPosition;
@@ -84,6 +85,7 @@ public class ConfigWindow : Window, IDisposable
             pendingWindowPosition = null;
             pendingPositionConditionReset = true;
         }
+        windowMotion.Prepare(this, reducedMotion: false, roundedCorners: true);
     }
 
     private void EnsureItemsLoaded()
@@ -129,8 +131,12 @@ public class ConfigWindow : Window, IDisposable
         }
     }
 
+    public override void PostDraw()
+        { windowMotion.Restore(this); plugin.Appearance.PaintWindowTitle(WindowName); }
+
     public override void Draw()
     {
+        windowMotion.DrawChrome();
         EnsureItemsLoaded();
         var config = plugin.Configuration;
         var changed = false;
@@ -145,8 +151,20 @@ public class ConfigWindow : Window, IDisposable
 
         DrawCombatRotationSelector("ConfigHeader");
         ImGui.Separator();
+        AethertekUI.MaterialText.Text(Ui.T("Window appearance"));
+        ImGui.Separator();
+        plugin.Appearance.DrawSelector("settingsAppearance");
+        plugin.Appearance.DrawCompact(Ui.L("Ui_CompactMode"));
+        plugin.Appearance.DrawWindowSettings();
+        ImGui.Separator();
 
-        if (ImGui.BeginTabBar("ConfigTabs"))
+        bool BeginTab(string key, ImGuiTabItemFlags flags = ImGuiTabItemFlags.None)
+        {
+            ImGui.SetNextItemWidth(MathF.Ceiling(AethertekUI.MaterialText.Measure(Ui.T(key)).X + ImGui.GetStyle().FramePadding.X * 2 + 2 * ImGuiHelpers.GlobalScale));
+            return UiLayout.BeginTabItem(Ui.L(key), flags);
+        }
+
+        if (UiLayout.BeginTabBar("ConfigTabs", new[] { "Config_SetupWizard", "Config_DependencyCheck", "Config_Party", "Config_Duty", "Config_FoodPots", "Config_Repair", "Config_Advanced" }.Select(key=>Ui.T(key)).ToArray(), ImGuiTabBarFlags.FittingPolicyScroll))
         {
             var currentAccountId = plugin.ConfigManager.CurrentAccountId;
             if (!string.Equals(setupWizardAccountId, currentAccountId, StringComparison.Ordinal))
@@ -157,8 +175,8 @@ public class ConfigWindow : Window, IDisposable
             }
 
             var wizardIncomplete = config.SetupWizardCompletedVersion < SetupWizardVersion;
-            if (ImGui.BeginTabItem(
-                    Ui.L("Config_SetupWizard"),
+            if (BeginTab(
+                    "Config_SetupWizard",
                     wizardIncomplete && setupWizardAutoSelectPending
                         ? ImGuiTabItemFlags.SetSelected
                         : ImGuiTabItemFlags.None))
@@ -171,7 +189,7 @@ public class ConfigWindow : Window, IDisposable
             // Dependency Check tab - force user here if not all green
             var depColor = allDepsGreen ? new Vector4(0, 1, 0, 1) : new Vector4(1, 0, 0, 1);
             ImGui.PushStyleColor(ImGuiCol.Text, depColor);
-            var depOpen = ImGui.BeginTabItem(Ui.L("Config_DependencyCheck"));
+            var depOpen = BeginTab("Config_DependencyCheck");
             ImGui.PopStyleColor();
             if (depOpen)
             {
@@ -179,31 +197,31 @@ public class ConfigWindow : Window, IDisposable
                 ImGui.EndTabItem();
             }
 
-            if (ImGui.BeginTabItem(Ui.L("Config_Party")))
+            if (BeginTab("Config_Party"))
             {
                 changed |= DrawPartyTab(config);
                 ImGui.EndTabItem();
             }
 
-            if (ImGui.BeginTabItem(Ui.L("Config_Duty")))
+            if (BeginTab("Config_Duty"))
             {
                 changed |= DrawDutyTab(config);
                 ImGui.EndTabItem();
             }
 
-            if (ImGui.BeginTabItem(Ui.L("Config_FoodPots")))
+            if (BeginTab("Config_FoodPots"))
             {
                 changed |= DrawFoodPotTab(config);
                 ImGui.EndTabItem();
             }
 
-            if (ImGui.BeginTabItem(Ui.L("Config_Repair")))
+            if (BeginTab("Config_Repair"))
             {
                 changed |= DrawRepairTab(config);
                 ImGui.EndTabItem();
             }
 
-            if (ImGui.BeginTabItem(Ui.L("Config_Advanced")))
+            if (BeginTab("Config_Advanced"))
             {
                 changed |= DrawAdvancedTab(config);
                 ImGui.EndTabItem();
@@ -318,9 +336,9 @@ public class ConfigWindow : Window, IDisposable
 
     private void DrawDependencyCheckTab(Configuration config)
     {
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Config_BackendMode"));
+        AethertekUI.MaterialText.TextColored(AethertekUI.MaterialTheme.Current.Colors.Primary, Ui.T("Config_BackendMode"));
         var useAdsExperimental = config.UseAdsExperimental;
-        if (ImGui.Checkbox(Ui.L("Config_UseADSPrimaryBackend"), ref useAdsExperimental))
+        if (UiLayout.Checkbox(Ui.L("Config_UseADSPrimaryBackend"), ref useAdsExperimental))
         {
             ToggleAdsExperimental(useAdsExperimental);
             config = plugin.Configuration;
@@ -333,10 +351,10 @@ public class ConfigWindow : Window, IDisposable
         DrawCombatRotationSelector("Dependencies");
         ImGui.Spacing();
 
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Config_RequiredPlugins"));
+        AethertekUI.MaterialText.TextColored(AethertekUI.MaterialTheme.Current.Colors.Primary, Ui.T("Config_RequiredPlugins"));
         if (!allDepsGreen)
         {
-            ImGui.TextColored(new Vector4(1, 0, 0, 1), Ui.T("Config_SetupRequirementsAreIncompleteTheWizardIs"));
+            AethertekUI.MaterialText.TextColored(new Vector4(1, 0, 0, 1), Ui.T("Config_SetupRequirementsAreIncompleteTheWizardIs"));
         }
         ImGui.Separator();
 
@@ -371,13 +389,16 @@ public class ConfigWindow : Window, IDisposable
         var config = plugin.Configuration;
         ImGui.PushID(id);
         ImGui.BeginDisabled(plugin.Engine?.IsRunning == true || plugin.Engine?.IsStartupPending == true);
-        ImGui.SetNextItemWidth(80 * ImGuiHelpers.GlobalScale);
-        if (ImGui.BeginCombo(Ui.L("Config_CombatRotation"), Ui.EnumLabel(config.CombatProvider)))
+        UiLayout.Wrapped(Ui.T("Config_CombatRotation"));
+        var providerWidth = Enum.GetValues<CombatProvider>().Max(provider => AethertekUI.MaterialText.Measure(Ui.EnumLabel(provider)).X)
+            + ImGui.GetStyle().FramePadding.X * 2 + ImGui.GetFrameHeight();
+        ImGui.SetNextItemWidth(Math.Min(providerWidth, UiLayout.AvailableWidth));
+        if (AethertekUI.MaterialText.BeginCombo("###Config_CombatRotation", Ui.EnumLabel(config.CombatProvider)))
         {
             foreach (var provider in Enum.GetValues<CombatProvider>())
             {
                 var selected = config.CombatProvider == provider;
-                if (ImGui.Selectable(Ui.EnumLabel(provider) + "###Provider" + (int)provider, selected))
+                if (AethertekUI.MaterialText.Selectable(Ui.EnumLabel(provider) + "###Provider" + (int)provider, selected))
                 {
                     config.CombatProvider = provider;
                     plugin.ConfigManager.SaveCurrentAccount();
@@ -392,7 +413,7 @@ public class ConfigWindow : Window, IDisposable
             ImGui.EndCombo();
         }
 
-        ImGui.TextWrapped(config.CombatProvider switch
+        UiLayout.Wrapped(config.CombatProvider switch
         {
             CombatProvider.Rsr => Ui.T("Config_RSRHandlesAttacksTheLoadedBossModVariant"),
             CombatProvider.Bmr => Ui.T("Config_BMRHandlesAttacksAndMovementWithFRENRIDER"),
@@ -403,7 +424,7 @@ public class ConfigWindow : Window, IDisposable
         if (config.CombatProvider is CombatProvider.Bmr or CombatProvider.Vbm)
         {
             var manualPreset = config.UseManualBossModPreset;
-            if (ImGui.Checkbox(Ui.L("Config_UseManualBossModPreset"), ref manualPreset))
+            if (UiLayout.Checkbox(Ui.L("Config_UseManualBossModPreset"), ref manualPreset))
             {
                 config.UseManualBossModPreset = manualPreset;
                 plugin.ConfigManager.SaveCurrentAccount();
@@ -412,22 +433,24 @@ public class ConfigWindow : Window, IDisposable
             if (manualPreset)
             {
                 var presetName = config.ManualBossModPresetName;
-                if (ImGui.InputText(Ui.L("Config_PresetName"), ref presetName, 128))
+                UiLayout.Wrapped(Ui.T("Config_PresetName"));
+                ImGui.SetNextItemWidth(Math.Min(260 * ImGuiHelpers.GlobalScale, UiLayout.AvailableWidth));
+                if (UiLayout.InputText("###Config_PresetName", ref presetName, 128))
                 {
                     config.ManualBossModPresetName = presetName;
                     plugin.ConfigManager.SaveCurrentAccount();
                 }
                 if (string.IsNullOrWhiteSpace(config.ManualBossModPresetName))
-                    ImGui.TextWrapped(Ui.T("Config_EnterAnExistingPresetNameBeforeStarting"));
+                    UiLayout.Wrapped(Ui.T("Config_EnterAnExistingPresetNameBeforeStarting"));
             }
             else
             {
-                ImGui.TextWrapped(Ui.T("Config_MOGTOMESelectsItsPackagedActivePresetBy"));
+                UiLayout.Wrapped(Ui.T("Config_MOGTOMESelectsItsPackagedActivePresetBy"));
             }
         }
         ImGui.EndDisabled();
         if (depBmr && depVbm)
-            ImGui.TextWrapped(Ui.T("Config_BothBossModVariantsAreLoadedStartDisables"));
+            UiLayout.Wrapped(Ui.T("Config_BothBossModVariantsAreLoadedStartDisables"));
         ImGui.PopID();
     }
 
@@ -453,7 +476,7 @@ public class ConfigWindow : Window, IDisposable
         }
 
         ImGui.Spacing();
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Config_OptionalPlugins"));
+        AethertekUI.MaterialText.TextColored(AethertekUI.MaterialTheme.Current.Colors.Primary, Ui.T("Config_OptionalPlugins"));
         ImGui.Separator();
 
         DrawDepLineOptional("Lifestream", depLifestream, Ui.T("Config_OptionalNotRequiredByMOGTOME"));
@@ -471,7 +494,7 @@ public class ConfigWindow : Window, IDisposable
             Ui.T("Config_VeryNewPluginUnknownIssues"));
 
         ImGui.Spacing();
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Config_ConflictingPlugins"));
+        AethertekUI.MaterialText.TextColored(AethertekUI.MaterialTheme.Current.Colors.Primary, Ui.T("Config_ConflictingPlugins"));
         ImGui.Separator();
 
         DrawConflictPluginLine(
@@ -487,12 +510,12 @@ public class ConfigWindow : Window, IDisposable
         ImGui.Spacing();
         if (!config.UseAdsExperimental)
         {
-            ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Config_AutoDutyPath"));
+            AethertekUI.MaterialText.TextColored(AethertekUI.MaterialTheme.Current.Colors.Primary, Ui.T("Config_AutoDutyPath"));
             ImGui.Separator();
 
             var pathDisplayName = plugin.AutoDutyPathService.GetPraetoriumPathDisplayName(config.PraetoriumPathFileName);
             var pathExists = plugin.AutoDutyPathService.PathExists(config.PraetoriumPathFileName);
-            ImGui.TextColored(
+            AethertekUI.MaterialText.TextColored(
                 pathExists ? new Vector4(0, 1, 0, 1) : new Vector4(1, 0, 0, 1),
                 pathExists ? Ui.T("Config_PraetoriumPathINSTALLED", pathDisplayName) : Ui.T("Config_PraetoriumPathNOTFOUND", pathDisplayName));
 
@@ -506,11 +529,11 @@ public class ConfigWindow : Window, IDisposable
         }
         else
         {
-            ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Config_ADSModeNotes"));
+            AethertekUI.MaterialText.TextColored(AethertekUI.MaterialTheme.Current.Colors.Primary, Ui.T("Config_ADSModeNotes"));
             ImGui.Separator();
-            ImGui.TextWrapped(Ui.T("Config_ADSModeDisablesAutoDutyImmediatelyAndAgain"));
-            ImGui.TextWrapped(Ui.T("Config_RepairInnLeaveSwitchToAdsNpcrepair"));
-            ImGui.TextWrapped(Ui.T("Config_TheCheckboxChangesTheDutyBackendADS"));
+            AethertekUI.MaterialText.TextWrapped(Ui.T("Config_ADSModeDisablesAutoDutyImmediatelyAndAgain"));
+            AethertekUI.MaterialText.TextWrapped(Ui.T("Config_RepairInnLeaveSwitchToAdsNpcrepair"));
+            AethertekUI.MaterialText.TextWrapped(Ui.T("Config_TheCheckboxChangesTheDutyBackendADS"));
             ImGui.Spacing();
         }
     }
@@ -519,7 +542,7 @@ public class ConfigWindow : Window, IDisposable
     {
         var color = ok ? new Vector4(0, 1, 0, 1) : new Vector4(1, 0, 0, 1);
         var icon = ok ? Ui.T("Config_OK") : "[!!]";
-        ImGui.TextColored(color, string.Create(Ui.Culture, $"{icon} {name}"));
+        AethertekUI.MaterialText.TextColored(color, string.Create(Ui.Culture, $"{icon} {name}"));
         ImGui.SameLine();
         UiLayout.TextDisabled(string.Create(Ui.Culture, $"- {detail}"));
 
@@ -539,9 +562,9 @@ public class ConfigWindow : Window, IDisposable
 
     private static void DrawDepLineColor(string name, Vector4 color, string detail)
     {
-        ImGui.TextColored(color, string.Create(Ui.Culture, $"[!!] {name}"));
+        AethertekUI.MaterialText.TextColored(color, string.Create(Ui.Culture, $"[!!] {name}"));
         ImGui.SameLine();
-        ImGui.TextColored(color, string.Create(Ui.Culture, $"- {detail}"));
+        AethertekUI.MaterialText.TextColored(color, string.Create(Ui.Culture, $"- {detail}"));
     }
 
     private static bool IsXaSlavePlugin(string? name)
@@ -559,14 +582,14 @@ public class ConfigWindow : Window, IDisposable
     {
         var color = exists ? new Vector4(0, 1, 0, 1) : new Vector4(0.5f, 0.5f, 0.5f, 1);
         var icon = exists ? Ui.T("Config_OK") : "[--]";
-        ImGui.TextColored(color, string.Create(Ui.Culture, $"{icon} {name}"));
+        AethertekUI.MaterialText.TextColored(color, string.Create(Ui.Culture, $"{icon} {name}"));
         ImGui.SameLine();
         UiLayout.TextDisabled(exists ? Ui.T("Config_Installed") : (string.IsNullOrWhiteSpace(missingDetail) ? Ui.T("Config_NotInstalledOptional") : missingDetail));
 
         if (exists && !string.IsNullOrWhiteSpace(installedWarning))
         {
             ImGui.SameLine();
-            ImGui.TextColored(new Vector4(1, 0, 0, 1), installedWarning);
+            AethertekUI.MaterialText.TextColored(new Vector4(1, 0, 0, 1), installedWarning);
         }
     }
 
@@ -580,9 +603,9 @@ public class ConfigWindow : Window, IDisposable
                 ? Ui.T("Config_InstalledButDisabled")
                 : Ui.T("Config_NotInstalled");
 
-        ImGui.TextColored(color, string.Create(Ui.Culture, $"{icon} {name}"));
+        AethertekUI.MaterialText.TextColored(color, string.Create(Ui.Culture, $"{icon} {name}"));
         ImGui.SameLine();
-        ImGui.TextColored(color, string.Create(Ui.Culture, $"- {detail}"));
+        AethertekUI.MaterialText.TextColored(color, string.Create(Ui.Culture, $"- {detail}"));
 
         if (enabled)
         {
@@ -612,13 +635,13 @@ public class ConfigWindow : Window, IDisposable
         var changed = false;
         var isComplete = config.SetupWizardCompletedVersion >= SetupWizardVersion;
 
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Config_SetupWizard"));
-        ImGui.TextWrapped(Ui.T("Config_ThisGuideIsAdvisoryItNeverInstalls"));
+        AethertekUI.MaterialText.TextColored(AethertekUI.MaterialTheme.Current.Colors.Primary, Ui.T("Config_SetupWizard"));
+        AethertekUI.MaterialText.TextWrapped(Ui.T("Config_ThisGuideIsAdvisoryItNeverInstalls"));
         ImGui.Separator();
 
         if (isComplete)
         {
-            ImGui.TextColored(new Vector4(0, 1, 0, 1), Ui.T("Config_CompletedForThisAccountWizardVersion", config.SetupWizardCompletedVersion));
+            AethertekUI.MaterialText.TextColored(new Vector4(0, 1, 0, 1), Ui.T("Config_CompletedForThisAccountWizardVersion", config.SetupWizardCompletedVersion));
             if (UiLayout.Button(Ui.L("Config_RunSetupWizardAgain")))
             {
                 config.SetupWizardCompletedVersion = 0;
@@ -638,22 +661,22 @@ public class ConfigWindow : Window, IDisposable
             Ui.T("Config_OptionalSettings"),
             Ui.T("Config_Review"),
         };
-        ImGui.Text(Ui.T("Config_StepOf", setupWizardStep + 1, steps.Length, steps[setupWizardStep]));
+        AethertekUI.MaterialText.Text(Ui.T("Config_StepOf", setupWizardStep + 1, steps.Length, steps[setupWizardStep]));
         ImGui.Separator();
 
         switch (setupWizardStep)
         {
             case 0:
-                ImGui.TextWrapped(Ui.T("Config_ADSIsThePrimaryMOGTOMEBackendAutoDuty"));
+                AethertekUI.MaterialText.TextWrapped(Ui.T("Config_ADSIsThePrimaryMOGTOMEBackendAutoDuty"));
                 var useAds = config.UseAdsExperimental;
-                if (ImGui.RadioButton(Ui.T("Config_ADSPrimaryBackend") + "###Config_ADSPrimaryBackend_Wizard", useAds))
+                if (UiLayout.RadioButton(Ui.T("Config_ADSPrimaryBackend") + "###Config_ADSPrimaryBackend_Wizard", useAds))
                 {
                     config.UseAdsExperimental = true;
                     lastDepCheck = DateTime.MinValue;
                     changed = true;
                 }
 
-                if (ImGui.RadioButton(Ui.T("Config_AutoDutyAlternativeBackend") + "###Config_AutoDutyAlternativeBackend_Wizard", !useAds))
+                if (UiLayout.RadioButton(Ui.T("Config_AutoDutyAlternativeBackend") + "###Config_AutoDutyAlternativeBackend_Wizard", !useAds))
                 {
                     config.UseAdsExperimental = false;
                     lastDepCheck = DateTime.MinValue;
@@ -665,7 +688,7 @@ public class ConfigWindow : Window, IDisposable
                     : Ui.T("Config_AutoDutyAndTheSelectedPraetoriumPathMust"));
                 break;
             case 1:
-                ImGui.TextWrapped(Ui.T("Config_ChooseTheCombatProviderMOGTOMEShouldRequest"));
+                AethertekUI.MaterialText.TextWrapped(Ui.T("Config_ChooseTheCombatProviderMOGTOMEShouldRequest"));
                 DrawCombatRotationSelector("Wizard");
 
                 DrawWizardRequirement(Ui.T("Config_SelectedCombatProvider"), IsCombatProviderReady(config), Ui.T("Config_LoadTheSelectedProviderRSRAlsoRequires"), null);
@@ -674,9 +697,9 @@ public class ConfigWindow : Window, IDisposable
                 DrawWizardRequiredPluginChecks(config);
                 break;
             case 3:
-                ImGui.TextWrapped(Ui.T("Config_MarkTheClientThatQueuesDutiesAs"));
+                AethertekUI.MaterialText.TextWrapped(Ui.T("Config_MarkTheClientThatQueuesDutiesAs"));
                 var isLeader = config.IsPartyLeader;
-                if (ImGui.Checkbox(Ui.T("Config_IAmThePartyLeader") + "###Config_IAmThePartyLeader_Wizard", ref isLeader))
+                if (UiLayout.Checkbox(Ui.T("Config_IAmThePartyLeader") + "###Config_IAmThePartyLeader_Wizard", ref isLeader))
                 {
                     config.IsPartyLeader = isLeader;
                     plugin.State.IsPartyLeader = isLeader;
@@ -684,7 +707,7 @@ public class ConfigWindow : Window, IDisposable
                 }
 
                 var crossWorld = config.IsCrossWorldParty;
-                if (ImGui.Checkbox(Ui.T("Config_CrossWorldParty") + "###Config_CrossWorldParty_Wizard", ref crossWorld))
+                if (UiLayout.Checkbox(Ui.T("Config_CrossWorldParty") + "###Config_CrossWorldParty_Wizard", ref crossWorld))
                 {
                     config.IsCrossWorldParty = crossWorld;
                     changed = true;
@@ -693,7 +716,7 @@ public class ConfigWindow : Window, IDisposable
                 UiLayout.TextDisabled(Ui.T("Config_UsePartySettingsForTheFullQueue"));
                 break;
             case 4:
-                ImGui.TextWrapped(Ui.T("Config_FoodPotionsAndRepairAreOptionalConfigure"));
+                AethertekUI.MaterialText.TextWrapped(Ui.T("Config_FoodPotionsAndRepairAreOptionalConfigure"));
                 DrawDepLineOptional("Lifestream", depLifestream, Ui.T("Config_OptionalNotRequiredByMOGTOME"));
                 DrawDepLineOptional("TextAdvance", depTextAdv, Ui.T("Config_OptionalNotRequiredByMOGTOME"));
                 UiLayout.TextDisabled(Ui.T("Config_FoodPotsAndRepairRemainAvailableAfter"));
@@ -754,13 +777,13 @@ public class ConfigWindow : Window, IDisposable
             ? depAds
             : depAutoDuty && plugin.AutoDutyPathService.PathExists(config.PraetoriumPathFileName);
 
-        ImGui.Text(Ui.T("Config_Backend2", (config.UseAdsExperimental ? Ui.T("Config_ADSPrimary") : Ui.T("Config_AutoDutyAlternative"))));
-        ImGui.Text(Ui.T("Config_CombatProvider2", Ui.EnumLabel(config.CombatProvider)));
-        ImGui.Text(Ui.T("Config_RequiredChecks", (backendReady && IsCombatProviderReady(config) && depVnav && depXaSlave && depYesAlready ? Ui.T("Config_Ready") : Ui.T("Config_Incomplete"))));
-        ImGui.Text(Ui.T("Config_PartyRole", (config.IsPartyLeader ? Ui.T("Config_Leader") : Ui.T("Config_Participant"))));
-        ImGui.Text(Ui.T("Config_OptionalFood", (config.FoodItemId > 0 ? Ui.Item((uint)config.FoodItemId).Render() : Ui.T("Config_NotConfigured"))));
-        ImGui.Text(Ui.T("Config_OptionalRepairThreshold", config.RepairThreshold));
-        ImGui.TextWrapped(Ui.T("Config_FinishRecordsOnlyThatThisAccountCompleted"));
+        AethertekUI.MaterialText.Text(Ui.T("Config_Backend2", (config.UseAdsExperimental ? Ui.T("Config_ADSPrimary") : Ui.T("Config_AutoDutyAlternative"))));
+        AethertekUI.MaterialText.Text(Ui.T("Config_CombatProvider2", Ui.EnumLabel(config.CombatProvider)));
+        AethertekUI.MaterialText.Text(Ui.T("Config_RequiredChecks", (backendReady && IsCombatProviderReady(config) && depVnav && depXaSlave && depYesAlready ? Ui.T("Config_Ready") : Ui.T("Config_Incomplete"))));
+        AethertekUI.MaterialText.Text(Ui.T("Config_PartyRole", (config.IsPartyLeader ? Ui.T("Config_Leader") : Ui.T("Config_Participant"))));
+        AethertekUI.MaterialText.Text(Ui.T("Config_OptionalFood", (config.FoodItemId > 0 ? Ui.Item((uint)config.FoodItemId).Render() : Ui.T("Config_NotConfigured"))));
+        AethertekUI.MaterialText.Text(Ui.T("Config_OptionalRepairThreshold", config.RepairThreshold));
+        AethertekUI.MaterialText.TextWrapped(Ui.T("Config_FinishRecordsOnlyThatThisAccountCompleted"));
     }
 
     private bool IsCombatProviderReady(Configuration config)
@@ -776,7 +799,7 @@ public class ConfigWindow : Window, IDisposable
     private static void DrawWizardRequirement(string name, bool ready, string missingDetail, string? repoKey)
     {
         var color = ready ? new Vector4(0, 1, 0, 1) : new Vector4(1, 0, 0, 1);
-        ImGui.TextColored(color, string.Create(Ui.Culture, $"[{(ready ? "OK" : "!!")}] {name}"));
+        AethertekUI.MaterialText.TextColored(color, string.Create(Ui.Culture, $"[{(ready ? "OK" : "!!")}] {name}"));
         ImGui.SameLine();
         UiLayout.TextDisabled(ready ? Ui.T("Config_Ready2") : missingDetail);
 
@@ -819,11 +842,11 @@ public class ConfigWindow : Window, IDisposable
     {
         var changed = false;
 
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Config_PartySettings"));
+        AethertekUI.MaterialText.TextColored(AethertekUI.MaterialTheme.Current.Colors.Primary, Ui.T("Config_PartySettings"));
         ImGui.Separator();
 
         var isLeader = config.IsPartyLeader;
-        if (ImGui.Checkbox(Ui.L("Config_IAmThePartyLeader"), ref isLeader))
+        if (UiLayout.Checkbox(Ui.L("Config_IAmThePartyLeader"), ref isLeader))
         {
             config.IsPartyLeader = isLeader;
             changed = true;
@@ -831,7 +854,7 @@ public class ConfigWindow : Window, IDisposable
         UiLayout.TextDisabled(Ui.T("Config_RuntimeRoleFollowsThisSavedSettingUse"));
 
         var isCrossWorld = config.IsCrossWorldParty;
-        if (ImGui.Checkbox(Ui.L("Config_CrossWorldParty"), ref isCrossWorld))
+        if (UiLayout.Checkbox(Ui.L("Config_CrossWorldParty"), ref isCrossWorld))
         {
             config.IsCrossWorldParty = isCrossWorld;
             changed = true;
@@ -839,16 +862,16 @@ public class ConfigWindow : Window, IDisposable
         UiLayout.TextDisabled(Ui.T("Config_EnableIfYouReInACross"));
 
         var requirePartyMinimum = config.OnlyQueueWithFourPeople;
-        if (ImGui.Checkbox(Ui.L("Config_OnlyQueueWithExactlyVisiblePeople"), ref requirePartyMinimum))
+        if (UiLayout.Checkbox(Ui.L("Config_OnlyQueueWithExactlyVisiblePeople"), ref requirePartyMinimum))
         {
             config.OnlyQueueWithFourPeople = requirePartyMinimum;
             changed = true;
         }
-        ImGui.SameLine();
+        UiLayout.SameLineIfFits(90 * ImGuiHelpers.GlobalScale + AethertekUI.MaterialText.Measure(Ui.T("Config_MinimumPartyMembers")).X + ImGui.GetStyle().ItemInnerSpacing.X);
         ImGui.BeginDisabled(!requirePartyMinimum);
         ImGui.SetNextItemWidth(90 * ImGuiHelpers.GlobalScale);
         var minimumPartyMembers = Math.Clamp(config.MinimumPartyMembers, 1, 4);
-        if (ImGui.SliderInt(Ui.L("Config_MinimumPartyMembers"), ref minimumPartyMembers, 1, 4))
+        if (UiLayout.SliderInt(Ui.L("Config_MinimumPartyMembers"), ref minimumPartyMembers, 1, 4))
         {
             config.MinimumPartyMembers = Math.Clamp(minimumPartyMembers, 1, 4);
             changed = true;
@@ -863,8 +886,8 @@ public class ConfigWindow : Window, IDisposable
         }
 
         ImGui.Spacing();
-        ImGui.TextColored(new Vector4(0.7f, 0.85f, 1.0f, 1.0f), Ui.T("Config_RuntimePartyState"));
-        ImGui.Text(Ui.T("Config_LeaderRightNow", (plugin.State.IsPartyLeader ? Ui.T("Config_Yes") : Ui.T("Config_No"))));
+        AethertekUI.MaterialText.TextColored(AethertekUI.MaterialTheme.Current.Colors.Secondary, Ui.T("Config_RuntimePartyState"));
+        AethertekUI.MaterialText.Text(Ui.T("Config_LeaderRightNow", (plugin.State.IsPartyLeader ? Ui.T("Config_Yes") : Ui.T("Config_No"))));
         UiLayout.TextDisabled(config.IsCrossWorldParty
             ? Ui.T("Config_SourceConfiguredCrossWorldRole")
             : Ui.T("Config_SourceConfiguredRoleRefreshPartyStateOnly"));
@@ -879,11 +902,11 @@ public class ConfigWindow : Window, IDisposable
         }
 
         ImGui.Spacing();
-        ImGui.TextColored(new Vector4(0.7f, 0.7f, 0.7f, 1.0f), Ui.T("Config_PartyBehaviour"));
-        ImGui.TextWrapped(Ui.T("Config_LeaderQueuesDutiesAndControlsTheMOGTOME"));
-        ImGui.TextWrapped(Ui.T("Config_NonLeaderWaitsForPartyQueuePops"));
-        ImGui.TextWrapped(Ui.T("Config_RepairMOGTOMEPausesItsOwnManualQueue"));
-        ImGui.TextWrapped(Ui.T("Config_DetectionRefreshPartyStateIsManualOnly"));
+        AethertekUI.MaterialText.TextColored(AethertekUI.MaterialTheme.Current.Colors.OnSurfaceVariant, Ui.T("Config_PartyBehaviour"));
+        AethertekUI.MaterialText.TextWrapped(Ui.T("Config_LeaderQueuesDutiesAndControlsTheMOGTOME"));
+        AethertekUI.MaterialText.TextWrapped(Ui.T("Config_NonLeaderWaitsForPartyQueuePops"));
+        AethertekUI.MaterialText.TextWrapped(Ui.T("Config_RepairMOGTOMEPausesItsOwnManualQueue"));
+        AethertekUI.MaterialText.TextWrapped(Ui.T("Config_DetectionRefreshPartyStateIsManualOnly"));
 
         return changed;
     }
@@ -893,11 +916,11 @@ public class ConfigWindow : Window, IDisposable
         var changed = false;
         var dutyCounterChanged = false;
 
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Config_DutySettings"));
+        AethertekUI.MaterialText.TextColored(AethertekUI.MaterialTheme.Current.Colors.Primary, Ui.T("Config_DutySettings"));
         ImGui.Separator();
 
         var dutyCounter = config.DutyCounter;
-        if (ImGui.InputInt(Ui.L("Config_DutyCounter"), ref dutyCounter))
+        if (UiLayout.InputInt("Config_DutyCounter", ref dutyCounter))
         {
             config.DutyCounter = Math.Clamp(dutyCounter, 0, 666);
             changed = true;
@@ -906,7 +929,7 @@ public class ConfigWindow : Window, IDisposable
         UiLayout.TextDisabled(Ui.T("Config_CurrentPraetoriumRunCountSetToFor"));
 
         var returnDelay = config.ReturnToEntranceDelaySeconds;
-        if (ImGui.InputInt(Ui.L("Config_ReturnToEntranceDelaySeconds"), ref returnDelay))
+        if (UiLayout.InputInt("Config_ReturnToEntranceDelaySeconds", ref returnDelay))
         {
             config.ReturnToEntranceDelaySeconds = Math.Max(1, returnDelay);
             changed = true;
@@ -923,12 +946,14 @@ public class ConfigWindow : Window, IDisposable
             }
 
             var selectedPraetoriumPathLabel = plugin.AutoDutyPathService.GetPraetoriumPathDisplayName(selectedPraetoriumPath);
-            if (ImGui.BeginCombo(Ui.L("Config_PraetoriumAutoDutyPath"), selectedPraetoriumPathLabel))
+            UiLayout.SingleLine(Ui.T("Config_PraetoriumAutoDutyPath"));
+            ImGui.SetNextItemWidth(UiLayout.AvailableWidth);
+            if (AethertekUI.MaterialText.BeginCombo("###Config_PraetoriumAutoDutyPath", selectedPraetoriumPathLabel))
             {
                 foreach (var option in plugin.AutoDutyPathService.GetPraetoriumPathOptions())
                 {
                     var isSelected = string.Equals(option.FileName, selectedPraetoriumPath, StringComparison.OrdinalIgnoreCase);
-                    if (ImGui.Selectable(option.DisplayName, isSelected))
+                    if (AethertekUI.MaterialText.Selectable(option.DisplayName, isSelected))
                     {
                         config.PraetoriumPathFileName = option.FileName;
                         selectedPraetoriumPath = option.FileName;
@@ -950,7 +975,7 @@ public class ConfigWindow : Window, IDisposable
         }
 
         var praeThreshold = config.PraetoriumThreshold;
-        if (ImGui.InputInt(Ui.L("Config_PraetoriumThreshold"), ref praeThreshold))
+        if (UiLayout.InputInt("Config_PraetoriumThreshold", ref praeThreshold))
         {
             config.PraetoriumThreshold = Math.Clamp(praeThreshold, 1, 666);
             changed = true;
@@ -958,7 +983,7 @@ public class ConfigWindow : Window, IDisposable
         UiLayout.TextDisabled(Ui.T("Config_SwitchToDecumanaAfterThisManyPraetorium"));
 
         var maxRuns = config.MaxRuns;
-        if (ImGui.InputInt(Ui.L("Config_PraetoriumDailyLimit"), ref maxRuns))
+        if (UiLayout.InputInt("Config_PraetoriumDailyLimit", ref maxRuns))
         {
             config.MaxRuns = Math.Clamp(maxRuns, 0, 9999);
             changed = true;
@@ -966,7 +991,9 @@ public class ConfigWindow : Window, IDisposable
         UiLayout.TextDisabled(Ui.T("Config_StopAfterThisManySuccessfulPraetoriumClears"));
 
         var quitCommand = config.QuitCommand;
-        if (ImGui.InputText(Ui.L("Config_QuitCommand"), ref quitCommand, 50))
+        UiLayout.SingleLine(Ui.T("Config_QuitCommand"));
+        ImGui.SetNextItemWidth(UiLayout.AvailableWidth);
+        if (UiLayout.InputText("###Config_QuitCommand", ref quitCommand, 50))
         {
             config.QuitCommand = quitCommand;
             changed = true;
@@ -990,14 +1017,15 @@ public class ConfigWindow : Window, IDisposable
         if (config.DebugModeEnabled)
         {
             var testMode = config.TestingModeUnsynced;
-            if (ImGui.Checkbox(Ui.L("Config_TestingModeUnsyncedUncheckLevelSyncYourself"), ref testMode))
+            if (UiLayout.Checkbox(Ui.T("Main_TESTINGMODEUnsynced") + "###Config_TestingModeUnsyncedUncheckLevelSyncYourself", ref testMode))
             {
                 config.TestingModeUnsynced = testMode;
                 changed = true;
             }
+            UiLayout.TextDisabled(Ui.T("Config_TestingModeUnsyncedUncheckLevelSyncYourself"));
             if (testMode)
             {
-                ImGui.TextColored(new Vector4(1, 1, 0, 1), Ui.T("Config_WARNINGRunningUnsyncedWithoutLevelSyncTesting"));
+                AethertekUI.MaterialText.TextColored(new Vector4(1, 1, 0, 1), Ui.T("Config_WARNINGRunningUnsyncedWithoutLevelSyncTesting"));
             }
             else
             {
@@ -1008,7 +1036,7 @@ public class ConfigWindow : Window, IDisposable
         {
             if (config.TestingModeUnsynced)
             {
-                ImGui.TextColored(new Vector4(1, 1, 0, 1), Ui.T("Config_TestingModeActiveEnableDebugToChange"));
+                AethertekUI.MaterialText.TextColored(new Vector4(1, 1, 0, 1), Ui.T("Config_TestingModeActiveEnableDebugToChange"));
             }
         }
 
@@ -1019,7 +1047,7 @@ public class ConfigWindow : Window, IDisposable
     {
         var changed = false;
 
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Config_Food"));
+        AethertekUI.MaterialText.TextColored(AethertekUI.MaterialTheme.Current.Colors.Primary, Ui.T("Config_Food"));
         ImGui.Separator();
 
         // Food dropdown with search
@@ -1034,9 +1062,9 @@ public class ConfigWindow : Window, IDisposable
 
         if (config.FoodItemId > 0)
         {
-            ImGui.Text(Ui.T("Config_SelectedID", Ui.Item((uint)config.FoodItemId), (config.FoodUseHighQuality ? Ui.T("Config_HQ") : Ui.T("Config_NQ")), config.FoodItemId));
+            AethertekUI.MaterialText.Text(Ui.T("Config_SelectedID", Ui.Item((uint)config.FoodItemId), (config.FoodUseHighQuality ? Ui.T("Config_HQ") : Ui.T("Config_NQ")), config.FoodItemId));
             var useFoodHq = config.FoodUseHighQuality;
-            if (ImGui.Checkbox(Ui.L("Config_UseHQFood"), ref useFoodHq))
+            if (UiLayout.Checkbox(Ui.L("Config_UseHQFood"), ref useFoodHq))
             {
                 config.FoodUseHighQuality = useFoodHq;
                 changed = true;
@@ -1056,7 +1084,7 @@ public class ConfigWindow : Window, IDisposable
         }
 
         ImGui.Spacing();
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Config_Potions"));
+        AethertekUI.MaterialText.TextColored(AethertekUI.MaterialTheme.Current.Colors.Primary, Ui.T("Config_Potions"));
         ImGui.Separator();
 
         // Potion dropdown with search
@@ -1071,9 +1099,9 @@ public class ConfigWindow : Window, IDisposable
 
         if (config.PotionItemId > 0)
         {
-            ImGui.Text(Ui.T("Config_SelectedID", Ui.Item((uint)config.PotionItemId), (config.PotionUseHighQuality ? Ui.T("Config_HQ") : Ui.T("Config_NQ")), config.PotionItemId));
+            AethertekUI.MaterialText.Text(Ui.T("Config_SelectedID", Ui.Item((uint)config.PotionItemId), (config.PotionUseHighQuality ? Ui.T("Config_HQ") : Ui.T("Config_NQ")), config.PotionItemId));
             var usePotionHq = config.PotionUseHighQuality;
-            if (ImGui.Checkbox(Ui.L("Config_UseHQPotion"), ref usePotionHq))
+            if (UiLayout.Checkbox(Ui.L("Config_UseHQPotion"), ref usePotionHq))
             {
                 config.PotionUseHighQuality = usePotionHq;
                 changed = true;
@@ -1089,13 +1117,13 @@ public class ConfigWindow : Window, IDisposable
 
             ImGui.Spacing();
             var potTarget = config.PotionTarget;
-            if (ImGui.RadioButton(Ui.L("Config_PotOnBoss", Ui.Boss(2136)) + "_Gaius", ref potTarget, 0))
+            if (UiLayout.RadioButton(Ui.L("Config_PotOnBoss", Ui.Boss(2136)) + "_Gaius", ref potTarget, 0))
             {
                 config.PotionTarget = 0;
                 changed = true;
             }
             ImGui.SameLine();
-            if (ImGui.RadioButton(Ui.L("Config_PotOnBoss", Ui.Boss(11285)) + "_Phantom", ref potTarget, 1))
+            if (UiLayout.RadioButton(Ui.L("Config_PotOnBoss", Ui.Boss(11285)) + "_Phantom", ref potTarget, 1))
             {
                 config.PotionTarget = 1;
                 changed = true;
@@ -1114,11 +1142,14 @@ public class ConfigWindow : Window, IDisposable
         var changed = false;
         var displayText = selectedId > 0 ? string.Create(Ui.Culture, $"{selectedName} ({selectedId})") : Ui.T("Config_Select", Ui.T(label));
 
-        ImGui.SetNextItemWidth(400);
-        if (ImGui.BeginCombo($"##{label}Select", displayText))
+        var scale = AethertekUI.MaterialTheme.Metrics.Scale;
+        ImGui.SetNextItemWidth(AethertekUI.MaterialLayout.FitNextItemWidth(400 * scale,
+            AethertekUI.MaterialText.Measure(displayText).X + ImGui.GetFrameHeight() + ImGui.GetStyle().FramePadding.X * 2 + 2 * scale));
+        if (AethertekUI.MaterialText.BeginCombo($"##{label}Select", displayText))
         {
-            ImGui.SetNextItemWidth(380);
-            ImGui.InputText(Ui.T("Config_Search") + string.Format(System.Globalization.CultureInfo.InvariantCulture, "###Config_Search_{0}", label), ref search, 128);
+            UiLayout.SingleLine(Ui.T("Config_Search"));
+            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+            UiLayout.InputText(string.Format(System.Globalization.CultureInfo.InvariantCulture, "###Config_Search_{0}", label), ref search, 128);
 
             ImGui.Separator();
 
@@ -1143,7 +1174,7 @@ public class ConfigWindow : Window, IDisposable
                     shown++;
 
                     var isSelected = (int)item.Id == selectedId;
-                    if (ImGui.Selectable(string.Create(Ui.Culture, $"{item.Name} ({item.Id})###{label}{item.Id}"), isSelected))
+                    if (AethertekUI.MaterialText.Selectable(string.Create(Ui.Culture, $"{item.Name} ({item.Id})###{label}{item.Id}"), isSelected))
                     {
                         selectedId = (int)item.Id;
                         selectedName = item.Name;
@@ -1171,12 +1202,14 @@ public class ConfigWindow : Window, IDisposable
     {
         var changed = false;
 
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Config_RepairSettings"));
+        AethertekUI.MaterialText.TextColored(AethertekUI.MaterialTheme.Current.Colors.Primary, Ui.T("Config_RepairSettings"));
         ImGui.Separator();
 
         // Repair threshold slider
         var repairThreshold = config.RepairThreshold;
-        if (ImGui.SliderInt(Ui.L("Config_RepairThreshold"), ref repairThreshold, 0, 100))
+        UiLayout.SingleLine(Ui.T("Config_RepairThreshold"));
+        ImGui.SetNextItemWidth(UiLayout.AvailableWidth);
+        if (UiLayout.SliderInt("###Config_RepairThreshold", ref repairThreshold, 0, 100))
         {
             config.RepairThreshold = Math.Clamp(repairThreshold, 0, 100);
             changed = true;
@@ -1189,7 +1222,9 @@ public class ConfigWindow : Window, IDisposable
         {
             var repairMode = (int)config.AdsRepairMode;
             var repairModes = Enum.GetValues<AdsRepairMode>().Select(mode => Ui.T(Services.RepairService.GetAdsRepairLabelKey(mode))).ToArray();
-            if (ImGui.Combo(Ui.L("Config_RepairMode"), ref repairMode, repairModes, repairModes.Length))
+            UiLayout.SingleLine(Ui.T("Config_RepairMode"));
+            ImGui.SetNextItemWidth(UiLayout.AvailableWidth);
+            if (UiLayout.Combo("###Config_RepairMode", ref repairMode, repairModes, repairModes.Length))
             {
                 config.AdsRepairMode = (AdsRepairMode)repairMode;
                 changed = true;
@@ -1200,22 +1235,22 @@ public class ConfigWindow : Window, IDisposable
         }
 
         // Repair method info
-        ImGui.TextColored(new Vector4(0.7f, 0.7f, 0.7f, 1.0f), Ui.T("Config_RepairBehavior"));
-        ImGui.TextWrapped(Ui.T("Config_LeaderRepairsAutomaticallyBetweenDutiesWhenThreshold"));
-        ImGui.TextWrapped(Ui.T("Config_NonLeaderRepairsIndependentlyAfterSecondOutside"));
-        ImGui.TextWrapped(Ui.T("Config_SoloTreatedAsLeaderAutomatically"));
-        ImGui.TextWrapped(config.UseAdsExperimental
+        AethertekUI.MaterialText.TextColored(AethertekUI.MaterialTheme.Current.Colors.OnSurfaceVariant, Ui.T("Config_RepairBehavior"));
+        AethertekUI.MaterialText.TextWrapped(Ui.T("Config_LeaderRepairsAutomaticallyBetweenDutiesWhenThreshold"));
+        AethertekUI.MaterialText.TextWrapped(Ui.T("Config_NonLeaderRepairsIndependentlyAfterSecondOutside"));
+        AethertekUI.MaterialText.TextWrapped(Ui.T("Config_SoloTreatedAsLeaderAutomatically"));
+        AethertekUI.MaterialText.TextWrapped(config.UseAdsExperimental
             ? Ui.T("Config_ADSRepairCommand", Services.RepairService.GetAdsRepairCommand(config.AdsRepairMode))
             : Ui.T("Config_AutoDutyModeRepairMETHODSelfNPCIs"));
         
         ImGui.Spacing();
         
         // Current status info
-        ImGui.TextColored(new Vector4(0.7f, 0.7f, 0.7f, 1.0f), Ui.T("Config_Status"));
-        ImGui.Text(Ui.T("Config_CurrentThreshold", config.RepairThreshold));
-        ImGui.Text(Ui.T("Config_AutoRepair", (config.RepairThreshold > 0 ? Ui.T("Config_Enabled") : Ui.T("Config_Disabled"))));
+        AethertekUI.MaterialText.TextColored(AethertekUI.MaterialTheme.Current.Colors.OnSurfaceVariant, Ui.T("Config_Status"));
+        AethertekUI.MaterialText.Text(Ui.T("Config_CurrentThreshold", config.RepairThreshold));
+        AethertekUI.MaterialText.Text(Ui.T("Config_AutoRepair", (config.RepairThreshold > 0 ? Ui.T("Config_Enabled") : Ui.T("Config_Disabled"))));
         if (config.UseAdsExperimental)
-            ImGui.Text(Ui.T("Config_ADSRepairMethod", Ui.T(Services.RepairService.GetAdsRepairLabelKey(config.AdsRepairMode))));
+            AethertekUI.MaterialText.Text(Ui.T("Config_ADSRepairMethod", Ui.T(Services.RepairService.GetAdsRepairLabelKey(config.AdsRepairMode))));
 
         return changed;
     }
@@ -1225,7 +1260,7 @@ public class ConfigWindow : Window, IDisposable
         var changed = false;
 
         var obstacleMapsOn = config.ObstacleMapsOn;
-        if (ImGui.Checkbox(Ui.L("Config_ObstacleMapsOn"), ref obstacleMapsOn))
+        if (UiLayout.Checkbox(Ui.L("Config_ObstacleMapsOn"), ref obstacleMapsOn))
         {
             config.ObstacleMapsOn = obstacleMapsOn;
             changed = true;
@@ -1234,11 +1269,11 @@ public class ConfigWindow : Window, IDisposable
             UiLayout.SetTooltip(Ui.T("Config_ObstacleMapsOnTooltip"));
         ImGui.Spacing();
 
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Config_ExperimentalADS"));
+        AethertekUI.MaterialText.TextColored(AethertekUI.MaterialTheme.Current.Colors.Primary, Ui.T("Config_ExperimentalADS"));
         ImGui.Separator();
         var firstRoomSkip = config.ExperimentalFirstRoomSkip;
         ImGui.BeginDisabled(!config.UseAdsExperimental);
-        if (ImGui.Checkbox(Ui.T("Config_ExperimentalFirstRoomSkipPraetorium") + "###Config_ExperimentalFirstRoomSkipPraetorium_FirstRoomSkip", ref firstRoomSkip))
+        if (UiLayout.Checkbox(Ui.T("Config_ExperimentalFirstRoomSkipPraetorium") + "###Config_ExperimentalFirstRoomSkipPraetorium_FirstRoomSkip", ref firstRoomSkip))
         {
             config.ExperimentalFirstRoomSkip = firstRoomSkip;
             changed = true;
@@ -1249,11 +1284,11 @@ public class ConfigWindow : Window, IDisposable
             : Ui.T("Config_AvailableOnlyWhenADSIsTheSelected"));
         ImGui.Spacing();
 
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Config_Debug"));
+        AethertekUI.MaterialText.TextColored(AethertekUI.MaterialTheme.Current.Colors.Primary, Ui.T("Config_Debug"));
         ImGui.Separator();
 
         var debugCounter = config.DebugCounter;
-        if (ImGui.InputInt(Ui.L("Config_DebugCounter"), ref debugCounter))
+        if (UiLayout.InputInt("Config_DebugCounter", ref debugCounter))
         {
             config.DebugCounter = debugCounter;
             changed = true;
@@ -1263,7 +1298,7 @@ public class ConfigWindow : Window, IDisposable
         ImGui.Spacing();
 
         var bailout = config.BailoutTimeout;
-        if (ImGui.InputInt(Ui.L("Config_BailoutTimeoutSec"), ref bailout))
+        if (UiLayout.InputInt("Config_BailoutTimeoutSec", ref bailout))
         {
             config.BailoutTimeout = Math.Clamp(bailout, 60, 3600);
             changed = true;

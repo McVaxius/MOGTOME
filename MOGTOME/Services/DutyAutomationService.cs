@@ -177,7 +177,7 @@ public sealed class DutyAutomationService
                 var message = Ui.M("DutyAutomationService_AIDutySolverADSExperimentalModeIs");
                 PreparationFailure = message;
                 log.Warning($"[MOGTOME][Automation] {message}");
-                Plugin.ChatGui.Print(Ui.T("Chat_MOGTOME", message));
+                Plugin.ChatGui.Print(Ui.GameT("Chat_MOGTOME", message));
                 return false;
             }
 
@@ -219,7 +219,7 @@ public sealed class DutyAutomationService
             var startupFailure = Ui.M("DutyAutomationService_AutoDutyIsStillInitializingOrFaultedRetry");
             PreparationFailure = startupFailure;
             log.Warning($"[MOGTOME][Automation] {startupFailure}");
-            Plugin.ChatGui.Print(Ui.T("Chat_MOGTOME", startupFailure));
+            Plugin.ChatGui.Print(Ui.GameT("Chat_MOGTOME", startupFailure));
             return false;
         }
 
@@ -230,7 +230,7 @@ public sealed class DutyAutomationService
             var pathFailure = Ui.M("DutyAutomationService_BundledPraetoriumPathsCouldNotBeInstalled");
             PreparationFailure = pathFailure;
             log.Warning($"[MOGTOME][Automation] {pathFailure}");
-            Plugin.ChatGui.Print(Ui.T("Chat_MOGTOME", pathFailure));
+            Plugin.ChatGui.Print(Ui.GameT("Chat_MOGTOME", pathFailure));
             return false;
         }
 
@@ -248,7 +248,7 @@ public sealed class DutyAutomationService
             if (!isCurrent()) return false;
             PreparationFailure = Ui.M("Automation_AutoDutyPreparationFailed", autoDutyPathService.ForceResult);
             log.Warning($"[MOGTOME][Automation] AutoDuty preparation failed: {autoDutyPathService.LastForceResult}");
-            Plugin.ChatGui.Print(Ui.T("Chat_MOGTOMEAutoDutyPreparationFailed", autoDutyPathService.ForceResult));
+            Plugin.ChatGui.Print(Ui.GameT("Chat_MOGTOMEAutoDutyPreparationFailed", autoDutyPathService.ForceResult));
             return false;
         }
 
@@ -477,7 +477,7 @@ public sealed class DutyAutomationService
             {
                 var message = Ui.M("DutyAutomationService_ADSDidNotHandleAdsEnterinnAfter");
                 log.Warning($"[MOGTOME][Repair] {message}");
-                Plugin.ChatGui.Print(Ui.T("Chat_MOGTOME", message));
+                Plugin.ChatGui.Print(Ui.GameT("Chat_MOGTOME", message));
             }
         }
         catch (Exception ex)
@@ -763,11 +763,11 @@ public sealed class DutyAutomationService
         var selectionInfo = GetPraetoriumSelectionInfo();
         var missingDuties = selectionInfo.Unlocks
             .Where(unlock => !unlock.IsUnlocked)
-            .Select(unlock => Ui.Duty(unlock.TerritoryTypeId).Render())
+            .Select(unlock => Ui.Duty(unlock.TerritoryTypeId).Render(Ui.GameLanguage))
             .ToArray();
         var missingSummary = missingDuties.Length > 0
             ? string.Join(", ", missingDuties)
-            : Ui.T("Stats_None");
+            : Ui.GameT("Stats_None");
 
         log.Information($"[MOGTOME][DutyQueue] Praetorium callback test -> {selectionInfo.CallbackCommand} (missing optional unlocks: {selectionInfo.MissingUnlockCount})");
         foreach (var unlock in selectionInfo.Unlocks)
@@ -775,8 +775,8 @@ public sealed class DutyAutomationService
             log.Information($"[MOGTOME][DutyQueue] Praetorium unlock check: {unlock.DutyName} -> {(unlock.IsUnlocked ? "unlocked" : "missing")} (quests: {unlock.QuestSummary})");
         }
 
-        Plugin.ChatGui.Print(Ui.T("Chat_MOGTOMEPraetoriumCallbackTest", selectionInfo.CallbackCommand));
-        Plugin.ChatGui.Print(Ui.T("Chat_MOGTOMEMissingOptionalUnlocks", missingSummary));
+        Plugin.ChatGui.Print(Ui.GameT("Chat_MOGTOMEPraetoriumCallbackTest", selectionInfo.CallbackCommand));
+        Plugin.ChatGui.Print(Ui.GameT("Chat_MOGTOMEMissingOptionalUnlocks", missingSummary));
     }
 
     private static string GetDutyName(bool isPraetorium)

@@ -529,9 +529,20 @@ public class MogtomeEngine
         {
             log.Warning($"[MOGTOME][Engine] {step} cleanup failed: {ex.Message}");
             if (CurrentState == EngineState.Stopping)
-                StopReason = Ui.M("Engine_CleanupFailed", StopReason, step, ex.Message);
+                StopReason = Ui.M("Engine_CleanupFailed", StopReason, CleanupLabel(step), ex.Message);
         }
     }
+
+    private static UiText CleanupLabel(string step) => step switch
+    {
+        "unload combat" or "completed-duty combat" or "combat" or "duty-exit combat" or "duty-exit rotation state" => Ui.M("Cleanup_Combat"),
+        "completed-duty opener" or "opener" or "duty-exit opener" or "bailout opener" => Ui.M("Cleanup_Opener"),
+        "backend" or "backend duty exit" => Ui.M("Cleanup_Backend"),
+        "dialogs" => Ui.M("Cleanup_Dialogs"),
+        "repair queue" => Ui.M("Cleanup_RepairQueue"),
+        "death tracking" or "duty-exit death tracking" => Ui.M("Cleanup_DeathTracking"),
+        _ => step,
+    };
 
     internal void RecordStopReason(UiText reason)
     {
@@ -1065,9 +1076,9 @@ public class MogtomeEngine
             Plugin.ChatGui.Print(new XivChatEntry
             {
                 Type = XivChatType.Echo,
-                Message = Ui.T("Chat_MessageAndReason", message, reason),
+                Message = Ui.GameT("Chat_MessageAndReason", message, reason),
             });
-            Plugin.ToastGui.ShowNormal(message.Render());
+            Plugin.ToastGui.ShowNormal(message.RenderGame());
         });
         if (!dutyCompleted)
         {
@@ -1209,7 +1220,7 @@ public class MogtomeEngine
         if (successful && StopAfterNextSuccessfulRunArmed)
         {
             log.Information("[MOGTOME][Engine] Stop-after-next consumed after successful run and confirmed duty exit");
-            Plugin.ChatGui.Print(Ui.T("Chat_MOGTOMEStopAfterNextCompletedStoppingBefore"));
+            Plugin.ChatGui.Print(Ui.GameT("Chat_MOGTOMEStopAfterNextCompletedStoppingBefore"));
             StopWithReason(Ui.M("Engine_StopAfterNextSuccessfulClearAndConfirmed"));
             return;
         }
@@ -1665,7 +1676,7 @@ public class MogtomeEngine
     {
         StopWithReason(Ui.M("Engine_InitializationFailed", reason));
         log.Error($"[MOGTOME][Engine] {StatusMessage}");
-        Plugin.ChatGui.PrintError(Ui.T("Chat_MOGTOME", Status));
+        Plugin.ChatGui.PrintError(Ui.GameT("Chat_MOGTOME", Status));
     }
 
     private bool IsLeaveBlocked(out UiText blocker)
@@ -2443,7 +2454,7 @@ public class MogtomeEngine
         {
             var message = Ui.M("MogtomeEngine_ManualPartyRefreshSkippedInsideDutyUse");
             log.Warning($"[MOGTOME][Engine] {message} Party={GetPartyComposition()}");
-            Plugin.ChatGui.Print(Ui.T("Chat_MOGTOME", message));
+            Plugin.ChatGui.Print(Ui.GameT("Chat_MOGTOME", message));
             return;
         }
 
@@ -2458,7 +2469,7 @@ public class MogtomeEngine
         {
             var message = Ui.M("MogtomeEngine_ManualPartyRefreshCouldNotDetermineLeader", (state.IsPartyLeader ? Ui.M("Config_Leader") : Ui.M("MogtomeEngine_NonLeader")));
             log.Warning($"[MOGTOME][Engine] {message} {details} Party={GetPartyComposition()}");
-            Plugin.ChatGui.Print(Ui.T("Chat_MOGTOME", message));
+            Plugin.ChatGui.Print(Ui.GameT("Chat_MOGTOME", message));
             return;
         }
 

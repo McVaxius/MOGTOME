@@ -3,11 +3,14 @@ using System;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Windowing;
+using Dalamud.Interface.Utility;
 
 namespace MOGTOME.Windows;
 
 public sealed class ActionWarningWindow : Window, IDisposable
 {
+    private readonly AethertekUI.Dalamud.MaterialWindowMotion windowMotion = new();
+    private readonly Plugin? plugin;
     private UiText warningTitle = Ui.M("Warning_Title");
     private UiText warningMessage = string.Empty;
     private UiText? primaryLabel;
@@ -34,6 +37,8 @@ public sealed class ActionWarningWindow : Window, IDisposable
     {
     }
 
+    public ActionWarningWindow(Plugin plugin) : this() => this.plugin = plugin;
+
     public void ShowWarning(
         UiText title,
         UiText message,
@@ -59,10 +64,20 @@ public sealed class ActionWarningWindow : Window, IDisposable
         IsOpen = true;
     }
 
-    public override void PreDraw() => WindowName = warningTitle.Render() + "###MOGTOMEActionWarning";
+    public override void PreDraw()
+    {
+        WindowName = warningTitle.Render() + "###MOGTOMEActionWarning";
+        ImGui.SetNextWindowSize(new Vector2(560f * ImGuiHelpers.GlobalScale, 0));
+        windowMotion.Prepare(this, reducedMotion: false, roundedCorners: true);
+    }
+
+    public override void PostDraw()
+        { windowMotion.Restore(this); plugin?.Appearance.PaintWindowTitle(WindowName); }
 
     public override void Draw()
     {
+        windowMotion.DrawChrome();
+        var scale = AethertekUI.MaterialTheme.Metrics.Scale;
         if (ImGui.IsWindowAppearing())
         {
             var viewport = ImGui.GetMainViewport();
@@ -71,21 +86,23 @@ public sealed class ActionWarningWindow : Window, IDisposable
             ImGui.SetWindowPos(new Vector2(MathF.Max(1f, posX), MathF.Max(1f, posY)));
         }
 
-        ImGui.TextColored(new Vector4(1f, 0.55f, 0.2f, 1f), warningTitle.Render());
+        ImGui.PushTextWrapPos(0);
+        AethertekUI.MaterialText.TextColored(new Vector4(1f, 0.55f, 0.2f, 1f), warningTitle.Render());
+        ImGui.PopTextWrapPos();
         ImGui.Spacing();
-        ImGui.TextWrapped(warningMessage.Render());
+        AethertekUI.MaterialText.TextWrapped(warningMessage.Render());
         ImGui.Spacing();
 
         if (primaryLabel != null && primaryAction != null)
         {
-            if (UiLayout.Button(primaryLabel.Render() + "###primaryLabel", new Vector2(170f, 30f)))
+            if (UiLayout.Button(primaryLabel.Render() + "###primaryLabel", new Vector2(170f * scale, 0)))
                 primaryAction();
             ImGui.Spacing();
         }
 
         if (acknowledgeLabel != null && acknowledgementAction != null)
         {
-            if (UiLayout.Button(acknowledgeLabel.Render() + "###acknowledgeLabel", new Vector2(170f, 30f)))
+            if (UiLayout.Button(acknowledgeLabel.Render() + "###acknowledgeLabel", new Vector2(170f * scale, 0)))
             {
                 choiceMade = true;
                 IsOpen = false;
@@ -94,7 +111,7 @@ public sealed class ActionWarningWindow : Window, IDisposable
             ImGui.Spacing();
         }
 
-        if (UiLayout.Button(dismissLabel.Render() + "###dismissLabel", new Vector2(150f, 30f)))
+        if (UiLayout.Button(dismissLabel.Render() + "###dismissLabel", new Vector2(150f * scale, 0)))
         {
             choiceMade = true;
             IsOpen = false;

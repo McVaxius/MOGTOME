@@ -2043,4 +2043,50 @@ DictionaryPathsとPathSelectionsByPathを比較します。
   <data name="Blunderville_ConfigurePurchases" xml:space="preserve">
     <value>購入設定</value>
   </data>
+  <data name="Ui_Color" xml:space="preserve"><value>色</value></data>
+  <data name="Ui_Teal" xml:space="preserve"><value>ティール</value></data>
+  <data name="Ui_Blue" xml:space="preserve"><value>青</value></data>
+  <data name="Ui_Pink" xml:space="preserve"><value>ピンク</value></data>
+  <data name="Ui_CustomRgb" xml:space="preserve"><value>カスタムRGB</value></data>
+  <data name="Ui_CompactMode" xml:space="preserve"><value>コンパクトモード</value></data>
+  <data name="Ui_LoadingFonts" xml:space="preserve"><value>UIフォントを読み込み中...</value></data>
+  <data name="Ui_FontFailure" xml:space="preserve"><value>UIフォントの読み込みに失敗しました。プラグインログを確認してください。</value></data>
+  <data name="Main_Subtitle" xml:space="preserve"><value>Management Of Grand Tome Operations &amp; Management Engine</value></data>
+  <data name="Main_OpenBlunderville" xml:space="preserve"><value>Blunderville Failerを開く</value></data>
+  <data name="Main_StateHeading" xml:space="preserve"><value>状態</value></data>
+  <data name="Main_StatusHeading" xml:space="preserve"><value>ステータス</value></data>
+  <data name="Main_Running" xml:space="preserve"><value>実行中</value></data>
+  <data name="Main_Stopped" xml:space="preserve"><value>停止中</value></data>
+  <data name="Main_DutyCurrent" xml:space="preserve"><value>現在</value></data>
+  <data name="Main_DutyCounter" xml:space="preserve"><value>カウンター</value></data>
+  <data name="Main_DailyDecuHeading" xml:space="preserve"><value>本日のDecu周回数</value></data>
+  <data name="Main_DailyResetHeading" xml:space="preserve"><value>デイリーリセット</value></data>
+  <data name="Main_PartySummary" xml:space="preserve"><value>パーティ概要</value></data>
+  <data name="Main_InParty" xml:space="preserve"><value>パーティ参加中</value></data>
+  <data name="Main_NoParty" xml:space="preserve"><value>パーティメンバーを確認できません。</value></data>
+  <data name="Main_PartyDetails" xml:space="preserve"><value>パーティ詳細</value></data>
+  <data name="Main_DutyDetails" xml:space="preserve"><value>コンテンツ詳細</value></data>
+  <data name="Main_CounterValue" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="Main_ResetUtc" xml:space="preserve"><value>{0:HH:mm} UTC</value></data>
+  <data name="Main_CurrentProfile" xml:space="preserve"><value>現在のプロフィール：{0}</value></data>
+  <data name="Main_HelpTitle" xml:space="preserve"><value>ヘルプ</value></data>
+  <data name="Blunderville_FarmingHeading" xml:space="preserve"><value>このビルドでは周回できません。</value></data>
+  <data name="Blunderville_FarmingDetail" xml:space="preserve"><value>現在、Blunderville Failerで自動周回はできません。</value></data>
+  <data name="Blunderville_PurchasesHeading" xml:space="preserve"><value>自動購入は利用できません。</value></data>
+  <data name="Blunderville_PurchasesDetail" xml:space="preserve"><value>このビルドでは自動購入機能を利用できません。</value></data>
+  <data name="Cleanup_Opener" xml:space="preserve"><value>開始シーケンス</value></data>
+  <data name="Cleanup_Backend" xml:space="preserve"><value>バックエンド</value></data>
+  <data name="Cleanup_Dialogs" xml:space="preserve"><value>ダイアログ</value></data>
+  <data name="Cleanup_RepairQueue" xml:space="preserve"><value>修理キュー</value></data>
+  <data name="Cleanup_DeathTracking" xml:space="preserve"><value>死亡追跡</value></data>
+  <data name="Cleanup_Combat" xml:space="preserve"><value>戦闘</value></data>
+  <data name="Main_Open" xml:space="preserve"><value>開く</value></data>
+  <data name="Window appearance" xml:space="preserve"><value>ウィンドウの外観</value></data>
+  <data name="Compact visible on main window" xml:space="preserve"><value>メインウィンドウにコンパクト切替を表示</value></data>
+  <data name="Language visible on main window" xml:space="preserve"><value>メインウィンドウに言語選択を表示</value></data>
+  <data name="Transparency" xml:space="preserve"><value>透明度</value></data>
+  <data name="Opacity (%)" xml:space="preserve"><value>不透明度 (%)</value></data>
+  <data name="Auto-fade when unfocused" xml:space="preserve"><value>フォーカスがないときに自動で薄くする</value></data>
+  <data name="Unfocused opacity (%)" xml:space="preserve"><value>非フォーカス時の不透明度 (%)</value></data>
+  <data name="Unfocused delay (seconds)" xml:space="preserve"><value>非フォーカス時の待機時間 (秒)</value></data>
 </root>

@@ -2043,4 +2043,50 @@ Résultats dans le journal Dalamud.</value>
   <data name="Blunderville_ConfigurePurchases" xml:space="preserve">
     <value>Configurer les achats</value>
   </data>
+  <data name="Ui_Color" xml:space="preserve"><value>Couleur</value></data>
+  <data name="Ui_Teal" xml:space="preserve"><value>Turquoise</value></data>
+  <data name="Ui_Blue" xml:space="preserve"><value>Bleu</value></data>
+  <data name="Ui_Pink" xml:space="preserve"><value>Rose</value></data>
+  <data name="Ui_CustomRgb" xml:space="preserve"><value>RVB personnalisé</value></data>
+  <data name="Ui_CompactMode" xml:space="preserve"><value>Mode compact</value></data>
+  <data name="Ui_LoadingFonts" xml:space="preserve"><value>Chargement des polices de l’interface...</value></data>
+  <data name="Ui_FontFailure" xml:space="preserve"><value>Échec du chargement des polices. Consultez le journal du plugin.</value></data>
+  <data name="Main_Subtitle" xml:space="preserve"><value>Management Of Grand Tome Operations &amp; Management Engine</value></data>
+  <data name="Main_OpenBlunderville" xml:space="preserve"><value>Ouvrir Blunderville Failer</value></data>
+  <data name="Main_StateHeading" xml:space="preserve"><value>État</value></data>
+  <data name="Main_StatusHeading" xml:space="preserve"><value>Statut</value></data>
+  <data name="Main_Running" xml:space="preserve"><value>En cours</value></data>
+  <data name="Main_Stopped" xml:space="preserve"><value>Arrêté</value></data>
+  <data name="Main_DutyCurrent" xml:space="preserve"><value>Actuel</value></data>
+  <data name="Main_DutyCounter" xml:space="preserve"><value>Compteur</value></data>
+  <data name="Main_DailyDecuHeading" xml:space="preserve"><value>Runs Decu du jour</value></data>
+  <data name="Main_DailyResetHeading" xml:space="preserve"><value>Réinitialisation quotidienne</value></data>
+  <data name="Main_PartySummary" xml:space="preserve"><value>Résumé du groupe</value></data>
+  <data name="Main_InParty" xml:space="preserve"><value>En groupe</value></data>
+  <data name="Main_NoParty" xml:space="preserve"><value>Aucun membre du groupe observé.</value></data>
+  <data name="Main_PartyDetails" xml:space="preserve"><value>Détails du groupe</value></data>
+  <data name="Main_DutyDetails" xml:space="preserve"><value>Détails du donjon</value></data>
+  <data name="Main_CounterValue" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="Main_ResetUtc" xml:space="preserve"><value>{0:HH:mm} UTC</value></data>
+  <data name="Main_CurrentProfile" xml:space="preserve"><value>Profil actuel : {0}</value></data>
+  <data name="Main_HelpTitle" xml:space="preserve"><value>AIDE</value></data>
+  <data name="Blunderville_FarmingHeading" xml:space="preserve"><value>Le farming est indisponible dans cette version.</value></data>
+  <data name="Blunderville_FarmingDetail" xml:space="preserve"><value>Blunderville Failer ne permet pas le farming automatique pour le moment.</value></data>
+  <data name="Blunderville_PurchasesHeading" xml:space="preserve"><value>Les achats automatiques sont indisponibles.</value></data>
+  <data name="Blunderville_PurchasesDetail" xml:space="preserve"><value>La fonction d’achat automatique est indisponible dans cette version.</value></data>
+  <data name="Cleanup_Opener" xml:space="preserve"><value>séquence d’ouverture</value></data>
+  <data name="Cleanup_Backend" xml:space="preserve"><value>backend</value></data>
+  <data name="Cleanup_Dialogs" xml:space="preserve"><value>dialogues</value></data>
+  <data name="Cleanup_RepairQueue" xml:space="preserve"><value>file de réparation</value></data>
+  <data name="Cleanup_DeathTracking" xml:space="preserve"><value>suivi des morts</value></data>
+  <data name="Cleanup_Combat" xml:space="preserve"><value>combat</value></data>
+  <data name="Main_Open" xml:space="preserve"><value>Ouvrir</value></data>
+  <data name="Window appearance" xml:space="preserve"><value>Apparence de la fenêtre</value></data>
+  <data name="Compact visible on main window" xml:space="preserve"><value>Afficher le mode compact dans la fenêtre principale</value></data>
+  <data name="Language visible on main window" xml:space="preserve"><value>Afficher la langue dans la fenêtre principale</value></data>
+  <data name="Transparency" xml:space="preserve"><value>Transparence</value></data>
+  <data name="Opacity (%)" xml:space="preserve"><value>Opacité (%)</value></data>
+  <data name="Auto-fade when unfocused" xml:space="preserve"><value>Atténuer automatiquement sans focus</value></data>
+  <data name="Unfocused opacity (%)" xml:space="preserve"><value>Opacité sans focus (%)</value></data>
+  <data name="Unfocused delay (seconds)" xml:space="preserve"><value>Délai sans focus (secondes)</value></data>
 </root>

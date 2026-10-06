@@ -13,6 +13,18 @@ public class Configuration
 {
     public int Version { get; set; } = 2;
     public Localization.UiLanguage? UiLanguage { get; set; }
+    public uint UiAccentRgb { get; set; } = UiDesign.MogtomePresentation.ReferenceAccent;
+    public bool UiCompact { get; set; }
+    public bool UiCompactVisibleOnMainWindow { get; set; } = true;
+    public bool UiLanguageVisibleOnMainWindow { get; set; } = true;
+    public bool UiTransparencyEnabled { get; set; } = true;
+    private int uiWindowOpacityPercent = 100;
+    public int UiWindowOpacityPercent { get => uiWindowOpacityPercent; set => uiWindowOpacityPercent = Math.Clamp(value, 10, 100); }
+    public bool UiAutoFade { get; set; } = true;
+    private int uiFadedOpacityPercent = 50;
+    public int UiFadedOpacityPercent { get => uiFadedOpacityPercent; set => uiFadedOpacityPercent = Math.Clamp(value, 10, 100); }
+    private int uiUnfocusedDelaySeconds = 10;
+    public int UiUnfocusedDelaySeconds { get => uiUnfocusedDelaySeconds; set => uiUnfocusedDelaySeconds = Math.Max(0, value); }
 
     // --- Party Settings ---
     public bool IsPartyLeader { get; set; } = false;

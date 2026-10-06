@@ -133,7 +133,7 @@ public sealed class ConflictPluginService
         if (!result.FinalStatus.IsLoaded)
         {
             var successMessage = Ui.M("Conflict_WasEnabledAndHasBeenAutoDisabled", TwistOfFayteDisplayName);
-            Plugin.ChatGui.Print(Ui.T("Chat_MOGTOME", successMessage));
+            Plugin.ChatGui.Print(Ui.GameT("Chat_MOGTOME", successMessage));
             log.Information($"[MOGTOME][Conflict] {successMessage} Match={DescribePluginStatus(result.InitialStatus)} DisableAttempted={result.DisableAttempted}");
 
             if (showPopup)
@@ -146,7 +146,7 @@ public sealed class ConflictPluginService
         }
 
         var failureMessage = Ui.M("Conflict_IsStillEnabledMOGTOMEWillKeepRunning", TwistOfFayteDisplayName, TwistOfFayteDisableCommand);
-        Plugin.ChatGui.Print(Ui.T("Chat_MOGTOME", failureMessage));
+        Plugin.ChatGui.Print(Ui.GameT("Chat_MOGTOME", failureMessage));
         log.Warning($"[MOGTOME][Conflict] {failureMessage} Match={DescribePluginStatus(result.FinalStatus)} DisableAttempted={result.DisableAttempted}");
 
         if (showPopup)
@@ -181,7 +181,7 @@ public sealed class ConflictPluginService
         if (!result.FinalStatus.IsLoaded)
         {
             var successMessage = Ui.M("Conflict_WasEnabledAndHasBeenAutoDisabled2", AutoDutyDisplayName);
-            Plugin.ChatGui.Print(Ui.T("Chat_MOGTOME", successMessage));
+            Plugin.ChatGui.Print(Ui.GameT("Chat_MOGTOME", successMessage));
             log.Information($"[MOGTOME][Conflict] {successMessage} Match={DescribePluginStatus(result.InitialStatus)} DisableAttempted={result.DisableAttempted}");
 
             if (showPopup)
@@ -191,7 +191,7 @@ public sealed class ConflictPluginService
         }
 
         var failureMessage = Ui.M("Conflict_IsStillEnabledADSModeExpects", AutoDutyDisplayName, AutoDutyDisableCommand);
-        Plugin.ChatGui.Print(Ui.T("Chat_MOGTOME", failureMessage));
+        Plugin.ChatGui.Print(Ui.GameT("Chat_MOGTOME", failureMessage));
         log.Warning($"[MOGTOME][Conflict] {failureMessage} Match={DescribePluginStatus(result.FinalStatus)} DisableAttempted={result.DisableAttempted}");
 
         if (showPopup)

@@ -8,6 +8,7 @@ namespace MOGTOME.Windows;
 
 public sealed class WarningTextWindow : Window, IDisposable
 {
+    private readonly AethertekUI.Dalamud.MaterialWindowMotion windowMotion = new();
     public const int CurrentWarningVersion = 0;
 
     private static readonly UiText[] WarningLines =
@@ -58,6 +59,8 @@ public sealed class WarningTextWindow : Window, IDisposable
         : base(Ui.T("Window_MOGTOMEWarningText") + "###MOGTOMEWarningText", ImGuiWindowFlags.NoCollapse)
     {
         this.plugin = plugin;
+        Size = new Vector2(600f, 420f);
+        SizeCondition = ImGuiCond.FirstUseEver;
         RespectCloseHotkey = false;
         SizeConstraints = new WindowSizeConstraints
         {
@@ -88,10 +91,18 @@ public sealed class WarningTextWindow : Window, IDisposable
         IsOpen = true;
     }
 
-    public override void PreDraw() => WindowName = Ui.T("Window_MOGTOMEWarningText") + "###MOGTOMEWarningText";
+    public override void PreDraw()
+    {
+        WindowName = Ui.T("Window_MOGTOMEWarningText") + "###MOGTOMEWarningText";
+        windowMotion.Prepare(this, reducedMotion: false, roundedCorners: true);
+    }
+
+    public override void PostDraw()
+        { windowMotion.Restore(this); plugin.Appearance.PaintWindowTitle(WindowName); }
 
     public override void Draw()
     {
+        windowMotion.DrawChrome();
         if (ImGui.IsWindowAppearing())
         {
             var viewport = ImGui.GetMainViewport();
@@ -100,19 +111,22 @@ public sealed class WarningTextWindow : Window, IDisposable
             ImGui.SetWindowPos(new Vector2(MathF.Max(1f, posX), MathF.Max(1f, posY)));
         }
 
-        ImGui.TextColored(new Vector4(1.0f, 0.55f, 0.2f, 1.0f), Ui.T("WarningText_ReadThisBeforeRunningMOGTOME"));
-        ImGui.SameLine();
+        ImGui.PushTextWrapPos(0);
+        AethertekUI.MaterialText.TextColored(new Vector4(1.0f, 0.55f, 0.2f, 1.0f), Ui.T("WarningText_ReadThisBeforeRunningMOGTOME"));
+        ImGui.PopTextWrapPos();
+        UiLayout.SameLineIfFits(AethertekUI.MaterialText.Measure(Ui.T("WarningText_WarningV", CurrentWarningVersion)).X);
         UiLayout.TextDisabled(Ui.T("WarningText_WarningV", CurrentWarningVersion));
         ImGui.Spacing();
 
         foreach (var line in WarningLines)
         {
-            ImGui.TextWrapped(line.Render());
+            AethertekUI.MaterialText.TextWrapped(line.Render());
             ImGui.Spacing();
         }
 
-        var buttonWidth = MathF.Max(260f, ImGui.GetContentRegionAvail().X);
-        if (UiLayout.Button(Ui.L("WarningText_OKIREADIT"), new Vector2(buttonWidth, 42f)))
+        var scale = AethertekUI.MaterialTheme.Metrics.Scale;
+        var buttonWidth = MathF.Max(260f * scale, ImGui.GetContentRegionAvail().X);
+        if (UiLayout.Button(Ui.L("WarningText_OKIREADIT"), new Vector2(buttonWidth, 42f * scale)))
         {
             plugin.Configuration.WarningPopupAcknowledgedVersion = CurrentWarningVersion;
             plugin.ConfigManager.SaveCurrentAccount();

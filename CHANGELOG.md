@@ -1,5 +1,55 @@
 # Changelog
 
+## Unreleased - GitHub Actions dependency alignment
+
+- Pin the existing AethertekUI Actions checkout to published revision `6c193cf06ac67f954c549cafc2033ac0efdd630a`, which includes the Hindi text host and renderer. This fixes missing-text-API compilation after a consumer is published before its library; local workflow validation and hosted build results are separate.
+
+## Unreleased - Hindi interface
+
+- Append Hindi to the existing language choices and translate all 744 authored interface and status messages. Retain saved language ordinals, account storage, native controls, command tokens and game actions.
+- Shape Hindi through the consumer-owned Windows text host across windows, fields, tabs, tables, tooltips and titles. Keep existing font roles, files, symbols and CJK merges. Game-owned chat, toast and command-help text uses English when Hindi is selected.
+- Retain native Combo option identities by hashing the original integer indices; the managed pointer-ID overload has a different hash on x64.
+- Debug/x64 source compilation passes with no warnings or errors against the frozen AethertekUI core and adapter. Hindi catalog and native appearance/save checks pass, including the nine original Combo option IDs. Offline Main/Blunderville, Settings, Statistics and warning checks retain complete text ink, all eight font roles, native actions and save/callback behavior in both densities and 100%/150% scales. The retained auxiliary matrix covers 324 cases plus 80 Main state/detail cases. Managed-host, game, GPU and IME acceptance remain separate.
+
+## Unreleased - Window appearance and transparency
+
+- Add the Window appearance settings section with retained colour, compact and language controls, independent main-window visibility preferences, and a main transparency switch. Save opacity/fade preferences through the existing configuration: 100% normal, automatic 50% after ten unfocused seconds by default; clamp opacity to 10 to 100% and delay to nonnegative values. Apply opacity once after native End and motion restoration for each window tree, including chrome, owned content and images. Build/configuration checks and game acceptance remain separate.
+
+
+## 2026-10-05 - Rounded window chrome and native minimize (source adoption)
+
+- Adopt per-window rounded chrome and animated native minimize/restore through the native lifecycle, including font status. Retain ActionWarning and WarningText's NoCollapse while rounding their chrome; preserve control identities, layout, saved geometry and actions.
+- Compilation, native interaction and game acceptance for this source adoption remain pending verification.
+
+## 2026-10-04 - Retained window sizing
+
+- Keep complete Settings tab captions scrollable and numeric fields readable without changing native identities or editing behavior. Place the translated unsynced explanation beneath its original checkbox.
+- Reflow statistics navigation and size job/player cards from their actual content. Keep history columns readable through native horizontal scrolling, including full translated headings and status details.
+- Scale warning actions and choose the initial warning-text size through the native window lifecycle, retaining explicit-choice, close, callback and acknowledgement-save behavior.
+
+## 2026-10-04 - Header artwork and typography
+
+- Draw the approved moogle header artwork with native meshes, retaining the original embedded icon and Blunderville navigation control identity.
+- Use separate regular serif and compact bold sans-serif brand fonts to follow each approved reference. Preserve the six original text-role identities, faces, heights and glyph merges.
+- Keep the translated header subtitle on one line and reserve space below adjacent controls when needed. Paint the clean HELP caption while retaining its original native action and callback.
+
+## 2026-10-03 - Readable text and single-line controls
+
+- Fit full translated action labels and icons on one line, moving whole controls to another row when needed. Keep party names, roles, status labels and duty field labels on one line; stack complete fields when they exceed the row.
+- Match managed font atlas line heights to the approved text proportions in both densities, and scope paragraph wrapping to explicit text. Show the current assembly version in the main title while retaining its native window ID.
+
+## 2026-10-03 - Final UI review
+
+- Validate the captured managed-font generation so an atlas rebuild during glyph inspection remains pending for the next frame.
+- Route the retained `make.bat` alias through the pinned direct-plugin launcher, preserving build arguments and exit status.
+
+
+## 2026-10-02 - Build and release repair
+
+- Pin GitHub builds to SDK 10.0.201 and pass the downloaded Dalamud library path. Restore and build plugin projects with matching configuration, platform and runtime; stop on restore failure.
+- Keep build tokens read-only and release writes in a separate job. Use packaged manifest versions for untagged releases.
+- Local launchers build the plugin directly in the pinned environment and return its exit status.
+
 All notable changes to MOGTOME will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
@@ -8,6 +58,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 ## [Unreleased]
+
+### UI adoption
+- Adopted the approved regular and compact AethertekUI designs for Main and Blunderville, with real engine status, adaptive action rows, duty and observed-party cards, and retained diagnostic actions. Blunderville farming and purchase automation remain disabled; Settings, Statistics, and warning layouts are retained.
+- Added account-owned whole-theme colour selection and shared compact mode through the existing account save path. Appearance selectors are mirrored in Settings, and existing language enum values, native control/window IDs, account data, and version 1.2.0.1 remain intact.
+- Extended interface resources to fourteen languages by appending Vietnamese, Brazilian Portuguese, Indonesian, Polish and Turkish after the original nine saved enum values. Include 736 complete phrases and satellite resources per language, retain account-owned save paths and native control IDs, and size the selected language name for its measured text. Typed runtime details remain localizable; raw values and client-language game recognition stay independent. Unsupported game-sheet UI languages retain English game names.
+- Added managed Segoe/symbol/host Noto CJK fonts with atlas readiness and required-glyph checks, and included AethertekUI.dll plus all satellite resources in plugin artifacts. The Release build and 230 focused localization tests pass; game visual acceptance remains outstanding, and no live client was used.
 
 ### Added
 - Added the pink Blunderville Failer preview via `/blunderville`, `/bv`, and main-window navigation, with a moogle button back to MOGTOME. Farming Start/Stop and Configure purchases remain disabled, with unavailable-preview labels in all four languages. No farming, ADS purchases, or saved settings are added; runtime appearance remains unverified.

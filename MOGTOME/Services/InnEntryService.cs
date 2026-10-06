@@ -69,7 +69,7 @@ public class InnEntryService
         if (!Plugin.ClientState.IsLoggedIn || Plugin.ObjectTable.LocalPlayer == null)
         {
             if (!string.IsNullOrWhiteSpace(missingCharacterMessage.English))
-                Plugin.ChatGui.Print(missingCharacterMessage.Render());
+                Plugin.ChatGui.Print(missingCharacterMessage.RenderGame());
             return;
         }
 
@@ -80,7 +80,7 @@ public class InnEntryService
         {
             var territoryName = GameHelpers.GetTerritoryName(Plugin.ClientState.TerritoryType);
             log.Information($"[MOGTOME][Inn] /mog inn skipped because the player is already inside inn territory {territoryName}");
-            Plugin.ChatGui.Print(Ui.T("Chat_MOGTOMEAlreadyInsideInnTerritory", Ui.Duty(Plugin.ClientState.TerritoryType)));
+            Plugin.ChatGui.Print(Ui.GameT("Chat_MOGTOMEAlreadyInsideInnTerritory", Ui.Duty(Plugin.ClientState.TerritoryType)));
             return;
         }
 
@@ -88,7 +88,7 @@ public class InnEntryService
         if (npc == null)
         {
             log.Information($"[MOGTOME][Inn] /mog inn found no innkeeper within {SearchRadiusYalms:F0}y; treating as no-op success");
-            Plugin.ChatGui.Print(Ui.T("Chat_MOGTOMENoInnkeeperFoundWithinYMog", SearchRadiusYalms));
+            Plugin.ChatGui.Print(Ui.GameT("Chat_MOGTOMENoInnkeeperFoundWithinYMog", SearchRadiusYalms));
             return;
         }
 
@@ -167,7 +167,7 @@ public class InnEntryService
         targetNpcName = string.Empty;
 
         if (notifyUser)
-            Plugin.ChatGui.Print(Ui.T("Chat_MOGTOMEMogInnCancelled", reason));
+            Plugin.ChatGui.Print(Ui.GameT("Chat_MOGTOMEMogInnCancelled", reason));
     }
 
     private void UpdateMovingToNpc()
@@ -300,7 +300,7 @@ public class InnEntryService
     {
         vNavIPC.Stop();
         log.Information($"[MOGTOME][Inn] {message}");
-        Plugin.ChatGui.Print(Ui.T("Chat_MOGTOME", message));
+        Plugin.ChatGui.Print(Ui.GameT("Chat_MOGTOME", message));
         state = InnEntryState.Idle;
         Status = Ui.M("EngineState_Idle");
         targetNpcName = string.Empty;
@@ -310,7 +310,7 @@ public class InnEntryService
     {
         vNavIPC.Stop();
         log.Warning($"[MOGTOME][Inn] {message}");
-        Plugin.ChatGui.Print(Ui.T("Chat_MOGTOME", message));
+        Plugin.ChatGui.Print(Ui.GameT("Chat_MOGTOME", message));
         state = InnEntryState.Idle;
         Status = Ui.M("EngineState_Idle");
         targetNpcName = string.Empty;

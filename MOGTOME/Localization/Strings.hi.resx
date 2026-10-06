@@ -1,0 +1,2264 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms</value>
+  </resheader>
+  <data name="Config_SetupWizard" xml:space="preserve">
+    <value>सेटअप सहायक</value>
+  </data>
+  <data name="Config_DependencyCheck" xml:space="preserve">
+    <value>निर्भरता जाँच</value>
+  </data>
+  <data name="Config_Party" xml:space="preserve">
+    <value>पार्टी</value>
+  </data>
+  <data name="Config_Duty" xml:space="preserve">
+    <value>ड्यूटी</value>
+  </data>
+  <data name="Config_FoodPots" xml:space="preserve">
+    <value>भोजन और पोशन</value>
+  </data>
+  <data name="Config_Repair" xml:space="preserve">
+    <value>मरम्मत</value>
+  </data>
+  <data name="Config_Advanced" xml:space="preserve">
+    <value>उन्नत</value>
+  </data>
+  <data name="Config_BackendMode" xml:space="preserve">
+    <value>बैकएंड मोड</value>
+  </data>
+  <data name="Config_UseADSPrimaryBackend" xml:space="preserve">
+    <value>ADS का उपयोग करें (मुख्य बैकएंड)</value>
+  </data>
+  <data name="Config_ADSHandlesDutyAutomationAndInnReturn" xml:space="preserve">
+    <value>ADS ड्यूटी ऑटोमेशन और इन लौटना संभालता है। AutoDuty एक वैकल्पिक बैकएंड है।</value>
+  </data>
+  <data name="Config_AutoDutyIsTheAlternativeDutyBackendADS" xml:space="preserve">
+    <value>AutoDuty वैकल्पिक ड्यूटी बैकएंड है। ADS केवल ADS मोड चुनने या /mog inn अनुरोध करने पर आवश्यक है।</value>
+  </data>
+  <data name="Config_RequiredPlugins" xml:space="preserve">
+    <value>आवश्यक प्लगइन</value>
+  </data>
+  <data name="Config_SetupRequirementsAreIncompleteTheWizardIs" xml:space="preserve">
+    <value>सेटअप की आवश्यकताएँ अधूरी हैं। सहायक केवल मार्गदर्शन देता है और Start को नहीं रोकता।</value>
+  </data>
+  <data name="Config_RSRRotationSolverReborn" xml:space="preserve">
+    <value>RSR (RotationSolverReborn)</value>
+  </data>
+  <data name="Config_Installed" xml:space="preserve">
+    <value>इंस्टॉल है</value>
+  </data>
+  <data name="Config_NOTFOUND" xml:space="preserve">
+    <value>नहीं मिला</value>
+  </data>
+  <data name="Config_BossModPassiveSupportBMROrVBM" xml:space="preserve">
+    <value>BossMod निष्क्रिय सहायता (BMR या VBM)</value>
+  </data>
+  <data name="Config_BMRLoaded" xml:space="preserve">
+    <value>BMR लोड है</value>
+  </data>
+  <data name="Config_VBMLoaded" xml:space="preserve">
+    <value>VBM लोड है</value>
+  </data>
+  <data name="Config_BossModRebornBMR" xml:space="preserve">
+    <value>BossModReborn (BMR)</value>
+  </data>
+  <data name="Config_BossModVBM" xml:space="preserve">
+    <value>BossMod (VBM)</value>
+  </data>
+  <data name="Config_RSRHandlesAttacksTheLoadedBossModVariant" xml:space="preserve">
+    <value>RSR हमले संभालता है; लोड किया गया BossMod संस्करण स्वतः passive - tank/melee/ranged का उपयोग करता है।</value>
+  </data>
+  <data name="Config_BMRHandlesAttacksAndMovementWithFRENRIDER" xml:space="preserve">
+    <value>BMR, FRENRIDER - TANK/MELEE/RANGED या आपके मैन्युअल प्रीसेट से हमले और गति संभालता है।</value>
+  </data>
+  <data name="Config_VBMHandlesAttacksAndMovementWithFRENRIDER" xml:space="preserve">
+    <value>VBM, FRENRIDER - TANK/MELEE/RANGED या आपके मैन्युअल प्रीसेट से हमले और गति संभालता है।</value>
+  </data>
+  <data name="Config_WrathHandlesAttacksUsingItsCurrentSettings" xml:space="preserve">
+    <value>Wrath अपनी वर्तमान सेटिंग से हमले संभालता है।</value>
+  </data>
+  <data name="Config_UseManualBossModPreset" xml:space="preserve">
+    <value>मैन्युअल BossMod प्रीसेट का उपयोग करें</value>
+  </data>
+  <data name="Config_PresetName" xml:space="preserve">
+    <value>प्रीसेट का नाम</value>
+  </data>
+  <data name="Config_EnterAnExistingPresetNameBeforeStarting" xml:space="preserve">
+    <value>शुरू करने से पहले मौजूदा प्रीसेट का नाम दर्ज करें।</value>
+  </data>
+  <data name="Config_MOGTOMESelectsItsPackagedActivePresetBy" xml:space="preserve">
+    <value>MOGTOME हर ड्यूटी शुरू होने पर वर्तमान भूमिका के अनुसार अपना पैकेज किया गया सक्रिय प्रीसेट चुनता है।</value>
+  </data>
+  <data name="Config_BothBossModVariantsAreLoadedStartDisables" xml:space="preserve">
+    <value>दोनों BossMod संस्करण लोड हैं। Start, VBM को बंद करता है और BMR को फिर लोड करता है; VBM चयन BMR में बदलता है, जबकि RSR चुना रहता है।</value>
+  </data>
+  <data name="Config_MOGTOMERunsXaSkipcutscenesOnBeforeEvery" xml:space="preserve">
+    <value>MOGTOME हर मैन्युअल प्रारंभ से पहले /xa skipcutscenes on चलाता है।</value>
+  </data>
+  <data name="Config_OptionalEnablesMogInnDelegation" xml:space="preserve">
+    <value>वैकल्पिक। /mog inn कार्य सौंपना सक्षम करता है।</value>
+  </data>
+  <data name="Config_OptionalPlugins" xml:space="preserve">
+    <value>वैकल्पिक प्लगइन</value>
+  </data>
+  <data name="Config_OptionalNotRequiredByMOGTOME" xml:space="preserve">
+    <value>वैकल्पिक। MOGTOME के लिए आवश्यक नहीं।</value>
+  </data>
+  <data name="Config_RecommendedAppearanceNameplateRandomizer" xml:space="preserve">
+    <value>अनुशंसित। रूप और नेमप्लेट को यादृच्छिक करता है।</value>
+  </data>
+  <data name="Config_CustomResolutionPpByX0ade" xml:space="preserve">
+    <value>CustomResolution (0x0ade का 1pp)</value>
+  </data>
+  <data name="Config_ExperimentalAndNotRecommendedLowSpecHelper" xml:space="preserve">
+    <value>प्रयोगात्मक और अनुशंसित नहीं। Low Spec Helper।</value>
+  </data>
+  <data name="Config_MaybeCrashyWithClients" xml:space="preserve">
+    <value>2+ क्लाइंट के साथ क्रैश हो सकता है</value>
+  </data>
+  <data name="Config_WillCauseSomeIssuesSometimes" xml:space="preserve">
+    <value>कभी-कभी समस्याएँ हो सकती हैं।</value>
+  </data>
+  <data name="Config_DPSDhogPotatoSystem" xml:space="preserve">
+    <value>DPS (Dhog Potato System)</value>
+  </data>
+  <data name="Config_MayHavePathingIssues" xml:space="preserve">
+    <value>रास्ता तय करने में समस्याएँ हो सकती हैं।</value>
+  </data>
+  <data name="Config_ExperimentalAndNotRecommendedRemoteHUDControl" xml:space="preserve">
+    <value>प्रयोगात्मक और अनुशंसित नहीं। Remote HUD + Control।</value>
+  </data>
+  <data name="Config_VeryNewPluginUnknownIssues" xml:space="preserve">
+    <value>बहुत नया प्लगइन; समस्याएँ अज्ञात हैं।</value>
+  </data>
+  <data name="Config_ConflictingPlugins" xml:space="preserve">
+    <value>टकराव वाले प्लगइन</value>
+  </data>
+  <data name="Config_AutoDutyPath" xml:space="preserve">
+    <value>AutoDuty पथ</value>
+  </data>
+  <data name="Config_PraetoriumPathINSTALLED" xml:space="preserve">
+    <value>Praetorium पथ: इंस्टॉल है ({0})</value>
+  </data>
+  <data name="Config_PraetoriumPathNOTFOUND" xml:space="preserve">
+    <value>Praetorium पथ: नहीं मिला ({0})</value>
+  </data>
+  <data name="Config_InstallBundledPraetoriumPaths" xml:space="preserve">
+    <value>पैकेज किए गए Praetorium पथ इंस्टॉल करें</value>
+  </data>
+  <data name="Config_ThisCopiesTheBundledW2WPraetoriumPath" xml:space="preserve">
+    <value>यह MOGTOME के data फ़ोल्डर से पैकेज की गई W2W Praetorium पथ फ़ाइलें AutoDuty के paths फ़ोल्डर में कॉपी करता है।</value>
+  </data>
+  <data name="Config_ADSIsOptionalInAutoDutyModeMog" xml:space="preserve">
+    <value>AutoDuty मोड में ADS वैकल्पिक है; स्पष्ट रूप से माँगे जाने पर /mog inn को ADS चाहिए।</value>
+  </data>
+  <data name="Config_ADSModeNotes" xml:space="preserve">
+    <value>ADS मोड संबंधी जानकारी</value>
+  </data>
+  <data name="Config_ADSModeDisablesAutoDutyImmediatelyAndAgain" xml:space="preserve">
+    <value>ADS मोड AutoDuty को तुरंत और Start पर फिर बंद करता है। कतार ADS नियंत्रण और सीधे ड्यूटी फ़ाइंडर पंजीकरण का उपयोग करती है।</value>
+  </data>
+  <data name="Config_RepairInnLeaveSwitchToAdsNpcrepair" xml:space="preserve">
+    <value>मरम्मत/इन/बाहर निकलना क्रमशः /ads npcrepair, /ads selfrepair, /ads enterinn और /ads leave का उपयोग करते हैं।</value>
+  </data>
+  <data name="Config_TheCheckboxChangesTheDutyBackendADS" xml:space="preserve">
+    <value>यह चेकबॉक्स ड्यूटी बैकएंड बदलता है। ADS केवल ADS मोड चुने रहने पर आवश्यक है।</value>
+  </data>
+  <data name="Config_OK" xml:space="preserve">
+    <value>[OK]</value>
+  </data>
+  <data name="Config_CopyRepo" xml:space="preserve">
+    <value>रिपॉज़िटरी कॉपी करें</value>
+  </data>
+  <data name="Config_CopyRepoURLToClipboardThenAdd" xml:space="preserve">
+    <value>रिपॉज़िटरी URL क्लिपबोर्ड में कॉपी करें, फिर इसे यहाँ जोड़ें:
+Dalamud Settings &gt; Experimental &gt; Custom Plugin Repositories</value>
+  </data>
+  <data name="Config_NotInstalledOptional" xml:space="preserve">
+    <value>इंस्टॉल नहीं है (वैकल्पिक)</value>
+  </data>
+  <data name="Config_EnabledKnownMOGTOMEConflict" xml:space="preserve">
+    <value>सक्षम है — ज्ञात MOGTOME टकराव</value>
+  </data>
+  <data name="Config_InstalledButDisabled" xml:space="preserve">
+    <value>इंस्टॉल है, लेकिन बंद है</value>
+  </data>
+  <data name="Config_NotInstalled" xml:space="preserve">
+    <value>इंस्टॉल नहीं है</value>
+  </data>
+  <data name="Config_DisableNow" xml:space="preserve">
+    <value>अभी बंद करें</value>
+  </data>
+  <data name="Config_MOGTOMETriesXldisablepluginTwistOfFayteWhenYouStart" xml:space="preserve">
+    <value>शुरू होने पर MOGTOME, /xldisableplugin TwistOfFayte चलाने की कोशिश करता है, लेकिन यह अब प्रारंभ नहीं रोकता।</value>
+  </data>
+  <data name="Config_ThisGuideIsAdvisoryItNeverInstalls" xml:space="preserve">
+    <value>यह मार्गदर्शिका केवल सलाह देती है। यह दूसरे प्लगइन को इंस्टॉल, सक्षम, बंद या कॉन्फ़िगर नहीं करती। केवल आपके चुने गए MOGTOME विकल्प सहेजती है।</value>
+  </data>
+  <data name="Config_CompletedForThisAccountWizardVersion" xml:space="preserve">
+    <value>इस खाते के लिए पूरा हुआ (सहायक संस्करण {0})।</value>
+  </data>
+  <data name="Config_RunSetupWizardAgain" xml:space="preserve">
+    <value>सेटअप सहायक फिर चलाएँ</value>
+  </data>
+  <data name="Config_Backend" xml:space="preserve">
+    <value>बैकएंड</value>
+  </data>
+  <data name="Config_CombatProvider" xml:space="preserve">
+    <value>कॉम्बैट प्रदाता</value>
+  </data>
+  <data name="Config_RequiredPlugins2" xml:space="preserve">
+    <value>आवश्यक प्लगइन</value>
+  </data>
+  <data name="Config_PartySetup" xml:space="preserve">
+    <value>पार्टी सेटअप</value>
+  </data>
+  <data name="Config_OptionalSettings" xml:space="preserve">
+    <value>वैकल्पिक सेटिंग</value>
+  </data>
+  <data name="Config_Review" xml:space="preserve">
+    <value>समीक्षा</value>
+  </data>
+  <data name="Config_StepOf" xml:space="preserve">
+    <value>चरण {0}/{1}: {2}</value>
+  </data>
+  <data name="Config_ADSIsThePrimaryMOGTOMEBackendAutoDuty" xml:space="preserve">
+    <value>ADS मुख्य MOGTOME बैकएंड है। AutoDuty विकल्प बना रहता है। यह चयन केवल MOGTOME का सहेजा हुआ बैकएंड विकल्प बदलता है।</value>
+  </data>
+  <data name="Config_ADSPrimaryBackend" xml:space="preserve">
+    <value>ADS (मुख्य बैकएंड)</value>
+  </data>
+  <data name="Config_AutoDutyAlternativeBackend" xml:space="preserve">
+    <value>AutoDuty (वैकल्पिक बैकएंड)</value>
+  </data>
+  <data name="Config_ADSMustBeLoadedForThisSelection" xml:space="preserve">
+    <value>इस चयन के लिए ADS लोड होना चाहिए।</value>
+  </data>
+  <data name="Config_AutoDutyAndTheSelectedPraetoriumPathMust" xml:space="preserve">
+    <value>इस चयन के लिए AutoDuty और चुना गया Praetorium पथ उपलब्ध होने चाहिए।</value>
+  </data>
+  <data name="Config_ChooseTheCombatProviderMOGTOMEShouldRequest" xml:space="preserve">
+    <value>चुने हुए बैकएंड के लिए MOGTOME द्वारा माँगा जाने वाला कॉम्बैट प्रदाता चुनें।</value>
+  </data>
+  <data name="Config_SelectedCombatProvider" xml:space="preserve">
+    <value>चुना हुआ कॉम्बैट प्रदाता</value>
+  </data>
+  <data name="Config_LoadTheSelectedProviderRSRAlsoRequires" xml:space="preserve">
+    <value>चुना हुआ प्रदाता लोड करें; निष्क्रिय सहायता के लिए RSR को BMR या VBM भी चाहिए।</value>
+  </data>
+  <data name="Config_MarkTheClientThatQueuesDutiesAs" xml:space="preserve">
+    <value>ड्यूटी की कतार लगाने वाले क्लाइंट को पार्टी लीडर चिह्नित करें। भाग लेने वाले हर क्लाइंट को अपना सेटअप अलग से देखना चाहिए।</value>
+  </data>
+  <data name="Config_IAmThePartyLeader" xml:space="preserve">
+    <value>मैं पार्टी लीडर हूँ</value>
+  </data>
+  <data name="Config_CrossWorldParty" xml:space="preserve">
+    <value>अलग वर्ल्ड की पार्टी</value>
+  </data>
+  <data name="Config_UsePartySettingsForTheFullQueue" xml:space="preserve">
+    <value>पूरी कतार नीति और ड्यूटी के बाहर पार्टी की एक बार स्थिति जाँच के लिए Party सेटिंग का उपयोग करें।</value>
+  </data>
+  <data name="Config_FoodPotionsAndRepairAreOptionalConfigure" xml:space="preserve">
+    <value>भोजन, पोशन और मरम्मत वैकल्पिक हैं। आवश्यकता हो तो उनके टैब में सेट करें; उन्हें खाली छोड़ना समर्थित है।</value>
+  </data>
+  <data name="Config_FoodPotsAndRepairRemainAvailableAfter" xml:space="preserve">
+    <value>इस सहायक के बाद भी Food &amp; Pots और Repair उपलब्ध रहते हैं; यहाँ दूसरे प्लगइन की सेटिंग नहीं बदलती।</value>
+  </data>
+  <data name="Config_FinishSetup" xml:space="preserve">
+    <value>सेटअप पूरा करें</value>
+  </data>
+  <data name="Config_Back" xml:space="preserve">
+    <value>पीछे</value>
+  </data>
+  <data name="Config_Next" xml:space="preserve">
+    <value>अगला</value>
+  </data>
+  <data name="Config_ADSSelectedBackend" xml:space="preserve">
+    <value>ADS (चुना हुआ बैकएंड)</value>
+  </data>
+  <data name="Config_AutoDutyPlusSelectedPraetoriumPath" xml:space="preserve">
+    <value>AutoDuty और चुना हुआ Praetorium पथ</value>
+  </data>
+  <data name="Config_LoadADS" xml:space="preserve">
+    <value>ADS लोड करें।</value>
+  </data>
+  <data name="Config_LoadAutoDutyAndInstallTheSelectedPraetorium" xml:space="preserve">
+    <value>AutoDuty लोड करें और चुना हुआ Praetorium पथ इंस्टॉल करें।</value>
+  </data>
+  <data name="Config_LoadTheProviderSelectedInStepRSR" xml:space="preserve">
+    <value>चरण 2 में चुना प्रदाता लोड करें; RSR को BMR या VBM भी चाहिए।</value>
+  </data>
+  <data name="Config_LoadVnavmesh" xml:space="preserve">
+    <value>vnavmesh लोड करें।</value>
+  </data>
+  <data name="Config_LoadXASlaveForXaSkipcutscenesOn" xml:space="preserve">
+    <value>/xa skipcutscenes on के लिए XA Slave लोड करें।</value>
+  </data>
+  <data name="Config_LoadYesAlreadyForDialogs" xml:space="preserve">
+    <value>संवादों के लिए YesAlready लोड करें।</value>
+  </data>
+  <data name="Config_OperatorClickedOnlyCopiesMOGTOMESBundled" xml:space="preserve">
+    <value>केवल ऑपरेटर के क्लिक पर: MOGTOME की पैकेज की गई फ़ाइलें AutoDuty के paths फ़ोल्डर में कॉपी करता है।</value>
+  </data>
+  <data name="Config_LifestreamAndTextAdvanceAreOptionalAndDo" xml:space="preserve">
+    <value>Lifestream और TextAdvance वैकल्पिक हैं और इस सूची को प्रभावित नहीं करते।</value>
+  </data>
+  <data name="Config_ADSPrimary" xml:space="preserve">
+    <value>ADS (मुख्य)</value>
+  </data>
+  <data name="Config_AutoDutyAlternative" xml:space="preserve">
+    <value>AutoDuty (वैकल्पिक)</value>
+  </data>
+  <data name="Config_Backend2" xml:space="preserve">
+    <value>बैकएंड: {0}</value>
+  </data>
+  <data name="Config_Ready" xml:space="preserve">
+    <value>तैयार</value>
+  </data>
+  <data name="Config_Incomplete" xml:space="preserve">
+    <value>अधूरा</value>
+  </data>
+  <data name="Config_RequiredChecks" xml:space="preserve">
+    <value>आवश्यक जाँच: {0}</value>
+  </data>
+  <data name="Config_Leader" xml:space="preserve">
+    <value>लीडर</value>
+  </data>
+  <data name="Config_Participant" xml:space="preserve">
+    <value>प्रतिभागी</value>
+  </data>
+  <data name="Config_PartyRole" xml:space="preserve">
+    <value>पार्टी भूमिका: {0}</value>
+  </data>
+  <data name="Config_OptionalRepairThreshold" xml:space="preserve">
+    <value>वैकल्पिक मरम्मत सीमा: {0}%</value>
+  </data>
+  <data name="Config_FinishRecordsOnlyThatThisAccountCompleted" xml:space="preserve">
+    <value>Finish केवल दर्ज करता है कि इस खाते ने इस सहायक का यह संस्करण पूरा किया। यह Start को नहीं रोकता और दूसरे प्लगइन को नहीं बदलता।</value>
+  </data>
+  <data name="Config_Ready2" xml:space="preserve">
+    <value>तैयार</value>
+  </data>
+  <data name="Config_PartySettings" xml:space="preserve">
+    <value>पार्टी सेटिंग</value>
+  </data>
+  <data name="Config_RuntimeRoleFollowsThisSavedSettingUse" xml:space="preserve">
+    <value>रनटाइम भूमिका इस सहेजे हुए विकल्प पर चलती है। ड्यूटी के बाहर एक बार उसी वर्ल्ड की जाँच के लिए Refresh Party State का उपयोग करें।</value>
+  </data>
+  <data name="Config_EnableIfYouReInACross" xml:space="preserve">
+    <value>अलग वर्ल्ड की पार्टी में होने पर सक्षम करें।</value>
+  </data>
+  <data name="Config_OnlyQueueWithExactlyVisiblePeople" xml:space="preserve">
+    <value>न्यूनतम पार्टी आकार आवश्यक</value>
+  </data>
+  <data name="Config_MinimumPartyMembers" xml:space="preserve">
+    <value>न्यूनतम सदस्य</value>
+  </data>
+  <data name="Config_AppliesOnlyToSameWorldLeadersIn" xml:space="preserve">
+    <value>चुने हुए न्यूनतम से 4 दिखाई देने वाले सदस्यों तक कतार लगाएँ। अकेले को 1 माना जाता है। डिफ़ॉल्ट: 4। केवल synced मोड में उसी वर्ल्ड के लीडर पर लागू होता है, क्योंकि अलग वर्ल्ड की सदस्य सूची भरोसेमंद नहीं है। Unsynced परीक्षण मोड इससे मुक्त है।</value>
+  </data>
+  <data name="Config_RuntimePartyState" xml:space="preserve">
+    <value>रनटाइम पार्टी स्थिति:</value>
+  </data>
+  <data name="Config_Yes" xml:space="preserve">
+    <value>हाँ</value>
+  </data>
+  <data name="Config_No" xml:space="preserve">
+    <value>नहीं</value>
+  </data>
+  <data name="Config_LeaderRightNow" xml:space="preserve">
+    <value>अभी लीडर: {0}</value>
+  </data>
+  <data name="Config_SourceConfiguredCrossWorldRole" xml:space="preserve">
+    <value>स्रोत: कॉन्फ़िगर की गई अलग वर्ल्ड की भूमिका।</value>
+  </data>
+  <data name="Config_SourceConfiguredRoleRefreshPartyStateOnly" xml:space="preserve">
+    <value>स्रोत: कॉन्फ़िगर की गई भूमिका। पार्टी स्थिति रीफ़्रेश करना वर्तमान उसी वर्ल्ड की पार्टी सूची को केवल एक बार जाँचता है।</value>
+  </data>
+  <data name="Config_RefreshPartyState" xml:space="preserve">
+    <value>पार्टी स्थिति रीफ़्रेश करें</value>
+  </data>
+  <data name="Config_OneTimeSameWorldLeaderDetectionUse" xml:space="preserve">
+    <value>उसी वर्ल्ड में लीडर की एक बार पहचान। पूरी पार्टी दिखने के बाद केवल ड्यूटी के बाहर उपयोग करें।</value>
+  </data>
+  <data name="Config_PartyBehaviour" xml:space="preserve">
+    <value>पार्टी का व्यवहार:</value>
+  </data>
+  <data name="Config_LeaderQueuesDutiesAndControlsTheMOGTOME" xml:space="preserve">
+    <value>- लीडर: ड्यूटी की कतार लगाता है और MOGTOME का रन प्रवाह नियंत्रित करता है।</value>
+  </data>
+  <data name="Config_NonLeaderWaitsForPartyQueuePops" xml:space="preserve">
+    <value>- गैर-लीडर: पार्टी की कतार खुलने की प्रतीक्षा करता है और अलग से मरम्मत करता है।</value>
+  </data>
+  <data name="Config_RepairMOGTOMEPausesItsOwnManualQueue" xml:space="preserve">
+    <value>- मरम्मत: मरम्मत सक्रिय रहने तक MOGTOME अपनी मैन्युअल कतार की कोशिशें रोकता है, फिर उन्हें जारी करता है।</value>
+  </data>
+  <data name="Config_DetectionRefreshPartyStateIsManualOnly" xml:space="preserve">
+    <value>- पहचान: पार्टी स्थिति रीफ़्रेश केवल मैन्युअल है और अकेले या अधूरी पार्टी के डेटा को स्वतः लीडर नहीं मानता।</value>
+  </data>
+  <data name="Config_DutySettings" xml:space="preserve">
+    <value>ड्यूटी सेटिंग</value>
+  </data>
+  <data name="Config_DutyCounter" xml:space="preserve">
+    <value>ड्यूटी काउंटर</value>
+  </data>
+  <data name="Config_ReturnToEntranceDelaySeconds" xml:space="preserve">
+    <value>प्रवेश पर लौटने की देरी (सेकंड)</value>
+  </data>
+  <data name="Config_ReturnToEntranceDelayHelp" xml:space="preserve">
+    <value>सक्रिय ड्यूटी में मृत्यु मिलने पर देरी शुरू होती है और वापसी संकेत छोटा किए रहने पर भी चलती है। पूरी पार्टी के वाइप की पुष्टि वर्तमान मृत्यु की देरी छोड़ देती है, भले ही कोई दूसरा सदस्य पहले जीवित हो जाए। देरी या पुष्टि किए गए वाइप के बाद दिखाई देने वाले Return संकेत अगले सामान्य अपडेट पर स्वीकार होते हैं; छोटे किए गए संकेत फिर खुलते हैं और उसके बाद के अपडेट पर जाँचे जाते हैं। डिफ़ॉल्ट: 60 सेकंड; न्यूनतम: 1। ADS और AutoDuty पर लागू होता है। पुनर्जीवन और बंद क्षेत्र में जाना तुरंत होता है।</value>
+  </data>
+  <data name="Config_CurrentPraetoriumRunCountSetToFor" xml:space="preserve">
+    <value>वर्तमान Praetorium रन की संख्या। दिन के पहले रन के लिए 0 करें।</value>
+  </data>
+  <data name="Config_PraetoriumAutoDutyPath" xml:space="preserve">
+    <value>Praetorium AutoDuty पथ</value>
+  </data>
+  <data name="Config_BundledWithMOGTOMEAndCopiedIntoAutoDuty" xml:space="preserve">
+    <value>MOGTOME के साथ आता है और शुरू/इंस्टॉल होने पर AutoDuty के paths फ़ोल्डर में कॉपी होता है। डिफ़ॉल्ट: phecda।</value>
+  </data>
+  <data name="Config_ADSModeIgnoresAutoDutyPathSelection" xml:space="preserve">
+    <value>ADS मोड AutoDuty पथ चयन का उपयोग नहीं करता।</value>
+  </data>
+  <data name="Config_PraetoriumThreshold" xml:space="preserve">
+    <value>Praetorium सीमा</value>
+  </data>
+  <data name="Config_SwitchToDecumanaAfterThisManyPraetorium" xml:space="preserve">
+    <value>इतने Praetorium रन के बाद Decumana पर जाएँ।</value>
+  </data>
+  <data name="Config_PraetoriumDailyLimit" xml:space="preserve">
+    <value>Praetorium दैनिक सीमा</value>
+  </data>
+  <data name="Config_StopAfterThisManySuccessfulPraetoriumClears" xml:space="preserve">
+    <value>आज इतने सफल Praetorium समापन के बाद रुकें। Decumana और बीच में छोड़े गए रन नहीं गिने जाते।</value>
+  </data>
+  <data name="Config_QuitCommand" xml:space="preserve">
+    <value>रोकने का कमांड</value>
+  </data>
+  <data name="Config_RunsOnceWhenThePraetoriumDailyLimit" xml:space="preserve">
+    <value>Praetorium की दैनिक सीमा पहुँचने पर ड्यूटी से बाहर निकलने के बाद एक बार चलता है।</value>
+  </data>
+  <data name="Config_TestingModeUnsyncedUncheckLevelSyncYourself" xml:space="preserve">
+    <value>परीक्षण मोड: बिना सिंक (यदि यह सच में चाहिए तो level sync स्वयं हटाएँ। आँकड़े दर्ज नहीं होंगे)</value>
+  </data>
+  <data name="Config_WARNINGRunningUnsyncedWithoutLevelSyncTesting" xml:space="preserve">
+    <value>चेतावनी: Level Sync के बिना Unsynced चल रहा है (परीक्षण मोड। कोई आँकड़े नहीं)।</value>
+  </data>
+  <data name="Config_DefaultUnsyncLevelSyncSyncLevelSync" xml:space="preserve">
+    <value>डिफ़ॉल्ट: Unsync+Level Sync (अनजान खिलाड़ियों के साथ कतार से सुरक्षा के लिए Sync+Level Sync)।</value>
+  </data>
+  <data name="Config_TestingModeActiveEnableDebugToChange" xml:space="preserve">
+    <value>[परीक्षण मोड सक्रिय — बदलने के लिए debug सक्षम करें]</value>
+  </data>
+  <data name="Config_Food" xml:space="preserve">
+    <value>भोजन</value>
+  </data>
+  <data name="Config_UseHQFood" xml:space="preserve">
+    <value>HQ भोजन का उपयोग करें</value>
+  </data>
+  <data name="Config_UsesTheSelectedMealAsHQWhen" xml:space="preserve">
+    <value>सक्षम होने पर चुने हुए भोजन को HQ के रूप में उपयोग करता है; सामान्य गुणवत्ता के भोजन के लिए बंद रखें।</value>
+  </data>
+  <data name="Config_ClearFood" xml:space="preserve">
+    <value>भोजन हटाएँ</value>
+  </data>
+  <data name="Config_NoFoodSelectedFoodIsOptional" xml:space="preserve">
+    <value>  कोई भोजन चुना नहीं है। भोजन वैकल्पिक है।</value>
+  </data>
+  <data name="Config_Potions" xml:space="preserve">
+    <value>पोशन</value>
+  </data>
+  <data name="Config_UseHQPotion" xml:space="preserve">
+    <value>HQ पोशन का उपयोग करें</value>
+  </data>
+  <data name="Config_UsesTheSelectedMedicineAsHQWhen" xml:space="preserve">
+    <value>सक्षम होने पर चुनी हुई औषधि को HQ के रूप में उपयोग करता है; सामान्य गुणवत्ता के tincture/पोशन के लिए बंद रखें।</value>
+  </data>
+  <data name="Config_ClearPotion" xml:space="preserve">
+    <value>पोशन हटाएँ</value>
+  </data>
+  <data name="Config_PotOnGaius" xml:space="preserve">
+    <value>Gaius पर पोशन</value>
+  </data>
+  <data name="Config_PotOnPhantomGaius" xml:space="preserve">
+    <value>Phantom Gaius पर पोशन</value>
+  </data>
+  <data name="Config_NoPotionSelectedPotionsAreOptional" xml:space="preserve">
+    <value>  कोई पोशन चुना नहीं है। पोशन वैकल्पिक हैं।</value>
+  </data>
+  <data name="Config_Select" xml:space="preserve">
+    <value>{0} चुनें...</value>
+  </data>
+  <data name="Config_Search" xml:space="preserve">
+    <value>खोजें</value>
+  </data>
+  <data name="Config_NoResultsTryADifferentSearchTerm" xml:space="preserve">
+    <value>कोई परिणाम नहीं। दूसरा खोज शब्द आज़माएँ।</value>
+  </data>
+  <data name="Config_TypeAtLeastCharactersToSearch" xml:space="preserve">
+    <value>खोजने के लिए कम से कम 2 अक्षर लिखें...</value>
+  </data>
+  <data name="Config_RepairSettings" xml:space="preserve">
+    <value>मरम्मत सेटिंग</value>
+  </data>
+  <data name="Config_RepairThreshold" xml:space="preserve">
+    <value>मरम्मत सीमा (%)</value>
+  </data>
+  <data name="Config_RepairWhenEquipmentDurabilityFallsBelowThis" xml:space="preserve">
+    <value>उपकरण की टिकाऊपन इस प्रतिशत से नीचे जाने पर मरम्मत करें। स्वतः मरम्मत बंद करने के लिए 0 करें।</value>
+  </data>
+  <data name="Config_RepairMode" xml:space="preserve">
+    <value>मरम्मत मोड</value>
+  </data>
+  <data name="Config_RepairModeHelp" xml:space="preserve">
+    <value>NPC मरम्मत + इन रूम केवल ADS के कमरे में प्रवेश करने के बाद पूरी होती है।</value>
+  </data>
+  <data name="Config_RepairBehavior" xml:space="preserve">
+    <value>मरम्मत का व्यवहार:</value>
+  </data>
+  <data name="Config_LeaderRepairsAutomaticallyBetweenDutiesWhenThreshold" xml:space="preserve">
+    <value>- लीडर: सीमा पहुँचने पर ड्यूटी के बीच स्वतः मरम्मत करता है</value>
+  </data>
+  <data name="Config_NonLeaderRepairsIndependentlyAfterSecondOutside" xml:space="preserve">
+    <value>- गैर-लीडर: ड्यूटी के बाहर 1 सेकंड बाद अलग से मरम्मत करता है</value>
+  </data>
+  <data name="Config_SoloTreatedAsLeaderAutomatically" xml:space="preserve">
+    <value>- अकेला: स्वतः लीडर माना जाता है</value>
+  </data>
+  <data name="Config_ADSRepairCommand" xml:space="preserve">
+    <value>- ADS मरम्मत कमांड: {0}</value>
+  </data>
+  <data name="Config_AutoDutyModeRepairMETHODSelfNPCIs" xml:space="preserve">
+    <value>- AutoDuty मोड: मरम्मत का तरीका (स्वयं/NPC) AutoDuty सेटिंग में तय है; इन लौटना /ads enterinn उपयोग करता है</value>
+  </data>
+  <data name="Config_Status" xml:space="preserve">
+    <value>स्थिति:</value>
+  </data>
+  <data name="Config_CurrentThreshold" xml:space="preserve">
+    <value>  वर्तमान सीमा: {0}%</value>
+  </data>
+  <data name="Config_Enabled" xml:space="preserve">
+    <value>सक्षम</value>
+  </data>
+  <data name="Config_Disabled" xml:space="preserve">
+    <value>बंद</value>
+  </data>
+  <data name="Config_AutoRepair" xml:space="preserve">
+    <value>  स्वतः मरम्मत: {0}</value>
+  </data>
+  <data name="Config_Self" xml:space="preserve">
+    <value>स्वयं</value>
+  </data>
+  <data name="Config_NPC" xml:space="preserve">
+    <value>NPC</value>
+  </data>
+  <data name="Config_ADSRepairMethod" xml:space="preserve">
+    <value>  ADS मरम्मत तरीका: {0}</value>
+  </data>
+  <data name="Config_ExperimentalADS" xml:space="preserve">
+    <value>प्रयोगात्मक ADS</value>
+  </data>
+  <data name="Config_ExperimentalFirstRoomSkipPraetorium" xml:space="preserve">
+    <value>प्रयोगात्मक पहला कमरा छोड़ना (Praetorium)</value>
+  </data>
+  <data name="Config_ADSPraetoriumOnlyEveryParticipatingClientMust" xml:space="preserve">
+    <value>केवल ADS/Praetorium। भाग लेने वाले हर क्लाइंट को इसे स्थानीय रूप से चुनना होगा। सफलता या किसी भी विफलता के बाद MOGTOME फिर ADS पर लौटता है।</value>
+  </data>
+  <data name="Config_AvailableOnlyWhenADSIsTheSelected" xml:space="preserve">
+    <value>केवल ADS बैकएंड चुने होने पर उपलब्ध; AutoDuty मोड में सहेजा विकल्प निष्क्रिय रहता है।</value>
+  </data>
+  <data name="Config_Debug" xml:space="preserve">
+    <value>डिबग</value>
+  </data>
+  <data name="Config_DebugCounter" xml:space="preserve">
+    <value>डिबग काउंटर</value>
+  </data>
+  <data name="Config_CrashRecoveryOffsetIfYouRestartedMid" xml:space="preserve">
+    <value>क्रैश रिकवरी ऑफ़सेट। सत्र के बीच फिर शुरू किया हो, तो आज सही गिनती जारी रखने के लिए इसे अंतिम
+ज्ञात रन संख्या पर करें।</value>
+  </data>
+  <data name="Config_BailoutTimeoutSec" xml:space="preserve">
+    <value>बाहर निकलने का टाइमआउट (सेकंड)</value>
+  </data>
+  <data name="Config_LeaveDutyIfStuckForThisMany" xml:space="preserve">
+    <value>इतने सेकंड तक अटकने पर ड्यूटी छोड़ें। डिफ़ॉल्ट: 1200 (20 मिनट)।</value>
+  </data>
+  <data name="Main_V" xml:space="preserve">
+    <value>v{0}</value>
+  </data>
+  <data name="Main_KoFi" xml:space="preserve">
+    <value>♡ Ko-fi ♡</value>
+  </data>
+  <data name="Main_SupportDevelopmentOnKoFi" xml:space="preserve">
+    <value>Ko-fi पर विकास में सहायता करें</value>
+  </data>
+  <data name="Main_StateInitializing" xml:space="preserve">
+    <value>अवस्था: प्रारंभ हो रहा है</value>
+  </data>
+  <data name="Main_StatusWaitingForAccountAndEngineInitialization" xml:space="preserve">
+    <value>स्थिति: खाते और इंजन के प्रारंभ की प्रतीक्षा।</value>
+  </data>
+  <data name="Main_Config" xml:space="preserve">
+    <value>कॉन्फ़िगरेशन</value>
+  </data>
+  <data name="Main_Stats" xml:space="preserve">
+    <value>आँकड़े</value>
+  </data>
+  <data name="Main_Reset" xml:space="preserve">
+    <value>रीसेट</value>
+  </data>
+  <data name="Main_State" xml:space="preserve">
+    <value>अवस्था: {0}</value>
+  </data>
+  <data name="Main_Status" xml:space="preserve">
+    <value>स्थिति: {0}</value>
+  </data>
+  <data name="Main_Start" xml:space="preserve">
+    <value>शुरू करें</value>
+  </data>
+  <data name="Main_Stop" xml:space="preserve">
+    <value>रोकें</value>
+  </data>
+  <data name="Main_UnKrangle" xml:space="preserve">
+    <value>नाम दिखाएँ</value>
+  </data>
+  <data name="Main_Krangle" xml:space="preserve">
+    <value>नाम छिपाएँ</value>
+  </data>
+  <data name="Main_ObfuscateNamesWithMilitaryExerciseWordsUseful" xml:space="preserve">
+    <value>नामों को सैन्य/अभ्यास शब्दों से छिपाएँ।
+स्क्रीनशॉट के लिए उपयोगी।</value>
+  </data>
+  <data name="Main_CancelStopAfterNext" xml:space="preserve">
+    <value>अगले के बाद रुकना रद्द करें</value>
+  </data>
+  <data name="Main_StopAfterNextSuccess" xml:space="preserve">
+    <value>अगली सफलता के बाद रुकें</value>
+  </data>
+  <data name="Main_ArmedStopsAfterASuccessfulRunIs" xml:space="preserve">
+    <value>सक्रिय: सफल रन दर्ज होने और ड्यूटी से बाहर निकलने की पुष्टि के बाद रुकता है।</value>
+  </data>
+  <data name="Main_RuntimeOnlyAbortedRunsDoNotConsume" xml:space="preserve">
+    <value>केवल वर्तमान सत्र के लिए। बीच में छोड़े गए रन यह अनुरोध पूरा नहीं करते।</value>
+  </data>
+  <data name="Main_HELP" xml:space="preserve">
+    <value>-&gt;!मदद!&lt;-</value>
+  </data>
+  <data name="Main_MainWindowSettings" xml:space="preserve">
+    <value>मुख्य विंडो सेटिंग</value>
+  </data>
+  <data name="Main_AIDutySolverADS" xml:space="preserve">
+    <value>AI Duty Solver (ADS)</value>
+  </data>
+  <data name="Main_DutyBackendSelectorEnablingADSImmediatelySends" xml:space="preserve">
+    <value>ड्यूटी बैकएंड चयन।
+ADS सक्षम करने पर तुरंत /xldisableplugin AutoDuty चलता है।
+AutoDuty मोड में ADS वैकल्पिक है और केवल /mog inn माँगने पर उपयोग होता है।</value>
+  </data>
+  <data name="Main_ADSDutyBackendActiveADSAlsoHandles" xml:space="preserve">
+    <value>ADS ड्यूटी बैकएंड सक्रिय है। ADS इन प्रवेश भी संभालता है।</value>
+  </data>
+  <data name="Main_AutoDutyDutyBackendActiveADSIsOptional" xml:space="preserve">
+    <value>AutoDuty ड्यूटी बैकएंड सक्रिय है। /mog inn के लिए ADS वैकल्पिक है।</value>
+  </data>
+  <data name="Main_DutyInformation" xml:space="preserve">
+    <value>ड्यूटी जानकारी</value>
+  </data>
+  <data name="Main_CounterPraeDailyPraetoriumLimit" xml:space="preserve">
+    <value>काउंटर: {0} / {1} Prae | दैनिक Praetorium सीमा: {2}</value>
+  </data>
+  <data name="Main_DailyDecuRunsToday" xml:space="preserve">
+    <value>दैनिक Decu: आज {0} रन</value>
+  </data>
+  <data name="Main_Current" xml:space="preserve">
+    <value>वर्तमान: {0}</value>
+  </data>
+  <data name="Main_DailyReset" xml:space="preserve">
+    <value>दैनिक रीसेट: {0} ({1})</value>
+  </data>
+  <data name="Main_TESTINGMODEUnsynced" xml:space="preserve">
+    <value>[परीक्षण मोड — बिना सिंक]</value>
+  </data>
+  <data name="Main_LastClearS" xml:space="preserve">
+    <value>अंतिम समापन: {0:F0}सेकंड</value>
+  </data>
+  <data name="Main_TimeInDutyS" xml:space="preserve">
+    <value>ड्यूटी में समय: {0:F0}सेकंड</value>
+  </data>
+  <data name="Main_DeathsThisRunSelfOthersAll" xml:space="preserve">
+    <value>इस रन में मृत्यु: स्वयं {0} | अन्य {1} | सभी {2}</value>
+  </data>
+  <data name="Main_DebugTools" xml:space="preserve">
+    <value>डिबग उपकरण</value>
+  </data>
+  <data name="Main_FORCEPATHSELECTION" xml:space="preserve">
+    <value>पथ चयन बाध्य करें</value>
+  </data>
+  <data name="Main_Result" xml:space="preserve">
+    <value>परिणाम: {0}</value>
+  </data>
+  <data name="Main_TESTPATHINDEX" xml:space="preserve">
+    <value>पथ इंडेक्स जाँचें</value>
+  </data>
+  <data name="Main_LogADStructure" xml:space="preserve">
+    <value>AD संरचना लॉग करें</value>
+  </data>
+  <data name="Main_DumpAutoDutyPluginStructureToDalamudLog" xml:space="preserve">
+    <value>अनुसंधान के लिए AutoDuty प्लगइन संरचना Dalamud लॉग में लिखें।</value>
+  </data>
+  <data name="Main_LogConfig" xml:space="preserve">
+    <value>कॉन्फ़िगरेशन लॉग करें</value>
+  </data>
+  <data name="Main_LogActions" xml:space="preserve">
+    <value>क्रियाएँ लॉग करें</value>
+  </data>
+  <data name="Main_DumpAutoDutyActionsListCurrentlyEmptyBut" xml:space="preserve">
+    <value>AutoDuty Actions सूची लिखें (अभी खाली है, लेकिन संरचना दिखाती है)।</value>
+  </data>
+  <data name="Main_LogManager" xml:space="preserve">
+    <value>मैनेजर लॉग करें</value>
+  </data>
+  <data name="Main_DumpAutoDutyActionsManagerContainsActionsListWithCommand" xml:space="preserve">
+    <value>AutoDuty ActionsManager लिखें (कमांड परिभाषाओं वाली actionsList शामिल है)।</value>
+  </data>
+  <data name="Main_ExplorePaths" xml:space="preserve">
+    <value>पथों की जाँच करें</value>
+  </data>
+  <data name="Main_ExploreDifferentLocationsForPathDataConfiguration" xml:space="preserve">
+    <value>पथ डेटा की अलग जगहों की जाँच करें (Configuration, MainWindow आदि)।</value>
+  </data>
+  <data name="Main_LogTuples" xml:space="preserve">
+    <value>टपल लॉग करें</value>
+  </data>
+  <data name="Main_IterateThroughActionsListAndLogEachTuple" xml:space="preserve">
+    <value>actionsList की हर टपल की सामग्री (कमांड परिभाषाएँ) लॉग करें।</value>
+  </data>
+  <data name="Main_PathSelections" xml:space="preserve">
+    <value>पथ चयन</value>
+  </data>
+  <data name="Main_ExplorePathSelectionsByPathDictionaryTerritoryPathMappings" xml:space="preserve">
+    <value>PathSelectionsByPath डिक्शनरी की जाँच करें (क्षेत्र → पथ मैपिंग)।</value>
+  </data>
+  <data name="Main_CheckCurrent" xml:space="preserve">
+    <value>वर्तमान जाँचें</value>
+  </data>
+  <data name="Main_CheckWhatPathAutoDutyCurrentlyHasSelected" xml:space="preserve">
+    <value>AutoDuty में अभी चुना पथ जाँचें।</value>
+  </data>
+  <data name="Main_FindMethods" xml:space="preserve">
+    <value>मेथड खोजें</value>
+  </data>
+  <data name="Main_FindSaveApplyLoadMethodsInAutoDuty" xml:space="preserve">
+    <value>AutoDuty में Save/Apply/Load मेथड खोजें।</value>
+  </data>
+  <data name="Main_ConfigFields" xml:space="preserve">
+    <value>कॉन्फ़िगरेशन फ़ील्ड</value>
+  </data>
+  <data name="Main_FindActualConfigFieldNamesForPath" xml:space="preserve">
+    <value>पथ चयन के वास्तविक कॉन्फ़िगरेशन फ़ील्ड नाम खोजें।</value>
+  </data>
+  <data name="Main_CheckRepair" xml:space="preserve">
+    <value>मरम्मत जाँचें</value>
+  </data>
+  <data name="Main_Item" xml:space="preserve">
+    <value>वस्तु {0}</value>
+  </data>
+  <data name="Main_CheckEquipmentDurabilityAndRepairStatus" xml:space="preserve">
+    <value>उपकरण की टिकाऊपन और मरम्मत स्थिति जाँचें।</value>
+  </data>
+  <data name="Main_TestingModeUnsyncedNoStats" xml:space="preserve">
+    <value>परीक्षण मोड: बिना सिंक (कोई आँकड़े नहीं)</value>
+  </data>
+  <data name="Main_WARNINGRunningUnsyncedWithoutLevelSync" xml:space="preserve">
+    <value>चेतावनी: Level Sync के बिना Unsynced चल रहा है।</value>
+  </data>
+  <data name="Main_TESTPRAEINDEX" xml:space="preserve">
+    <value>PRAE इंडेक्स जाँचें</value>
+  </data>
+  <data name="Main_LogsPraetoriumCallbackIndexAndMissingOptional" xml:space="preserve">
+    <value>Praetorium कॉलबैक इंडेक्स और अनुपलब्ध वैकल्पिक अनलॉक लॉग करता है। कतार नहीं लगाता।</value>
+  </data>
+  <data name="Main_PraetoriumCallback" xml:space="preserve">
+    <value>Praetorium कॉलबैक: {0}</value>
+  </data>
+  <data name="Main_MissingOptionalUnlocks" xml:space="preserve">
+    <value>अनुपलब्ध वैकल्पिक अनलॉक: {0}</value>
+  </data>
+  <data name="Main_Unlocked" xml:space="preserve">
+    <value>अनलॉक है</value>
+  </data>
+  <data name="Main_Missing" xml:space="preserve">
+    <value>अनुपलब्ध</value>
+  </data>
+  <data name="Main_QuestIDs" xml:space="preserve">
+    <value>क्वेस्ट ID: {0}</value>
+  </data>
+  <data name="Main_ADSModeActiveAutoDutyReflectionPathDebug" xml:space="preserve">
+    <value>ADS मोड सक्रिय है। AutoDuty reflection/पथ डिबग उपकरण छिपे हैं।</value>
+  </data>
+  <data name="Main_LeaderRuntime" xml:space="preserve">
+    <value>लीडर (रनटाइम): {0}</value>
+  </data>
+  <data name="Main_CrossWorld" xml:space="preserve">
+    <value>अलग वर्ल्ड: {0}</value>
+  </data>
+  <data name="Main_SourceConfiguredCrossWorldRole" xml:space="preserve">
+    <value>स्रोत: कॉन्फ़िगर की गई अलग वर्ल्ड की भूमिका</value>
+  </data>
+  <data name="Main_Subsystems" xml:space="preserve">
+    <value>उपप्रणालियाँ</value>
+  </data>
+  <data name="Main_PausedByMOGTOME" xml:space="preserve">
+    <value>MOGTOME ने रोका है</value>
+  </data>
+  <data name="Main_DutyBackend" xml:space="preserve">
+    <value>ड्यूटी बैकएंड</value>
+  </data>
+  <data name="Main_LogAllConfiguration" xml:space="preserve">
+    <value>पूरी कॉन्फ़िगरेशन लॉग करें</value>
+  </data>
+  <data name="Main_LogConfigPath" xml:space="preserve">
+    <value>कॉन्फ़िगरेशन पथ लॉग करें</value>
+  </data>
+  <data name="Main_QueueRole" xml:space="preserve">
+    <value>कतार भूमिका</value>
+  </data>
+  <data name="Main_ADSRuntime" xml:space="preserve">
+    <value>ADS रनटाइम</value>
+  </data>
+  <data name="Main_Bailout" xml:space="preserve">
+    <value>बाहर निकलना</value>
+  </data>
+  <data name="Main_S" xml:space="preserve">
+    <value>{0}सेकंड</value>
+  </data>
+  <data name="Main_NotConfigured" xml:space="preserve">
+    <value>कॉन्फ़िगर नहीं है</value>
+  </data>
+  <data name="Main_HQ" xml:space="preserve">
+    <value>HQ</value>
+  </data>
+  <data name="Main_NQ" xml:space="preserve">
+    <value>NQ</value>
+  </data>
+  <data name="Main_X" xml:space="preserve">
+    <value>{0} [{1}] x{2}</value>
+  </data>
+  <data name="Stats_DutyStatistics" xml:space="preserve">
+    <value>ड्यूटी आँकड़े</value>
+  </data>
+  <data name="Stats_OpenConfig" xml:space="preserve">
+    <value>कॉन्फ़िगरेशन खोलें</value>
+  </data>
+  <data name="Stats_OpenMOGTOMEConfigurationFolder" xml:space="preserve">
+    <value>MOGTOME कॉन्फ़िगरेशन फ़ोल्डर खोलें</value>
+  </data>
+  <data name="Stats_KrangleNames" xml:space="preserve">
+    <value>नाम छिपाएँ</value>
+  </data>
+  <data name="Stats_Summary" xml:space="preserve">
+    <value>सारांश</value>
+  </data>
+  <data name="Stats_Detailed" xml:space="preserve">
+    <value>विस्तृत</value>
+  </data>
+  <data name="Stats_ShowDebugRuns" xml:space="preserve">
+    <value>डिबग रन दिखाएँ</value>
+  </data>
+  <data name="Stats_UnsyncedRunsAreNowIncludedInStatistics" xml:space="preserve">
+    <value>बिना सिंक के रन अब आँकड़ों में शामिल हैं</value>
+  </data>
+  <data name="Stats_UnsyncedRunsAreHiddenFromStatistics" xml:space="preserve">
+    <value>बिना सिंक के रन आँकड़ों से छिपे हैं</value>
+  </data>
+  <data name="Stats_CombinedStats" xml:space="preserve">
+    <value>संयुक्त आँकड़े</value>
+  </data>
+  <data name="Stats_TotalRuns" xml:space="preserve">
+    <value>कुल रन: {0}</value>
+  </data>
+  <data name="Stats_TotalMogtomes" xml:space="preserve">
+    <value>कुल Mogtomes: {0}</value>
+  </data>
+  <data name="Stats_CurrentDailyCounter" xml:space="preserve">
+    <value>वर्तमान दैनिक काउंटर: {0}</value>
+  </data>
+  <data name="Stats_DailyDecumanaBest" xml:space="preserve">
+    <value>दैनिक Decumana: {0} (सर्वश्रेष्ठ: {1})</value>
+  </data>
+  <data name="Stats_NextDailyReset" xml:space="preserve">
+    <value>अगला दैनिक रीसेट: {0} ({1})</value>
+  </data>
+  <data name="Stats_TodaySDecumanaStats" xml:space="preserve">
+    <value>आज के Decumana आँकड़े:</value>
+  </data>
+  <data name="Stats_BestToday" xml:space="preserve">
+    <value>  आज का सर्वश्रेष्ठ: {0}</value>
+  </data>
+  <data name="Stats_LongestToday" xml:space="preserve">
+    <value>  आज का सबसे लंबा: {0}</value>
+  </data>
+  <data name="Stats_RunsToday" xml:space="preserve">
+    <value>  आज के रन: {0}</value>
+  </data>
+  <data name="Stats_MogtomesToday" xml:space="preserve">
+    <value>  आज के Mogtomes: {0}</value>
+  </data>
+  <data name="Stats_ResetAllStats" xml:space="preserve">
+    <value>सभी आँकड़े रीसेट करें</value>
+  </data>
+  <data name="Stats_JobPerformance" xml:space="preserve">
+    <value>जॉब प्रदर्शन</value>
+  </data>
+  <data name="Stats_PlayerStats" xml:space="preserve">
+    <value>खिलाड़ी आँकड़े</value>
+  </data>
+  <data name="Stats_RecentRuns" xml:space="preserve">
+    <value>हाल के रन</value>
+  </data>
+  <data name="Stats_Trends" xml:space="preserve">
+    <value>रुझान</value>
+  </data>
+  <data name="Stats_Best" xml:space="preserve">
+    <value>सर्वश्रेष्ठ: {0}</value>
+  </data>
+  <data name="Stats_Date" xml:space="preserve">
+    <value>तारीख: {0}</value>
+  </data>
+  <data name="Stats_Party" xml:space="preserve">
+    <value>पार्टी:</value>
+  </data>
+  <data name="Stats_BestNoRunsYet" xml:space="preserve">
+    <value>सर्वश्रेष्ठ: अभी कोई रन नहीं</value>
+  </data>
+  <data name="Stats_Longest" xml:space="preserve">
+    <value>सबसे लंबा: {0}</value>
+  </data>
+  <data name="Stats_LongestNoRunsYet" xml:space="preserve">
+    <value>सबसे लंबा: अभी कोई रन नहीं</value>
+  </data>
+  <data name="Stats_DeathsSingleRun" xml:space="preserve">
+    <value>मृत्यु (एक रन):</value>
+  </data>
+  <data name="Stats_SelfOthersAll" xml:space="preserve">
+    <value>स्वयं: {0} | अन्य: {1} | सभी: {2}</value>
+  </data>
+  <data name="Stats_DeathsTotal" xml:space="preserve">
+    <value>मृत्यु (कुल):</value>
+  </data>
+  <data name="Stats_Runs" xml:space="preserve">
+    <value>रन: {0}</value>
+  </data>
+  <data name="Stats_Mogtomes" xml:space="preserve">
+    <value>Mogtomes: {0}</value>
+  </data>
+  <data name="Stats_NotLoggedIn" xml:space="preserve">
+    <value>  लॉग इन नहीं है।</value>
+  </data>
+  <data name="Stats_Name" xml:space="preserve">
+    <value>नाम</value>
+  </data>
+  <data name="Stats_Job" xml:space="preserve">
+    <value>जॉब</value>
+  </data>
+  <data name="Stats_Level" xml:space="preserve">
+    <value>स्तर</value>
+  </data>
+  <data name="Stats_HMS" xml:space="preserve">
+    <value>{0}घं {1:D2}मि {2:D2}से</value>
+  </data>
+  <data name="Stats_MS" xml:space="preserve">
+    <value>{0}मि {1:D2}से</value>
+  </data>
+  <data name="Stats_None" xml:space="preserve">
+    <value>कोई नहीं</value>
+  </data>
+  <data name="Stats_NoRunDataAvailableEnableDetailedTracking" xml:space="preserve">
+    <value>कोई रन डेटा उपलब्ध नहीं। विस्तृत ट्रैकिंग सक्षम करें और कुछ रन पूरे करें।</value>
+  </data>
+  <data name="Stats_Avg" xml:space="preserve">
+    <value>औसत: {0}</value>
+  </data>
+  <data name="Stats_Deaths" xml:space="preserve">
+    <value>मृत्यु: {0}</value>
+  </data>
+  <data name="Stats_Rate" xml:space="preserve">
+    <value>दर: {0:F1}%</value>
+  </data>
+  <data name="Stats_PlayerStatistics" xml:space="preserve">
+    <value>खिलाड़ी आँकड़े</value>
+  </data>
+  <data name="Stats_Player" xml:space="preserve">
+    <value>खिलाड़ी███</value>
+  </data>
+  <data name="Stats_You" xml:space="preserve">
+    <value> (आप)</value>
+  </data>
+  <data name="Stats_Total" xml:space="preserve">
+    <value>कुल: {0}</value>
+  </data>
+  <data name="Stats_PraeDecu" xml:space="preserve">
+    <value>Prae: {0} | Decu: {1}</value>
+  </data>
+  <data name="Stats_StreakBest" xml:space="preserve">
+    <value>लगातार: {0} (सर्वश्रेष्ठ: {1})</value>
+  </data>
+  <data name="Stats_Job2" xml:space="preserve">
+    <value>जॉब: {0}</value>
+  </data>
+  <data name="Stats_RecentRunsLast" xml:space="preserve">
+    <value>हाल के रन (अंतिम 25)</value>
+  </data>
+  <data name="Stats_Time" xml:space="preserve">
+    <value>समय</value>
+  </data>
+  <data name="Stats_Player2" xml:space="preserve">
+    <value>खिलाड़ी</value>
+  </data>
+  <data name="Stats_Deaths2" xml:space="preserve">
+    <value>मृत्यु</value>
+  </data>
+  <data name="Stats_Status" xml:space="preserve">
+    <value>स्थिति</value>
+  </data>
+  <data name="Stats_NotCaptured" xml:space="preserve">
+    <value>{0}: दर्ज नहीं हुआ</value>
+  </data>
+  <data name="Stats_PartyDataNotCaptured" xml:space="preserve">
+    <value>पार्टी डेटा दर्ज नहीं हुआ</value>
+  </data>
+  <data name="Stats_SelfOthersAll2" xml:space="preserve">
+    <value>स्वयं / अन्य / सभी</value>
+  </data>
+  <data name="Stats_Success" xml:space="preserve">
+    <value>सफलता</value>
+  </data>
+  <data name="Stats_NoReasonRecorded" xml:space="preserve">
+    <value>कोई कारण दर्ज नहीं</value>
+  </data>
+  <data name="Stats_Aborted" xml:space="preserve">
+    <value>बीच में छोड़ा: {0}</value>
+  </data>
+  <data name="Stats_PerformanceTrends" xml:space="preserve">
+    <value>प्रदर्शन के रुझान</value>
+  </data>
+  <data name="Stats_NoSuccessfulRunDataAvailable" xml:space="preserve">
+    <value>कोई सफल रन डेटा उपलब्ध नहीं।</value>
+  </data>
+  <data name="Stats_AverageCompletionTimeLast" xml:space="preserve">
+    <value>औसत समापन समय (अंतिम 10): {0}</value>
+  </data>
+  <data name="Stats_AverageCompletionTimeLast2" xml:space="preserve">
+    <value>औसत समापन समय (अंतिम 50): {0}</value>
+  </data>
+  <data name="Stats_AverageCompletionTimeAllTime" xml:space="preserve">
+    <value>औसत समापन समय (अब तक): {0}</value>
+  </data>
+  <data name="Stats_DeathRateLast" xml:space="preserve">
+    <value>मृत्यु दर (अंतिम 10): {0:F1}%</value>
+  </data>
+  <data name="Stats_DeathRateAllTime" xml:space="preserve">
+    <value>मृत्यु दर (अब तक): {0:F1}%</value>
+  </data>
+  <data name="Stats_MostEfficientJobAvg" xml:space="preserve">
+    <value>सबसे कुशल जॉब: {0} (औसत {1})</value>
+  </data>
+  <data name="Stats_RecentPerformanceTrend" xml:space="preserve">
+    <value>हाल के प्रदर्शन का रुझान:</value>
+  </data>
+  <data name="WarningText_SorryToMakeYouReadThis" xml:space="preserve">
+    <value>आपको यह पढ़ना पड़ रहा है, इसके लिए खेद है।</value>
+  </data>
+  <data name="WarningText_AFewNotesOnMOGTOMEVersionX" xml:space="preserve">
+    <value>MOGTOME के बारे में कुछ बातें।</value>
+  </data>
+  <data name="WarningText_ItSExperimentalAndWillBreakOccasionally" xml:space="preserve">
+    <value>यह प्रयोगात्मक है और कभी-कभी बिगड़ेगा।</value>
+  </data>
+  <data name="WarningText_PleaseProvideLogsSoICanAnalyze" xml:space="preserve">
+    <value>कृपया लॉग दें ताकि मैं जाँच कर सकूँ!</value>
+  </data>
+  <data name="WarningText_MultiplayerGuideDiscordLinkAndInfoAt" xml:space="preserve">
+    <value>मल्टीप्लेयर मार्गदर्शिका, Discord लिंक और जानकारी यहाँ:</value>
+  </data>
+  <data name="WarningText_ThereAreWaysMOGTOMEIsCurrentlyCrashing" xml:space="preserve">
+    <value>अभी 3 तरीकों से MOGTOME के साथ क्लाइंट क्रैश होते हैं। (कारण MOGTOME नहीं है)</value>
+  </data>
+  <data name="WarningText_IfYouHaveRSRUISimulateThe" xml:space="preserve">
+    <value>(1) यदि RSR -&gt; UI -&gt; Simulate the effect of pressing abilities सक्षम है, तो उस सुविधा को बंद करें।</value>
+  </data>
+  <data name="WarningText_DoNotRunDalamudFromTheSame" xml:space="preserve">
+    <value>(2) एक ही फ़ोल्डर से Dalamud कई बार न चलाएँ। कई क्लाइंट चलाने पर इससे क्रैश हो सकते हैं।</value>
+  </data>
+  <data name="WarningText_AUTODUTYRSRNavmeshSometimesWILLHaveRace" xml:space="preserve">
+    <value>AutoDuty/RSR/navmesh में कभी-कभी race/deadlock और त्रुटि के साथ या बिना CTD हो सकता है।</value>
+  </data>
+  <data name="WarningText_YouWillNeedToUseMultiInstall" xml:space="preserve">
+    <value>इसे हल करने के लिए अलग-अलग इंस्टॉल फ़ोल्डर उपयोग करने होंगे।</value>
+  </data>
+  <data name="WarningText_ItWillBeTheFirstThingI" xml:space="preserve">
+    <value>MOGTOME का संस्करण पूछने के बाद मैं सबसे पहले यही पूछूँगा।</value>
+  </data>
+  <data name="WarningText_IfYouDonTHaveVeryMuch" xml:space="preserve">
+    <value>(3) RAM कम हो तो कई क्लाइंट के साथ समस्याएँ होंगी।</value>
+  </data>
+  <data name="WarningText_PlanForGBFreePerClientYou" xml:space="preserve">
+    <value>किसी क्लाइंट को लोड करने से पहले हर क्लाइंट के लिए 5GB खाली RAM की व्यवस्था करें।</value>
+  </data>
+  <data name="WarningText_SeeTheMultiplayerGuideOnHttpsAethertek" xml:space="preserve">
+    <value>कुछ सुझावों के लिए https://aethertek.io/ पर मल्टीप्लेयर मार्गदर्शिका देखें।</value>
+  </data>
+  <data name="WarningText_NowForSomeTipsAndTricksFor" xml:space="preserve">
+    <value>अब MOGTOME के लिए कुछ सुझाव।</value>
+  </data>
+  <data name="WarningText_IfYouAreSelfRepairingSetRepair" xml:space="preserve">
+    <value>1. स्वयं मरम्मत करते हों तो चुने हुए बैकएंड प्लगइन में मरम्मत % ऊँचा रखें।</value>
+  </data>
+  <data name="WarningText_AutoDutyRepairIsStillWeirdSometimesADS" xml:space="preserve">
+    <value>AutoDuty की मरम्मत कभी-कभी अजीब रहती है। ADS मोड अपने मरम्मत कमांड उपयोग करता है और उसे परीक्षण चाहिए।</value>
+  </data>
+  <data name="WarningText_MakeAnAutoDutyProfileJustForThis" xml:space="preserve">
+    <value>2. ADS मोड बंद होने पर इस काम के लिए अलग AutoDuty प्रोफ़ाइल बनाएँ और शुरू करने से पहले उसे चुनें।</value>
+  </data>
+  <data name="WarningText_MOGTOMEChangesSomeSettingsSoThisKeeps" xml:space="preserve">
+    <value>MOGTOME कुछ सेटिंग बदलता है; इससे आपके leveling आदि के प्रोफ़ाइल सुरक्षित रहते हैं।</value>
+  </data>
+  <data name="WarningText_JoinTheAutoPartyDiscordHttpsDiscordGg" xml:space="preserve">
+    <value>3. AutoParty Discord से जुड़ें -&gt; https://discord.gg/KyfyAzG6</value>
+  </data>
+  <data name="WarningText_WhenStartingMogtomeMakeSureYouStart" xml:space="preserve">
+    <value>4. MOGTOME शुरू करते समय पहले गैर-लीडर को शुरू करें। और आपको</value>
+  </data>
+  <data name="WarningText_ConfigureWHOThePartyLeaderIsBy" xml:space="preserve">
+    <value>पार्टी लीडर पर स्थिति रीफ़्रेश क्लिक करके तय करना होगा कि पार्टी लीडर कौन है।</value>
+  </data>
+  <data name="WarningText_IDidThisBecauseItsASeriously" xml:space="preserve">
+    <value>ऐसा इसलिए किया गया क्योंकि वास्तविक पार्टी लीडर पहचानना बहुत परेशान करने वाली तार्किक समस्या है।</value>
+  </data>
+  <data name="WarningText_IHaveSomeCommentedOutAndRetired" xml:space="preserve">
+    <value>इसके कुछ मेथड टिप्पणी में हटाए हुए और बंद हैं, लेकिन वे भरोसेमंद नहीं थे।</value>
+  </data>
+  <data name="WarningText_ReadThisBeforeRunningMOGTOME" xml:space="preserve">
+    <value>MOGTOME चलाने से पहले यह पढ़ें</value>
+  </data>
+  <data name="WarningText_WarningV" xml:space="preserve">
+    <value>चेतावनी v{0}</value>
+  </data>
+  <data name="WarningText_OKIREADIT" xml:space="preserve">
+    <value>ठीक है, मैंने पढ़ लिया</value>
+  </data>
+  <data name="Engine_HasNotBeenStartedSinceLoading" xml:space="preserve">
+    <value>लोड होने के बाद से शुरू नहीं किया गया।</value>
+  </data>
+  <data name="Engine_DutyStartupPendingAfterExperimentalOpener" xml:space="preserve">
+    <value>प्रयोगात्मक प्रारंभिक क्रम के बाद ड्यूटी प्रारंभ लंबित: {0}</value>
+  </data>
+  <data name="Engine_Initializing" xml:space="preserve">
+    <value>प्रारंभ हो रहा है...</value>
+  </data>
+  <data name="Engine_PreparingBossModSupport" xml:space="preserve">
+    <value>BossMod सहायता तैयार हो रही है...</value>
+  </data>
+  <data name="Engine_CheckingConflictingPlugins" xml:space="preserve">
+    <value>टकराव वाले प्लगइन जाँचे जा रहे हैं...</value>
+  </data>
+  <data name="Engine_PreparingADS" xml:space="preserve">
+    <value>ADS तैयार हो रहा है...</value>
+  </data>
+  <data name="Engine_PreparingAutoDuty" xml:space="preserve">
+    <value>AutoDuty तैयार हो रहा है...</value>
+  </data>
+  <data name="Engine_ResumingInsideDuty" xml:space="preserve">
+    <value>ड्यूटी के भीतर फिर जारी हो रहा है...</value>
+  </data>
+  <data name="Engine_RunningDuty" xml:space="preserve">
+    <value>चल रहा है — ड्यूटी #{0}</value>
+  </data>
+  <data name="Engine_Stopping" xml:space="preserve">
+    <value>रुक रहा है...</value>
+  </data>
+  <data name="Engine_Stopped" xml:space="preserve">
+    <value>रुका: {0}</value>
+  </data>
+  <data name="Engine_InDuty" xml:space="preserve">
+    <value>ड्यूटी में — #{0} ({1})</value>
+  </data>
+  <data name="Engine_SuspendedWaitingForLoginAndDutyContext" xml:space="preserve">
+    <value>निलंबित — लॉगिन और ड्यूटी संदर्भ की प्रतीक्षा।</value>
+  </data>
+  <data name="Engine_DutyTransitionWaitingForConfirmedDutyContext" xml:space="preserve">
+    <value>ड्यूटी परिवर्तन — पुष्टि किए गए ड्यूटी संदर्भ की प्रतीक्षा...</value>
+  </data>
+  <data name="Engine_DutyPendingWaitingForMatchingSupportedTerritory" xml:space="preserve">
+    <value>ड्यूटी लंबित — मेल खाती समर्थित क्षेत्र/CFC पहचान की प्रतीक्षा।</value>
+  </data>
+  <data name="Engine_EnteringDutyWaitingForReadyDutyContext" xml:space="preserve">
+    <value>ड्यूटी में प्रवेश — तैयार ड्यूटी संदर्भ की प्रतीक्षा...</value>
+  </data>
+  <data name="Engine_EnteringDutyWaitingForTerritory" xml:space="preserve">
+    <value>ड्यूटी में प्रवेश — क्षेत्र की प्रतीक्षा...</value>
+  </data>
+  <data name="Engine_DutyPendingUnexpectedOrMissingTerritoryCFC" xml:space="preserve">
+    <value>ड्यूटी लंबित — अप्रत्याशित या अनुपलब्ध क्षेत्र/CFC ({0}); समर्थित ड्यूटी संदर्भ की प्रतीक्षा।</value>
+  </data>
+  <data name="Engine_OutsideDutyNext" xml:space="preserve">
+    <value>ड्यूटी के बाहर — अगली: #{0}</value>
+  </data>
+  <data name="Engine_WaitingForLeader" xml:space="preserve">
+    <value>लीडर की प्रतीक्षा — #{0} ({1})</value>
+  </data>
+  <data name="Engine_WaitingForLeader2" xml:space="preserve">
+    <value>लीडर की प्रतीक्षा — #{0}</value>
+  </data>
+  <data name="Engine_DelayedRequeueInProgress" xml:space="preserve">
+    <value>देरी के बाद फिर कतार लग रही है...</value>
+  </data>
+  <data name="Engine_WaitingAfterLeaveDutyS" xml:space="preserve">
+    <value>ड्यूटी छोड़ने के बाद प्रतीक्षा ({0:F0}सेकंड)</value>
+  </data>
+  <data name="Engine_WaitingToStopS" xml:space="preserve">
+    <value>{0} रोकने की प्रतीक्षा ({1:F0}सेकंड)</value>
+  </data>
+  <data name="Engine_Stopping2" xml:space="preserve">
+    <value>{0} रुक रहा है...</value>
+  </data>
+  <data name="Engine_WaitingToQueueS" xml:space="preserve">
+    <value>कतार की प्रतीक्षा ({0:F0}सेकंड)</value>
+  </data>
+  <data name="Engine_Queueing" xml:space="preserve">
+    <value>कतार लग रही है...</value>
+  </data>
+  <data name="Engine_QueueingRegistered" xml:space="preserve">
+    <value>कतार: {0} (पंजीकृत, {1})</value>
+  </data>
+  <data name="Engine_QueueingRegistered2" xml:space="preserve">
+    <value>कतार: {0} (पंजीकृत)</value>
+  </data>
+  <data name="Engine_QueueingContentsFinderRetryCooldownS" xml:space="preserve">
+    <value>कतार: {0} (ContentsFinder फिर कोशिश की देरी {1:F0}सेकंड, {2})</value>
+  </data>
+  <data name="Engine_QueueingWaitingForQueueRegistrationS" xml:space="preserve">
+    <value>कतार: {0} (कतार पंजीकरण की प्रतीक्षा {1:F0}/{2:F0}सेकंड, {3})</value>
+  </data>
+  <data name="Engine_QueueingWaitingForQueueRegistrationS2" xml:space="preserve">
+    <value>कतार: {0} (कतार पंजीकरण की प्रतीक्षा {1:F0}/{2:F0}सेकंड)</value>
+  </data>
+  <data name="Engine_QueueingWaiting" xml:space="preserve">
+    <value>कतार: {0} (प्रतीक्षा, {1})</value>
+  </data>
+  <data name="Engine_QueueingWaiting2" xml:space="preserve">
+    <value>कतार: {0} (प्रतीक्षा...)</value>
+  </data>
+  <data name="Engine_LeaveBlocked" xml:space="preserve">
+    <value>{0} — निकलना रुका ({1})</value>
+  </data>
+  <data name="Engine_LeaveRequestedWaitingForZoneOutS" xml:space="preserve">
+    <value>निकलने का अनुरोध हुआ — क्षेत्र से बाहर जाने की प्रतीक्षा ({0:F0}सेकंड)</value>
+  </data>
+  <data name="Engine_CombatPending" xml:space="preserve">
+    <value>कॉम्बैट लंबित: {0}।</value>
+  </data>
+  <data name="Engine_InDutyS" xml:space="preserve">
+    <value>ड्यूटी #{0} में — {1:F0}सेकंड</value>
+  </data>
+  <data name="Engine_Repairing" xml:space="preserve">
+    <value>मरम्मत हो रही है...</value>
+  </data>
+  <data name="Engine_RepairDoneResuming" xml:space="preserve">
+    <value>मरम्मत पूरी, फिर जारी हो रहा है</value>
+  </data>
+  <data name="Engine_RepairingWaitingForTelepotTownS" xml:space="preserve">
+    <value>मरम्मत — TelepotTown की प्रतीक्षा ({0:F0}सेकंड)</value>
+  </data>
+  <data name="Engine_RepairingWaitingFor" xml:space="preserve">
+    <value>मरम्मत — {0} की प्रतीक्षा</value>
+  </data>
+  <data name="Engine_ContentsFinderQueueCooldownS" xml:space="preserve">
+    <value>ContentsFinder कतार की देरी: {0} ({1:F0}सेकंड, {2})</value>
+  </data>
+  <data name="Engine_ContentsFinderQueueCooldownS2" xml:space="preserve">
+    <value>ContentsFinder कतार की देरी: {0} ({1:F0}सेकंड)</value>
+  </data>
+  <data name="Engine_Value" xml:space="preserve">
+    <value>{0}: {1} ({2} / {3})</value>
+  </data>
+  <data name="Engine_Value2" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="Engine_WaitingForPeopleVisible" xml:space="preserve">
+    <value>पार्टी आकार {1}–4 की प्रतीक्षा (दिखाई दे रहे {0})</value>
+  </data>
+  <data name="Engine_WaitingForPartyMembersToLeaveDuty" xml:space="preserve">
+    <value>पार्टी सदस्यों के ड्यूटी छोड़ने की प्रतीक्षा।</value>
+  </data>
+  <data name="Engine_QueueRecoveryWaitingAfterS" xml:space="preserve">
+    <value>कतार रिकवरी: {0} के बाद प्रतीक्षा ({1:F0}सेकंड)</value>
+  </data>
+  <data name="Engine_QueueRecoveryAllowingRepairsS" xml:space="preserve">
+    <value>कतार रिकवरी: मरम्मत की अनुमति ({0:F0}सेकंड)</value>
+  </data>
+  <data name="Engine_QueueRecoveryResumingDutyEntry" xml:space="preserve">
+    <value>कतार रिकवरी: ड्यूटी प्रवेश फिर जारी</value>
+  </data>
+  <data name="Engine_RepairRecoveryWaitingToRequeueS" xml:space="preserve">
+    <value>मरम्मत रिकवरी: फिर कतार की प्रतीक्षा ({0:F0}सेकंड)</value>
+  </data>
+  <data name="Engine_RepairRecoveryRetryWaitingForLeader" xml:space="preserve">
+    <value>मरम्मत रिकवरी की कोशिश {0}: लीडर की प्रतीक्षा</value>
+  </data>
+  <data name="Engine_RepairRecoveryRestarting" xml:space="preserve">
+    <value>मरम्मत रिकवरी: {0} फिर शुरू</value>
+  </data>
+  <data name="Engine_RepairRecoveryWaitingForLeader" xml:space="preserve">
+    <value>मरम्मत रिकवरी: लीडर की प्रतीक्षा</value>
+  </data>
+  <data name="Engine_LeaveRequestedViaADSAttemptWaitingFor" xml:space="preserve">
+    <value>ADS से निकलने का अनुरोध हुआ (कोशिश #{0}) — क्षेत्र से बाहर जाने की प्रतीक्षा</value>
+  </data>
+  <data name="Engine_LeaveRequestedAttemptWaitingForZoneOut" xml:space="preserve">
+    <value>निकलने का अनुरोध हुआ (कोशिश #{0}) — क्षेत्र से बाहर जाने की प्रतीक्षा</value>
+  </data>
+  <data name="Engine_PluginUnloadedOrReloaded" xml:space="preserve">
+    <value>प्लगइन अनलोड या फिर लोड हुआ।</value>
+  </data>
+  <data name="Engine_RepairingBeforeStart" xml:space="preserve">
+    <value>शुरू करने से पहले मरम्मत हो रही है...</value>
+  </data>
+  <data name="Engine_StopAfterNextSuccessfulClearAndConfirmed" xml:space="preserve">
+    <value>अगला सफल समापन और निकलने की पुष्टि होने के बाद रुकना।</value>
+  </data>
+  <data name="Engine_InitializationFailed" xml:space="preserve">
+    <value>प्रारंभ विफल: {0}</value>
+  </data>
+  <data name="Engine_PraetoriumDailyLimitReached" xml:space="preserve">
+    <value>Praetorium दैनिक सीमा पहुँच गई ({0}/{1})।</value>
+  </data>
+  <data name="Startup_WaitingForDutyReadiness" xml:space="preserve">
+    <value>ड्यूटी तैयार होने की प्रतीक्षा।</value>
+  </data>
+  <data name="Startup_DutyStartupCancelled" xml:space="preserve">
+    <value>ड्यूटी प्रारंभ रद्द हुआ।</value>
+  </data>
+  <data name="Startup_DutyStartupPending" xml:space="preserve">
+    <value>ड्यूटी प्रारंभ लंबित: {0}।</value>
+  </data>
+  <data name="Startup_CombatRecoveryAfterDeathWaitingForContinuous" xml:space="preserve">
+    <value>मृत्यु के बाद कॉम्बैट रिकवरी; लगातार तैयार रहने की प्रतीक्षा</value>
+  </data>
+  <data name="Startup_WaitingForDuty" xml:space="preserve">
+    <value>ड्यूटी की प्रतीक्षा</value>
+  </data>
+  <data name="Startup_ExperimentalOpenerActive" xml:space="preserve">
+    <value>प्रयोगात्मक प्रारंभिक क्रम सक्रिय</value>
+  </data>
+  <data name="Startup_WaitingForLiveDutyTerritoryCFCIdentity" xml:space="preserve">
+    <value>सक्रिय ड्यूटी क्षेत्र/CFC पहचान की प्रतीक्षा</value>
+  </data>
+  <data name="Startup_ADSIsNotLoaded" xml:space="preserve">
+    <value>ADS लोड नहीं है</value>
+  </data>
+  <data name="Startup_HasADSClearanceMWaitingForFour" xml:space="preserve">
+    <value>{0} में ADS clearance {1} (M{2}) है; चार खिलाड़ियों वाले M3 समर्थन की प्रतीक्षा</value>
+  </data>
+  <data name="Startup_StartupInSOfContinuousReadiness" xml:space="preserve">
+    <value>लगातार तैयार रहने के {0:F1}सेकंड बाद प्रारंभ</value>
+  </data>
+  <data name="Startup_WaitingForDutyStartSeam" xml:space="preserve">
+    <value>ड्यूटी प्रारंभ सीमा की प्रतीक्षा</value>
+  </data>
+  <data name="Startup_WaitingForReadableADSOwnershipConfirmation" xml:space="preserve">
+    <value>पढ़ने योग्य ADS नियंत्रण पुष्टि की प्रतीक्षा</value>
+  </data>
+  <data name="Startup_WaitingSForADSOwnershipConfirmation" xml:space="preserve">
+    <value>ADS नियंत्रण पुष्टि के लिए {0:F1}सेकंड की प्रतीक्षा</value>
+  </data>
+  <data name="Startup_HandoffRetryBackoffUntil" xml:space="preserve">
+    <value>फिर कार्य सौंपने की देरी {0:HH:mm:ss} तक</value>
+  </data>
+  <data name="Startup_AdStartWasNotHandled" xml:space="preserve">
+    <value>/ad start संभाला नहीं गया</value>
+  </data>
+  <data name="Startup_ADSStartDutyFromInsideAccepted" xml:space="preserve">
+    <value>ADS.StartDutyFromInside स्वीकार हुआ</value>
+  </data>
+  <data name="Startup_ADSStartDutyFromInsideRejectedCommandFallbackSuppressed" xml:space="preserve">
+    <value>ADS.StartDutyFromInside अस्वीकार हुआ; कमांड विकल्प रोका गया</value>
+  </data>
+  <data name="Startup_TypedEndpointUnavailableSentAdsInsideFallback" xml:space="preserve">
+    <value>typed endpoint अनुपलब्ध; वैकल्पिक /ads inside भेजा</value>
+  </data>
+  <data name="Startup_TypedEndpointUnavailableAndAdsInsideFallback" xml:space="preserve">
+    <value>typed endpoint अनुपलब्ध और वैकल्पिक /ads inside विफल</value>
+  </data>
+  <data name="Startup_DutyStartupFailed" xml:space="preserve">
+    <value>ड्यूटी प्रारंभ विफल: {0}</value>
+  </data>
+  <data name="Startup_CombatRecoveryBackoffUntil" xml:space="preserve">
+    <value>कॉम्बैट रिकवरी की देरी {0:HH:mm:ss} तक</value>
+  </data>
+  <data name="Startup_CombatActivationFailedRetryingAfterSAnd" xml:space="preserve">
+    <value>कॉम्बैट सक्रियण विफल: {0}; 5 सेकंड और लगातार तैयारी के बाद फिर कोशिश</value>
+  </data>
+  <data name="Startup_WaitingForAuthoritativeOwnership" xml:space="preserve">
+    <value>{0}; आधिकारिक नियंत्रण की प्रतीक्षा</value>
+  </data>
+  <data name="Startup_RestartingReadinessDelayWithSRetryBackoff" xml:space="preserve">
+    <value>{0}; 5 सेकंड की पुनः कोशिश देरी के साथ तैयारी अवधि फिर शुरू</value>
+  </data>
+  <data name="Automation_AutoDutyPreparationFailed" xml:space="preserve">
+    <value>AutoDuty तैयारी विफल: {0}</value>
+  </data>
+  <data name="Automation_QueueLeader" xml:space="preserve">
+    <value>कतार लीडर</value>
+  </data>
+  <data name="Automation_FollowerWaitingOnLeader" xml:space="preserve">
+    <value>अनुयायी लीडर की प्रतीक्षा में</value>
+  </data>
+  <data name="Automation_ADS" xml:space="preserve">
+    <value>ADS</value>
+  </data>
+  <data name="Automation_RepairWaiting" xml:space="preserve">
+    <value>मरम्मत की प्रतीक्षा</value>
+  </data>
+  <data name="Automation_RepairHandoff" xml:space="preserve">
+    <value>मरम्मत कार्य सौंपना</value>
+  </data>
+  <data name="Automation_LeaveRequestedWaitingForZoneOut" xml:space="preserve">
+    <value>निकलने का अनुरोध हुआ, क्षेत्र से बाहर जाने की प्रतीक्षा</value>
+  </data>
+  <data name="Automation_LeaveRequested" xml:space="preserve">
+    <value>निकलने का अनुरोध हुआ</value>
+  </data>
+  <data name="Automation_ADSInsideOwned" xml:space="preserve">
+    <value>ADS के भीतर नियंत्रण</value>
+  </data>
+  <data name="Automation_ADSOutsideOwned" xml:space="preserve">
+    <value>ADS के बाहर नियंत्रण</value>
+  </data>
+  <data name="Automation_LeaderReady" xml:space="preserve">
+    <value>लीडर तैयार</value>
+  </data>
+  <data name="Automation_OutsideArmed" xml:space="preserve">
+    <value>बाहर सक्रिय</value>
+  </data>
+  <data name="Automation_WaitingForEntry" xml:space="preserve">
+    <value>प्रवेश की प्रतीक्षा</value>
+  </data>
+  <data name="Automation_InsideObserved" xml:space="preserve">
+    <value>भीतर देखा गया</value>
+  </data>
+  <data name="Automation_Leaving" xml:space="preserve">
+    <value>बाहर जा रहे हैं</value>
+  </data>
+  <data name="Automation_Recovered" xml:space="preserve">
+    <value>बहाल</value>
+  </data>
+  <data name="Automation_Idle" xml:space="preserve">
+    <value>निष्क्रिय</value>
+  </data>
+  <data name="Automation_ADSDutyBackendInnReturn" xml:space="preserve">
+    <value>ADS ड्यूटी बैकएंड + इन में वापसी</value>
+  </data>
+  <data name="Automation_ADSMissing" xml:space="preserve">
+    <value>ADS अनुपलब्ध</value>
+  </data>
+  <data name="Automation_ADSInnReady" xml:space="preserve">
+    <value>ADS इन के लिए तैयार</value>
+  </data>
+  <data name="Automation_Value" xml:space="preserve">
+    <value>{0} / {1}</value>
+  </data>
+  <data name="Engine_ManualStop" xml:space="preserve">
+    <value>मैनुअल रोक।</value>
+  </data>
+  <data name="Engine_CleanupFailed" xml:space="preserve">
+    <value>{0} {1} की सफ़ाई विफल: {2}</value>
+  </data>
+  <data name="Role_Tank" xml:space="preserve">
+    <value>टैंक</value>
+  </data>
+  <data name="Role_Healer" xml:space="preserve">
+    <value>हीलर</value>
+  </data>
+  <data name="Role_Dps" xml:space="preserve">
+    <value>DPS</value>
+  </data>
+  <data name="Rotation_CouldNotDisableCombatComponentsFromThe" xml:space="preserve">
+    <value>पिछले रन के कॉम्बैट घटकों को बंद नहीं किया जा सका।</value>
+  </data>
+  <data name="Rotation_BothBossModVariantsAreStillLoadedConflict" xml:space="preserve">
+    <value>दोनों BossMod प्रकार अभी भी लोड हैं; प्रीसेट की तैयारी से पहले टकराव की सफ़ाई पूरी होनी चाहिए।</value>
+  </data>
+  <data name="Rotation_BMROrVBM" xml:space="preserve">
+    <value>BMR या VBM</value>
+  </data>
+  <data name="Rotation_RequiresLoadedBossModSupport" xml:space="preserve">
+    <value>{0} के लिए लोड किया हुआ BossMod समर्थन आवश्यक है ({1})।</value>
+  </data>
+  <data name="Rotation_BossModPackagedPresetInstallationFailedCheckThat" xml:space="preserve">
+    <value>BossMod के पैकेज किए गए प्रीसेट स्थापित नहीं हो सके; जाँचें कि उसका प्रीसेट IPC तैयार है और सभी छह प्रीसेट फ़ाइलें मौजूद हैं।</value>
+  </data>
+  <data name="Rotation_CombatActivationWasRequestedAfterThisDuty" xml:space="preserve">
+    <value>इस ड्यूटी के समाप्त होने के बाद कॉम्बैट सक्रिय करने का अनुरोध किया गया ({0})।</value>
+  </data>
+  <data name="Rotation_CombatActivationFailed" xml:space="preserve">
+    <value>कॉम्बैट सक्रिय करना विफल: {0}</value>
+  </data>
+  <data name="Rotation_CouldNotDisableAllMogTomeCombatComponents" xml:space="preserve">
+    <value>MogTome के सभी कॉम्बैट घटकों को बंद नहीं किया जा सका ({0}); लॉग में विफल कमांड देखें।</value>
+  </data>
+  <data name="Rotation_RSRHealthRecoveryFailed" xml:space="preserve">
+    <value>RSR की स्थिति बहाल करना विफल ({0})।</value>
+  </data>
+  <data name="Rotation_BossModAvailabilityOrSelectionChangedAfterStartup" xml:space="preserve">
+    <value>शुरू होने के बाद BossMod की उपलब्धता या चयन बदल गया। उसे फिर से तैयार करने के लिए MogTome को रोककर शुरू करें।</value>
+  </data>
+  <data name="Rotation_PresetPreparationFailedCombatWasNotEnabled" xml:space="preserve">
+    <value>{0} की प्रीसेट तैयारी विफल; कॉम्बैट चालू नहीं किया गया।</value>
+  </data>
+  <data name="Rotation_RSRAutoIPCAndRotationAutoBoth" xml:space="preserve">
+    <value>RSR Auto IPC और /rotation auto दोनों विफल हुए।</value>
+  </data>
+  <data name="Rotation_CouldNotEnableUsing" xml:space="preserve">
+    <value>{1} का उपयोग करके {0} चालू नहीं किया जा सका।</value>
+  </data>
+  <data name="Path_NotAttempted" xml:space="preserve">
+    <value>प्रयास नहीं किया गया</value>
+  </data>
+  <data name="Path_FAILEDAutoDutyPluginNotFoundOrNot" xml:space="preserve">
+    <value>विफल: AutoDuty प्लगइन नहीं मिला या लोड नहीं है</value>
+  </data>
+  <data name="Path_OKTerritoryPathSelectionSavedAndVerified" xml:space="preserve">
+    <value>ठीक: Territory={0}, Path={1} ({2}); चयन सहेजा और सत्यापित किया गया</value>
+  </data>
+  <data name="Path_FAILED" xml:space="preserve">
+    <value>विफल: {0}</value>
+  </data>
+  <data name="Conflict_StartupWasStoppedBeforeBossModCleanup" xml:space="preserve">
+    <value>BossMod की सफ़ाई से पहले स्टार्ट रोक दिया गया।</value>
+  </data>
+  <data name="Conflict_StartupCancelledDuringVBMCleanup" xml:space="preserve">
+    <value>VBM की सफ़ाई के दौरान स्टार्ट रद्द हुआ।</value>
+  </data>
+  <data name="Conflict_VBMCouldNotBeDisabledWhileBoth" xml:space="preserve">
+    <value>दोनों BossMod प्रकार लोड रहते समय VBM बंद नहीं किया जा सका।</value>
+  </data>
+  <data name="Conflict_StartupCancelledDuringBMRCleanup" xml:space="preserve">
+    <value>BMR की सफ़ाई के दौरान स्टार्ट रद्द हुआ।</value>
+  </data>
+  <data name="Conflict_BMRCouldNotBeTemporarilyDisabledTo" xml:space="preserve">
+    <value>साझा IPC पंजीकरण बहाल करने के लिए BMR को अस्थायी रूप से बंद नहीं किया जा सका।</value>
+  </data>
+  <data name="Conflict_TheNativeTemporaryBMREnableCommandWas" xml:space="preserve">
+    <value>BMR को अस्थायी रूप से चालू करने वाला नेटिव कमांड संभाला नहीं गया।</value>
+  </data>
+  <data name="Conflict_StartupCancelledDuringBMRReadiness" xml:space="preserve">
+    <value>BMR के तैयार होने के दौरान स्टार्ट रद्द हुआ।</value>
+  </data>
+  <data name="Conflict_BMRDidNotBecomeReadyAfterIts" xml:space="preserve">
+    <value>दोबारा लोड करने के बाद BMR तैयार नहीं हुआ, या VBM फिर से लोड हो गया।</value>
+  </data>
+  <data name="Conflict_WasEnabledAndHasBeenAutoDisabled" xml:space="preserve">
+    <value>{0} चालू था और MOGTOME के लिए अपने आप बंद कर दिया गया।</value>
+  </data>
+  <data name="Conflict_MOGTOMEKeptRunningClickTheWarningWindow" xml:space="preserve">
+    <value>{0}
+
+MOGTOME चलता रहा। चेतावनी हटाने के लिए चेतावनी विंडो पर एक बार क्लिक करें, या प्लगइन वापस आने पर वहाँ का बंद करने वाला बटन इस्तेमाल करें।</value>
+  </data>
+  <data name="Conflict_IsStillEnabledMOGTOMEWillKeepRunning" xml:space="preserve">
+    <value>{0} अभी भी चालू है। MOGTOME चलता रहेगा, लेकिन आपको उसे {1} से बंद कर देना चाहिए।</value>
+  </data>
+  <data name="Conflict_UseTheWarningWindowButtonToTry" xml:space="preserve">
+    <value>{0}
+
+उसे फिर से बंद करने का प्रयास करने के लिए चेतावनी विंडो का बटन इस्तेमाल करें, या चेतावनी हटाकर जारी रखें।</value>
+  </data>
+  <data name="Conflict_WasEnabledAndHasBeenAutoDisabled2" xml:space="preserve">
+    <value>{0} चालू था और ADS मोड के लिए अपने आप बंद कर दिया गया।</value>
+  </data>
+  <data name="Conflict_IsStillEnabledADSModeExpects" xml:space="preserve">
+    <value>{0} अभी भी चालू है। ADS मोड को {1} अपेक्षित है।</value>
+  </data>
+  <data name="Blocker_WaitingForMatchingDutyIdentity" xml:space="preserve">
+    <value>मेल खाती ड्यूटी पहचान की प्रतीक्षा</value>
+  </data>
+  <data name="Blocker_Loading" xml:space="preserve">
+    <value>लोड हो रहा है</value>
+  </data>
+  <data name="Blocker_Combat" xml:space="preserve">
+    <value>कॉम्बैट</value>
+  </data>
+  <data name="Blocker_Cutscene" xml:space="preserve">
+    <value>कटसीन</value>
+  </data>
+  <data name="Blocker_OccupiedTransition" xml:space="preserve">
+    <value>व्यस्त ट्रांज़िशन</value>
+  </data>
+  <data name="Blocker_WaitingForLogin" xml:space="preserve">
+    <value>लॉगिन की प्रतीक्षा</value>
+  </data>
+  <data name="Blocker_WaitingForLocalPlayer" xml:space="preserve">
+    <value>स्थानीय खिलाड़ी की प्रतीक्षा</value>
+  </data>
+  <data name="Blocker_WaitingForLocalPlayerJob" xml:space="preserve">
+    <value>स्थानीय खिलाड़ी के जॉब की प्रतीक्षा</value>
+  </data>
+  <data name="Blocker_WaitingForUnconsciousStateToClear" xml:space="preserve">
+    <value>बेहोशी समाप्त होने की प्रतीक्षा</value>
+  </data>
+  <data name="Blocker_WaitingForLocalPlayerToBeAlive" xml:space="preserve">
+    <value>स्थानीय खिलाड़ी के जीवित होने की प्रतीक्षा</value>
+  </data>
+  <data name="Blocker_WaitingForAreaTransitionToFinish" xml:space="preserve">
+    <value>क्षेत्र बदलने की प्रक्रिया पूरी होने की प्रतीक्षा</value>
+  </data>
+  <data name="Blocker_WaitingForCutsceneToFinish" xml:space="preserve">
+    <value>कटसीन समाप्त होने की प्रतीक्षा</value>
+  </data>
+  <data name="Blocker_WaitingForCutsceneEventToFinish" xml:space="preserve">
+    <value>कटसीन इवेंट समाप्त होने की प्रतीक्षा</value>
+  </data>
+  <data name="Window_MOGTOMEStatus" xml:space="preserve">
+    <value>MOGTOME - स्थिति</value>
+  </data>
+  <data name="Window_MOGTOMEConfiguration" xml:space="preserve">
+    <value>MOGTOME - कॉन्फ़िगरेशन</value>
+  </data>
+  <data name="Window_MOGTOMEStatistics" xml:space="preserve">
+    <value>MOGTOME - आँकड़े</value>
+  </data>
+  <data name="Window_MOGTOMEWarningText" xml:space="preserve">
+    <value>MOGTOME चेतावनी पाठ</value>
+  </data>
+  <data name="Config_CombatProvider2" xml:space="preserve">
+    <value>कॉम्बैट प्रदाता: {0}</value>
+  </data>
+  <data name="Config_NotConfigured" xml:space="preserve">
+    <value>कॉन्फ़िगर नहीं किया गया</value>
+  </data>
+  <data name="Config_OptionalFood" xml:space="preserve">
+    <value>वैकल्पिक भोजन: {0}</value>
+  </data>
+  <data name="Config_HQ" xml:space="preserve">
+    <value>[HQ]</value>
+  </data>
+  <data name="Config_NQ" xml:space="preserve">
+    <value>[NQ]</value>
+  </data>
+  <data name="Config_SelectedID" xml:space="preserve">
+    <value>  चयनित: {0} {1} (ID: {2})</value>
+  </data>
+  <data name="Main_ForceAutoDutyToSelectModeLoopingDuty" xml:space="preserve">
+    <value>AutoDuty को यह चुनने के लिए बाध्य करें:
+Mode: Looping
+Duty Mode: Regular
+Duty: The Praetorium (1044)
+Path: {0}
+
+AutoDuty की पूरी संरचना Dalamud लॉग में दर्ज करता है।</value>
+  </data>
+  <data name="Main_TestPathIndexDiscoveryMethodsComparesDictionaryPaths" xml:space="preserve">
+    <value>पाथ इंडेक्स खोजने की विधियाँ जाँचें।
+DictionaryPaths और PathSelectionsByPath की तुलना करता है।
+परिणाम Dalamud लॉग में दर्ज होते हैं।</value>
+  </data>
+  <data name="Main_DumpAutoDutyConfigurationStructureToDalamudLog" xml:space="preserve">
+    <value>AutoDuty Configuration की संरचना Dalamud लॉग में डंप करें।</value>
+  </data>
+  <data name="Plugin_ScrollDownToTheDumpsterFireChannel" xml:space="preserve">
+    <value>प्लगइन से जुड़ी समस्याओं और सुझावों के लिए नीचे "The Dumpster Fire" चैनल तक स्क्रॉल करें।</value>
+  </data>
+  <data name="Plugin_CheckPartyLeaderSettingsIfTheDuty" xml:space="preserve">
+    <value>ड्यूटी शुरू नहीं हो रही हो तो पार्टी लीडर की सेटिंग जाँचें</value>
+  </data>
+  <data name="Plugin_ADSDidNotHandleAdsEnterinnEnsure" xml:space="preserve">
+    <value>ADS ने /ads enterinn को नहीं संभाला। सुनिश्चित करें कि ADS स्थापित और लोड है।</value>
+  </data>
+  <data name="Warning_SharedMOGTOMEConfigPath" xml:space="preserve">
+    <value>साझा MOGTOME कॉन्फ़िग पाथ</value>
+  </data>
+  <data name="Warning_AnotherClientHoldsMOGTOMESConfigDirectory" xml:space="preserve">
+    <value>एक अन्य क्लाइंट के पास MOGTOME की कॉन्फ़िग डायरेक्टरी का लॉक है। एक ही कॉन्फ़िग पाथ के साथ कई क्लाइंट शुरू करने से अकाउंट सेटिंग ओवरराइट हो सकती हैं। मेल खाती गेम प्रक्रियाओं की संख्या: {0}।</value>
+  </data>
+  <data name="Warning_CancelStart" xml:space="preserve">
+    <value>स्टार्ट रद्द करें</value>
+  </data>
+  <data name="Warning_AcknowledgeAndStart" xml:space="preserve">
+    <value>स्वीकार करके शुरू करें</value>
+  </data>
+  <data name="Warning_TwistOfFayteConflict" xml:space="preserve">
+    <value>Twist of Fayte टकराव</value>
+  </data>
+  <data name="Warning_AutoDutyConflict" xml:space="preserve">
+    <value>AutoDuty टकराव</value>
+  </data>
+  <data name="Warning_PluginConflict" xml:space="preserve">
+    <value>प्लगइन टकराव</value>
+  </data>
+  <data name="Warning_DisableTwistOfFayte" xml:space="preserve">
+    <value>TwistOfFayte बंद करें</value>
+  </data>
+  <data name="Warning_DisableAutoDuty" xml:space="preserve">
+    <value>AutoDuty बंद करें</value>
+  </data>
+  <data name="Chat_MOGTOMEStoppedAndClearedPendingStartAnd" xml:space="preserve">
+    <value>[MOGTOME] रोक दिया गया और लंबित Start तथा अगले रन के बाद रोकने की स्थिति साफ़ कर दी गई।</value>
+  </data>
+  <data name="Chat_MOGTOMEAlreadyStopped" xml:space="preserve">
+    <value>[MOGTOME] पहले से बंद: {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEEngineIsStillInitializing" xml:space="preserve">
+    <value>[MOGTOME] इंजन अभी शुरू हो रहा है।</value>
+  </data>
+  <data name="Chat_MOGTOMEStopAfterNextSuccessfulRunArmed" xml:space="preserve">
+    <value>[MOGTOME] अगले सफल रन के बाद रुकना सक्रिय किया गया।</value>
+  </data>
+  <data name="Chat_MOGTOMEStopAfterNextSuccessfulRunCancelled" xml:space="preserve">
+    <value>[MOGTOME] अगले सफल रन के बाद रुकना रद्द किया गया।</value>
+  </data>
+  <data name="Chat_MOGTOMEMogInnIsOnlyAvailableWhile" xml:space="preserve">
+    <value>[MOGTOME] /mog inn केवल तभी उपलब्ध है जब इंजन बंद हो या सक्रिय रूप से रिपेयर कर रहा हो।</value>
+  </data>
+  <data name="Chat_MOGTOMEStateDuty" xml:space="preserve">
+    <value>[MOGTOME] स्थिति: {0} | ड्यूटी #{1} | {2}</value>
+  </data>
+  <data name="Chat_MOGTOMEDebugMode" xml:space="preserve">
+    <value>[MOGTOME] डीबग मोड {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEDebugCheckboxNowVisibleInStats" xml:space="preserve">
+    <value>[MOGTOME] डीबग चेकबॉक्स अब आँकड़ों की विंडो में दिखाई देता है</value>
+  </data>
+  <data name="Chat_MOGTOME" xml:space="preserve">
+    <value>[MOGTOME] {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEFailedToSendAdsEnterinnCheck" xml:space="preserve">
+    <value>[MOGTOME] /ads enterinn भेजना विफल। Dalamud लॉग देखें।</value>
+  </data>
+  <data name="Chat_MOGTOMEQueuedMainConfigStatsWindowReset" xml:space="preserve">
+    <value>[MOGTOME] मुख्य/कॉन्फ़िग/आँकड़ों की विंडो को 1,1 पर रीसेट करने का अनुरोध कतार में रखा गया।</value>
+  </data>
+  <data name="Chat_MOGTOMEQueuedRandomVisibleJumpsForMain" xml:space="preserve">
+    <value>[MOGTOME] मुख्य/कॉन्फ़िग/आँकड़ों की विंडो को दिखाई देने वाली यादृच्छिक जगहों पर ले जाने के अनुरोध कतार में रखे गए।</value>
+  </data>
+  <data name="Chat_MOGTOMEEngineIsStillInitializingTryAgain" xml:space="preserve">
+    <value>[MOGTOME] इंजन अभी शुरू हो रहा है। थोड़ी देर में फिर प्रयास करें।</value>
+  </data>
+  <data name="Chat_MOGTOMEAlreadyRunning" xml:space="preserve">
+    <value>[MOGTOME] पहले से चल रहा है</value>
+  </data>
+  <data name="Chat_MOGTOMEStartAlreadyQueued" xml:space="preserve">
+    <value>[MOGTOME] स्टार्ट पहले से कतार में है।</value>
+  </data>
+  <data name="Chat_MOGTOMEStartQueued" xml:space="preserve">
+    <value>[MOGTOME] स्टार्ट कतार में रखा गया।</value>
+  </data>
+  <data name="Chat_MOGTOMEWarningXASlaveDidNotHandle" xml:space="preserve">
+    <value>[MOGTOME] चेतावनी: XA Slave ने {0} को नहीं संभाला; स्टार्ट जारी है।</value>
+  </data>
+  <data name="Chat_MOGTOMEWarningFailedToSendContinuingStartup" xml:space="preserve">
+    <value>[MOGTOME] चेतावनी: {0} भेजना विफल; स्टार्ट जारी है।</value>
+  </data>
+  <data name="DutyAutomationService_AIDutySolverADSExperimentalModeIs" xml:space="preserve">
+    <value>AI Duty Solver (ADS) का प्रायोगिक मोड चालू है, लेकिन ADS लोड नहीं है।</value>
+  </data>
+  <data name="DutyAutomationService_AutoDutyIsStillInitializingOrFaultedRetry" xml:space="preserve">
+    <value>AutoDuty अभी शुरू हो रहा है या त्रुटि में है; लॉगिन स्थिर होने के बाद MOGTOME फिर आज़माएँ</value>
+  </data>
+  <data name="DutyAutomationService_BundledPraetoriumPathsCouldNotBeInstalled" xml:space="preserve">
+    <value>बंडल किए गए Praetorium पाथ AutoDuty में स्थापित नहीं किए जा सके।</value>
+  </data>
+  <data name="DutyAutomationService_ADSDidNotHandleAdsEnterinnAfter" xml:space="preserve">
+    <value>रिपेयर के बाद ADS ने /ads enterinn को नहीं संभाला। सुनिश्चित करें कि ADS स्थापित और लोड है।</value>
+  </data>
+  <data name="Chat_MOGTOMEAutoDutyPreparationFailed" xml:space="preserve">
+    <value>[MOGTOME] AutoDuty की तैयारी विफल: {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEPraetoriumCallbackTest" xml:space="preserve">
+    <value>[MOGTOME] Praetorium कॉलबैक परीक्षण: {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEMissingOptionalUnlocks" xml:space="preserve">
+    <value>[MOGTOME] अनुपलब्ध वैकल्पिक अनलॉक: {0}</value>
+  </data>
+  <data name="MogtomeEngine_CombatCleanupFailedAfterDutyExitContinuing" xml:space="preserve">
+    <value>ड्यूटी से बाहर निकलने के बाद कॉम्बैट की सफ़ाई विफल; जारी है।</value>
+  </data>
+  <data name="MogtomeEngine_ManualPartyRefreshSkippedInsideDutyUse" xml:space="preserve">
+    <value>ड्यूटी के अंदर मैनुअल पार्टी रिफ़्रेश छोड़ दिया गया। पूरी पार्टी के बाहर आकर दिखाई देने के बाद ही बाहर Refresh Party State का उपयोग करें।</value>
+  </data>
+  <data name="MogtomeEngine_NonLeader" xml:space="preserve">
+    <value>लीडर नहीं</value>
+  </data>
+  <data name="MogtomeEngine_ManualPartyRefreshCouldNotDetermineLeader" xml:space="preserve">
+    <value>मैनुअल पार्टी रिफ़्रेश वर्तमान समान-वर्ल्ड पार्टी सूची से लीडर का पता नहीं लगा सका। {0} की भूमिका बरकरार है।</value>
+  </data>
+  <data name="Chat_MOGTOMEStopAfterNextCompletedStoppingBefore" xml:space="preserve">
+    <value>[MOGTOME] अगले रन के बाद रुकने का अनुरोध पूरा हुआ। फिर से कतार में लगने से पहले रुक रहे हैं।</value>
+  </data>
+  <data name="Chat_MOGTOMEAlreadyInsideInnTerritory" xml:space="preserve">
+    <value>[MOGTOME] पहले से इन क्षेत्र में हैं: {0}।</value>
+  </data>
+  <data name="Chat_MOGTOMENoInnkeeperFoundWithinYMog" xml:space="preserve">
+    <value>[MOGTOME] {0:F0}y के भीतर कोई इनकीपर नहीं मिला। /mog inn ने कुछ नहीं किया।</value>
+  </data>
+  <data name="Chat_MOGTOMEMogInnCancelled" xml:space="preserve">
+    <value>[MOGTOME] /mog inn रद्द: {0}</value>
+  </data>
+  <data name="Warning_Title" xml:space="preserve">
+    <value>MOGTOME चेतावनी</value>
+  </data>
+  <data name="Warning_Dismiss" xml:space="preserve">
+    <value>हटाएँ</value>
+  </data>
+  <data name="Language_Label" xml:space="preserve">
+    <value>इंटरफ़ेस भाषा</value>
+  </data>
+  <data name="Language_WaitForProfile" xml:space="preserve">
+    <value>प्रोफ़ाइल उपलब्ध होने तक गेम क्लाइंट की भाषा इस्तेमाल की जा रही है।</value>
+  </data>
+  <data name="Config_Potion" xml:space="preserve">
+    <value>पोशन</value>
+  </data>
+  <data name="Chat_MessageAndReason" xml:space="preserve">
+    <value>[MOGTOME] {0} {1}</value>
+  </data>
+  <data name="EngineState_Idle" xml:space="preserve">
+    <value>निष्क्रिय</value>
+  </data>
+  <data name="EngineState_Initializing" xml:space="preserve">
+    <value>शुरू हो रहा है</value>
+  </data>
+  <data name="EngineState_WaitingOutsideDuty" xml:space="preserve">
+    <value>ड्यूटी के बाहर प्रतीक्षा</value>
+  </data>
+  <data name="EngineState_Queueing" xml:space="preserve">
+    <value>कतार में लग रहे हैं</value>
+  </data>
+  <data name="EngineState_InDuty" xml:space="preserve">
+    <value>ड्यूटी में</value>
+  </data>
+  <data name="EngineState_RepairingOutside" xml:space="preserve">
+    <value>बाहर रिपेयर</value>
+  </data>
+  <data name="EngineState_Stopping" xml:space="preserve">
+    <value>रोक रहे हैं</value>
+  </data>
+  <data name="EngineState_Stopped" xml:space="preserve">
+    <value>बंद</value>
+  </data>
+  <data name="CombatProvider_Bmr" xml:space="preserve">
+    <value>BMR</value>
+  </data>
+  <data name="CombatProvider_Vbm" xml:space="preserve">
+    <value>VBM</value>
+  </data>
+  <data name="CombatProvider_Rsr" xml:space="preserve">
+    <value>RSR</value>
+  </data>
+  <data name="CombatProvider_Wrath" xml:space="preserve">
+    <value>Wrath Combo</value>
+  </data>
+  <data name="Inn_InteractingWithInnkeeper" xml:space="preserve">
+    <value>इनकीपर {0} से बातचीत</value>
+  </data>
+  <data name="Inn_MovingToInnkeeper" xml:space="preserve">
+    <value>इनकीपर {0} की ओर जा रहे हैं</value>
+  </data>
+  <data name="Inn_MOGTOMEMogInnRequiresALoggedIn" xml:space="preserve">
+    <value>[MOGTOME] /mog inn के लिए लॉगिन किया हुआ कैरेक्टर चाहिए।</value>
+  </data>
+  <data name="Inn_EnteredInnTerritorySuccessfully" xml:space="preserve">
+    <value>इन क्षेत्र में सफलतापूर्वक प्रवेश किया।</value>
+  </data>
+  <data name="Inn_TimedOutWhileTryingToEnterThe" xml:space="preserve">
+    <value>इन में प्रवेश करते समय समय-सीमा समाप्त हो गई।</value>
+  </data>
+  <data name="Inn_InnEntryFailed" xml:space="preserve">
+    <value>इन में प्रवेश विफल: {0}</value>
+  </data>
+  <data name="Inn_WaitingForInnZoneTransition" xml:space="preserve">
+    <value>इन क्षेत्र में ट्रांज़िशन की प्रतीक्षा</value>
+  </data>
+  <data name="Inn_InnkeeperIsNoLongerNearby" xml:space="preserve">
+    <value>इनकीपर {0} अब पास नहीं है।</value>
+  </data>
+  <data name="Inn_InteractingWith" xml:space="preserve">
+    <value>{0} से बातचीत</value>
+  </data>
+  <data name="Inn_DriftedTooFarAwayFromWhileWaiting" xml:space="preserve">
+    <value>बातचीत की प्रतीक्षा करते समय {0} से बहुत दूर चले गए।</value>
+  </data>
+  <data name="Inn_RepositioningNear" xml:space="preserve">
+    <value>{0} के पास फिर से स्थिति बना रहे हैं</value>
+  </data>
+  <data name="Inn_Retrying" xml:space="preserve">
+    <value>{0} का फिर प्रयास</value>
+  </data>
+  <data name="Time_Calculating" xml:space="preserve">
+    <value>गणना हो रही है...</value>
+  </data>
+  <data name="Time_Unknown" xml:space="preserve">
+    <value>अज्ञात</value>
+  </data>
+  <data name="Time_DH" xml:space="preserve">
+    <value>{0}दि {1}घं</value>
+  </data>
+  <data name="Time_HM" xml:space="preserve">
+    <value>{0}घं {1}मि</value>
+  </data>
+  <data name="Time_MS" xml:space="preserve">
+    <value>{0}मि {1}से</value>
+  </data>
+  <data name="Engine_DutyComplete" xml:space="preserve">
+    <value>ड्यूटी पूरी</value>
+  </data>
+  <data name="Engine_BailoutPending" xml:space="preserve">
+    <value>बचाव निकास लंबित</value>
+  </data>
+  <data name="Config_CombatRotation" xml:space="preserve">
+    <value>कॉम्बैट रोटेशन</value>
+  </data>
+  <data name="Config_PotOnBoss" xml:space="preserve">
+    <value>{0} पर पोशन</value>
+  </data>
+  <data name="RepairBlocker_DutyState" xml:space="preserve">
+    <value>ड्यूटी की स्थिति</value>
+  </data>
+  <data name="RepairBlocker_ZoneTransition" xml:space="preserve">
+    <value>क्षेत्र ट्रांज़िशन</value>
+  </data>
+  <data name="RepairBlocker_QueueRegistration" xml:space="preserve">
+    <value>कतार पंजीकरण</value>
+  </data>
+  <data name="RepairBlocker_DutyConfirmation" xml:space="preserve">
+    <value>ड्यूटी पुष्टि पॉपअप</value>
+  </data>
+  <data name="RepairBlocker_MinimizedDutyConfirmation" xml:space="preserve">
+    <value>मिनिमाइज़ किया हुआ ड्यूटी पुष्टि पॉपअप</value>
+  </data>
+  <data name="RepairBlocker_CancelDutyConfirmation" xml:space="preserve">
+    <value>ड्यूटी पुष्टि रद्द करने की प्रक्रिया</value>
+  </data>
+  <data name="RepairBlocker_YesNoDialog" xml:space="preserve">
+    <value>SelectYesno डायलॉग</value>
+  </data>
+  <data name="RepairBlocker_Cutscene" xml:space="preserve">
+    <value>कटसीन</value>
+  </data>
+  <data name="RepairBlocker_Occupied" xml:space="preserve">
+    <value>व्यस्त ट्रांज़िशन</value>
+  </data>
+  <data name="Plugin_CommandMainHelp" xml:space="preserve">
+    <value>MOGTOME की मुख्य विंडो खोलें।</value>
+  </data>
+  <data name="Plugin_CommandAliasHelp" xml:space="preserve">
+    <value>MOGTOME: /mog [start|stop|stopnext|inn|config|status|debug|ws|j] या UI खोलने के लिए /mog।</value>
+  </data>
+  <data name="Ads_Empty" xml:space="preserve">
+    <value>ADS.GetStatusJson ने खाली पेलोड लौटाया</value>
+  </data>
+  <data name="Ads_Inactive" xml:space="preserve">
+    <value>ADS की स्थिति किसी सक्रिय इंस्टेंस ड्यूटी की पहचान नहीं करती</value>
+  </data>
+  <data name="Ads_NoCatalog" xml:space="preserve">
+    <value>ADS की वर्तमान ड्यूटी में कैटलॉग मेटाडेटा नहीं है</value>
+  </data>
+  <data name="Ads_NoName" xml:space="preserve">
+    <value>ADS की वर्तमान ड्यूटी की कैटलॉग पंक्ति में ड्यूटी का नाम नहीं है</value>
+  </data>
+  <data name="Ads_NoTerritory" xml:space="preserve">
+    <value>ADS की वर्तमान ड्यूटी की कैटलॉग पंक्ति में क्षेत्र की पहचान नहीं है</value>
+  </data>
+  <data name="Ads_NoCfc" xml:space="preserve">
+    <value>ADS की वर्तमान ड्यूटी की कैटलॉग पंक्ति में CFC पहचान नहीं है</value>
+  </data>
+  <data name="Ads_Category" xml:space="preserve">
+    <value>ADS की वर्तमान ड्यूटी की कैटलॉग पंक्ति की श्रेणी '{0}' समर्थित नहीं है</value>
+  </data>
+  <data name="Ads_Support" xml:space="preserve">
+    <value>ADS की वर्तमान ड्यूटी की कैटलॉग पंक्ति का समर्थन स्तर '{0}' समर्थित नहीं है</value>
+  </data>
+  <data name="Ads_Clearance" xml:space="preserve">
+    <value>ADS की वर्तमान ड्यूटी की कैटलॉग पंक्ति की क्लियरेंस स्थिति '{0}' समर्थित नहीं है</value>
+  </data>
+  <data name="Ads_InvalidJson" xml:space="preserve">
+    <value>ADS.GetStatusJson में अमान्य JSON था: {0}</value>
+  </data>
+  <data name="Ads_Unvalidated" xml:space="preserve">
+    <value>ADS की वर्तमान ड्यूटी का कोई सत्यापित स्नैपशॉट नहीं है।</value>
+  </data>
+  <data name="Ads_Unloaded" xml:space="preserve">
+    <value>ADS अनलोड हुआ।</value>
+  </data>
+  <data name="Ads_Outside" xml:space="preserve">
+    <value>लाइव क्लाइंट किसी इंस्टेंस ड्यूटी के बाहर है।</value>
+  </data>
+  <data name="Ads_NoLiveIdentity" xml:space="preserve">
+    <value>GameMain ने लाइव ड्यूटी क्षेत्र की पहचान नहीं दी।</value>
+  </data>
+  <data name="Ads_Changed" xml:space="preserve">
+    <value>लाइव ड्यूटी की पहचान territory/CFC {0}/{1} से बदलकर {2}/{3} हो गई।</value>
+  </data>
+  <data name="Ads_Mismatch" xml:space="preserve">
+    <value>ADS की वर्तमान ड्यूटी की पहचान {0}/{1} लाइव GameMain पहचान {2}/{3} से मेल नहीं खाती।</value>
+  </data>
+  <data name="Ads_Validated" xml:space="preserve">
+    <value>territory/CFC {0}/{1} के लिए ADS की वर्तमान ड्यूटी का स्नैपशॉट सत्यापित किया गया।</value>
+  </data>
+  <data name="Ads_Unavailable" xml:space="preserve">
+    <value>ADS.GetStatusJson अनुपलब्ध: {0}</value>
+  </data>
+  <data name="Ads_Retained" xml:space="preserve">
+    <value>ADS.GetStatusJson अनुपलब्ध; उसी लाइव पहचान के लिए वर्तमान ड्यूटी का सत्यापित स्नैपशॉट बरकरार है: {0}</value>
+  </data>
+  <data name="Opener_Timeout" xml:space="preserve">
+    <value>प्रयोग की 10 सेकंड की समय-सीमा समाप्त</value>
+  </data>
+  <data name="Opener_NoTarget" xml:space="preserve">
+    <value>शुरुआती समूह का लक्ष्य अनुपलब्ध</value>
+  </data>
+  <data name="Opener_NoArea" xml:space="preserve">
+    <value>{0} का क्षेत्रीय एक्शन अनुपलब्ध</value>
+  </data>
+  <data name="Opener_NoInvulnerability" xml:space="preserve">
+    <value>{0} की अभेद्यता अनुपलब्ध</value>
+  </data>
+  <data name="Opener_NoTerminal" xml:space="preserve">
+    <value>Magitek Terminal 2012811 अनुपलब्ध</value>
+  </data>
+  <data name="Opener_NoPlayerAtTerminal" xml:space="preserve">
+    <value>टर्मिनल पर स्थानीय खिलाड़ी अनुपलब्ध</value>
+  </data>
+  <data name="Opener_Descended" xml:space="preserve">
+    <value>स्थानीय टर्मिनल से नीचे उतरने का पता चला</value>
+  </data>
+  <data name="Opener_NoInteract" xml:space="preserve">
+    <value>Magitek Terminal से बातचीत अनुपलब्ध</value>
+  </data>
+  <data name="Opener_NoPlayerBeforeMove" xml:space="preserve">
+    <value>{0} की ओर जाने से पहले स्थानीय खिलाड़ी अनुपलब्ध</value>
+  </data>
+  <data name="Opener_NoMove" xml:space="preserve">
+    <value>{0} तक vnav मूवमेंट अनुपलब्ध</value>
+  </data>
+  <data name="Opener_NoPlayerMoving" xml:space="preserve">
+    <value>चलते समय स्थानीय खिलाड़ी अनुपलब्ध</value>
+  </data>
+  <data name="Opener_NoProgress" xml:space="preserve">
+    <value>vnav मूवमेंट में कोई प्रगति नहीं हुई</value>
+  </data>
+  <data name="Opener_Pack" xml:space="preserve">
+    <value>शुरुआती समूह</value>
+  </data>
+  <data name="Opener_Terminal" xml:space="preserve">
+    <value>Magitek Terminal</value>
+  </data>
+  <data name="Engine_AutoQueueing" xml:space="preserve">
+    <value>अपने आप कतार में लग रहे हैं</value>
+  </data>
+  <data name="Engine_RepairRecoveryRetry" xml:space="preserve">
+    <value>रिपेयर बहाली का फिर प्रयास {0}</value>
+  </data>
+  <data name="Config_ObstacleMapsOn" xml:space="preserve">
+    <value>बाधा मानचित्र चालू</value>
+  </data>
+  <data name="Config_ObstacleMapsOnTooltip" xml:space="preserve">
+    <value>केवल BossMod Reborn को नियंत्रित करता है। डिफ़ॉल्ट: बंद। कॉम्बैट प्रदाता कोई भी हो, BossMod तैयार होने और रोटेशन सेटअप के बाद Start पर लागू होता है।</value>
+  </data>
+  <data name="Config_NPCRepairInn" xml:space="preserve">
+    <value>NPC रिपेयर + इन का कमरा</value>
+  </data>
+  <data name="Engine_InnRepairFailed" xml:space="preserve">
+    <value>इन में रिपेयर विफल: {0}</value>
+  </data>
+  <data name="Config_NPCRepairInnUldah" xml:space="preserve">
+    <value>NPC रिपेयर + इन का कमरा — Ul’dah</value>
+  </data>
+  <data name="Config_NPCRepairInnGridania" xml:space="preserve">
+    <value>NPC रिपेयर + इन का कमरा — Gridania</value>
+  </data>
+  <data name="Config_NPCRepairInnLimsa" xml:space="preserve">
+    <value>NPC रिपेयर + इन का कमरा — Limsa Lominsa</value>
+  </data>
+  <data name="Config_NPCRepairInnIshgard" xml:space="preserve">
+    <value>NPC रिपेयर + इन का कमरा — Ishgard</value>
+  </data>
+  <data name="Config_NPCRepairInnCrystarium" xml:space="preserve">
+    <value>NPC रिपेयर + इन का कमरा — Crystarium</value>
+  </data>
+  <data name="Config_NPCRepairInnSharlayan" xml:space="preserve">
+    <value>NPC रिपेयर + इन का कमरा — Old Sharlayan</value>
+  </data>
+  <data name="Config_NPCRepairInnTuliyollal" xml:space="preserve">
+    <value>NPC रिपेयर + इन का कमरा — Tuliyollal</value>
+  </data>
+  <data name="Config_UnsupportedADSRepairMode" xml:space="preserve">
+    <value>असमर्थित ADS रिपेयर मोड</value>
+  </data>
+  <data name="Window_BlundervilleFailer" xml:space="preserve">
+    <value>Blunderville Failer</value>
+  </data>
+  <data name="Plugin_CommandBlundervilleHelp" xml:space="preserve">
+    <value>Blunderville Failer प्रीव्यू खोलें (/blunderville या /bv)।</value>
+  </data>
+  <data name="Blunderville_OpenMogtome" xml:space="preserve">
+    <value>MOGTOME खोलें</value>
+  </data>
+  <data name="Blunderville_FarmingUnavailable" xml:space="preserve">
+    <value>केवल प्रीव्यू: Blunderville फ़ार्मिंग अनुपलब्ध है। Start और Stop बंद हैं।</value>
+  </data>
+  <data name="Blunderville_PurchasesUnavailable" xml:space="preserve">
+    <value>केवल प्रीव्यू: ADS की खरीदारी अनुपलब्ध है। खरीद कॉन्फ़िगरेशन बंद है।</value>
+  </data>
+  <data name="Blunderville_ConfigurePurchases" xml:space="preserve">
+    <value>खरीदारी कॉन्फ़िगर करें</value>
+  </data>
+  <data name="Ui_Color" xml:space="preserve">
+    <value>रंग</value>
+  </data>
+  <data name="Ui_Teal" xml:space="preserve">
+    <value>टील</value>
+  </data>
+  <data name="Ui_Blue" xml:space="preserve">
+    <value>नीला</value>
+  </data>
+  <data name="Ui_Pink" xml:space="preserve">
+    <value>गुलाबी</value>
+  </data>
+  <data name="Ui_CustomRgb" xml:space="preserve">
+    <value>कस्टम RGB</value>
+  </data>
+  <data name="Ui_CompactMode" xml:space="preserve">
+    <value>कॉम्पैक्ट मोड</value>
+  </data>
+  <data name="Ui_LoadingFonts" xml:space="preserve">
+    <value>UI फ़ॉन्ट लोड हो रहे हैं...</value>
+  </data>
+  <data name="Ui_FontFailure" xml:space="preserve">
+    <value>UI फ़ॉन्ट लोड नहीं हो सके। प्लगइन लॉग देखें।</value>
+  </data>
+  <data name="Main_Subtitle" xml:space="preserve">
+    <value>ग्रैंड टोम संचालन और प्रबंधन इंजन का प्रबंधन</value>
+  </data>
+  <data name="Main_OpenBlunderville" xml:space="preserve">
+    <value>Blunderville Failer खोलें</value>
+  </data>
+  <data name="Main_StateHeading" xml:space="preserve">
+    <value>अवस्था</value>
+  </data>
+  <data name="Main_StatusHeading" xml:space="preserve">
+    <value>स्थिति</value>
+  </data>
+  <data name="Main_Running" xml:space="preserve">
+    <value>चल रहा है</value>
+  </data>
+  <data name="Main_Stopped" xml:space="preserve">
+    <value>बंद</value>
+  </data>
+  <data name="Main_DutyCurrent" xml:space="preserve">
+    <value>वर्तमान</value>
+  </data>
+  <data name="Main_DutyCounter" xml:space="preserve">
+    <value>गिनती</value>
+  </data>
+  <data name="Main_DailyDecuHeading" xml:space="preserve">
+    <value>दैनिक Decu रन</value>
+  </data>
+  <data name="Main_DailyResetHeading" xml:space="preserve">
+    <value>दैनिक रीसेट</value>
+  </data>
+  <data name="Main_PartySummary" xml:space="preserve">
+    <value>पार्टी का सारांश</value>
+  </data>
+  <data name="Main_InParty" xml:space="preserve">
+    <value>पार्टी में</value>
+  </data>
+  <data name="Main_NoParty" xml:space="preserve">
+    <value>कोई पार्टी सदस्य नहीं देखा गया।</value>
+  </data>
+  <data name="Main_PartyDetails" xml:space="preserve">
+    <value>पार्टी विवरण</value>
+  </data>
+  <data name="Main_DutyDetails" xml:space="preserve">
+    <value>ड्यूटी विवरण</value>
+  </data>
+  <data name="Main_CounterValue" xml:space="preserve">
+    <value>{0} / {1}</value>
+  </data>
+  <data name="Main_ResetUtc" xml:space="preserve">
+    <value>{0:HH:mm} UTC</value>
+  </data>
+  <data name="Main_CurrentProfile" xml:space="preserve">
+    <value>वर्तमान प्रोफ़ाइल: {0}</value>
+  </data>
+  <data name="Main_HelpTitle" xml:space="preserve">
+    <value>मदद</value>
+  </data>
+  <data name="Blunderville_FarmingHeading" xml:space="preserve">
+    <value>इस बिल्ड में फ़ार्मिंग उपलब्ध नहीं है।</value>
+  </data>
+  <data name="Blunderville_FarmingDetail" xml:space="preserve">
+    <value>इस समय Blunderville Failer से अपने आप फ़ार्मिंग नहीं की जा सकती।</value>
+  </data>
+  <data name="Blunderville_PurchasesHeading" xml:space="preserve">
+    <value>खरीद ऑटोमेशन उपलब्ध नहीं है।</value>
+  </data>
+  <data name="Blunderville_PurchasesDetail" xml:space="preserve">
+    <value>इस बिल्ड में अपने आप खरीदारी करने की सुविधा उपलब्ध नहीं है।</value>
+  </data>
+  <data name="Cleanup_Opener" xml:space="preserve">
+    <value>शुरुआती क्रम</value>
+  </data>
+  <data name="Cleanup_Backend" xml:space="preserve">
+    <value>बैकएंड</value>
+  </data>
+  <data name="Cleanup_Dialogs" xml:space="preserve">
+    <value>डायलॉग</value>
+  </data>
+  <data name="Cleanup_RepairQueue" xml:space="preserve">
+    <value>रिपेयर कतार</value>
+  </data>
+  <data name="Cleanup_DeathTracking" xml:space="preserve">
+    <value>मृत्यु ट्रैकिंग</value>
+  </data>
+  <data name="Cleanup_Combat" xml:space="preserve">
+    <value>कॉम्बैट</value>
+  </data>
+  <data name="Main_Open" xml:space="preserve">
+    <value>खोलें</value>
+  </data>
+  <data name="Window appearance" xml:space="preserve">
+    <value>विंडो का रूप</value>
+  </data>
+  <data name="Compact visible on main window" xml:space="preserve">
+    <value>मुख्य विंडो पर कॉम्पैक्ट विकल्प दिखाएँ</value>
+  </data>
+  <data name="Language visible on main window" xml:space="preserve">
+    <value>मुख्य विंडो पर भाषा विकल्प दिखाएँ</value>
+  </data>
+  <data name="Transparency" xml:space="preserve">
+    <value>पारदर्शिता</value>
+  </data>
+  <data name="Opacity (%)" xml:space="preserve">
+    <value>अपारदर्शिता (%)</value>
+  </data>
+  <data name="Auto-fade when unfocused" xml:space="preserve">
+    <value>फ़ोकस न होने पर अपने आप फ़ेड करें</value>
+  </data>
+  <data name="Unfocused opacity (%)" xml:space="preserve">
+    <value>फ़ोकस न होने पर अपारदर्शिता (%)</value>
+  </data>
+  <data name="Unfocused delay (seconds)" xml:space="preserve">
+    <value>फ़ोकस न होने का विलंब (सेकंड)</value>
+  </data>
+</root>

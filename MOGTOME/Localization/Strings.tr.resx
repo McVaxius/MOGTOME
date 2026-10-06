@@ -1,0 +1,2248 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms</value>
+  </resheader>
+  <data name="Config_SetupWizard" xml:space="preserve">
+    <value>Kurulum sihirbazı</value>
+  </data>
+  <data name="Config_DependencyCheck" xml:space="preserve">
+    <value>Bağımlılık denetimi</value>
+  </data>
+  <data name="Config_Party" xml:space="preserve">
+    <value>Grup</value>
+  </data>
+  <data name="Config_Duty" xml:space="preserve">
+    <value>Görev</value>
+  </data>
+  <data name="Config_FoodPots" xml:space="preserve">
+    <value>Yiyecek ve iksirler</value>
+  </data>
+  <data name="Config_Repair" xml:space="preserve">
+    <value>Onarım</value>
+  </data>
+  <data name="Config_Advanced" xml:space="preserve">
+    <value>Gelişmiş</value>
+  </data>
+  <data name="Config_BackendMode" xml:space="preserve">
+    <value>Arka uç modu</value>
+  </data>
+  <data name="Config_UseADSPrimaryBackend" xml:space="preserve">
+    <value>ADS kullan (birincil arka uç)</value>
+  </data>
+  <data name="Config_ADSHandlesDutyAutomationAndInnReturn" xml:space="preserve">
+    <value>ADS, görev otomasyonunu ve hana dönüşü yönetir. AutoDuty alternatif bir arka uçtur.</value>
+  </data>
+  <data name="Config_AutoDutyIsTheAlternativeDutyBackendADS" xml:space="preserve">
+    <value>AutoDuty alternatif görev arka ucudur. ADS yalnızca ADS modu seçildiğinde veya /mog inn istendiğinde gereklidir.</value>
+  </data>
+  <data name="Config_RequiredPlugins" xml:space="preserve">
+    <value>Gerekli eklentiler</value>
+  </data>
+  <data name="Config_SetupRequirementsAreIncompleteTheWizardIs" xml:space="preserve">
+    <value>Kurulum gereksinimleri tamamlanmadı. Sihirbaz öneri amaçlıdır ve Başlat'ı engellemez.</value>
+  </data>
+  <data name="Config_RSRRotationSolverReborn" xml:space="preserve">
+    <value>RSR (RotationSolverReborn)</value>
+  </data>
+  <data name="Config_Installed" xml:space="preserve">
+    <value>Yüklü</value>
+  </data>
+  <data name="Config_NOTFOUND" xml:space="preserve">
+    <value>BULUNAMADI</value>
+  </data>
+  <data name="Config_BossModPassiveSupportBMROrVBM" xml:space="preserve">
+    <value>BossMod pasif desteği (BMR veya VBM)</value>
+  </data>
+  <data name="Config_BMRLoaded" xml:space="preserve">
+    <value>BMR yüklendi</value>
+  </data>
+  <data name="Config_VBMLoaded" xml:space="preserve">
+    <value>VBM yüklendi</value>
+  </data>
+  <data name="Config_BossModRebornBMR" xml:space="preserve">
+    <value>BossModReborn (BMR)</value>
+  </data>
+  <data name="Config_BossModVBM" xml:space="preserve">
+    <value>BossMod (VBM)</value>
+  </data>
+  <data name="Config_RSRHandlesAttacksTheLoadedBossModVariant" xml:space="preserve">
+    <value>RSR saldırıları yönetir; yüklü BossMod sürümü otomatik olarak passive - tank/melee/ranged kullanır.</value>
+  </data>
+  <data name="Config_BMRHandlesAttacksAndMovementWithFRENRIDER" xml:space="preserve">
+    <value>BMR, FRENRIDER - TANK/MELEE/RANGED veya elle seçtiğiniz ön ayarla saldırıları ve hareketi yönetir.</value>
+  </data>
+  <data name="Config_VBMHandlesAttacksAndMovementWithFRENRIDER" xml:space="preserve">
+    <value>VBM, FRENRIDER - TANK/MELEE/RANGED veya elle seçtiğiniz ön ayarla saldırıları ve hareketi yönetir.</value>
+  </data>
+  <data name="Config_WrathHandlesAttacksUsingItsCurrentSettings" xml:space="preserve">
+    <value>Wrath saldırıları mevcut ayarlarıyla yönetir.</value>
+  </data>
+  <data name="Config_UseManualBossModPreset" xml:space="preserve">
+    <value>Elle BossMod ön ayarı kullan</value>
+  </data>
+  <data name="Config_PresetName" xml:space="preserve">
+    <value>Ön ayar adı</value>
+  </data>
+  <data name="Config_EnterAnExistingPresetNameBeforeStarting" xml:space="preserve">
+    <value>Başlamadan önce mevcut bir ön ayarın adını girin.</value>
+  </data>
+  <data name="Config_MOGTOMESelectsItsPackagedActivePresetBy" xml:space="preserve">
+    <value>MOGTOME, her görev başlangıcında mevcut role göre paketindeki etkin ön ayarı seçer.</value>
+  </data>
+  <data name="Config_BothBossModVariantsAreLoadedStartDisables" xml:space="preserve">
+    <value>Her iki BossMod sürümü yüklü. Başlat, VBM'yi devre dışı bırakıp BMR'yi yeniden yükler; VBM seçimi BMR'ye geçer, RSR seçili kalır.</value>
+  </data>
+  <data name="Config_MOGTOMERunsXaSkipcutscenesOnBeforeEvery" xml:space="preserve">
+    <value>MOGTOME her elle başlatmadan önce /xa skipcutscenes on çalıştırır.</value>
+  </data>
+  <data name="Config_OptionalEnablesMogInnDelegation" xml:space="preserve">
+    <value>İsteğe bağlı. /mog inn devrini etkinleştirir.</value>
+  </data>
+  <data name="Config_OptionalPlugins" xml:space="preserve">
+    <value>İsteğe bağlı eklentiler</value>
+  </data>
+  <data name="Config_OptionalNotRequiredByMOGTOME" xml:space="preserve">
+    <value>İsteğe bağlı. MOGTOME için gerekli değil.</value>
+  </data>
+  <data name="Config_RecommendedAppearanceNameplateRandomizer" xml:space="preserve">
+    <value>Önerilir. Görünüm/isim levhası rastgeleleştirici.</value>
+  </data>
+  <data name="Config_CustomResolutionPpByX0ade" xml:space="preserve">
+    <value>CustomResolution (0x0ade tarafından 1pp)</value>
+  </data>
+  <data name="Config_ExperimentalAndNotRecommendedLowSpecHelper" xml:space="preserve">
+    <value>Deneysel ve önerilmez. Düşük donanım yardımcısı.</value>
+  </data>
+  <data name="Config_MaybeCrashyWithClients" xml:space="preserve">
+    <value>2 veya daha fazla istemcide çökebilir</value>
+  </data>
+  <data name="Config_WillCauseSomeIssuesSometimes" xml:space="preserve">
+    <value>Zaman zaman sorunlara neden olabilir.</value>
+  </data>
+  <data name="Config_DPSDhogPotatoSystem" xml:space="preserve">
+    <value>DPS (Dhog Potato System)</value>
+  </data>
+  <data name="Config_MayHavePathingIssues" xml:space="preserve">
+    <value>Yol bulma sorunları olabilir.</value>
+  </data>
+  <data name="Config_ExperimentalAndNotRecommendedRemoteHUDControl" xml:space="preserve">
+    <value>Deneysel ve önerilmez. Uzak HUD ve kontrol.</value>
+  </data>
+  <data name="Config_VeryNewPluginUnknownIssues" xml:space="preserve">
+    <value>Çok yeni eklenti, sorunları bilinmiyor.</value>
+  </data>
+  <data name="Config_ConflictingPlugins" xml:space="preserve">
+    <value>Çakışan eklentiler</value>
+  </data>
+  <data name="Config_AutoDutyPath" xml:space="preserve">
+    <value>AutoDuty yolu</value>
+  </data>
+  <data name="Config_PraetoriumPathINSTALLED" xml:space="preserve">
+    <value>Praetorium yolu: YÜKLÜ ({0})</value>
+  </data>
+  <data name="Config_PraetoriumPathNOTFOUND" xml:space="preserve">
+    <value>Praetorium yolu: BULUNAMADI ({0})</value>
+  </data>
+  <data name="Config_InstallBundledPraetoriumPaths" xml:space="preserve">
+    <value>Birlikte gelen Praetorium yollarını yükle</value>
+  </data>
+  <data name="Config_ThisCopiesTheBundledW2WPraetoriumPath" xml:space="preserve">
+    <value>MOGTOME veri klasöründeki W2W Praetorium yol dosyalarını AutoDuty yollar klasörüne kopyalar.</value>
+  </data>
+  <data name="Config_ADSIsOptionalInAutoDutyModeMog" xml:space="preserve">
+    <value>ADS, AutoDuty modunda isteğe bağlıdır; açıkça istendiğinde /mog inn için ADS gerekir.</value>
+  </data>
+  <data name="Config_ADSModeNotes" xml:space="preserve">
+    <value>ADS modu notları</value>
+  </data>
+  <data name="Config_ADSModeDisablesAutoDutyImmediatelyAndAgain" xml:space="preserve">
+    <value>ADS modu, AutoDuty'yi hemen ve Başlat sırasında tekrar devre dışı bırakır. Kuyruğa girişte ADS kontrolü ve doğrudan görev bulucu kaydı kullanılır.</value>
+  </data>
+  <data name="Config_RepairInnLeaveSwitchToAdsNpcrepair" xml:space="preserve">
+    <value>Onarım/han/çıkış, /ads npcrepair, /ads selfrepair, /ads enterinn ve /ads leave komutlarına geçer.</value>
+  </data>
+  <data name="Config_TheCheckboxChangesTheDutyBackendADS" xml:space="preserve">
+    <value>Onay kutusu görev arka ucunu değiştirir. ADS yalnızca ADS modu seçiliyken gereklidir.</value>
+  </data>
+  <data name="Config_OK" xml:space="preserve">
+    <value>[OK]</value>
+  </data>
+  <data name="Config_CopyRepo" xml:space="preserve">
+    <value>Depoyu kopyala</value>
+  </data>
+  <data name="Config_CopyRepoURLToClipboardThenAdd" xml:space="preserve">
+    <value>Depo URL'sini panoya kopyalayın, ardından şuraya ekleyin:
+Dalamud Settings &gt; Experimental &gt; Custom Plugin Repositories</value>
+  </data>
+  <data name="Config_NotInstalledOptional" xml:space="preserve">
+    <value>Yüklü değil (isteğe bağlı)</value>
+  </data>
+  <data name="Config_EnabledKnownMOGTOMEConflict" xml:space="preserve">
+    <value>Etkin - bilinen MOGTOME çakışması</value>
+  </data>
+  <data name="Config_InstalledButDisabled" xml:space="preserve">
+    <value>Yüklü ama devre dışı</value>
+  </data>
+  <data name="Config_NotInstalled" xml:space="preserve">
+    <value>Yüklü değil</value>
+  </data>
+  <data name="Config_DisableNow" xml:space="preserve">
+    <value>Şimdi devre dışı bırak</value>
+  </data>
+  <data name="Config_MOGTOMETriesXldisablepluginTwistOfFayteWhenYouStart" xml:space="preserve">
+    <value>MOGTOME başlatıldığında /xldisableplugin TwistOfFayte komutunu dener, ancak artık başlangıcı engellemez.</value>
+  </data>
+  <data name="Config_ThisGuideIsAdvisoryItNeverInstalls" xml:space="preserve">
+    <value>Bu kılavuz öneri amaçlıdır. Başka eklentileri yüklemez, etkinleştirmez, devre dışı bırakmaz veya yapılandırmaz. Yalnızca seçtiğiniz MOGTOME ayarlarını kaydeder.</value>
+  </data>
+  <data name="Config_CompletedForThisAccountWizardVersion" xml:space="preserve">
+    <value>Bu hesap için tamamlandı (sihirbaz sürümü {0}).</value>
+  </data>
+  <data name="Config_RunSetupWizardAgain" xml:space="preserve">
+    <value>Kurulum sihirbazını yeniden çalıştır</value>
+  </data>
+  <data name="Config_Backend" xml:space="preserve">
+    <value>Arka uç</value>
+  </data>
+  <data name="Config_CombatProvider" xml:space="preserve">
+    <value>Savaş sağlayıcısı</value>
+  </data>
+  <data name="Config_RequiredPlugins2" xml:space="preserve">
+    <value>Gerekli eklentiler</value>
+  </data>
+  <data name="Config_PartySetup" xml:space="preserve">
+    <value>Grup kurulumu</value>
+  </data>
+  <data name="Config_OptionalSettings" xml:space="preserve">
+    <value>İsteğe bağlı ayarlar</value>
+  </data>
+  <data name="Config_Review" xml:space="preserve">
+    <value>Gözden geçir</value>
+  </data>
+  <data name="Config_StepOf" xml:space="preserve">
+    <value>Adım {0}/{1}: {2}</value>
+  </data>
+  <data name="Config_ADSIsThePrimaryMOGTOMEBackendAutoDuty" xml:space="preserve">
+    <value>ADS, MOGTOME'un birincil arka ucudur. AutoDuty alternatif olarak kalır. Bu seçim yalnızca MOGTOME'un kayıtlı arka uç seçimini değiştirir.</value>
+  </data>
+  <data name="Config_ADSPrimaryBackend" xml:space="preserve">
+    <value>ADS (birincil arka uç)</value>
+  </data>
+  <data name="Config_AutoDutyAlternativeBackend" xml:space="preserve">
+    <value>AutoDuty (alternatif arka uç)</value>
+  </data>
+  <data name="Config_ADSMustBeLoadedForThisSelection" xml:space="preserve">
+    <value>Bu seçim için ADS yüklü olmalıdır.</value>
+  </data>
+  <data name="Config_AutoDutyAndTheSelectedPraetoriumPathMust" xml:space="preserve">
+    <value>Bu seçim için AutoDuty ve seçili Praetorium yolu kullanılabilir olmalıdır.</value>
+  </data>
+  <data name="Config_ChooseTheCombatProviderMOGTOMEShouldRequest" xml:space="preserve">
+    <value>Seçili arka uç için MOGTOME'un isteyeceği savaş sağlayıcısını seçin.</value>
+  </data>
+  <data name="Config_SelectedCombatProvider" xml:space="preserve">
+    <value>Seçili savaş sağlayıcısı</value>
+  </data>
+  <data name="Config_LoadTheSelectedProviderRSRAlsoRequires" xml:space="preserve">
+    <value>Seçili sağlayıcıyı yükleyin; RSR ayrıca pasif destek için BMR veya VBM gerektirir.</value>
+  </data>
+  <data name="Config_MarkTheClientThatQueuesDutiesAs" xml:space="preserve">
+    <value>Görevleri kuyruğa alan istemciyi grup lideri olarak işaretleyin. Her katılımcı istemci kendi kurulumunu bağımsız olarak gözden geçirmelidir.</value>
+  </data>
+  <data name="Config_IAmThePartyLeader" xml:space="preserve">
+    <value>Grup lideri benim</value>
+  </data>
+  <data name="Config_CrossWorldParty" xml:space="preserve">
+    <value>Dünyalar arası grup</value>
+  </data>
+  <data name="Config_UsePartySettingsForTheFullQueue" xml:space="preserve">
+    <value>Tüm kuyruk politikasını ve görev dışındaki tek seferlik grup durumu yenilemesini ayarlamak için Grup ayarlarını kullanın.</value>
+  </data>
+  <data name="Config_FoodPotionsAndRepairAreOptionalConfigure" xml:space="preserve">
+    <value>Yiyecek, iksir ve onarım isteğe bağlıdır. İsterseniz ilgili sekmelerden ayarlayın; boş bırakılabilir.</value>
+  </data>
+  <data name="Config_FoodPotsAndRepairRemainAvailableAfter" xml:space="preserve">
+    <value>Yiyecek ve iksirler ile Onarım, sihirbazdan sonra da kullanılabilir; burada başka eklenti ayarları değiştirilmez.</value>
+  </data>
+  <data name="Config_FinishSetup" xml:space="preserve">
+    <value>Kurulumu bitir</value>
+  </data>
+  <data name="Config_Back" xml:space="preserve">
+    <value>Geri</value>
+  </data>
+  <data name="Config_Next" xml:space="preserve">
+    <value>İleri</value>
+  </data>
+  <data name="Config_ADSSelectedBackend" xml:space="preserve">
+    <value>ADS (seçili arka uç)</value>
+  </data>
+  <data name="Config_AutoDutyPlusSelectedPraetoriumPath" xml:space="preserve">
+    <value>AutoDuty ve seçili Praetorium yolu</value>
+  </data>
+  <data name="Config_LoadADS" xml:space="preserve">
+    <value>ADS yükleyin.</value>
+  </data>
+  <data name="Config_LoadAutoDutyAndInstallTheSelectedPraetorium" xml:space="preserve">
+    <value>AutoDuty'yi yükleyin ve seçili Praetorium yolunu kurun.</value>
+  </data>
+  <data name="Config_LoadTheProviderSelectedInStepRSR" xml:space="preserve">
+    <value>2. adımda seçilen sağlayıcıyı yükleyin; RSR ayrıca BMR veya VBM gerektirir.</value>
+  </data>
+  <data name="Config_LoadVnavmesh" xml:space="preserve">
+    <value>vnavmesh yükleyin.</value>
+  </data>
+  <data name="Config_LoadXASlaveForXaSkipcutscenesOn" xml:space="preserve">
+    <value>/xa skipcutscenes on için XA Slave yükleyin.</value>
+  </data>
+  <data name="Config_LoadYesAlreadyForDialogs" xml:space="preserve">
+    <value>İletişim kutuları için YesAlready yükleyin.</value>
+  </data>
+  <data name="Config_OperatorClickedOnlyCopiesMOGTOMESBundled" xml:space="preserve">
+    <value>Yalnızca kullanıcı tıkladığında: MOGTOME'un birlikte gelen dosyalarını AutoDuty yollar klasörüne kopyalar.</value>
+  </data>
+  <data name="Config_LifestreamAndTextAdvanceAreOptionalAndDo" xml:space="preserve">
+    <value>Lifestream ve TextAdvance isteğe bağlıdır ve bu kontrol listesini etkilemez.</value>
+  </data>
+  <data name="Config_ADSPrimary" xml:space="preserve">
+    <value>ADS (birincil)</value>
+  </data>
+  <data name="Config_AutoDutyAlternative" xml:space="preserve">
+    <value>AutoDuty (alternatif)</value>
+  </data>
+  <data name="Config_Backend2" xml:space="preserve">
+    <value>Arka uç: {0}</value>
+  </data>
+  <data name="Config_Ready" xml:space="preserve">
+    <value>hazır</value>
+  </data>
+  <data name="Config_Incomplete" xml:space="preserve">
+    <value>eksik</value>
+  </data>
+  <data name="Config_RequiredChecks" xml:space="preserve">
+    <value>Gerekli denetimler: {0}</value>
+  </data>
+  <data name="Config_Leader" xml:space="preserve">
+    <value>lider</value>
+  </data>
+  <data name="Config_Participant" xml:space="preserve">
+    <value>katılımcı</value>
+  </data>
+  <data name="Config_PartyRole" xml:space="preserve">
+    <value>Gruptaki rol: {0}</value>
+  </data>
+  <data name="Config_OptionalRepairThreshold" xml:space="preserve">
+    <value>İsteğe bağlı onarım eşiği: %{0}</value>
+  </data>
+  <data name="Config_FinishRecordsOnlyThatThisAccountCompleted" xml:space="preserve">
+    <value>Bitir yalnızca bu hesabın sihirbazın bu sürümünü tamamladığını kaydeder. Başlat'ı engellemez veya başka eklentileri değiştirmez.</value>
+  </data>
+  <data name="Config_Ready2" xml:space="preserve">
+    <value>Hazır</value>
+  </data>
+  <data name="Config_PartySettings" xml:space="preserve">
+    <value>Grup ayarları</value>
+  </data>
+  <data name="Config_RuntimeRoleFollowsThisSavedSettingUse" xml:space="preserve">
+    <value>Çalışma sırasındaki rol bu kayıtlı ayara göre belirlenir. Aynı dünyada tek seferlik algılama için görev dışında Grup durumunu yenile'yi kullanın.</value>
+  </data>
+  <data name="Config_EnableIfYouReInACross" xml:space="preserve">
+    <value>Dünyalar arası bir gruptaysanız etkinleştirin.</value>
+  </data>
+  <data name="Config_OnlyQueueWithExactlyVisiblePeople" xml:space="preserve">
+    <value>Asgari grup boyutu gerektir</value>
+  </data>
+  <data name="Config_MinimumPartyMembers" xml:space="preserve">
+    <value>Asgari üye sayısı</value>
+  </data>
+  <data name="Config_AppliesOnlyToSameWorldLeadersIn" xml:space="preserve">
+    <value>Seçilen asgari sayı ile 4 görünür üye arasında kuyruğa girin. Tek başına 1 sayılır. Varsayılan: 4. Dünyalar arası üye görünürlüğü güvenilir olmadığından yalnızca eşitlenmiş modlarda aynı dünya liderlerine uygulanır. Eşitlenmemiş test modu muaftır.</value>
+  </data>
+  <data name="Config_RuntimePartyState" xml:space="preserve">
+    <value>Çalışma sırasındaki grup durumu:</value>
+  </data>
+  <data name="Config_Yes" xml:space="preserve">
+    <value>Evet</value>
+  </data>
+  <data name="Config_No" xml:space="preserve">
+    <value>Hayır</value>
+  </data>
+  <data name="Config_LeaderRightNow" xml:space="preserve">
+    <value>Şu anki lider: {0}</value>
+  </data>
+  <data name="Config_SourceConfiguredCrossWorldRole" xml:space="preserve">
+    <value>Kaynak: yapılandırılmış dünyalar arası rol.</value>
+  </data>
+  <data name="Config_SourceConfiguredRoleRefreshPartyStateOnly" xml:space="preserve">
+    <value>Kaynak: yapılandırılmış rol. Grup durumunu yenile, mevcut aynı dünya grup listesini yalnızca bir kez denetler.</value>
+  </data>
+  <data name="Config_RefreshPartyState" xml:space="preserve">
+    <value>Grup durumunu yenile</value>
+  </data>
+  <data name="Config_OneTimeSameWorldLeaderDetectionUse" xml:space="preserve">
+    <value>Tek seferlik aynı dünya lideri algılama. Yalnızca görev dışında, tüm grup görünürken kullanın.</value>
+  </data>
+  <data name="Config_PartyBehaviour" xml:space="preserve">
+    <value>Grup davranışı:</value>
+  </data>
+  <data name="Config_LeaderQueuesDutiesAndControlsTheMOGTOME" xml:space="preserve">
+    <value>- Lider: Görevleri kuyruğa alır ve MOGTOME çalışma akışını yönetir.</value>
+  </data>
+  <data name="Config_NonLeaderWaitsForPartyQueuePops" xml:space="preserve">
+    <value>- Lider olmayan: Grup kuyruk penceresini bekler ve bağımsız olarak onarım yapar.</value>
+  </data>
+  <data name="Config_RepairMOGTOMEPausesItsOwnManualQueue" xml:space="preserve">
+    <value>- Onarım: MOGTOME onarım sırasında kendi elle kuyruğa giriş denemelerini duraklatır, onarımdan sonra sürdürür.</value>
+  </data>
+  <data name="Config_DetectionRefreshPartyStateIsManualOnly" xml:space="preserve">
+    <value>- Algılama: Grup durumunu yenile yalnızca elle çalışır; tek kişi veya kısmi grup verilerini otomatik olarak lider yapmaz.</value>
+  </data>
+  <data name="Config_DutySettings" xml:space="preserve">
+    <value>Görev ayarları</value>
+  </data>
+  <data name="Config_DutyCounter" xml:space="preserve">
+    <value>Görev sayacı</value>
+  </data>
+  <data name="Config_ReturnToEntranceDelaySeconds" xml:space="preserve">
+    <value>Girişe dönüş gecikmesi (saniye)</value>
+  </data>
+  <data name="Config_ReturnToEntranceDelayHelp" xml:space="preserve">
+    <value>Gecikme, etkin bir görevde ölüm algılandığında başlar ve dönüş penceresi küçültülmüşken sürer. Tüm grubun öldüğü doğrulanırsa, başka üye önce dirilse bile mevcut ölüm için gecikme atlanır. Gecikmeden veya doğrulanmış grup ölümünden sonra görünür Return pencereleri sonraki normal güncellemede kabul edilir; küçültülmüş pencereler yeniden açılır ve takip eden güncellemede denetlenir. Varsayılan: 60 saniye; asgari: 1. ADS ve AutoDuty için geçerlidir. Diriltme ve kapalı alana geçiş anında kalır.</value>
+  </data>
+  <data name="Config_CurrentPraetoriumRunCountSetToFor" xml:space="preserve">
+    <value>Mevcut Praetorium koşu sayısı. Günün ilk koşusu için 0 yapın.</value>
+  </data>
+  <data name="Config_PraetoriumAutoDutyPath" xml:space="preserve">
+    <value>Praetorium AutoDuty yolu</value>
+  </data>
+  <data name="Config_BundledWithMOGTOMEAndCopiedIntoAutoDuty" xml:space="preserve">
+    <value>MOGTOME ile birlikte gelir ve başlatma/kurulumda AutoDuty yollar klasörüne kopyalanır. Varsayılan: phecda.</value>
+  </data>
+  <data name="Config_ADSModeIgnoresAutoDutyPathSelection" xml:space="preserve">
+    <value>ADS modu AutoDuty yol seçimini yok sayar.</value>
+  </data>
+  <data name="Config_PraetoriumThreshold" xml:space="preserve">
+    <value>Praetorium eşiği</value>
+  </data>
+  <data name="Config_SwitchToDecumanaAfterThisManyPraetorium" xml:space="preserve">
+    <value>Bu kadar Praetorium koşusundan sonra Decumana'ya geç.</value>
+  </data>
+  <data name="Config_PraetoriumDailyLimit" xml:space="preserve">
+    <value>Günlük Praetorium sınırı</value>
+  </data>
+  <data name="Config_StopAfterThisManySuccessfulPraetoriumClears" xml:space="preserve">
+    <value>Bugün bu kadar başarılı Praetorium tamamlamasından sonra dur. Decumana ve iptal edilen koşular sayılmaz.</value>
+  </data>
+  <data name="Config_QuitCommand" xml:space="preserve">
+    <value>Çıkış komutu</value>
+  </data>
+  <data name="Config_RunsOnceWhenThePraetoriumDailyLimit" xml:space="preserve">
+    <value>Günlük Praetorium sınırına ulaşıldığında, görevden çıktıktan sonra bir kez çalışır.</value>
+  </data>
+  <data name="Config_TestingModeUnsyncedUncheckLevelSyncYourself" xml:space="preserve">
+    <value>Test modu: Eşitlenmemiş (gerçekten istiyorsanız seviye eşitlemesini kendiniz kapatın. İstatistikler kaydedilmez)</value>
+  </data>
+  <data name="Config_WARNINGRunningUnsyncedWithoutLevelSyncTesting" xml:space="preserve">
+    <value>UYARI: Seviye eşitlemesi olmadan eşitlenmemiş çalışma (test modu, istatistik yok).</value>
+  </data>
+  <data name="Config_DefaultUnsyncLevelSyncSyncLevelSync" xml:space="preserve">
+    <value>Varsayılan: Eşitlenmemiş + seviye eşitleme (rastgele oyuncularla kuyruğa girmemek için eşitlenmiş + seviye eşitleme).</value>
+  </data>
+  <data name="Config_TestingModeActiveEnableDebugToChange" xml:space="preserve">
+    <value>[Test modu etkin - değiştirmek için debug'ı açın]</value>
+  </data>
+  <data name="Config_Food" xml:space="preserve">
+    <value>Yiyecek</value>
+  </data>
+  <data name="Config_UseHQFood" xml:space="preserve">
+    <value>HQ yiyecek kullan</value>
+  </data>
+  <data name="Config_UsesTheSelectedMealAsHQWhen" xml:space="preserve">
+    <value>Etkinleştirildiğinde seçili yemeği HQ olarak kullanır; normal kaliteli yiyecek için kapalı bırakın.</value>
+  </data>
+  <data name="Config_ClearFood" xml:space="preserve">
+    <value>Yiyeceği temizle</value>
+  </data>
+  <data name="Config_NoFoodSelectedFoodIsOptional" xml:space="preserve">
+    <value>  Yiyecek seçilmedi. Yiyecek isteğe bağlıdır.</value>
+  </data>
+  <data name="Config_Potions" xml:space="preserve">
+    <value>İksirler</value>
+  </data>
+  <data name="Config_UseHQPotion" xml:space="preserve">
+    <value>HQ iksir kullan</value>
+  </data>
+  <data name="Config_UsesTheSelectedMedicineAsHQWhen" xml:space="preserve">
+    <value>Etkinleştirildiğinde seçili ilacı HQ olarak kullanır; normal kaliteli tentür/iksir için kapalı bırakın.</value>
+  </data>
+  <data name="Config_ClearPotion" xml:space="preserve">
+    <value>İksiri temizle</value>
+  </data>
+  <data name="Config_PotOnGaius" xml:space="preserve">
+    <value>Gaius'ta iksir kullan</value>
+  </data>
+  <data name="Config_PotOnPhantomGaius" xml:space="preserve">
+    <value>Phantom Gaius'ta iksir kullan</value>
+  </data>
+  <data name="Config_NoPotionSelectedPotionsAreOptional" xml:space="preserve">
+    <value>  İksir seçilmedi. İksirler isteğe bağlıdır.</value>
+  </data>
+  <data name="Config_Select" xml:space="preserve">
+    <value>{0} seç...</value>
+  </data>
+  <data name="Config_Search" xml:space="preserve">
+    <value>Ara</value>
+  </data>
+  <data name="Config_NoResultsTryADifferentSearchTerm" xml:space="preserve">
+    <value>Sonuç yok. Başka bir arama terimi deneyin.</value>
+  </data>
+  <data name="Config_TypeAtLeastCharactersToSearch" xml:space="preserve">
+    <value>Aramak için en az 2 karakter girin...</value>
+  </data>
+  <data name="Config_RepairSettings" xml:space="preserve">
+    <value>Onarım ayarları</value>
+  </data>
+  <data name="Config_RepairThreshold" xml:space="preserve">
+    <value>Onarım eşiği (%)</value>
+  </data>
+  <data name="Config_RepairWhenEquipmentDurabilityFallsBelowThis" xml:space="preserve">
+    <value>Ekipman dayanıklılığı bu yüzdenin altına düşünce onar. Otomatik onarımı kapatmak için 0 yapın.</value>
+  </data>
+  <data name="Config_RepairMode" xml:space="preserve">
+    <value>Onarım modu</value>
+  </data>
+  <data name="Config_RepairModeHelp" xml:space="preserve">
+    <value>NPC onarımı ve han odası, yalnızca ADS odaya girdikten sonra tamamlanır.</value>
+  </data>
+  <data name="Config_RepairBehavior" xml:space="preserve">
+    <value>Onarım davranışı:</value>
+  </data>
+  <data name="Config_LeaderRepairsAutomaticallyBetweenDutiesWhenThreshold" xml:space="preserve">
+    <value>- Lider: Eşiğe ulaşılınca görevler arasında otomatik onarır</value>
+  </data>
+  <data name="Config_NonLeaderRepairsIndependentlyAfterSecondOutside" xml:space="preserve">
+    <value>- Lider olmayan: Görev dışında 1 saniye sonra bağımsız onarır</value>
+  </data>
+  <data name="Config_SoloTreatedAsLeaderAutomatically" xml:space="preserve">
+    <value>- Tek kişi: Otomatik olarak lider sayılır</value>
+  </data>
+  <data name="Config_ADSRepairCommand" xml:space="preserve">
+    <value>- ADS onarım komutu: {0}</value>
+  </data>
+  <data name="Config_AutoDutyModeRepairMETHODSelfNPCIs" xml:space="preserve">
+    <value>- AutoDuty modu: onarım YÖNTEMİ (kendi/NPC) AutoDuty ayarlarından belirlenir; hana dönüş /ads enterinn kullanır</value>
+  </data>
+  <data name="Config_Status" xml:space="preserve">
+    <value>Durum:</value>
+  </data>
+  <data name="Config_CurrentThreshold" xml:space="preserve">
+    <value>  Mevcut eşik: %{0}</value>
+  </data>
+  <data name="Config_Enabled" xml:space="preserve">
+    <value>Etkin</value>
+  </data>
+  <data name="Config_Disabled" xml:space="preserve">
+    <value>Devre dışı</value>
+  </data>
+  <data name="Config_AutoRepair" xml:space="preserve">
+    <value>  Otomatik onarım: {0}</value>
+  </data>
+  <data name="Config_Self" xml:space="preserve">
+    <value>Kendi</value>
+  </data>
+  <data name="Config_NPC" xml:space="preserve">
+    <value>NPC</value>
+  </data>
+  <data name="Config_ADSRepairMethod" xml:space="preserve">
+    <value>  ADS onarım yöntemi: {0}</value>
+  </data>
+  <data name="Config_ExperimentalADS" xml:space="preserve">
+    <value>Deneysel ADS</value>
+  </data>
+  <data name="Config_ExperimentalFirstRoomSkipPraetorium" xml:space="preserve">
+    <value>Deneysel ilk oda atlama (Praetorium)</value>
+  </data>
+  <data name="Config_ADSPraetoriumOnlyEveryParticipatingClientMust" xml:space="preserve">
+    <value>Yalnızca ADS/Praetorium. Katılan her istemci yerel olarak etkinleştirmelidir. MOGTOME başarıdan veya herhangi bir hatadan sonra ADS'ye döner.</value>
+  </data>
+  <data name="Config_AvailableOnlyWhenADSIsTheSelected" xml:space="preserve">
+    <value>Yalnızca ADS arka ucu seçiliyken kullanılabilir; kayıtlı seçenek AutoDuty modunda etkin değildir.</value>
+  </data>
+  <data name="Config_Debug" xml:space="preserve">
+    <value>Debug</value>
+  </data>
+  <data name="Config_DebugCounter" xml:space="preserve">
+    <value>Debug sayacı</value>
+  </data>
+  <data name="Config_CrashRecoveryOffsetIfYouRestartedMid" xml:space="preserve">
+    <value>Çökme sonrası düzeltme. Oturum ortasında yeniden başlattıysanız, bugün doğru
+izlemeye devam etmek için son bilinen koşu sayısını girin.</value>
+  </data>
+  <data name="Config_BailoutTimeoutSec" xml:space="preserve">
+    <value>Acil çıkış zaman aşımı (sn)</value>
+  </data>
+  <data name="Config_LeaveDutyIfStuckForThisMany" xml:space="preserve">
+    <value>Bu kadar saniye takılı kalırsa görevden çık. Varsayılan: 1200 (20 dk).</value>
+  </data>
+  <data name="Main_V" xml:space="preserve">
+    <value>v{0}</value>
+  </data>
+  <data name="Main_KoFi" xml:space="preserve">
+    <value>♡ Ko-fi ♡</value>
+  </data>
+  <data name="Main_SupportDevelopmentOnKoFi" xml:space="preserve">
+    <value>Ko-fi üzerinden geliştirmeyi destekleyin</value>
+  </data>
+  <data name="Main_StateInitializing" xml:space="preserve">
+    <value>Durum: Başlatılıyor</value>
+  </data>
+  <data name="Main_StatusWaitingForAccountAndEngineInitialization" xml:space="preserve">
+    <value>Bilgi: Hesap ve motorun başlatılması bekleniyor.</value>
+  </data>
+  <data name="Main_Config" xml:space="preserve">
+    <value>Yapılandırma</value>
+  </data>
+  <data name="Main_Stats" xml:space="preserve">
+    <value>İstatistikler</value>
+  </data>
+  <data name="Main_Reset" xml:space="preserve">
+    <value>Sıfırla</value>
+  </data>
+  <data name="Main_State" xml:space="preserve">
+    <value>Durum: {0}</value>
+  </data>
+  <data name="Main_Status" xml:space="preserve">
+    <value>Bilgi: {0}</value>
+  </data>
+  <data name="Main_Start" xml:space="preserve">
+    <value>Başlat</value>
+  </data>
+  <data name="Main_Stop" xml:space="preserve">
+    <value>Durdur</value>
+  </data>
+  <data name="Main_UnKrangle" xml:space="preserve">
+    <value>Karıştırmayı kaldır</value>
+  </data>
+  <data name="Main_Krangle" xml:space="preserve">
+    <value>Karıştır</value>
+  </data>
+  <data name="Main_ObfuscateNamesWithMilitaryExerciseWordsUseful" xml:space="preserve">
+    <value>İsimleri askerî/egzersiz sözcükleriyle gizle.
+Ekran görüntüleri için yararlı.</value>
+  </data>
+  <data name="Main_CancelStopAfterNext" xml:space="preserve">
+    <value>Sonrakinden sonra durmayı iptal et</value>
+  </data>
+  <data name="Main_StopAfterNextSuccess" xml:space="preserve">
+    <value>Sonraki başarıdan sonra dur</value>
+  </data>
+  <data name="Main_ArmedStopsAfterASuccessfulRunIs" xml:space="preserve">
+    <value>Hazır: Başarılı koşu kaydedildikten ve görevden çıkış doğrulandıktan sonra durur.</value>
+  </data>
+  <data name="Main_RuntimeOnlyAbortedRunsDoNotConsume" xml:space="preserve">
+    <value>Yalnızca çalışma süresince. İptal edilen koşular bu isteği tüketmez.</value>
+  </data>
+  <data name="Main_HELP" xml:space="preserve">
+    <value>-&gt;!YARDIM!&lt;-</value>
+  </data>
+  <data name="Main_MainWindowSettings" xml:space="preserve">
+    <value>Ana pencere ayarları</value>
+  </data>
+  <data name="Main_AIDutySolverADS" xml:space="preserve">
+    <value>AI Duty Solver (ADS)</value>
+  </data>
+  <data name="Main_DutyBackendSelectorEnablingADSImmediatelySends" xml:space="preserve">
+    <value>Görev arka ucu seçici.
+ADS'yi etkinleştirmek hemen /xldisableplugin AutoDuty gönderir.
+ADS, AutoDuty modunda isteğe bağlıdır ve yalnızca /mog inn istendiğinde kullanılır.</value>
+  </data>
+  <data name="Main_ADSDutyBackendActiveADSAlsoHandles" xml:space="preserve">
+    <value>ADS görev arka ucu etkin. ADS hana girişi de yönetir.</value>
+  </data>
+  <data name="Main_AutoDutyDutyBackendActiveADSIsOptional" xml:space="preserve">
+    <value>AutoDuty görev arka ucu etkin. /mog inn için ADS isteğe bağlıdır.</value>
+  </data>
+  <data name="Main_DutyInformation" xml:space="preserve">
+    <value>Görev bilgisi</value>
+  </data>
+  <data name="Main_CounterPraeDailyPraetoriumLimit" xml:space="preserve">
+    <value>Sayaç: {0} / {1} Prae | Günlük Praetorium sınırı: {2}</value>
+  </data>
+  <data name="Main_DailyDecuRunsToday" xml:space="preserve">
+    <value>Günlük Decu: Bugün {0} koşu</value>
+  </data>
+  <data name="Main_Current" xml:space="preserve">
+    <value>Mevcut: {0}</value>
+  </data>
+  <data name="Main_DailyReset" xml:space="preserve">
+    <value>Günlük sıfırlama: {0} ({1})</value>
+  </data>
+  <data name="Main_TESTINGMODEUnsynced" xml:space="preserve">
+    <value>[TEST MODU - Eşitlenmemiş]</value>
+  </data>
+  <data name="Main_LastClearS" xml:space="preserve">
+    <value>Son tamamlama: {0:F0}s</value>
+  </data>
+  <data name="Main_TimeInDutyS" xml:space="preserve">
+    <value>Görevde geçen süre: {0:F0}s</value>
+  </data>
+  <data name="Main_DeathsThisRunSelfOthersAll" xml:space="preserve">
+    <value>Bu koşudaki ölümler: Kendi {0} | Diğerleri {1} | Tümü {2}</value>
+  </data>
+  <data name="Main_DebugTools" xml:space="preserve">
+    <value>Debug araçları</value>
+  </data>
+  <data name="Main_FORCEPATHSELECTION" xml:space="preserve">
+    <value>YOL SEÇİMİNİ ZORLA</value>
+  </data>
+  <data name="Main_Result" xml:space="preserve">
+    <value>Sonuç: {0}</value>
+  </data>
+  <data name="Main_TESTPATHINDEX" xml:space="preserve">
+    <value>YOL İNDEKSİNİ TEST ET</value>
+  </data>
+  <data name="Main_LogADStructure" xml:space="preserve">
+    <value>AD yapısını günlüğe yaz</value>
+  </data>
+  <data name="Main_DumpAutoDutyPluginStructureToDalamudLog" xml:space="preserve">
+    <value>Araştırma için AutoDuty eklenti yapısını Dalamud günlüğüne yaz.</value>
+  </data>
+  <data name="Main_LogConfig" xml:space="preserve">
+    <value>Yapılandırmayı günlüğe yaz</value>
+  </data>
+  <data name="Main_LogActions" xml:space="preserve">
+    <value>Eylemleri günlüğe yaz</value>
+  </data>
+  <data name="Main_DumpAutoDutyActionsListCurrentlyEmptyBut" xml:space="preserve">
+    <value>AutoDuty eylemler listesini yazdır (şu anda boş ama yapıyı gösterir).</value>
+  </data>
+  <data name="Main_LogManager" xml:space="preserve">
+    <value>Yöneticiyi günlüğe yaz</value>
+  </data>
+  <data name="Main_DumpAutoDutyActionsManagerContainsActionsListWithCommand" xml:space="preserve">
+    <value>AutoDuty ActionsManager'ı yazdır (komut tanımlarını içeren actionsList barındırır).</value>
+  </data>
+  <data name="Main_ExplorePaths" xml:space="preserve">
+    <value>Yolları incele</value>
+  </data>
+  <data name="Main_ExploreDifferentLocationsForPathDataConfiguration" xml:space="preserve">
+    <value>Yol verisi için farklı yerleri incele (Configuration, MainWindow vb.).</value>
+  </data>
+  <data name="Main_LogTuples" xml:space="preserve">
+    <value>Demetleri günlüğe yaz</value>
+  </data>
+  <data name="Main_IterateThroughActionsListAndLogEachTuple" xml:space="preserve">
+    <value>actionsList üzerinde gezip her demetin içeriğini günlüğe yaz (komut tanımları).</value>
+  </data>
+  <data name="Main_PathSelections" xml:space="preserve">
+    <value>Yol seçimleri</value>
+  </data>
+  <data name="Main_ExplorePathSelectionsByPathDictionaryTerritoryPathMappings" xml:space="preserve">
+    <value>PathSelectionsByPath sözlüğünü incele (bölge → yol eşlemeleri).</value>
+  </data>
+  <data name="Main_CheckCurrent" xml:space="preserve">
+    <value>Mevcut olanı denetle</value>
+  </data>
+  <data name="Main_CheckWhatPathAutoDutyCurrentlyHasSelected" xml:space="preserve">
+    <value>AutoDuty'nin şu anda seçtiği yolu denetle.</value>
+  </data>
+  <data name="Main_FindMethods" xml:space="preserve">
+    <value>Yöntemleri bul</value>
+  </data>
+  <data name="Main_FindSaveApplyLoadMethodsInAutoDuty" xml:space="preserve">
+    <value>AutoDuty'de Save/Apply/Load yöntemlerini bul.</value>
+  </data>
+  <data name="Main_ConfigFields" xml:space="preserve">
+    <value>Yapılandırma alanları</value>
+  </data>
+  <data name="Main_FindActualConfigFieldNamesForPath" xml:space="preserve">
+    <value>Yol seçimi için gerçek yapılandırma alan adlarını bul.</value>
+  </data>
+  <data name="Main_CheckRepair" xml:space="preserve">
+    <value>Onarımı denetle</value>
+  </data>
+  <data name="Main_Item" xml:space="preserve">
+    <value>Eşya {0}</value>
+  </data>
+  <data name="Main_CheckEquipmentDurabilityAndRepairStatus" xml:space="preserve">
+    <value>Ekipman dayanıklılığını ve onarım durumunu denetle.</value>
+  </data>
+  <data name="Main_TestingModeUnsyncedNoStats" xml:space="preserve">
+    <value>Test modu: Eşitlenmemiş (istatistik yok)</value>
+  </data>
+  <data name="Main_WARNINGRunningUnsyncedWithoutLevelSync" xml:space="preserve">
+    <value>UYARI: Seviye eşitlemesi olmadan eşitlenmemiş çalışma.</value>
+  </data>
+  <data name="Main_TESTPRAEINDEX" xml:space="preserve">
+    <value>PRAE İNDEKSİNİ TEST ET</value>
+  </data>
+  <data name="Main_LogsPraetoriumCallbackIndexAndMissingOptional" xml:space="preserve">
+    <value>Praetorium geri çağırma indeksini ve eksik isteğe bağlı açılımları günlüğe yazar. Kuyruğa girmez.</value>
+  </data>
+  <data name="Main_PraetoriumCallback" xml:space="preserve">
+    <value>Praetorium geri çağırması: {0}</value>
+  </data>
+  <data name="Main_MissingOptionalUnlocks" xml:space="preserve">
+    <value>Eksik isteğe bağlı açılımlar: {0}</value>
+  </data>
+  <data name="Main_Unlocked" xml:space="preserve">
+    <value>Açık</value>
+  </data>
+  <data name="Main_Missing" xml:space="preserve">
+    <value>Eksik</value>
+  </data>
+  <data name="Main_QuestIDs" xml:space="preserve">
+    <value>Görev kimlikleri: {0}</value>
+  </data>
+  <data name="Main_ADSModeActiveAutoDutyReflectionPathDebug" xml:space="preserve">
+    <value>ADS modu etkin. AutoDuty yansıma/yol debug araçları gizli.</value>
+  </data>
+  <data name="Main_LeaderRuntime" xml:space="preserve">
+    <value>Lider (çalışma sırasında): {0}</value>
+  </data>
+  <data name="Main_CrossWorld" xml:space="preserve">
+    <value>Dünyalar arası: {0}</value>
+  </data>
+  <data name="Main_SourceConfiguredCrossWorldRole" xml:space="preserve">
+    <value>Kaynak: yapılandırılmış dünyalar arası rol</value>
+  </data>
+  <data name="Main_Subsystems" xml:space="preserve">
+    <value>Alt sistemler</value>
+  </data>
+  <data name="Main_PausedByMOGTOME" xml:space="preserve">
+    <value>MOGTOME tarafından duraklatıldı</value>
+  </data>
+  <data name="Main_DutyBackend" xml:space="preserve">
+    <value>Görev arka ucu</value>
+  </data>
+  <data name="Main_LogAllConfiguration" xml:space="preserve">
+    <value>Tüm yapılandırmayı günlüğe yaz</value>
+  </data>
+  <data name="Main_LogConfigPath" xml:space="preserve">
+    <value>Yapılandırma yolunu günlüğe yaz</value>
+  </data>
+  <data name="Main_QueueRole" xml:space="preserve">
+    <value>Kuyruk rolü</value>
+  </data>
+  <data name="Main_ADSRuntime" xml:space="preserve">
+    <value>ADS çalışma ortamı</value>
+  </data>
+  <data name="Main_Bailout" xml:space="preserve">
+    <value>Acil çıkış</value>
+  </data>
+  <data name="Main_S" xml:space="preserve">
+    <value>{0}s</value>
+  </data>
+  <data name="Main_NotConfigured" xml:space="preserve">
+    <value>Yapılandırılmamış</value>
+  </data>
+  <data name="Main_HQ" xml:space="preserve">
+    <value>HQ</value>
+  </data>
+  <data name="Main_NQ" xml:space="preserve">
+    <value>NQ</value>
+  </data>
+  <data name="Main_X" xml:space="preserve">
+    <value>{0} [{1}] x{2}</value>
+  </data>
+  <data name="Stats_DutyStatistics" xml:space="preserve">
+    <value>Görev istatistikleri</value>
+  </data>
+  <data name="Stats_OpenConfig" xml:space="preserve">
+    <value>Yapılandırmayı aç</value>
+  </data>
+  <data name="Stats_OpenMOGTOMEConfigurationFolder" xml:space="preserve">
+    <value>MOGTOME yapılandırma klasörünü aç</value>
+  </data>
+  <data name="Stats_KrangleNames" xml:space="preserve">
+    <value>İsimleri karıştır</value>
+  </data>
+  <data name="Stats_Summary" xml:space="preserve">
+    <value>Özet</value>
+  </data>
+  <data name="Stats_Detailed" xml:space="preserve">
+    <value>Ayrıntılı</value>
+  </data>
+  <data name="Stats_ShowDebugRuns" xml:space="preserve">
+    <value>Debug koşularını göster</value>
+  </data>
+  <data name="Stats_UnsyncedRunsAreNowIncludedInStatistics" xml:space="preserve">
+    <value>Eşitlenmemiş koşular artık istatistiklere dahil</value>
+  </data>
+  <data name="Stats_UnsyncedRunsAreHiddenFromStatistics" xml:space="preserve">
+    <value>Eşitlenmemiş koşular istatistiklerden gizli</value>
+  </data>
+  <data name="Stats_CombinedStats" xml:space="preserve">
+    <value>Birleşik istatistikler</value>
+  </data>
+  <data name="Stats_TotalRuns" xml:space="preserve">
+    <value>Toplam koşu: {0}</value>
+  </data>
+  <data name="Stats_TotalMogtomes" xml:space="preserve">
+    <value>Toplam Mogtome: {0}</value>
+  </data>
+  <data name="Stats_CurrentDailyCounter" xml:space="preserve">
+    <value>Mevcut günlük sayaç: {0}</value>
+  </data>
+  <data name="Stats_DailyDecumanaBest" xml:space="preserve">
+    <value>Günlük Decumana: {0} (En iyi: {1})</value>
+  </data>
+  <data name="Stats_NextDailyReset" xml:space="preserve">
+    <value>Sonraki günlük sıfırlama: {0} ({1})</value>
+  </data>
+  <data name="Stats_TodaySDecumanaStats" xml:space="preserve">
+    <value>Bugünün Decumana istatistikleri:</value>
+  </data>
+  <data name="Stats_BestToday" xml:space="preserve">
+    <value>  Bugünün en iyisi: {0}</value>
+  </data>
+  <data name="Stats_LongestToday" xml:space="preserve">
+    <value>  Bugünün en uzunu: {0}</value>
+  </data>
+  <data name="Stats_RunsToday" xml:space="preserve">
+    <value>  Bugünün koşuları: {0}</value>
+  </data>
+  <data name="Stats_MogtomesToday" xml:space="preserve">
+    <value>  Bugünün Mogtome sayısı: {0}</value>
+  </data>
+  <data name="Stats_ResetAllStats" xml:space="preserve">
+    <value>Tüm istatistikleri sıfırla</value>
+  </data>
+  <data name="Stats_JobPerformance" xml:space="preserve">
+    <value>Job performansı</value>
+  </data>
+  <data name="Stats_PlayerStats" xml:space="preserve">
+    <value>Oyuncu istatistikleri</value>
+  </data>
+  <data name="Stats_RecentRuns" xml:space="preserve">
+    <value>Son koşular</value>
+  </data>
+  <data name="Stats_Trends" xml:space="preserve">
+    <value>Eğilimler</value>
+  </data>
+  <data name="Stats_Best" xml:space="preserve">
+    <value>En iyi: {0}</value>
+  </data>
+  <data name="Stats_Date" xml:space="preserve">
+    <value>Tarih: {0}</value>
+  </data>
+  <data name="Stats_Party" xml:space="preserve">
+    <value>Grup:</value>
+  </data>
+  <data name="Stats_BestNoRunsYet" xml:space="preserve">
+    <value>En iyi: Henüz koşu yok</value>
+  </data>
+  <data name="Stats_Longest" xml:space="preserve">
+    <value>En uzun: {0}</value>
+  </data>
+  <data name="Stats_LongestNoRunsYet" xml:space="preserve">
+    <value>En uzun: Henüz koşu yok</value>
+  </data>
+  <data name="Stats_DeathsSingleRun" xml:space="preserve">
+    <value>Ölümler (tek koşu):</value>
+  </data>
+  <data name="Stats_SelfOthersAll" xml:space="preserve">
+    <value>Kendi: {0} | Diğerleri: {1} | Tümü: {2}</value>
+  </data>
+  <data name="Stats_DeathsTotal" xml:space="preserve">
+    <value>Ölümler (toplam):</value>
+  </data>
+  <data name="Stats_Runs" xml:space="preserve">
+    <value>Koşular: {0}</value>
+  </data>
+  <data name="Stats_Mogtomes" xml:space="preserve">
+    <value>Mogtome: {0}</value>
+  </data>
+  <data name="Stats_NotLoggedIn" xml:space="preserve">
+    <value>  Giriş yapılmadı.</value>
+  </data>
+  <data name="Stats_Name" xml:space="preserve">
+    <value>İsim</value>
+  </data>
+  <data name="Stats_Job" xml:space="preserve">
+    <value>Job</value>
+  </data>
+  <data name="Stats_Level" xml:space="preserve">
+    <value>Seviye</value>
+  </data>
+  <data name="Stats_HMS" xml:space="preserve">
+    <value>{0}sa {1:D2}dk {2:D2}sn</value>
+  </data>
+  <data name="Stats_MS" xml:space="preserve">
+    <value>{0}dk {1:D2}sn</value>
+  </data>
+  <data name="Stats_None" xml:space="preserve">
+    <value>Yok</value>
+  </data>
+  <data name="Stats_NoRunDataAvailableEnableDetailedTracking" xml:space="preserve">
+    <value>Koşu verisi yok. Ayrıntılı izlemeyi etkinleştirin ve birkaç koşu tamamlayın.</value>
+  </data>
+  <data name="Stats_Avg" xml:space="preserve">
+    <value>Ort.: {0}</value>
+  </data>
+  <data name="Stats_Deaths" xml:space="preserve">
+    <value>Ölümler: {0}</value>
+  </data>
+  <data name="Stats_Rate" xml:space="preserve">
+    <value>Oran: %{0:F1}</value>
+  </data>
+  <data name="Stats_PlayerStatistics" xml:space="preserve">
+    <value>Oyuncu istatistikleri</value>
+  </data>
+  <data name="Stats_Player" xml:space="preserve">
+    <value>Oyuncu███</value>
+  </data>
+  <data name="Stats_You" xml:space="preserve">
+    <value> (Siz)</value>
+  </data>
+  <data name="Stats_Total" xml:space="preserve">
+    <value>Toplam: {0}</value>
+  </data>
+  <data name="Stats_PraeDecu" xml:space="preserve">
+    <value>Prae: {0} | Decu: {1}</value>
+  </data>
+  <data name="Stats_StreakBest" xml:space="preserve">
+    <value>Seri: {0} (En iyi: {1})</value>
+  </data>
+  <data name="Stats_Job2" xml:space="preserve">
+    <value>Job: {0}</value>
+  </data>
+  <data name="Stats_RecentRunsLast" xml:space="preserve">
+    <value>Son koşular (son 25)</value>
+  </data>
+  <data name="Stats_Time" xml:space="preserve">
+    <value>Süre</value>
+  </data>
+  <data name="Stats_Player2" xml:space="preserve">
+    <value>Oyuncu</value>
+  </data>
+  <data name="Stats_Deaths2" xml:space="preserve">
+    <value>Ölümler</value>
+  </data>
+  <data name="Stats_Status" xml:space="preserve">
+    <value>Durum</value>
+  </data>
+  <data name="Stats_NotCaptured" xml:space="preserve">
+    <value>{0}: Kaydedilmedi</value>
+  </data>
+  <data name="Stats_PartyDataNotCaptured" xml:space="preserve">
+    <value>Grup verisi kaydedilmedi</value>
+  </data>
+  <data name="Stats_SelfOthersAll2" xml:space="preserve">
+    <value>Kendi / Diğerleri / Tümü</value>
+  </data>
+  <data name="Stats_Success" xml:space="preserve">
+    <value>Başarılı</value>
+  </data>
+  <data name="Stats_NoReasonRecorded" xml:space="preserve">
+    <value>Neden kaydedilmedi</value>
+  </data>
+  <data name="Stats_Aborted" xml:space="preserve">
+    <value>İptal edildi: {0}</value>
+  </data>
+  <data name="Stats_PerformanceTrends" xml:space="preserve">
+    <value>Performans eğilimleri</value>
+  </data>
+  <data name="Stats_NoSuccessfulRunDataAvailable" xml:space="preserve">
+    <value>Başarılı koşu verisi yok.</value>
+  </data>
+  <data name="Stats_AverageCompletionTimeLast" xml:space="preserve">
+    <value>Ortalama tamamlama süresi (son 10): {0}</value>
+  </data>
+  <data name="Stats_AverageCompletionTimeLast2" xml:space="preserve">
+    <value>Ortalama tamamlama süresi (son 50): {0}</value>
+  </data>
+  <data name="Stats_AverageCompletionTimeAllTime" xml:space="preserve">
+    <value>Ortalama tamamlama süresi (tüm zamanlar): {0}</value>
+  </data>
+  <data name="Stats_DeathRateLast" xml:space="preserve">
+    <value>Ölüm oranı (son 10): %{0:F1}</value>
+  </data>
+  <data name="Stats_DeathRateAllTime" xml:space="preserve">
+    <value>Ölüm oranı (tüm zamanlar): %{0:F1}</value>
+  </data>
+  <data name="Stats_MostEfficientJobAvg" xml:space="preserve">
+    <value>En verimli job: {0} (ort. {1})</value>
+  </data>
+  <data name="Stats_RecentPerformanceTrend" xml:space="preserve">
+    <value>Son performans eğilimi:</value>
+  </data>
+  <data name="WarningText_SorryToMakeYouReadThis" xml:space="preserve">
+    <value>Bunu okumak zorunda kaldığınız için üzgünüm.</value>
+  </data>
+  <data name="WarningText_AFewNotesOnMOGTOMEVersionX" xml:space="preserve">
+    <value>MOGTOME hakkında birkaç not.</value>
+  </data>
+  <data name="WarningText_ItSExperimentalAndWillBreakOccasionally" xml:space="preserve">
+    <value>deneyseldir ve zaman zaman bozulacaktır.</value>
+  </data>
+  <data name="WarningText_PleaseProvideLogsSoICanAnalyze" xml:space="preserve">
+    <value>analiz edebilmem için lütfen günlükleri paylaşın!</value>
+  </data>
+  <data name="WarningText_MultiplayerGuideDiscordLinkAndInfoAt" xml:space="preserve">
+    <value>Çok oyunculu rehber, Discord bağlantısı ve bilgiler:</value>
+  </data>
+  <data name="WarningText_ThereAreWaysMOGTOMEIsCurrentlyCrashing" xml:space="preserve">
+    <value>Şu anda MOGTOME'un istemcileri çökerttiği 3 durum var. (MOGTOME kaynaklı değil)</value>
+  </data>
+  <data name="WarningText_IfYouHaveRSRUISimulateThe" xml:space="preserve">
+    <value>(1) RSR -&gt; UI -&gt; Simulate the effect of pressing abilities açıksa bu özelliği kapatın.</value>
+  </data>
+  <data name="WarningText_DoNotRunDalamudFromTheSame" xml:space="preserve">
+    <value>(2) Dalamud'u aynı klasörden birden fazla kez çalıştırmayın. Çoklu istemcide çökebilir.</value>
+  </data>
+  <data name="WarningText_AUTODUTYRSRNavmeshSometimesWILLHaveRace" xml:space="preserve">
+    <value>AUTODUTY/RSR/navmesh bazen race/deadlock ve hata mesajıyla veya mesaj olmadan CTD yaşayabilir.</value>
+  </data>
+  <data name="WarningText_YouWillNeedToUseMultiInstall" xml:space="preserve">
+    <value>Bunu çözmek için birden fazla kurulum klasörü kullanmanız gerekir.</value>
+  </data>
+  <data name="WarningText_ItWillBeTheFirstThingI" xml:space="preserve">
+    <value>MOGTOME sürümünden sonra soracağım ilk şey budur.</value>
+  </data>
+  <data name="WarningText_IfYouDonTHaveVeryMuch" xml:space="preserve">
+    <value>(3) RAM'iniz azsa çok sayıda istemciyle sorun yaşarsınız.</value>
+  </data>
+  <data name="WarningText_PlanForGBFreePerClientYou" xml:space="preserve">
+    <value>Herhangi bir istemciyi yüklemeden önce her istemci için 5GB boş RAM planlayın.</value>
+  </data>
+  <data name="WarningText_SeeTheMultiplayerGuideOnHttpsAethertek" xml:space="preserve">
+    <value>İpuçları için https://aethertek.io/ adresindeki çok oyunculu rehbere bakın.</value>
+  </data>
+  <data name="WarningText_NowForSomeTipsAndTricksFor" xml:space="preserve">
+    <value>Şimdi MOGTOME için birkaç ipucu.</value>
+  </data>
+  <data name="WarningText_IfYouAreSelfRepairingSetRepair" xml:space="preserve">
+    <value>1. Kendiniz onarıyorsanız, seçtiğiniz arka uç eklentisinde onarım yüzdesini yüksek ayarlayın.</value>
+  </data>
+  <data name="WarningText_AutoDutyRepairIsStillWeirdSometimesADS" xml:space="preserve">
+    <value>AutoDuty onarımı bazen hâlâ tuhaf. ADS modu kendi onarım komutlarını kullanır ve test edilmelidir.</value>
+  </data>
+  <data name="WarningText_MakeAnAutoDutyProfileJustForThis" xml:space="preserve">
+    <value>2. Bu amaç için ayrı bir AutoDuty profili oluşturun ve ADS modu KAPALIYKEN başlatmadan önce seçin.</value>
+  </data>
+  <data name="WarningText_MOGTOMEChangesSomeSettingsSoThisKeeps" xml:space="preserve">
+    <value>MOGTOME bazı ayarları değiştirir; böylece seviye kasma ve diğer profilleriniz güvende kalır.</value>
+  </data>
+  <data name="WarningText_JoinTheAutoPartyDiscordHttpsDiscordGg" xml:space="preserve">
+    <value>3. AutoParty Discord'una katılın -&gt; https://discord.gg/KyfyAzG6</value>
+  </data>
+  <data name="WarningText_WhenStartingMogtomeMakeSureYouStart" xml:space="preserve">
+    <value>4. MOGTOME'u başlatırken önce grup lideri olmayanı başlatın. Ardından</value>
+  </data>
+  <data name="WarningText_ConfigureWHOThePartyLeaderIsBy" xml:space="preserve">
+    <value>grup liderinde durumu yenile'ye tıklayarak liderin KİM olduğunu ayarlayın.</value>
+  </data>
+  <data name="WarningText_IDidThisBecauseItsASeriously" xml:space="preserve">
+    <value>Bunu yaptım çünkü gerçek grup liderini belirlemek son derece sinir bozucu bir mantık bulmacası.</value>
+  </data>
+  <data name="WarningText_IHaveSomeCommentedOutAndRetired" xml:space="preserve">
+    <value>Bunun için yorum satırına alınmış eski yöntemlerim var, ancak güvenilir değillerdi.</value>
+  </data>
+  <data name="WarningText_ReadThisBeforeRunningMOGTOME" xml:space="preserve">
+    <value>MOGTOME'u çalıştırmadan önce okuyun</value>
+  </data>
+  <data name="WarningText_WarningV" xml:space="preserve">
+    <value>uyarı v{0}</value>
+  </data>
+  <data name="WarningText_OKIREADIT" xml:space="preserve">
+    <value>TAMAM, OKUDUM</value>
+  </data>
+  <data name="Engine_HasNotBeenStartedSinceLoading" xml:space="preserve">
+    <value>Yüklendiğinden beri başlatılmadı.</value>
+  </data>
+  <data name="Engine_DutyStartupPendingAfterExperimentalOpener" xml:space="preserve">
+    <value>Deneysel açılıştan sonra görev başlangıcı bekliyor: {0}</value>
+  </data>
+  <data name="Engine_Initializing" xml:space="preserve">
+    <value>Başlatılıyor...</value>
+  </data>
+  <data name="Engine_PreparingBossModSupport" xml:space="preserve">
+    <value>BossMod desteği hazırlanıyor...</value>
+  </data>
+  <data name="Engine_CheckingConflictingPlugins" xml:space="preserve">
+    <value>Çakışan eklentiler denetleniyor...</value>
+  </data>
+  <data name="Engine_PreparingADS" xml:space="preserve">
+    <value>ADS hazırlanıyor...</value>
+  </data>
+  <data name="Engine_PreparingAutoDuty" xml:space="preserve">
+    <value>AutoDuty hazırlanıyor...</value>
+  </data>
+  <data name="Engine_ResumingInsideDuty" xml:space="preserve">
+    <value>Görev içinde sürdürülüyor...</value>
+  </data>
+  <data name="Engine_RunningDuty" xml:space="preserve">
+    <value>Çalışıyor - Görev #{0}</value>
+  </data>
+  <data name="Engine_Stopping" xml:space="preserve">
+    <value>Durduruluyor...</value>
+  </data>
+  <data name="Engine_Stopped" xml:space="preserve">
+    <value>Durduruldu: {0}</value>
+  </data>
+  <data name="Engine_InDuty" xml:space="preserve">
+    <value>Görevde - #{0} ({1})</value>
+  </data>
+  <data name="Engine_SuspendedWaitingForLoginAndDutyContext" xml:space="preserve">
+    <value>Askıya alındı - giriş ve görev bağlamı bekleniyor.</value>
+  </data>
+  <data name="Engine_DutyTransitionWaitingForConfirmedDutyContext" xml:space="preserve">
+    <value>Görev geçişi - doğrulanmış görev bağlamı bekleniyor...</value>
+  </data>
+  <data name="Engine_DutyPendingWaitingForMatchingSupportedTerritory" xml:space="preserve">
+    <value>Görev bekliyor - eşleşen desteklenmiş bölge/CFC kimliği bekleniyor.</value>
+  </data>
+  <data name="Engine_EnteringDutyWaitingForReadyDutyContext" xml:space="preserve">
+    <value>Göreve giriliyor - hazır görev bağlamı bekleniyor...</value>
+  </data>
+  <data name="Engine_EnteringDutyWaitingForTerritory" xml:space="preserve">
+    <value>Göreve giriliyor - bölge bekleniyor...</value>
+  </data>
+  <data name="Engine_DutyPendingUnexpectedOrMissingTerritoryCFC" xml:space="preserve">
+    <value>Görev bekliyor - beklenmeyen veya eksik bölge/CFC ({0}); desteklenmiş görev bağlamı bekleniyor.</value>
+  </data>
+  <data name="Engine_OutsideDutyNext" xml:space="preserve">
+    <value>Görev dışında - Sonraki: #{0}</value>
+  </data>
+  <data name="Engine_WaitingForLeader" xml:space="preserve">
+    <value>Lider bekleniyor - #{0} ({1})</value>
+  </data>
+  <data name="Engine_WaitingForLeader2" xml:space="preserve">
+    <value>Lider bekleniyor - #{0}</value>
+  </data>
+  <data name="Engine_DelayedRequeueInProgress" xml:space="preserve">
+    <value>Gecikmeli yeniden kuyruğa giriş sürüyor...</value>
+  </data>
+  <data name="Engine_WaitingAfterLeaveDutyS" xml:space="preserve">
+    <value>Görevden çıktıktan sonra bekleniyor ({0:F0}s)</value>
+  </data>
+  <data name="Engine_WaitingToStopS" xml:space="preserve">
+    <value>{0} durdurulmak için bekleniyor ({1:F0}s)</value>
+  </data>
+  <data name="Engine_Stopping2" xml:space="preserve">
+    <value>{0} durduruluyor...</value>
+  </data>
+  <data name="Engine_WaitingToQueueS" xml:space="preserve">
+    <value>Kuyruğa girmek için bekleniyor ({0:F0}s)</value>
+  </data>
+  <data name="Engine_Queueing" xml:space="preserve">
+    <value>Kuyruğa giriliyor...</value>
+  </data>
+  <data name="Engine_QueueingRegistered" xml:space="preserve">
+    <value>Kuyruğa giriliyor: {0} (kayıtlı, {1})</value>
+  </data>
+  <data name="Engine_QueueingRegistered2" xml:space="preserve">
+    <value>Kuyruğa giriliyor: {0} (kayıtlı)</value>
+  </data>
+  <data name="Engine_QueueingContentsFinderRetryCooldownS" xml:space="preserve">
+    <value>Kuyruğa giriliyor: {0} (ContentsFinder yeniden deneme bekleme süresi {1:F0}s, {2})</value>
+  </data>
+  <data name="Engine_QueueingWaitingForQueueRegistrationS" xml:space="preserve">
+    <value>Kuyruğa giriliyor: {0} (kuyruk kaydı bekleniyor {1:F0}/{2:F0}s, {3})</value>
+  </data>
+  <data name="Engine_QueueingWaitingForQueueRegistrationS2" xml:space="preserve">
+    <value>Kuyruğa giriliyor: {0} (kuyruk kaydı bekleniyor {1:F0}/{2:F0}s)</value>
+  </data>
+  <data name="Engine_QueueingWaiting" xml:space="preserve">
+    <value>Kuyruğa giriliyor: {0} (bekleniyor, {1})</value>
+  </data>
+  <data name="Engine_QueueingWaiting2" xml:space="preserve">
+    <value>Kuyruğa giriliyor: {0} (bekleniyor...)</value>
+  </data>
+  <data name="Engine_LeaveBlocked" xml:space="preserve">
+    <value>{0} - çıkış engellendi ({1})</value>
+  </data>
+  <data name="Engine_LeaveRequestedWaitingForZoneOutS" xml:space="preserve">
+    <value>Çıkış istendi - bölgeden çıkış bekleniyor ({0:F0}s)</value>
+  </data>
+  <data name="Engine_CombatPending" xml:space="preserve">
+    <value>Savaş bekliyor: {0}.</value>
+  </data>
+  <data name="Engine_InDutyS" xml:space="preserve">
+    <value>Görev #{0} içinde - {1:F0}s</value>
+  </data>
+  <data name="Engine_Repairing" xml:space="preserve">
+    <value>Onarılıyor...</value>
+  </data>
+  <data name="Engine_RepairDoneResuming" xml:space="preserve">
+    <value>Onarım tamamlandı, sürdürülüyor</value>
+  </data>
+  <data name="Engine_RepairingWaitingForTelepotTownS" xml:space="preserve">
+    <value>Onarılıyor - TelepotTown bekleniyor ({0:F0}s)</value>
+  </data>
+  <data name="Engine_RepairingWaitingFor" xml:space="preserve">
+    <value>Onarılıyor - {0} bekleniyor</value>
+  </data>
+  <data name="Engine_ContentsFinderQueueCooldownS" xml:space="preserve">
+    <value>ContentsFinder kuyruk bekleme süresi: {0} ({1:F0}s, {2})</value>
+  </data>
+  <data name="Engine_ContentsFinderQueueCooldownS2" xml:space="preserve">
+    <value>ContentsFinder kuyruk bekleme süresi: {0} ({1:F0}s)</value>
+  </data>
+  <data name="Engine_Value" xml:space="preserve">
+    <value>{0}: {1} ({2} / {3})</value>
+  </data>
+  <data name="Engine_Value2" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="Engine_WaitingForPeopleVisible" xml:space="preserve">
+    <value>{1}–4 kişilik grup bekleniyor (görünür {0})</value>
+  </data>
+  <data name="Engine_WaitingForPartyMembersToLeaveDuty" xml:space="preserve">
+    <value>Grup üyelerinin görevden çıkması bekleniyor.</value>
+  </data>
+  <data name="Engine_QueueRecoveryWaitingAfterS" xml:space="preserve">
+    <value>Kuyruk kurtarma: {0} sonrası bekleniyor ({1:F0}s)</value>
+  </data>
+  <data name="Engine_QueueRecoveryAllowingRepairsS" xml:space="preserve">
+    <value>Kuyruk kurtarma: onarıma izin veriliyor ({0:F0}s)</value>
+  </data>
+  <data name="Engine_QueueRecoveryResumingDutyEntry" xml:space="preserve">
+    <value>Kuyruk kurtarma: göreve giriş sürdürülüyor</value>
+  </data>
+  <data name="Engine_RepairRecoveryWaitingToRequeueS" xml:space="preserve">
+    <value>Onarım kurtarma: yeniden kuyruğa girmek için bekleniyor ({0:F0}s)</value>
+  </data>
+  <data name="Engine_RepairRecoveryRetryWaitingForLeader" xml:space="preserve">
+    <value>Onarım kurtarma denemesi {0}: lider bekleniyor</value>
+  </data>
+  <data name="Engine_RepairRecoveryRestarting" xml:space="preserve">
+    <value>Onarım kurtarma: {0} yeniden başlatılıyor</value>
+  </data>
+  <data name="Engine_RepairRecoveryWaitingForLeader" xml:space="preserve">
+    <value>Onarım kurtarma: lider bekleniyor</value>
+  </data>
+  <data name="Engine_LeaveRequestedViaADSAttemptWaitingFor" xml:space="preserve">
+    <value>ADS ile çıkış istendi (deneme #{0}) - bölgeden çıkış bekleniyor</value>
+  </data>
+  <data name="Engine_LeaveRequestedAttemptWaitingForZoneOut" xml:space="preserve">
+    <value>Çıkış istendi (deneme #{0}) - bölgeden çıkış bekleniyor</value>
+  </data>
+  <data name="Engine_PluginUnloadedOrReloaded" xml:space="preserve">
+    <value>Eklenti kaldırıldı veya yeniden yüklendi.</value>
+  </data>
+  <data name="Engine_RepairingBeforeStart" xml:space="preserve">
+    <value>Başlatmadan önce onarılıyor...</value>
+  </data>
+  <data name="Engine_StopAfterNextSuccessfulClearAndConfirmed" xml:space="preserve">
+    <value>Sonraki başarılı tamamlamadan ve doğrulanmış çıkıştan sonra durma.</value>
+  </data>
+  <data name="Engine_InitializationFailed" xml:space="preserve">
+    <value>Başlatma başarısız: {0}</value>
+  </data>
+  <data name="Engine_PraetoriumDailyLimitReached" xml:space="preserve">
+    <value>Günlük Praetorium sınırına ulaşıldı ({0}/{1}).</value>
+  </data>
+  <data name="Startup_WaitingForDutyReadiness" xml:space="preserve">
+    <value>Görev hazırlığı bekleniyor.</value>
+  </data>
+  <data name="Startup_DutyStartupCancelled" xml:space="preserve">
+    <value>Görev başlangıcı iptal edildi.</value>
+  </data>
+  <data name="Startup_DutyStartupPending" xml:space="preserve">
+    <value>Görev başlangıcı bekliyor: {0}.</value>
+  </data>
+  <data name="Startup_CombatRecoveryAfterDeathWaitingForContinuous" xml:space="preserve">
+    <value>ölüm sonrası savaş kurtarma; kesintisiz hazırlık bekleniyor</value>
+  </data>
+  <data name="Startup_WaitingForDuty" xml:space="preserve">
+    <value>görev bekleniyor</value>
+  </data>
+  <data name="Startup_ExperimentalOpenerActive" xml:space="preserve">
+    <value>deneysel açılış etkin</value>
+  </data>
+  <data name="Startup_WaitingForLiveDutyTerritoryCFCIdentity" xml:space="preserve">
+    <value>canlı görev bölgesi/CFC kimliği bekleniyor</value>
+  </data>
+  <data name="Startup_ADSIsNotLoaded" xml:space="preserve">
+    <value>ADS yüklü değil</value>
+  </data>
+  <data name="Startup_HasADSClearanceMWaitingForFour" xml:space="preserve">
+    <value>{0} için ADS izni {1} (M{2}); dört oyunculu M3 desteği bekleniyor</value>
+  </data>
+  <data name="Startup_StartupInSOfContinuousReadiness" xml:space="preserve">
+    <value>{0:F1}s kesintisiz hazırlık sonrası başlangıç</value>
+  </data>
+  <data name="Startup_WaitingForDutyStartSeam" xml:space="preserve">
+    <value>görev başlangıç noktası bekleniyor</value>
+  </data>
+  <data name="Startup_WaitingForReadableADSOwnershipConfirmation" xml:space="preserve">
+    <value>okunabilir ADS kontrol doğrulaması bekleniyor</value>
+  </data>
+  <data name="Startup_WaitingSForADSOwnershipConfirmation" xml:space="preserve">
+    <value>ADS kontrol doğrulaması için {0:F1}s bekleniyor</value>
+  </data>
+  <data name="Startup_HandoffRetryBackoffUntil" xml:space="preserve">
+    <value>devir yeniden deneme beklemesi {0:HH:mm:ss} saatine kadar</value>
+  </data>
+  <data name="Startup_AdStartWasNotHandled" xml:space="preserve">
+    <value>/ad start işlenmedi</value>
+  </data>
+  <data name="Startup_ADSStartDutyFromInsideAccepted" xml:space="preserve">
+    <value>ADS.StartDutyFromInside kabul edildi</value>
+  </data>
+  <data name="Startup_ADSStartDutyFromInsideRejectedCommandFallbackSuppressed" xml:space="preserve">
+    <value>ADS.StartDutyFromInside reddedildi; yedek komut engellendi</value>
+  </data>
+  <data name="Startup_TypedEndpointUnavailableSentAdsInsideFallback" xml:space="preserve">
+    <value>tipli uç nokta kullanılamıyor; yedek /ads inside gönderildi</value>
+  </data>
+  <data name="Startup_TypedEndpointUnavailableAndAdsInsideFallback" xml:space="preserve">
+    <value>tipli uç nokta kullanılamıyor ve yedek /ads inside başarısız</value>
+  </data>
+  <data name="Startup_DutyStartupFailed" xml:space="preserve">
+    <value>görev başlangıcı başarısız: {0}</value>
+  </data>
+  <data name="Startup_CombatRecoveryBackoffUntil" xml:space="preserve">
+    <value>savaş kurtarma beklemesi {0:HH:mm:ss} saatine kadar</value>
+  </data>
+  <data name="Startup_CombatActivationFailedRetryingAfterSAnd" xml:space="preserve">
+    <value>savaş etkinleştirme başarısız: {0}; 5s ve kesintisiz hazırlık sonrası yeniden deneniyor</value>
+  </data>
+  <data name="Startup_WaitingForAuthoritativeOwnership" xml:space="preserve">
+    <value>{0}; yetkili kontrol bekleniyor</value>
+  </data>
+  <data name="Startup_RestartingReadinessDelayWithSRetryBackoff" xml:space="preserve">
+    <value>{0}; hazırlık gecikmesi 5s yeniden deneme beklemesiyle yeniden başlatılıyor</value>
+  </data>
+  <data name="Automation_AutoDutyPreparationFailed" xml:space="preserve">
+    <value>AutoDuty hazırlığı başarısız: {0}</value>
+  </data>
+  <data name="Automation_QueueLeader" xml:space="preserve">
+    <value>Kuyruk lideri</value>
+  </data>
+  <data name="Automation_FollowerWaitingOnLeader" xml:space="preserve">
+    <value>Takipçi lideri bekliyor</value>
+  </data>
+  <data name="Automation_ADS" xml:space="preserve">
+    <value>ADS</value>
+  </data>
+  <data name="Automation_RepairWaiting" xml:space="preserve">
+    <value>onarım-bekleniyor</value>
+  </data>
+  <data name="Automation_RepairHandoff" xml:space="preserve">
+    <value>onarım-devri</value>
+  </data>
+  <data name="Automation_LeaveRequestedWaitingForZoneOut" xml:space="preserve">
+    <value>çıkış istendi, bölgeden çıkış bekleniyor</value>
+  </data>
+  <data name="Automation_LeaveRequested" xml:space="preserve">
+    <value>çıkış istendi</value>
+  </data>
+  <data name="Automation_ADSInsideOwned" xml:space="preserve">
+    <value>ADS içeride kontrol sahibi</value>
+  </data>
+  <data name="Automation_ADSOutsideOwned" xml:space="preserve">
+    <value>ADS dışarıda kontrol sahibi</value>
+  </data>
+  <data name="Automation_LeaderReady" xml:space="preserve">
+    <value>lider-hazır</value>
+  </data>
+  <data name="Automation_OutsideArmed" xml:space="preserve">
+    <value>dışarıda-hazır</value>
+  </data>
+  <data name="Automation_WaitingForEntry" xml:space="preserve">
+    <value>giriş-bekleniyor</value>
+  </data>
+  <data name="Automation_InsideObserved" xml:space="preserve">
+    <value>içeride-gözlendi</value>
+  </data>
+  <data name="Automation_Leaving" xml:space="preserve">
+    <value>çıkılıyor</value>
+  </data>
+  <data name="Automation_Recovered" xml:space="preserve">
+    <value>kurtarıldı</value>
+  </data>
+  <data name="Automation_Idle" xml:space="preserve">
+    <value>boşta</value>
+  </data>
+  <data name="Automation_ADSDutyBackendInnReturn" xml:space="preserve">
+    <value>ADS görev arka ucu ve hana dönüş</value>
+  </data>
+  <data name="Automation_ADSMissing" xml:space="preserve">
+    <value>ADS eksik</value>
+  </data>
+  <data name="Automation_ADSInnReady" xml:space="preserve">
+    <value>ADS han hazır</value>
+  </data>
+  <data name="Automation_Value" xml:space="preserve">
+    <value>{0} / {1}</value>
+  </data>
+  <data name="Engine_ManualStop" xml:space="preserve">
+    <value>Elle durdurma.</value>
+  </data>
+  <data name="Engine_CleanupFailed" xml:space="preserve">
+    <value>{0} {1} temizliği başarısız: {2}</value>
+  </data>
+  <data name="Role_Tank" xml:space="preserve">
+    <value>Tank</value>
+  </data>
+  <data name="Role_Healer" xml:space="preserve">
+    <value>Healer</value>
+  </data>
+  <data name="Role_Dps" xml:space="preserve">
+    <value>DPS</value>
+  </data>
+  <data name="Rotation_CouldNotDisableCombatComponentsFromThe" xml:space="preserve">
+    <value>Önceki koşunun savaş bileşenleri devre dışı bırakılamadı.</value>
+  </data>
+  <data name="Rotation_BothBossModVariantsAreStillLoadedConflict" xml:space="preserve">
+    <value>Her iki BossMod sürümü hâlâ yüklü; ön ayar hazırlığından önce çakışma temizliği bitmelidir.</value>
+  </data>
+  <data name="Rotation_BMROrVBM" xml:space="preserve">
+    <value>BMR veya VBM</value>
+  </data>
+  <data name="Rotation_RequiresLoadedBossModSupport" xml:space="preserve">
+    <value>{0} yüklü BossMod desteği gerektirir ({1}).</value>
+  </data>
+  <data name="Rotation_BossModPackagedPresetInstallationFailedCheckThat" xml:space="preserve">
+    <value>BossMod paket ön ayar kurulumu başarısız; ön ayar IPC'sinin hazır olduğunu ve altı ön ayar dosyasının mevcut olduğunu denetleyin.</value>
+  </data>
+  <data name="Rotation_CombatActivationWasRequestedAfterThisDuty" xml:space="preserve">
+    <value>Bu görev bittikten sonra savaş etkinleştirme istendi ({0}).</value>
+  </data>
+  <data name="Rotation_CombatActivationFailed" xml:space="preserve">
+    <value>Savaş etkinleştirme başarısız: {0}</value>
+  </data>
+  <data name="Rotation_CouldNotDisableAllMogTomeCombatComponents" xml:space="preserve">
+    <value>Tüm MogTome savaş bileşenleri devre dışı bırakılamadı ({0}); günlükteki başarısız komuta bakın.</value>
+  </data>
+  <data name="Rotation_RSRHealthRecoveryFailed" xml:space="preserve">
+    <value>RSR sağlıklı durum kurtarması başarısız ({0}).</value>
+  </data>
+  <data name="Rotation_BossModAvailabilityOrSelectionChangedAfterStartup" xml:space="preserve">
+    <value>BossMod kullanılabilirliği veya seçimi başlangıçtan sonra değişti. Yeniden hazırlamak için MogTome'u durdurup başlatın.</value>
+  </data>
+  <data name="Rotation_PresetPreparationFailedCombatWasNotEnabled" xml:space="preserve">
+    <value>{0} ön ayar hazırlığı başarısız; savaş etkinleştirilmedi.</value>
+  </data>
+  <data name="Rotation_RSRAutoIPCAndRotationAutoBoth" xml:space="preserve">
+    <value>RSR Auto IPC ve /rotation auto başarısız oldu.</value>
+  </data>
+  <data name="Rotation_CouldNotEnableUsing" xml:space="preserve">
+    <value>{1} kullanılarak {0} etkinleştirilemedi.</value>
+  </data>
+  <data name="Path_NotAttempted" xml:space="preserve">
+    <value>Denenmedi</value>
+  </data>
+  <data name="Path_FAILEDAutoDutyPluginNotFoundOrNot" xml:space="preserve">
+    <value>BAŞARISIZ: AutoDuty eklentisi bulunamadı veya yüklü değil</value>
+  </data>
+  <data name="Path_OKTerritoryPathSelectionSavedAndVerified" xml:space="preserve">
+    <value>OK: Territory={0}, Path={1} ({2}); seçim kaydedildi ve doğrulandı</value>
+  </data>
+  <data name="Path_FAILED" xml:space="preserve">
+    <value>BAŞARISIZ: {0}</value>
+  </data>
+  <data name="Conflict_StartupWasStoppedBeforeBossModCleanup" xml:space="preserve">
+    <value>BossMod temizliğinden önce başlangıç durduruldu.</value>
+  </data>
+  <data name="Conflict_StartupCancelledDuringVBMCleanup" xml:space="preserve">
+    <value>VBM temizliği sırasında başlangıç iptal edildi.</value>
+  </data>
+  <data name="Conflict_VBMCouldNotBeDisabledWhileBoth" xml:space="preserve">
+    <value>Her iki BossMod sürümü yüklüyken VBM devre dışı bırakılamadı.</value>
+  </data>
+  <data name="Conflict_StartupCancelledDuringBMRCleanup" xml:space="preserve">
+    <value>BMR temizliği sırasında başlangıç iptal edildi.</value>
+  </data>
+  <data name="Conflict_BMRCouldNotBeTemporarilyDisabledTo" xml:space="preserve">
+    <value>Paylaşılan IPC kayıtlarını geri yüklemek için BMR geçici olarak devre dışı bırakılamadı.</value>
+  </data>
+  <data name="Conflict_TheNativeTemporaryBMREnableCommandWas" xml:space="preserve">
+    <value>Yerel geçici BMR etkinleştirme komutu işlenmedi.</value>
+  </data>
+  <data name="Conflict_StartupCancelledDuringBMRReadiness" xml:space="preserve">
+    <value>BMR hazırlığı sırasında başlangıç iptal edildi.</value>
+  </data>
+  <data name="Conflict_BMRDidNotBecomeReadyAfterIts" xml:space="preserve">
+    <value>BMR yeniden yükleme sonrası hazır olmadı veya VBM tekrar yüklendi.</value>
+  </data>
+  <data name="Conflict_WasEnabledAndHasBeenAutoDisabled" xml:space="preserve">
+    <value>{0} etkindi ve MOGTOME için otomatik olarak devre dışı bırakıldı.</value>
+  </data>
+  <data name="Conflict_MOGTOMEKeptRunningClickTheWarningWindow" xml:space="preserve">
+    <value>{0}
+
+MOGTOME çalışmaya devam etti. Kapatmak için uyarı penceresine bir kez tıklayın veya eklenti geri gelirse oradaki devre dışı bırak düğmesini kullanın.</value>
+  </data>
+  <data name="Conflict_IsStillEnabledMOGTOMEWillKeepRunning" xml:space="preserve">
+    <value>{0} hâlâ etkin. MOGTOME çalışmaya devam edecek, ancak {1} ile devre dışı bırakmalısınız.</value>
+  </data>
+  <data name="Conflict_UseTheWarningWindowButtonToTry" xml:space="preserve">
+    <value>{0}
+
+Tekrar devre dışı bırakmayı denemek için uyarı penceresindeki düğmeyi kullanın veya uyarıyı kapatıp devam edin.</value>
+  </data>
+  <data name="Conflict_WasEnabledAndHasBeenAutoDisabled2" xml:space="preserve">
+    <value>{0} etkindi ve ADS modu için otomatik olarak devre dışı bırakıldı.</value>
+  </data>
+  <data name="Conflict_IsStillEnabledADSModeExpects" xml:space="preserve">
+    <value>{0} hâlâ etkin. ADS modu {1} bekler.</value>
+  </data>
+  <data name="Blocker_WaitingForMatchingDutyIdentity" xml:space="preserve">
+    <value>eşleşen görev kimliği bekleniyor</value>
+  </data>
+  <data name="Blocker_Loading" xml:space="preserve">
+    <value>yükleniyor</value>
+  </data>
+  <data name="Blocker_Combat" xml:space="preserve">
+    <value>savaş</value>
+  </data>
+  <data name="Blocker_Cutscene" xml:space="preserve">
+    <value>ara sahne</value>
+  </data>
+  <data name="Blocker_OccupiedTransition" xml:space="preserve">
+    <value>meşgul geçiş</value>
+  </data>
+  <data name="Blocker_WaitingForLogin" xml:space="preserve">
+    <value>giriş bekleniyor</value>
+  </data>
+  <data name="Blocker_WaitingForLocalPlayer" xml:space="preserve">
+    <value>yerel oyuncu bekleniyor</value>
+  </data>
+  <data name="Blocker_WaitingForLocalPlayerJob" xml:space="preserve">
+    <value>yerel oyuncunun job'ı bekleniyor</value>
+  </data>
+  <data name="Blocker_WaitingForUnconsciousStateToClear" xml:space="preserve">
+    <value>bilinçsiz durumun geçmesi bekleniyor</value>
+  </data>
+  <data name="Blocker_WaitingForLocalPlayerToBeAlive" xml:space="preserve">
+    <value>yerel oyuncunun hayatta olması bekleniyor</value>
+  </data>
+  <data name="Blocker_WaitingForAreaTransitionToFinish" xml:space="preserve">
+    <value>alan geçişinin bitmesi bekleniyor</value>
+  </data>
+  <data name="Blocker_WaitingForCutsceneToFinish" xml:space="preserve">
+    <value>ara sahnenin bitmesi bekleniyor</value>
+  </data>
+  <data name="Blocker_WaitingForCutsceneEventToFinish" xml:space="preserve">
+    <value>ara sahne olayının bitmesi bekleniyor</value>
+  </data>
+  <data name="Window_MOGTOMEStatus" xml:space="preserve">
+    <value>MOGTOME - Durum</value>
+  </data>
+  <data name="Window_MOGTOMEConfiguration" xml:space="preserve">
+    <value>MOGTOME - Yapılandırma</value>
+  </data>
+  <data name="Window_MOGTOMEStatistics" xml:space="preserve">
+    <value>MOGTOME - İstatistikler</value>
+  </data>
+  <data name="Window_MOGTOMEWarningText" xml:space="preserve">
+    <value>MOGTOME uyarı metni</value>
+  </data>
+  <data name="Config_CombatProvider2" xml:space="preserve">
+    <value>Savaş sağlayıcısı: {0}</value>
+  </data>
+  <data name="Config_NotConfigured" xml:space="preserve">
+    <value>yapılandırılmamış</value>
+  </data>
+  <data name="Config_OptionalFood" xml:space="preserve">
+    <value>İsteğe bağlı yiyecek: {0}</value>
+  </data>
+  <data name="Config_HQ" xml:space="preserve">
+    <value>[HQ]</value>
+  </data>
+  <data name="Config_NQ" xml:space="preserve">
+    <value>[NQ]</value>
+  </data>
+  <data name="Config_SelectedID" xml:space="preserve">
+    <value>  Seçili: {0} {1} (ID: {2})</value>
+  </data>
+  <data name="Main_ForceAutoDutyToSelectModeLoopingDuty" xml:space="preserve">
+    <value>AutoDuty seçimini zorla:
+Mode: Looping
+Duty Mode: Regular
+Duty: The Praetorium (1044)
+Path: {0}
+
+Tam AutoDuty yapısını Dalamud günlüğüne yazar.</value>
+  </data>
+  <data name="Main_TestPathIndexDiscoveryMethodsComparesDictionaryPaths" xml:space="preserve">
+    <value>Yol indeksi keşif yöntemlerini test et.
+DictionaryPaths ve PathSelectionsByPath karşılaştırılır.
+Sonuçlar Dalamud günlüğüne yazılır.</value>
+  </data>
+  <data name="Main_DumpAutoDutyConfigurationStructureToDalamudLog" xml:space="preserve">
+    <value>AutoDuty Configuration yapısını Dalamud günlüğüne yaz.</value>
+  </data>
+  <data name="Plugin_ScrollDownToTheDumpsterFireChannel" xml:space="preserve">
+    <value>Eklentiye özel sorunlar ve öneriler için &quot;The Dumpster Fire&quot; kanalına ilerleyin.</value>
+  </data>
+  <data name="Plugin_CheckPartyLeaderSettingsIfTheDuty" xml:space="preserve">
+    <value>Görev başlamıyorsa grup lideri ayarlarını denetleyin</value>
+  </data>
+  <data name="Plugin_ADSDidNotHandleAdsEnterinnEnsure" xml:space="preserve">
+    <value>ADS /ads enterinn komutunu işlemedi. ADS'nin kurulu ve yüklü olduğundan emin olun.</value>
+  </data>
+  <data name="Warning_SharedMOGTOMEConfigPath" xml:space="preserve">
+    <value>Paylaşılan MOGTOME yapılandırma yolu</value>
+  </data>
+  <data name="Warning_AnotherClientHoldsMOGTOMESConfigDirectory" xml:space="preserve">
+    <value>Başka bir istemci MOGTOME yapılandırma klasörünü kilitlemiş. Aynı yapılandırma yoluyla birden fazla istemci çalıştırmak hesap ayarlarını üzerine yazabilir. Eşleşen oyun işlem sayısı: {0}.</value>
+  </data>
+  <data name="Warning_CancelStart" xml:space="preserve">
+    <value>Başlatmayı iptal et</value>
+  </data>
+  <data name="Warning_AcknowledgeAndStart" xml:space="preserve">
+    <value>Onayla ve başlat</value>
+  </data>
+  <data name="Warning_TwistOfFayteConflict" xml:space="preserve">
+    <value>Twist of Fayte çakışması</value>
+  </data>
+  <data name="Warning_AutoDutyConflict" xml:space="preserve">
+    <value>AutoDuty çakışması</value>
+  </data>
+  <data name="Warning_PluginConflict" xml:space="preserve">
+    <value>Eklenti çakışması</value>
+  </data>
+  <data name="Warning_DisableTwistOfFayte" xml:space="preserve">
+    <value>TwistOfFayte'ı devre dışı bırak</value>
+  </data>
+  <data name="Warning_DisableAutoDuty" xml:space="preserve">
+    <value>AutoDuty'yi devre dışı bırak</value>
+  </data>
+  <data name="Chat_MOGTOMEStoppedAndClearedPendingStartAnd" xml:space="preserve">
+    <value>[MOGTOME] Durduruldu; bekleyen Başlat ve sonrakinden sonra durma durumu temizlendi.</value>
+  </data>
+  <data name="Chat_MOGTOMEAlreadyStopped" xml:space="preserve">
+    <value>[MOGTOME] Zaten durduruldu: {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEEngineIsStillInitializing" xml:space="preserve">
+    <value>[MOGTOME] Motor hâlâ başlatılıyor.</value>
+  </data>
+  <data name="Chat_MOGTOMEStopAfterNextSuccessfulRunArmed" xml:space="preserve">
+    <value>[MOGTOME] Sonraki başarılı koşudan sonra durma etkinleştirildi.</value>
+  </data>
+  <data name="Chat_MOGTOMEStopAfterNextSuccessfulRunCancelled" xml:space="preserve">
+    <value>[MOGTOME] Sonraki başarılı koşudan sonra durma iptal edildi.</value>
+  </data>
+  <data name="Chat_MOGTOMEMogInnIsOnlyAvailableWhile" xml:space="preserve">
+    <value>[MOGTOME] /mog inn yalnızca motor durduğunda veya etkin onarım sırasında kullanılabilir.</value>
+  </data>
+  <data name="Chat_MOGTOMEStateDuty" xml:space="preserve">
+    <value>[MOGTOME] Durum: {0} | Görev #{1} | {2}</value>
+  </data>
+  <data name="Chat_MOGTOMEDebugMode" xml:space="preserve">
+    <value>[MOGTOME] Debug modu {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEDebugCheckboxNowVisibleInStats" xml:space="preserve">
+    <value>[MOGTOME] Debug onay kutusu artık istatistik penceresinde görünür</value>
+  </data>
+  <data name="Chat_MOGTOME" xml:space="preserve">
+    <value>[MOGTOME] {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEFailedToSendAdsEnterinnCheck" xml:space="preserve">
+    <value>[MOGTOME] /ads enterinn gönderilemedi. Dalamud günlüğünü denetleyin.</value>
+  </data>
+  <data name="Chat_MOGTOMEQueuedMainConfigStatsWindowReset" xml:space="preserve">
+    <value>[MOGTOME] Ana/yapılandırma/istatistik pencerelerini 1,1 konumuna sıfırlama kuyruğa alındı.</value>
+  </data>
+  <data name="Chat_MOGTOMEQueuedRandomVisibleJumpsForMain" xml:space="preserve">
+    <value>[MOGTOME] Ana/yapılandırma/istatistik pencereleri için rastgele görünür sıçramalar kuyruğa alındı.</value>
+  </data>
+  <data name="Chat_MOGTOMEEngineIsStillInitializingTryAgain" xml:space="preserve">
+    <value>[MOGTOME] Motor hâlâ başlatılıyor. Biraz sonra yeniden deneyin.</value>
+  </data>
+  <data name="Chat_MOGTOMEAlreadyRunning" xml:space="preserve">
+    <value>[MOGTOME] Zaten çalışıyor</value>
+  </data>
+  <data name="Chat_MOGTOMEStartAlreadyQueued" xml:space="preserve">
+    <value>[MOGTOME] Başlat zaten kuyruğa alındı.</value>
+  </data>
+  <data name="Chat_MOGTOMEStartQueued" xml:space="preserve">
+    <value>[MOGTOME] Başlat kuyruğa alındı.</value>
+  </data>
+  <data name="Chat_MOGTOMEWarningXASlaveDidNotHandle" xml:space="preserve">
+    <value>[MOGTOME] Uyarı: XA Slave {0} komutunu işlemedi; başlangıç sürüyor.</value>
+  </data>
+  <data name="Chat_MOGTOMEWarningFailedToSendContinuingStartup" xml:space="preserve">
+    <value>[MOGTOME] Uyarı: {0} gönderilemedi; başlangıç sürüyor.</value>
+  </data>
+  <data name="DutyAutomationService_AIDutySolverADSExperimentalModeIs" xml:space="preserve">
+    <value>AI Duty Solver (ADS) deneysel modu etkin, ancak ADS yüklü değil.</value>
+  </data>
+  <data name="DutyAutomationService_AutoDutyIsStillInitializingOrFaultedRetry" xml:space="preserve">
+    <value>AutoDuty hâlâ başlatılıyor veya hatalı; giriş tamamlandıktan sonra MOGTOME'u yeniden deneyin</value>
+  </data>
+  <data name="DutyAutomationService_BundledPraetoriumPathsCouldNotBeInstalled" xml:space="preserve">
+    <value>Birlikte gelen Praetorium yolları AutoDuty'ye kurulamadı.</value>
+  </data>
+  <data name="DutyAutomationService_ADSDidNotHandleAdsEnterinnAfter" xml:space="preserve">
+    <value>ADS onarım sonrası /ads enterinn komutunu işlemedi. ADS'nin kurulu ve yüklü olduğundan emin olun.</value>
+  </data>
+  <data name="Chat_MOGTOMEAutoDutyPreparationFailed" xml:space="preserve">
+    <value>[MOGTOME] AutoDuty hazırlığı başarısız: {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEPraetoriumCallbackTest" xml:space="preserve">
+    <value>[MOGTOME] Praetorium geri çağırma testi: {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEMissingOptionalUnlocks" xml:space="preserve">
+    <value>[MOGTOME] Eksik isteğe bağlı açılımlar: {0}</value>
+  </data>
+  <data name="MogtomeEngine_CombatCleanupFailedAfterDutyExitContinuing" xml:space="preserve">
+    <value>Görev çıkışı sonrası savaş temizliği başarısız; devam ediliyor.</value>
+  </data>
+  <data name="MogtomeEngine_ManualPartyRefreshSkippedInsideDutyUse" xml:space="preserve">
+    <value>Görev içinde elle grup yenilemesi atlandı. Grup durumunu yenile'yi yalnızca tüm grup bölgeden çıkıp görünür olduktan sonra görev dışında kullanın.</value>
+  </data>
+  <data name="MogtomeEngine_NonLeader" xml:space="preserve">
+    <value>lider olmayan</value>
+  </data>
+  <data name="MogtomeEngine_ManualPartyRefreshCouldNotDetermineLeader" xml:space="preserve">
+    <value>Elle grup yenilemesi mevcut aynı dünya grup listesinden lideri belirleyemedi. {0} rolü korunuyor.</value>
+  </data>
+  <data name="Chat_MOGTOMEStopAfterNextCompletedStoppingBefore" xml:space="preserve">
+    <value>[MOGTOME] Sonrakinden sonra durma tamamlandı. Yeniden kuyruğa girmeden durduruluyor.</value>
+  </data>
+  <data name="Chat_MOGTOMEAlreadyInsideInnTerritory" xml:space="preserve">
+    <value>[MOGTOME] Zaten han bölgesinde: {0}.</value>
+  </data>
+  <data name="Chat_MOGTOMENoInnkeeperFoundWithinYMog" xml:space="preserve">
+    <value>[MOGTOME] {0:F0}y içinde hancı bulunamadı. /mog inn hiçbir şey yapmadı.</value>
+  </data>
+  <data name="Chat_MOGTOMEMogInnCancelled" xml:space="preserve">
+    <value>[MOGTOME] /mog inn iptal edildi: {0}</value>
+  </data>
+  <data name="Warning_Title" xml:space="preserve">
+    <value>MOGTOME uyarısı</value>
+  </data>
+  <data name="Warning_Dismiss" xml:space="preserve">
+    <value>Kapat</value>
+  </data>
+  <data name="Language_Label" xml:space="preserve">
+    <value>Arayüz dili</value>
+  </data>
+  <data name="Language_WaitForProfile" xml:space="preserve">
+    <value>Profil kullanılabilir olana kadar oyun istemcisi dili kullanılıyor.</value>
+  </data>
+  <data name="Config_Potion" xml:space="preserve">
+    <value>İksir</value>
+  </data>
+  <data name="Chat_MessageAndReason" xml:space="preserve">
+    <value>[MOGTOME] {0} {1}</value>
+  </data>
+  <data name="EngineState_Idle" xml:space="preserve">
+    <value>Boşta</value>
+  </data>
+  <data name="EngineState_Initializing" xml:space="preserve">
+    <value>Başlatılıyor</value>
+  </data>
+  <data name="EngineState_WaitingOutsideDuty" xml:space="preserve">
+    <value>Görev dışında bekleniyor</value>
+  </data>
+  <data name="EngineState_Queueing" xml:space="preserve">
+    <value>Kuyruğa giriliyor</value>
+  </data>
+  <data name="EngineState_InDuty" xml:space="preserve">
+    <value>Görevde</value>
+  </data>
+  <data name="EngineState_RepairingOutside" xml:space="preserve">
+    <value>Dışarıda onarılıyor</value>
+  </data>
+  <data name="EngineState_Stopping" xml:space="preserve">
+    <value>Durduruluyor</value>
+  </data>
+  <data name="EngineState_Stopped" xml:space="preserve">
+    <value>Durduruldu</value>
+  </data>
+  <data name="CombatProvider_Bmr" xml:space="preserve">
+    <value>BMR</value>
+  </data>
+  <data name="CombatProvider_Vbm" xml:space="preserve">
+    <value>VBM</value>
+  </data>
+  <data name="CombatProvider_Rsr" xml:space="preserve">
+    <value>RSR</value>
+  </data>
+  <data name="CombatProvider_Wrath" xml:space="preserve">
+    <value>Wrath Combo</value>
+  </data>
+  <data name="Inn_InteractingWithInnkeeper" xml:space="preserve">
+    <value>Hancı {0} ile etkileşime giriliyor</value>
+  </data>
+  <data name="Inn_MovingToInnkeeper" xml:space="preserve">
+    <value>Hancı {0} konumuna gidiliyor</value>
+  </data>
+  <data name="Inn_MOGTOMEMogInnRequiresALoggedIn" xml:space="preserve">
+    <value>[MOGTOME] /mog inn giriş yapmış bir karakter gerektirir.</value>
+  </data>
+  <data name="Inn_EnteredInnTerritorySuccessfully" xml:space="preserve">
+    <value>Han bölgesine başarıyla girildi.</value>
+  </data>
+  <data name="Inn_TimedOutWhileTryingToEnterThe" xml:space="preserve">
+    <value>Hana girmeye çalışırken zaman aşımına uğradı.</value>
+  </data>
+  <data name="Inn_InnEntryFailed" xml:space="preserve">
+    <value>Hana giriş başarısız: {0}</value>
+  </data>
+  <data name="Inn_WaitingForInnZoneTransition" xml:space="preserve">
+    <value>Han bölgesi geçişi bekleniyor</value>
+  </data>
+  <data name="Inn_InnkeeperIsNoLongerNearby" xml:space="preserve">
+    <value>Hancı {0} artık yakında değil.</value>
+  </data>
+  <data name="Inn_InteractingWith" xml:space="preserve">
+    <value>{0} ile etkileşime giriliyor</value>
+  </data>
+  <data name="Inn_DriftedTooFarAwayFromWhileWaiting" xml:space="preserve">
+    <value>Etkileşim beklerken {0} konumundan çok uzaklaşıldı.</value>
+  </data>
+  <data name="Inn_RepositioningNear" xml:space="preserve">
+    <value>{0} yakınında yeniden konumlanılıyor</value>
+  </data>
+  <data name="Inn_Retrying" xml:space="preserve">
+    <value>{0} yeniden deneniyor</value>
+  </data>
+  <data name="Time_Calculating" xml:space="preserve">
+    <value>Hesaplanıyor...</value>
+  </data>
+  <data name="Time_Unknown" xml:space="preserve">
+    <value>Bilinmiyor</value>
+  </data>
+  <data name="Time_DH" xml:space="preserve">
+    <value>{0}g {1}sa</value>
+  </data>
+  <data name="Time_HM" xml:space="preserve">
+    <value>{0}sa {1}dk</value>
+  </data>
+  <data name="Time_MS" xml:space="preserve">
+    <value>{0}dk {1}sn</value>
+  </data>
+  <data name="Engine_DutyComplete" xml:space="preserve">
+    <value>Görev tamamlandı</value>
+  </data>
+  <data name="Engine_BailoutPending" xml:space="preserve">
+    <value>Acil çıkış bekliyor</value>
+  </data>
+  <data name="Config_CombatRotation" xml:space="preserve">
+    <value>Savaş rotasyonu</value>
+  </data>
+  <data name="Config_PotOnBoss" xml:space="preserve">
+    <value>{0} üzerinde iksir kullan</value>
+  </data>
+  <data name="RepairBlocker_DutyState" xml:space="preserve">
+    <value>görev durumu</value>
+  </data>
+  <data name="RepairBlocker_ZoneTransition" xml:space="preserve">
+    <value>bölge geçişi</value>
+  </data>
+  <data name="RepairBlocker_QueueRegistration" xml:space="preserve">
+    <value>kuyruk kaydı</value>
+  </data>
+  <data name="RepairBlocker_DutyConfirmation" xml:space="preserve">
+    <value>görev onay penceresi</value>
+  </data>
+  <data name="RepairBlocker_MinimizedDutyConfirmation" xml:space="preserve">
+    <value>küçültülmüş görev onay penceresi</value>
+  </data>
+  <data name="RepairBlocker_CancelDutyConfirmation" xml:space="preserve">
+    <value>görev onayı iptal sırası</value>
+  </data>
+  <data name="RepairBlocker_YesNoDialog" xml:space="preserve">
+    <value>SelectYesno iletişim kutusu</value>
+  </data>
+  <data name="RepairBlocker_Cutscene" xml:space="preserve">
+    <value>ara sahne</value>
+  </data>
+  <data name="RepairBlocker_Occupied" xml:space="preserve">
+    <value>meşgul geçiş</value>
+  </data>
+  <data name="Plugin_CommandMainHelp" xml:space="preserve">
+    <value>MOGTOME ana penceresini aç.</value>
+  </data>
+  <data name="Plugin_CommandAliasHelp" xml:space="preserve">
+    <value>MOGTOME: /mog [start|stop|stopnext|inn|config|status|debug|ws|j] veya arayüzü açmak için /mog.</value>
+  </data>
+  <data name="Ads_Empty" xml:space="preserve">
+    <value>ADS.GetStatusJson boş veri döndürdü</value>
+  </data>
+  <data name="Ads_Inactive" xml:space="preserve">
+    <value>ADS durumu etkin bir instans görevi belirtmiyor</value>
+  </data>
+  <data name="Ads_NoCatalog" xml:space="preserve">
+    <value>ADS mevcut görevinde katalog meta verisi yok</value>
+  </data>
+  <data name="Ads_NoName" xml:space="preserve">
+    <value>ADS mevcut görev katalog satırında görev adı yok</value>
+  </data>
+  <data name="Ads_NoTerritory" xml:space="preserve">
+    <value>ADS mevcut görev katalog satırında bölge kimliği yok</value>
+  </data>
+  <data name="Ads_NoCfc" xml:space="preserve">
+    <value>ADS mevcut görev katalog satırında CFC kimliği yok</value>
+  </data>
+  <data name="Ads_Category" xml:space="preserve">
+    <value>ADS mevcut görev katalog satırında desteklenmeyen kategori '{0}'</value>
+  </data>
+  <data name="Ads_Support" xml:space="preserve">
+    <value>ADS mevcut görev katalog satırında desteklenmeyen destek düzeyi '{0}'</value>
+  </data>
+  <data name="Ads_Clearance" xml:space="preserve">
+    <value>ADS mevcut görev katalog satırında desteklenmeyen izin durumu '{0}'</value>
+  </data>
+  <data name="Ads_InvalidJson" xml:space="preserve">
+    <value>ADS.GetStatusJson geçersiz JSON döndürdü: {0}</value>
+  </data>
+  <data name="Ads_Unvalidated" xml:space="preserve">
+    <value>Doğrulanmış ADS mevcut görev anlık görüntüsü yok.</value>
+  </data>
+  <data name="Ads_Unloaded" xml:space="preserve">
+    <value>ADS kaldırıldı.</value>
+  </data>
+  <data name="Ads_Outside" xml:space="preserve">
+    <value>Canlı istemci bir instans görevinin dışında.</value>
+  </data>
+  <data name="Ads_NoLiveIdentity" xml:space="preserve">
+    <value>GameMain canlı görev bölgesi kimliği sağlamadı.</value>
+  </data>
+  <data name="Ads_Changed" xml:space="preserve">
+    <value>Canlı görev kimliği bölge/CFC {0}/{1} konumundan {2}/{3} konumuna değişti.</value>
+  </data>
+  <data name="Ads_Mismatch" xml:space="preserve">
+    <value>ADS mevcut görev kimliği {0}/{1}, canlı GameMain kimliği {2}/{3} ile eşleşmiyor.</value>
+  </data>
+  <data name="Ads_Validated" xml:space="preserve">
+    <value>Bölge/CFC {0}/{1} için ADS mevcut görev anlık görüntüsü doğrulandı.</value>
+  </data>
+  <data name="Ads_Unavailable" xml:space="preserve">
+    <value>ADS.GetStatusJson kullanılamıyor: {0}</value>
+  </data>
+  <data name="Ads_Retained" xml:space="preserve">
+    <value>ADS.GetStatusJson kullanılamıyor; aynı canlı kimlik için doğrulanmış mevcut görev anlık görüntüsü korunuyor: {0}</value>
+  </data>
+  <data name="Opener_Timeout" xml:space="preserve">
+    <value>10 saniyelik deney zaman aşımı</value>
+  </data>
+  <data name="Opener_NoTarget" xml:space="preserve">
+    <value>açılış grubunun hedefi kullanılamıyor</value>
+  </data>
+  <data name="Opener_NoArea" xml:space="preserve">
+    <value>{0} alan eylemi kullanılamıyor</value>
+  </data>
+  <data name="Opener_NoInvulnerability" xml:space="preserve">
+    <value>{0} dokunulmazlığı kullanılamıyor</value>
+  </data>
+  <data name="Opener_NoTerminal" xml:space="preserve">
+    <value>Magitek Terminal 2012811 kullanılamıyor</value>
+  </data>
+  <data name="Opener_NoPlayerAtTerminal" xml:space="preserve">
+    <value>terminalde yerel oyuncu kullanılamıyor</value>
+  </data>
+  <data name="Opener_Descended" xml:space="preserve">
+    <value>yerel terminal inişi algılandı</value>
+  </data>
+  <data name="Opener_NoInteract" xml:space="preserve">
+    <value>Magitek Terminal etkileşimi kullanılamıyor</value>
+  </data>
+  <data name="Opener_NoPlayerBeforeMove" xml:space="preserve">
+    <value>{0} konumuna hareketten önce yerel oyuncu kullanılamıyor</value>
+  </data>
+  <data name="Opener_NoMove" xml:space="preserve">
+    <value>{0} konumuna vnav hareketi kullanılamıyor</value>
+  </data>
+  <data name="Opener_NoPlayerMoving" xml:space="preserve">
+    <value>hareket sırasında yerel oyuncu kullanılamıyor</value>
+  </data>
+  <data name="Opener_NoProgress" xml:space="preserve">
+    <value>vnav hareketi ilerleme sağlamadı</value>
+  </data>
+  <data name="Opener_Pack" xml:space="preserve">
+    <value>açılış grubu</value>
+  </data>
+  <data name="Opener_Terminal" xml:space="preserve">
+    <value>Magitek Terminal</value>
+  </data>
+  <data name="Engine_AutoQueueing" xml:space="preserve">
+    <value>Otomatik kuyruğa giriş</value>
+  </data>
+  <data name="Engine_RepairRecoveryRetry" xml:space="preserve">
+    <value>Onarım kurtarma denemesi {0}</value>
+  </data>
+  <data name="Config_ObstacleMapsOn" xml:space="preserve">
+    <value>Engel haritalarını aç</value>
+  </data>
+  <data name="Config_ObstacleMapsOnTooltip" xml:space="preserve">
+    <value>Yalnızca BossMod Reborn'u kontrol eder. Varsayılan: kapalı. Savaş sağlayıcısından bağımsız olarak BossMod hazırlığı ve rotasyon kurulumu sonrası Başlat sırasında uygulanır.</value>
+  </data>
+  <data name="Config_NPCRepairInn" xml:space="preserve">
+    <value>NPC onarımı ve han odası</value>
+  </data>
+  <data name="Engine_InnRepairFailed" xml:space="preserve">
+    <value>Han onarımı başarısız: {0}</value>
+  </data>
+  <data name="Config_NPCRepairInnUldah" xml:space="preserve">
+    <value>NPC onarımı ve han odası — Ul’dah</value>
+  </data>
+  <data name="Config_NPCRepairInnGridania" xml:space="preserve">
+    <value>NPC onarımı ve han odası — Gridania</value>
+  </data>
+  <data name="Config_NPCRepairInnLimsa" xml:space="preserve">
+    <value>NPC onarımı ve han odası — Limsa Lominsa</value>
+  </data>
+  <data name="Config_NPCRepairInnIshgard" xml:space="preserve">
+    <value>NPC onarımı ve han odası — Ishgard</value>
+  </data>
+  <data name="Config_NPCRepairInnCrystarium" xml:space="preserve">
+    <value>NPC onarımı ve han odası — Crystarium</value>
+  </data>
+  <data name="Config_NPCRepairInnSharlayan" xml:space="preserve">
+    <value>NPC onarımı ve han odası — Old Sharlayan</value>
+  </data>
+  <data name="Config_NPCRepairInnTuliyollal" xml:space="preserve">
+    <value>NPC onarımı ve han odası — Tuliyollal</value>
+  </data>
+  <data name="Config_UnsupportedADSRepairMode" xml:space="preserve">
+    <value>Desteklenmeyen ADS onarım modu</value>
+  </data>
+  <data name="Window_BlundervilleFailer" xml:space="preserve">
+    <value>Blunderville Failer</value>
+  </data>
+  <data name="Plugin_CommandBlundervilleHelp" xml:space="preserve">
+    <value>Blunderville Failer önizlemesini aç (/blunderville veya /bv).</value>
+  </data>
+  <data name="Blunderville_OpenMogtome" xml:space="preserve">
+    <value>MOGTOME'u aç</value>
+  </data>
+  <data name="Blunderville_FarmingUnavailable" xml:space="preserve">
+    <value>Yalnızca önizleme: Blunderville toplama kullanılamıyor. Başlat ve Durdur devre dışı.</value>
+  </data>
+  <data name="Blunderville_PurchasesUnavailable" xml:space="preserve">
+    <value>Yalnızca önizleme: ADS satın alımı kullanılamıyor. Satın alma yapılandırması devre dışı.</value>
+  </data>
+  <data name="Blunderville_ConfigurePurchases" xml:space="preserve">
+    <value>Satın alımları yapılandır</value>
+  </data>
+  <data name="Ui_Color" xml:space="preserve">
+    <value>Renk</value>
+  </data>
+  <data name="Ui_Teal" xml:space="preserve">
+    <value>Turkuaz</value>
+  </data>
+  <data name="Ui_Blue" xml:space="preserve">
+    <value>Mavi</value>
+  </data>
+  <data name="Ui_Pink" xml:space="preserve">
+    <value>Pembe</value>
+  </data>
+  <data name="Ui_CustomRgb" xml:space="preserve">
+    <value>Özel RGB</value>
+  </data>
+  <data name="Ui_CompactMode" xml:space="preserve">
+    <value>Kompakt mod</value>
+  </data>
+  <data name="Ui_LoadingFonts" xml:space="preserve">
+    <value>Arayüz yazı tipleri yükleniyor...</value>
+  </data>
+  <data name="Ui_FontFailure" xml:space="preserve">
+    <value>Arayüz yazı tipleri yüklenemedi. Eklenti günlüğüne bakın.</value>
+  </data>
+  <data name="Main_Subtitle" xml:space="preserve">
+    <value>Grand Tome İşlemleri Yönetimi ve Yönetim Motoru</value>
+  </data>
+  <data name="Main_OpenBlunderville" xml:space="preserve">
+    <value>Blunderville Failer'ı aç</value>
+  </data>
+  <data name="Main_StateHeading" xml:space="preserve">
+    <value>Durum</value>
+  </data>
+  <data name="Main_StatusHeading" xml:space="preserve">
+    <value>Bilgi</value>
+  </data>
+  <data name="Main_Running" xml:space="preserve">
+    <value>Çalışıyor</value>
+  </data>
+  <data name="Main_Stopped" xml:space="preserve">
+    <value>Durduruldu</value>
+  </data>
+  <data name="Main_DutyCurrent" xml:space="preserve">
+    <value>Mevcut</value>
+  </data>
+  <data name="Main_DutyCounter" xml:space="preserve">
+    <value>Sayaç</value>
+  </data>
+  <data name="Main_DailyDecuHeading" xml:space="preserve">
+    <value>Günlük Decu koşuları</value>
+  </data>
+  <data name="Main_DailyResetHeading" xml:space="preserve">
+    <value>Günlük sıfırlama</value>
+  </data>
+  <data name="Main_PartySummary" xml:space="preserve">
+    <value>Grup özeti</value>
+  </data>
+  <data name="Main_InParty" xml:space="preserve">
+    <value>Grupta</value>
+  </data>
+  <data name="Main_NoParty" xml:space="preserve">
+    <value>Grup üyesi gözlenmedi.</value>
+  </data>
+  <data name="Main_PartyDetails" xml:space="preserve">
+    <value>Grup ayrıntıları</value>
+  </data>
+  <data name="Main_DutyDetails" xml:space="preserve">
+    <value>Görev ayrıntıları</value>
+  </data>
+  <data name="Main_CounterValue" xml:space="preserve">
+    <value>{0} / {1}</value>
+  </data>
+  <data name="Main_ResetUtc" xml:space="preserve">
+    <value>{0:HH:mm} UTC</value>
+  </data>
+  <data name="Main_CurrentProfile" xml:space="preserve">
+    <value>Mevcut profil: {0}</value>
+  </data>
+  <data name="Main_HelpTitle" xml:space="preserve">
+    <value>YARDIM</value>
+  </data>
+  <data name="Blunderville_FarmingHeading" xml:space="preserve">
+    <value>Bu derlemede toplama kullanılamıyor.</value>
+  </data>
+  <data name="Blunderville_FarmingDetail" xml:space="preserve">
+    <value>Blunderville Failer şu anda otomatik toplama için kullanılamaz.</value>
+  </data>
+  <data name="Blunderville_PurchasesHeading" xml:space="preserve">
+    <value>Satın alma otomasyonu kullanılamıyor.</value>
+  </data>
+  <data name="Blunderville_PurchasesDetail" xml:space="preserve">
+    <value>Otomatik satın alma işlevi bu derlemede yok.</value>
+  </data>
+  <data name="Cleanup_Opener" xml:space="preserve">
+    <value>açılış</value>
+  </data>
+  <data name="Cleanup_Backend" xml:space="preserve">
+    <value>arka uç</value>
+  </data>
+  <data name="Cleanup_Dialogs" xml:space="preserve">
+    <value>iletişim kutuları</value>
+  </data>
+  <data name="Cleanup_RepairQueue" xml:space="preserve">
+    <value>onarım kuyruğu</value>
+  </data>
+  <data name="Cleanup_DeathTracking" xml:space="preserve">
+    <value>ölüm izleme</value>
+  </data>
+  <data name="Cleanup_Combat" xml:space="preserve">
+    <value>savaş</value>
+  </data>
+  <data name="Main_Open" xml:space="preserve">
+    <value>Aç</value>
+  </data>
+  <data name="Window appearance" xml:space="preserve"><value>Pencere görünümü</value></data>
+  <data name="Compact visible on main window" xml:space="preserve"><value>Ana pencerede kompakt modu göster</value></data>
+  <data name="Language visible on main window" xml:space="preserve"><value>Ana pencerede dil seçimini göster</value></data>
+  <data name="Transparency" xml:space="preserve"><value>Saydamlık</value></data>
+  <data name="Opacity (%)" xml:space="preserve"><value>Opaklık (%)</value></data>
+  <data name="Auto-fade when unfocused" xml:space="preserve"><value>Odak yokken otomatik soldur</value></data>
+  <data name="Unfocused opacity (%)" xml:space="preserve"><value>Odak yokken opaklık (%)</value></data>
+  <data name="Unfocused delay (seconds)" xml:space="preserve"><value>Odak kaybı gecikmesi (saniye)</value></data>
+</root>

@@ -1,0 +1,2248 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms</value>
+  </resheader>
+  <data name="Config_SetupWizard" xml:space="preserve">
+    <value>Kreator konfiguracji</value>
+  </data>
+  <data name="Config_DependencyCheck" xml:space="preserve">
+    <value>Sprawdzenie zależności</value>
+  </data>
+  <data name="Config_Party" xml:space="preserve">
+    <value>Drużyna</value>
+  </data>
+  <data name="Config_Duty" xml:space="preserve">
+    <value>Zadanie</value>
+  </data>
+  <data name="Config_FoodPots" xml:space="preserve">
+    <value>Jedzenie i mikstury</value>
+  </data>
+  <data name="Config_Repair" xml:space="preserve">
+    <value>Naprawa</value>
+  </data>
+  <data name="Config_Advanced" xml:space="preserve">
+    <value>Zaawansowane</value>
+  </data>
+  <data name="Config_BackendMode" xml:space="preserve">
+    <value>Tryb backendu</value>
+  </data>
+  <data name="Config_UseADSPrimaryBackend" xml:space="preserve">
+    <value>Używaj ADS (główny backend)</value>
+  </data>
+  <data name="Config_ADSHandlesDutyAutomationAndInnReturn" xml:space="preserve">
+    <value>ADS obsługuje automatyzację zadań i powrót do gospody. AutoDuty jest alternatywnym backendem.</value>
+  </data>
+  <data name="Config_AutoDutyIsTheAlternativeDutyBackendADS" xml:space="preserve">
+    <value>AutoDuty jest alternatywnym backendem zadań. ADS jest wymagany tylko po wybraniu trybu ADS lub użyciu /mog inn.</value>
+  </data>
+  <data name="Config_RequiredPlugins" xml:space="preserve">
+    <value>Wymagane wtyczki</value>
+  </data>
+  <data name="Config_SetupRequirementsAreIncompleteTheWizardIs" xml:space="preserve">
+    <value>Wymagania konfiguracji nie są spełnione. Kreator służy jako pomoc i nie blokuje uruchomienia.</value>
+  </data>
+  <data name="Config_RSRRotationSolverReborn" xml:space="preserve">
+    <value>RSR (RotationSolverReborn)</value>
+  </data>
+  <data name="Config_Installed" xml:space="preserve">
+    <value>Zainstalowano</value>
+  </data>
+  <data name="Config_NOTFOUND" xml:space="preserve">
+    <value>NIE ZNALEZIONO</value>
+  </data>
+  <data name="Config_BossModPassiveSupportBMROrVBM" xml:space="preserve">
+    <value>Pasywne wsparcie BossMod (BMR lub VBM)</value>
+  </data>
+  <data name="Config_BMRLoaded" xml:space="preserve">
+    <value>BMR załadowany</value>
+  </data>
+  <data name="Config_VBMLoaded" xml:space="preserve">
+    <value>VBM załadowany</value>
+  </data>
+  <data name="Config_BossModRebornBMR" xml:space="preserve">
+    <value>BossModReborn (BMR)</value>
+  </data>
+  <data name="Config_BossModVBM" xml:space="preserve">
+    <value>BossMod (VBM)</value>
+  </data>
+  <data name="Config_RSRHandlesAttacksTheLoadedBossModVariant" xml:space="preserve">
+    <value>RSR obsługuje ataki; załadowany wariant BossMod automatycznie używa passive - tank/melee/ranged.</value>
+  </data>
+  <data name="Config_BMRHandlesAttacksAndMovementWithFRENRIDER" xml:space="preserve">
+    <value>BMR obsługuje ataki i ruch przy użyciu FRENRIDER - TANK/MELEE/RANGED lub ręcznie wybranego presetu.</value>
+  </data>
+  <data name="Config_VBMHandlesAttacksAndMovementWithFRENRIDER" xml:space="preserve">
+    <value>VBM obsługuje ataki i ruch przy użyciu FRENRIDER - TANK/MELEE/RANGED lub ręcznie wybranego presetu.</value>
+  </data>
+  <data name="Config_WrathHandlesAttacksUsingItsCurrentSettings" xml:space="preserve">
+    <value>Wrath obsługuje ataki zgodnie z bieżącymi ustawieniami.</value>
+  </data>
+  <data name="Config_UseManualBossModPreset" xml:space="preserve">
+    <value>Użyj ręcznego presetu BossMod</value>
+  </data>
+  <data name="Config_PresetName" xml:space="preserve">
+    <value>Nazwa presetu</value>
+  </data>
+  <data name="Config_EnterAnExistingPresetNameBeforeStarting" xml:space="preserve">
+    <value>Przed uruchomieniem wpisz nazwę istniejącego presetu.</value>
+  </data>
+  <data name="Config_MOGTOMESelectsItsPackagedActivePresetBy" xml:space="preserve">
+    <value>MOGTOME wybiera dołączony aktywny preset według bieżącej roli przy każdym rozpoczęciu zadania.</value>
+  </data>
+  <data name="Config_BothBossModVariantsAreLoadedStartDisables" xml:space="preserve">
+    <value>Oba warianty BossMod są załadowane. Uruchomienie wyłącza VBM i ponownie ładuje BMR; wybór VBM zmienia się na BMR, a RSR pozostaje wybrany.</value>
+  </data>
+  <data name="Config_MOGTOMERunsXaSkipcutscenesOnBeforeEvery" xml:space="preserve">
+    <value>MOGTOME wykonuje /xa skipcutscenes on przed każdym ręcznym uruchomieniem.</value>
+  </data>
+  <data name="Config_OptionalEnablesMogInnDelegation" xml:space="preserve">
+    <value>Opcjonalne. Umożliwia przekazanie /mog inn.</value>
+  </data>
+  <data name="Config_OptionalPlugins" xml:space="preserve">
+    <value>Opcjonalne wtyczki</value>
+  </data>
+  <data name="Config_OptionalNotRequiredByMOGTOME" xml:space="preserve">
+    <value>Opcjonalne. Niewymagane przez MOGTOME.</value>
+  </data>
+  <data name="Config_RecommendedAppearanceNameplateRandomizer" xml:space="preserve">
+    <value>Zalecane. Losowanie wyglądu i tabliczek z nazwami.</value>
+  </data>
+  <data name="Config_CustomResolutionPpByX0ade" xml:space="preserve">
+    <value>CustomResolution (1pp autorstwa 0x0ade)</value>
+  </data>
+  <data name="Config_ExperimentalAndNotRecommendedLowSpecHelper" xml:space="preserve">
+    <value>Eksperymentalne i niezalecane. Pomoc dla słabszych komputerów.</value>
+  </data>
+  <data name="Config_MaybeCrashyWithClients" xml:space="preserve">
+    <value>Może powodować awarie przy 2 lub więcej klientach</value>
+  </data>
+  <data name="Config_WillCauseSomeIssuesSometimes" xml:space="preserve">
+    <value>Czasami może powodować problemy.</value>
+  </data>
+  <data name="Config_DPSDhogPotatoSystem" xml:space="preserve">
+    <value>DPS (Dhog Potato System)</value>
+  </data>
+  <data name="Config_MayHavePathingIssues" xml:space="preserve">
+    <value>Możliwe problemy z wyznaczaniem ścieżek.</value>
+  </data>
+  <data name="Config_ExperimentalAndNotRecommendedRemoteHUDControl" xml:space="preserve">
+    <value>Eksperymentalne i niezalecane. Zdalny HUD i sterowanie.</value>
+  </data>
+  <data name="Config_VeryNewPluginUnknownIssues" xml:space="preserve">
+    <value>Bardzo nowa wtyczka, nieznane problemy.</value>
+  </data>
+  <data name="Config_ConflictingPlugins" xml:space="preserve">
+    <value>Kolidujące wtyczki</value>
+  </data>
+  <data name="Config_AutoDutyPath" xml:space="preserve">
+    <value>Ścieżka AutoDuty</value>
+  </data>
+  <data name="Config_PraetoriumPathINSTALLED" xml:space="preserve">
+    <value>Ścieżka Praetorium: ZAINSTALOWANA ({0})</value>
+  </data>
+  <data name="Config_PraetoriumPathNOTFOUND" xml:space="preserve">
+    <value>Ścieżka Praetorium: NIE ZNALEZIONO ({0})</value>
+  </data>
+  <data name="Config_InstallBundledPraetoriumPaths" xml:space="preserve">
+    <value>Zainstaluj dołączone ścieżki Praetorium</value>
+  </data>
+  <data name="Config_ThisCopiesTheBundledW2WPraetoriumPath" xml:space="preserve">
+    <value>Kopiuje dołączone pliki ścieżek W2W Praetorium z folderu danych MOGTOME do folderu ścieżek AutoDuty.</value>
+  </data>
+  <data name="Config_ADSIsOptionalInAutoDutyModeMog" xml:space="preserve">
+    <value>ADS jest opcjonalny w trybie AutoDuty; /mog inn wymaga ADS po wyraźnym wywołaniu.</value>
+  </data>
+  <data name="Config_ADSModeNotes" xml:space="preserve">
+    <value>Uwagi dotyczące trybu ADS</value>
+  </data>
+  <data name="Config_ADSModeDisablesAutoDutyImmediatelyAndAgain" xml:space="preserve">
+    <value>Tryb ADS wyłącza AutoDuty natychmiast oraz ponownie przy uruchomieniu. Kolejkowanie używa kontroli ADS i bezpośredniej rejestracji w wyszukiwarce zadań.</value>
+  </data>
+  <data name="Config_RepairInnLeaveSwitchToAdsNpcrepair" xml:space="preserve">
+    <value>Naprawa/gospoda/opuszczanie używają /ads npcrepair, /ads selfrepair, /ads enterinn i /ads leave.</value>
+  </data>
+  <data name="Config_TheCheckboxChangesTheDutyBackendADS" xml:space="preserve">
+    <value>Pole wyboru zmienia backend zadań. ADS jest wymagany tylko przy wybranym trybie ADS.</value>
+  </data>
+  <data name="Config_OK" xml:space="preserve">
+    <value>[OK]</value>
+  </data>
+  <data name="Config_CopyRepo" xml:space="preserve">
+    <value>Kopiuj repozytorium</value>
+  </data>
+  <data name="Config_CopyRepoURLToClipboardThenAdd" xml:space="preserve">
+    <value>Skopiuj URL repozytorium do schowka, a następnie dodaj go w
+Dalamud Settings &gt; Experimental &gt; Custom Plugin Repositories</value>
+  </data>
+  <data name="Config_NotInstalledOptional" xml:space="preserve">
+    <value>Niezainstalowane (opcjonalne)</value>
+  </data>
+  <data name="Config_EnabledKnownMOGTOMEConflict" xml:space="preserve">
+    <value>Włączone - znany konflikt z MOGTOME</value>
+  </data>
+  <data name="Config_InstalledButDisabled" xml:space="preserve">
+    <value>Zainstalowane, ale wyłączone</value>
+  </data>
+  <data name="Config_NotInstalled" xml:space="preserve">
+    <value>Niezainstalowane</value>
+  </data>
+  <data name="Config_DisableNow" xml:space="preserve">
+    <value>Wyłącz teraz</value>
+  </data>
+  <data name="Config_MOGTOMETriesXldisablepluginTwistOfFayteWhenYouStart" xml:space="preserve">
+    <value>MOGTOME próbuje /xldisableplugin TwistOfFayte podczas uruchamiania, ale nie blokuje już startu.</value>
+  </data>
+  <data name="Config_ThisGuideIsAdvisoryItNeverInstalls" xml:space="preserve">
+    <value>Ten przewodnik służy jako pomoc. Nie instaluje, nie włącza, nie wyłącza ani nie konfiguruje innych wtyczek. Zapisuje tylko wybrane ustawienia MOGTOME.</value>
+  </data>
+  <data name="Config_CompletedForThisAccountWizardVersion" xml:space="preserve">
+    <value>Ukończono dla tego konta (wersja kreatora {0}).</value>
+  </data>
+  <data name="Config_RunSetupWizardAgain" xml:space="preserve">
+    <value>Uruchom kreator ponownie</value>
+  </data>
+  <data name="Config_Backend" xml:space="preserve">
+    <value>Backend</value>
+  </data>
+  <data name="Config_CombatProvider" xml:space="preserve">
+    <value>Dostawca walki</value>
+  </data>
+  <data name="Config_RequiredPlugins2" xml:space="preserve">
+    <value>Wymagane wtyczki</value>
+  </data>
+  <data name="Config_PartySetup" xml:space="preserve">
+    <value>Konfiguracja drużyny</value>
+  </data>
+  <data name="Config_OptionalSettings" xml:space="preserve">
+    <value>Ustawienia opcjonalne</value>
+  </data>
+  <data name="Config_Review" xml:space="preserve">
+    <value>Przegląd</value>
+  </data>
+  <data name="Config_StepOf" xml:space="preserve">
+    <value>Krok {0} z {1}: {2}</value>
+  </data>
+  <data name="Config_ADSIsThePrimaryMOGTOMEBackendAutoDuty" xml:space="preserve">
+    <value>ADS jest głównym backendem MOGTOME. AutoDuty pozostaje alternatywą. Ten wybór zmienia jedynie zapisany backend MOGTOME.</value>
+  </data>
+  <data name="Config_ADSPrimaryBackend" xml:space="preserve">
+    <value>ADS (główny backend)</value>
+  </data>
+  <data name="Config_AutoDutyAlternativeBackend" xml:space="preserve">
+    <value>AutoDuty (alternatywny backend)</value>
+  </data>
+  <data name="Config_ADSMustBeLoadedForThisSelection" xml:space="preserve">
+    <value>Ten wybór wymaga załadowanego ADS.</value>
+  </data>
+  <data name="Config_AutoDutyAndTheSelectedPraetoriumPathMust" xml:space="preserve">
+    <value>Ten wybór wymaga dostępnego AutoDuty i wybranej ścieżki Praetorium.</value>
+  </data>
+  <data name="Config_ChooseTheCombatProviderMOGTOMEShouldRequest" xml:space="preserve">
+    <value>Wybierz dostawcę walki, którego MOGTOME ma używać z wybranym backendem.</value>
+  </data>
+  <data name="Config_SelectedCombatProvider" xml:space="preserve">
+    <value>Wybrany dostawca walki</value>
+  </data>
+  <data name="Config_LoadTheSelectedProviderRSRAlsoRequires" xml:space="preserve">
+    <value>Załaduj wybranego dostawcę; RSR wymaga też BMR lub VBM do pasywnego wsparcia.</value>
+  </data>
+  <data name="Config_MarkTheClientThatQueuesDutiesAs" xml:space="preserve">
+    <value>Oznacz klienta kolejkującego zadania jako lidera drużyny. Każdy uczestniczący klient powinien osobno sprawdzić własną konfigurację.</value>
+  </data>
+  <data name="Config_IAmThePartyLeader" xml:space="preserve">
+    <value>Jestem liderem drużyny</value>
+  </data>
+  <data name="Config_CrossWorldParty" xml:space="preserve">
+    <value>Drużyna między światami</value>
+  </data>
+  <data name="Config_UsePartySettingsForTheFullQueue" xml:space="preserve">
+    <value>Użyj ustawień Drużyna do pełnej polityki kolejki i jednorazowego odświeżenia stanu drużyny poza zadaniem.</value>
+  </data>
+  <data name="Config_FoodPotionsAndRepairAreOptionalConfigure" xml:space="preserve">
+    <value>Jedzenie, mikstury i naprawa są opcjonalne. W razie potrzeby skonfiguruj je w odpowiednich kartach; można pozostawić je nieustawione.</value>
+  </data>
+  <data name="Config_FoodPotsAndRepairRemainAvailableAfter" xml:space="preserve">
+    <value>Jedzenie i mikstury oraz Naprawa pozostają dostępne po kreatorze; żadne ustawienia innych wtyczek nie są tutaj zmieniane.</value>
+  </data>
+  <data name="Config_FinishSetup" xml:space="preserve">
+    <value>Zakończ konfigurację</value>
+  </data>
+  <data name="Config_Back" xml:space="preserve">
+    <value>Wstecz</value>
+  </data>
+  <data name="Config_Next" xml:space="preserve">
+    <value>Dalej</value>
+  </data>
+  <data name="Config_ADSSelectedBackend" xml:space="preserve">
+    <value>ADS (wybrany backend)</value>
+  </data>
+  <data name="Config_AutoDutyPlusSelectedPraetoriumPath" xml:space="preserve">
+    <value>AutoDuty i wybrana ścieżka Praetorium</value>
+  </data>
+  <data name="Config_LoadADS" xml:space="preserve">
+    <value>Załaduj ADS.</value>
+  </data>
+  <data name="Config_LoadAutoDutyAndInstallTheSelectedPraetorium" xml:space="preserve">
+    <value>Załaduj AutoDuty i zainstaluj wybraną ścieżkę Praetorium.</value>
+  </data>
+  <data name="Config_LoadTheProviderSelectedInStepRSR" xml:space="preserve">
+    <value>Załaduj dostawcę wybranego w kroku 2; RSR wymaga również BMR lub VBM.</value>
+  </data>
+  <data name="Config_LoadVnavmesh" xml:space="preserve">
+    <value>Załaduj vnavmesh.</value>
+  </data>
+  <data name="Config_LoadXASlaveForXaSkipcutscenesOn" xml:space="preserve">
+    <value>Załaduj XA Slave dla /xa skipcutscenes on.</value>
+  </data>
+  <data name="Config_LoadYesAlreadyForDialogs" xml:space="preserve">
+    <value>Załaduj YesAlready do obsługi okien dialogowych.</value>
+  </data>
+  <data name="Config_OperatorClickedOnlyCopiesMOGTOMESBundled" xml:space="preserve">
+    <value>Tylko po kliknięciu przez operatora: kopiuje dołączone pliki MOGTOME do folderu ścieżek AutoDuty.</value>
+  </data>
+  <data name="Config_LifestreamAndTextAdvanceAreOptionalAndDo" xml:space="preserve">
+    <value>Lifestream i TextAdvance są opcjonalne i nie wpływają na tę listę kontrolną.</value>
+  </data>
+  <data name="Config_ADSPrimary" xml:space="preserve">
+    <value>ADS (główny)</value>
+  </data>
+  <data name="Config_AutoDutyAlternative" xml:space="preserve">
+    <value>AutoDuty (alternatywny)</value>
+  </data>
+  <data name="Config_Backend2" xml:space="preserve">
+    <value>Backend: {0}</value>
+  </data>
+  <data name="Config_Ready" xml:space="preserve">
+    <value>gotowe</value>
+  </data>
+  <data name="Config_Incomplete" xml:space="preserve">
+    <value>niekompletne</value>
+  </data>
+  <data name="Config_RequiredChecks" xml:space="preserve">
+    <value>Wymagane kontrole: {0}</value>
+  </data>
+  <data name="Config_Leader" xml:space="preserve">
+    <value>lider</value>
+  </data>
+  <data name="Config_Participant" xml:space="preserve">
+    <value>uczestnik</value>
+  </data>
+  <data name="Config_PartyRole" xml:space="preserve">
+    <value>Rola w drużynie: {0}</value>
+  </data>
+  <data name="Config_OptionalRepairThreshold" xml:space="preserve">
+    <value>Opcjonalny próg naprawy: {0}%</value>
+  </data>
+  <data name="Config_FinishRecordsOnlyThatThisAccountCompleted" xml:space="preserve">
+    <value>Zakończenie zapisuje tylko informację, że konto ukończyło tę wersję kreatora. Nie blokuje uruchomienia ani nie zmienia innych wtyczek.</value>
+  </data>
+  <data name="Config_Ready2" xml:space="preserve">
+    <value>Gotowe</value>
+  </data>
+  <data name="Config_PartySettings" xml:space="preserve">
+    <value>Ustawienia drużyny</value>
+  </data>
+  <data name="Config_RuntimeRoleFollowsThisSavedSettingUse" xml:space="preserve">
+    <value>Rola w trakcie działania wynika z zapisanego ustawienia. Użyj Odśwież stan drużyny poza zadaniem do jednorazowego wykrycia w tym samym świecie.</value>
+  </data>
+  <data name="Config_EnableIfYouReInACross" xml:space="preserve">
+    <value>Włącz, jeśli jesteś w drużynie między światami.</value>
+  </data>
+  <data name="Config_OnlyQueueWithExactlyVisiblePeople" xml:space="preserve">
+    <value>Wymagaj minimum członków drużyny</value>
+  </data>
+  <data name="Config_MinimumPartyMembers" xml:space="preserve">
+    <value>Minimalna liczba członków</value>
+  </data>
+  <data name="Config_AppliesOnlyToSameWorldLeadersIn" xml:space="preserve">
+    <value>Kolejkuj od wybranego minimum do 4 widocznych członków. Gra solo liczy się jako 1. Domyślnie: 4. Dotyczy tylko liderów z tego samego świata w trybach zsynchronizowanych, ponieważ widoczność składu między światami jest zawodna. Tryb testowy bez synchronizacji jest wyłączony z tego wymogu.</value>
+  </data>
+  <data name="Config_RuntimePartyState" xml:space="preserve">
+    <value>Stan drużyny w trakcie działania:</value>
+  </data>
+  <data name="Config_Yes" xml:space="preserve">
+    <value>Tak</value>
+  </data>
+  <data name="Config_No" xml:space="preserve">
+    <value>Nie</value>
+  </data>
+  <data name="Config_LeaderRightNow" xml:space="preserve">
+    <value>Aktualny lider: {0}</value>
+  </data>
+  <data name="Config_SourceConfiguredCrossWorldRole" xml:space="preserve">
+    <value>Źródło: skonfigurowana rola między światami.</value>
+  </data>
+  <data name="Config_SourceConfiguredRoleRefreshPartyStateOnly" xml:space="preserve">
+    <value>Źródło: skonfigurowana rola. Odśwież stan drużyny sprawdza bieżącą listę z tego samego świata tylko raz.</value>
+  </data>
+  <data name="Config_RefreshPartyState" xml:space="preserve">
+    <value>Odśwież stan drużyny</value>
+  </data>
+  <data name="Config_OneTimeSameWorldLeaderDetectionUse" xml:space="preserve">
+    <value>Jednorazowe wykrycie lidera z tego samego świata. Używaj tylko poza zadaniem, gdy cała drużyna jest widoczna.</value>
+  </data>
+  <data name="Config_PartyBehaviour" xml:space="preserve">
+    <value>Zachowanie drużyny:</value>
+  </data>
+  <data name="Config_LeaderQueuesDutiesAndControlsTheMOGTOME" xml:space="preserve">
+    <value>- Lider: Kolejkuje zadania i steruje przebiegiem MOGTOME.</value>
+  </data>
+  <data name="Config_NonLeaderWaitsForPartyQueuePops" xml:space="preserve">
+    <value>- Pozostali: Czekają na kolejkę drużyny i naprawiają niezależnie.</value>
+  </data>
+  <data name="Config_RepairMOGTOMEPausesItsOwnManualQueue" xml:space="preserve">
+    <value>- Naprawa: MOGTOME wstrzymuje własne ręczne próby kolejkowania podczas naprawy i wznawia je po jej zakończeniu.</value>
+  </data>
+  <data name="Config_DetectionRefreshPartyStateIsManualOnly" xml:space="preserve">
+    <value>- Wykrywanie: Odśwież stan drużyny działa tylko ręcznie i nie nadaje automatycznie roli lidera na podstawie danych solo lub części drużyny.</value>
+  </data>
+  <data name="Config_DutySettings" xml:space="preserve">
+    <value>Ustawienia zadań</value>
+  </data>
+  <data name="Config_DutyCounter" xml:space="preserve">
+    <value>Licznik zadań</value>
+  </data>
+  <data name="Config_ReturnToEntranceDelaySeconds" xml:space="preserve">
+    <value>Opóźnienie powrotu do wejścia (sekundy)</value>
+  </data>
+  <data name="Config_ReturnToEntranceDelayHelp" xml:space="preserve">
+    <value>Opóźnienie zaczyna się po wykryciu śmierci w aktywnym zadaniu i biegnie także przy zminimalizowanym oknie powrotu. Potwierdzona śmierć całej drużyny pomija opóźnienie dla bieżącej śmierci, nawet jeśli ktoś wcześniej ożyje. Po opóźnieniu lub potwierdzonej śmierci drużyny widoczne okno Return jest akceptowane przy następnej zwykłej aktualizacji; zminimalizowane okno jest otwierane i sprawdzane przy kolejnej. Domyślnie: 60 sekund; minimum: 1. Dotyczy ADS i AutoDuty. Wskrzeszenia i przejścia do zamkniętych obszarów pozostają natychmiastowe.</value>
+  </data>
+  <data name="Config_CurrentPraetoriumRunCountSetToFor" xml:space="preserve">
+    <value>Bieżąca liczba przebiegów Praetorium. Ustaw 0 dla pierwszego przebiegu dnia.</value>
+  </data>
+  <data name="Config_PraetoriumAutoDutyPath" xml:space="preserve">
+    <value>Ścieżka Praetorium AutoDuty</value>
+  </data>
+  <data name="Config_BundledWithMOGTOMEAndCopiedIntoAutoDuty" xml:space="preserve">
+    <value>Dołączona do MOGTOME i kopiowana do folderu ścieżek AutoDuty przy uruchomieniu/instalacji. Domyślnie: phecda.</value>
+  </data>
+  <data name="Config_ADSModeIgnoresAutoDutyPathSelection" xml:space="preserve">
+    <value>Tryb ADS ignoruje wybór ścieżki AutoDuty.</value>
+  </data>
+  <data name="Config_PraetoriumThreshold" xml:space="preserve">
+    <value>Próg Praetorium</value>
+  </data>
+  <data name="Config_SwitchToDecumanaAfterThisManyPraetorium" xml:space="preserve">
+    <value>Przełącz na Decumana po tylu przebiegach Praetorium.</value>
+  </data>
+  <data name="Config_PraetoriumDailyLimit" xml:space="preserve">
+    <value>Dzienny limit Praetorium</value>
+  </data>
+  <data name="Config_StopAfterThisManySuccessfulPraetoriumClears" xml:space="preserve">
+    <value>Zatrzymaj po tylu udanych ukończeniach Praetorium dzisiaj. Decumana i przerwane przebiegi się nie liczą.</value>
+  </data>
+  <data name="Config_QuitCommand" xml:space="preserve">
+    <value>Polecenie zakończenia</value>
+  </data>
+  <data name="Config_RunsOnceWhenThePraetoriumDailyLimit" xml:space="preserve">
+    <value>Wykonywane raz po osiągnięciu dziennego limitu Praetorium, po wyjściu z zadania.</value>
+  </data>
+  <data name="Config_TestingModeUnsyncedUncheckLevelSyncYourself" xml:space="preserve">
+    <value>Tryb testowy: Bez synchronizacji (samodzielnie wyłącz synchronizację poziomu, jeśli naprawdę tego chcesz. Statystyki nie będą zapisywane)</value>
+  </data>
+  <data name="Config_WARNINGRunningUnsyncedWithoutLevelSyncTesting" xml:space="preserve">
+    <value>OSTRZEŻENIE: Działanie bez synchronizacji poziomu (tryb testowy, bez statystyk).</value>
+  </data>
+  <data name="Config_DefaultUnsyncLevelSyncSyncLevelSync" xml:space="preserve">
+    <value>Domyślnie: Bez synchronizacji + synchronizacja poziomu (Synchronizacja + synchronizacja poziomu dla ochrony przed kolejką z losowymi graczami).</value>
+  </data>
+  <data name="Config_TestingModeActiveEnableDebugToChange" xml:space="preserve">
+    <value>[Tryb testowy aktywny - włącz debug, aby zmienić]</value>
+  </data>
+  <data name="Config_Food" xml:space="preserve">
+    <value>Jedzenie</value>
+  </data>
+  <data name="Config_UseHQFood" xml:space="preserve">
+    <value>Użyj jedzenia HQ</value>
+  </data>
+  <data name="Config_UsesTheSelectedMealAsHQWhen" xml:space="preserve">
+    <value>Po włączeniu używa wybranego posiłku jako HQ; pozostaw wyłączone dla zwykłej jakości.</value>
+  </data>
+  <data name="Config_ClearFood" xml:space="preserve">
+    <value>Wyczyść jedzenie</value>
+  </data>
+  <data name="Config_NoFoodSelectedFoodIsOptional" xml:space="preserve">
+    <value>  Nie wybrano jedzenia. Jedzenie jest opcjonalne.</value>
+  </data>
+  <data name="Config_Potions" xml:space="preserve">
+    <value>Mikstury</value>
+  </data>
+  <data name="Config_UseHQPotion" xml:space="preserve">
+    <value>Użyj mikstury HQ</value>
+  </data>
+  <data name="Config_UsesTheSelectedMedicineAsHQWhen" xml:space="preserve">
+    <value>Po włączeniu używa wybranego leku jako HQ; pozostaw wyłączone dla nalewek/mikstur zwykłej jakości.</value>
+  </data>
+  <data name="Config_ClearPotion" xml:space="preserve">
+    <value>Wyczyść miksturę</value>
+  </data>
+  <data name="Config_PotOnGaius" xml:space="preserve">
+    <value>Mikstura na Gaiusie</value>
+  </data>
+  <data name="Config_PotOnPhantomGaius" xml:space="preserve">
+    <value>Mikstura na Phantom Gaiusie</value>
+  </data>
+  <data name="Config_NoPotionSelectedPotionsAreOptional" xml:space="preserve">
+    <value>  Nie wybrano mikstury. Mikstury są opcjonalne.</value>
+  </data>
+  <data name="Config_Select" xml:space="preserve">
+    <value>Wybierz {0}...</value>
+  </data>
+  <data name="Config_Search" xml:space="preserve">
+    <value>Szukaj</value>
+  </data>
+  <data name="Config_NoResultsTryADifferentSearchTerm" xml:space="preserve">
+    <value>Brak wyników. Spróbuj innego hasła.</value>
+  </data>
+  <data name="Config_TypeAtLeastCharactersToSearch" xml:space="preserve">
+    <value>Wpisz co najmniej 2 znaki, aby wyszukać...</value>
+  </data>
+  <data name="Config_RepairSettings" xml:space="preserve">
+    <value>Ustawienia naprawy</value>
+  </data>
+  <data name="Config_RepairThreshold" xml:space="preserve">
+    <value>Próg naprawy (%)</value>
+  </data>
+  <data name="Config_RepairWhenEquipmentDurabilityFallsBelowThis" xml:space="preserve">
+    <value>Naprawiaj, gdy trwałość wyposażenia spadnie poniżej tego procentu. Ustaw 0, aby wyłączyć automatyczną naprawę.</value>
+  </data>
+  <data name="Config_RepairMode" xml:space="preserve">
+    <value>Tryb naprawy</value>
+  </data>
+  <data name="Config_RepairModeHelp" xml:space="preserve">
+    <value>Naprawa u NPC i pokój w gospodzie kończy się dopiero po wejściu ADS do pokoju.</value>
+  </data>
+  <data name="Config_RepairBehavior" xml:space="preserve">
+    <value>Zachowanie naprawy:</value>
+  </data>
+  <data name="Config_LeaderRepairsAutomaticallyBetweenDutiesWhenThreshold" xml:space="preserve">
+    <value>- Lider: Automatycznie naprawia między zadaniami po osiągnięciu progu</value>
+  </data>
+  <data name="Config_NonLeaderRepairsIndependentlyAfterSecondOutside" xml:space="preserve">
+    <value>- Pozostali: Naprawiają niezależnie po 1 sekundzie poza zadaniem</value>
+  </data>
+  <data name="Config_SoloTreatedAsLeaderAutomatically" xml:space="preserve">
+    <value>- Solo: Automatycznie traktowany jako lider</value>
+  </data>
+  <data name="Config_ADSRepairCommand" xml:space="preserve">
+    <value>- Polecenie naprawy ADS: {0}</value>
+  </data>
+  <data name="Config_AutoDutyModeRepairMETHODSelfNPCIs" xml:space="preserve">
+    <value>- Tryb AutoDuty: METODA naprawy (samodzielnie/NPC) jest ustawiana w AutoDuty; powrót do gospody używa /ads enterinn</value>
+  </data>
+  <data name="Config_Status" xml:space="preserve">
+    <value>Status:</value>
+  </data>
+  <data name="Config_CurrentThreshold" xml:space="preserve">
+    <value>  Bieżący próg: {0}%</value>
+  </data>
+  <data name="Config_Enabled" xml:space="preserve">
+    <value>Włączone</value>
+  </data>
+  <data name="Config_Disabled" xml:space="preserve">
+    <value>Wyłączone</value>
+  </data>
+  <data name="Config_AutoRepair" xml:space="preserve">
+    <value>  Automatyczna naprawa: {0}</value>
+  </data>
+  <data name="Config_Self" xml:space="preserve">
+    <value>Samodzielnie</value>
+  </data>
+  <data name="Config_NPC" xml:space="preserve">
+    <value>NPC</value>
+  </data>
+  <data name="Config_ADSRepairMethod" xml:space="preserve">
+    <value>  Metoda naprawy ADS: {0}</value>
+  </data>
+  <data name="Config_ExperimentalADS" xml:space="preserve">
+    <value>Eksperymentalne ADS</value>
+  </data>
+  <data name="Config_ExperimentalFirstRoomSkipPraetorium" xml:space="preserve">
+    <value>Eksperymentalne pominięcie pierwszej sali (Praetorium)</value>
+  </data>
+  <data name="Config_ADSPraetoriumOnlyEveryParticipatingClientMust" xml:space="preserve">
+    <value>Tylko ADS/Praetorium. Każdy uczestniczący klient musi włączyć lokalnie. MOGTOME wraca do ADS po sukcesie lub dowolnym błędzie.</value>
+  </data>
+  <data name="Config_AvailableOnlyWhenADSIsTheSelected" xml:space="preserve">
+    <value>Dostępne tylko po wybraniu backendu ADS; zapisana opcja jest nieaktywna w trybie AutoDuty.</value>
+  </data>
+  <data name="Config_Debug" xml:space="preserve">
+    <value>Debug</value>
+  </data>
+  <data name="Config_DebugCounter" xml:space="preserve">
+    <value>Licznik debug</value>
+  </data>
+  <data name="Config_CrashRecoveryOffsetIfYouRestartedMid" xml:space="preserve">
+    <value>Korekta po awarii. Jeśli uruchomiono ponownie w trakcie sesji, ustaw ostatnią
+znaną liczbę przebiegów, aby poprawnie kontynuować dzisiejsze śledzenie.</value>
+  </data>
+  <data name="Config_BailoutTimeoutSec" xml:space="preserve">
+    <value>Limit czasu awaryjnego wyjścia (s)</value>
+  </data>
+  <data name="Config_LeaveDutyIfStuckForThisMany" xml:space="preserve">
+    <value>Opuść zadanie po tylu sekundach utknięcia. Domyślnie: 1200 (20 min).</value>
+  </data>
+  <data name="Main_V" xml:space="preserve">
+    <value>v{0}</value>
+  </data>
+  <data name="Main_KoFi" xml:space="preserve">
+    <value>♡ Ko-fi ♡</value>
+  </data>
+  <data name="Main_SupportDevelopmentOnKoFi" xml:space="preserve">
+    <value>Wesprzyj rozwój na Ko-fi</value>
+  </data>
+  <data name="Main_StateInitializing" xml:space="preserve">
+    <value>Stan: Inicjalizacja</value>
+  </data>
+  <data name="Main_StatusWaitingForAccountAndEngineInitialization" xml:space="preserve">
+    <value>Status: Oczekiwanie na inicjalizację konta i silnika.</value>
+  </data>
+  <data name="Main_Config" xml:space="preserve">
+    <value>Konfiguracja</value>
+  </data>
+  <data name="Main_Stats" xml:space="preserve">
+    <value>Statystyki</value>
+  </data>
+  <data name="Main_Reset" xml:space="preserve">
+    <value>Resetuj</value>
+  </data>
+  <data name="Main_State" xml:space="preserve">
+    <value>Stan: {0}</value>
+  </data>
+  <data name="Main_Status" xml:space="preserve">
+    <value>Status: {0}</value>
+  </data>
+  <data name="Main_Start" xml:space="preserve">
+    <value>Uruchom</value>
+  </data>
+  <data name="Main_Stop" xml:space="preserve">
+    <value>Zatrzymaj</value>
+  </data>
+  <data name="Main_UnKrangle" xml:space="preserve">
+    <value>Cofnij mieszanie</value>
+  </data>
+  <data name="Main_Krangle" xml:space="preserve">
+    <value>Mieszaj</value>
+  </data>
+  <data name="Main_ObfuscateNamesWithMilitaryExerciseWordsUseful" xml:space="preserve">
+    <value>Ukryj nazwy za słowami wojskowymi/ćwiczeniowymi.
+Przydatne do zrzutów ekranu.</value>
+  </data>
+  <data name="Main_CancelStopAfterNext" xml:space="preserve">
+    <value>Anuluj zatrzymanie po następnym</value>
+  </data>
+  <data name="Main_StopAfterNextSuccess" xml:space="preserve">
+    <value>Zatrzymaj po następnym sukcesie</value>
+  </data>
+  <data name="Main_ArmedStopsAfterASuccessfulRunIs" xml:space="preserve">
+    <value>Aktywne: zatrzymuje po zapisaniu udanego przebiegu i potwierdzeniu wyjścia z zadania.</value>
+  </data>
+  <data name="Main_RuntimeOnlyAbortedRunsDoNotConsume" xml:space="preserve">
+    <value>Tylko w trakcie działania. Przerwany przebieg nie zużywa tego żądania.</value>
+  </data>
+  <data name="Main_HELP" xml:space="preserve">
+    <value>-&gt;!POMOC!&lt;-</value>
+  </data>
+  <data name="Main_MainWindowSettings" xml:space="preserve">
+    <value>Ustawienia okna głównego</value>
+  </data>
+  <data name="Main_AIDutySolverADS" xml:space="preserve">
+    <value>AI Duty Solver (ADS)</value>
+  </data>
+  <data name="Main_DutyBackendSelectorEnablingADSImmediatelySends" xml:space="preserve">
+    <value>Wybór backendu zadań.
+Włączenie ADS natychmiast wysyła /xldisableplugin AutoDuty.
+ADS jest opcjonalny w trybie AutoDuty i używany tylko na żądanie /mog inn.</value>
+  </data>
+  <data name="Main_ADSDutyBackendActiveADSAlsoHandles" xml:space="preserve">
+    <value>Backend zadań ADS aktywny. ADS obsługuje też wejście do gospody.</value>
+  </data>
+  <data name="Main_AutoDutyDutyBackendActiveADSIsOptional" xml:space="preserve">
+    <value>Backend zadań AutoDuty aktywny. ADS jest opcjonalny dla /mog inn.</value>
+  </data>
+  <data name="Main_DutyInformation" xml:space="preserve">
+    <value>Informacje o zadaniu</value>
+  </data>
+  <data name="Main_CounterPraeDailyPraetoriumLimit" xml:space="preserve">
+    <value>Licznik: {0} / {1} Prae | Dzienny limit Praetorium: {2}</value>
+  </data>
+  <data name="Main_DailyDecuRunsToday" xml:space="preserve">
+    <value>Dzienne Decu: {0} przebiegów dzisiaj</value>
+  </data>
+  <data name="Main_Current" xml:space="preserve">
+    <value>Bieżące: {0}</value>
+  </data>
+  <data name="Main_DailyReset" xml:space="preserve">
+    <value>Dzienny reset: {0} ({1})</value>
+  </data>
+  <data name="Main_TESTINGMODEUnsynced" xml:space="preserve">
+    <value>[TRYB TESTOWY - Bez synchronizacji]</value>
+  </data>
+  <data name="Main_LastClearS" xml:space="preserve">
+    <value>Ostatnie ukończenie: {0:F0}s</value>
+  </data>
+  <data name="Main_TimeInDutyS" xml:space="preserve">
+    <value>Czas w zadaniu: {0:F0}s</value>
+  </data>
+  <data name="Main_DeathsThisRunSelfOthersAll" xml:space="preserve">
+    <value>Śmierci w tym przebiegu: Własne {0} | Innych {1} | Wszystkie {2}</value>
+  </data>
+  <data name="Main_DebugTools" xml:space="preserve">
+    <value>Narzędzia debug</value>
+  </data>
+  <data name="Main_FORCEPATHSELECTION" xml:space="preserve">
+    <value>WYMUŚ WYBÓR ŚCIEŻKI</value>
+  </data>
+  <data name="Main_Result" xml:space="preserve">
+    <value>Wynik: {0}</value>
+  </data>
+  <data name="Main_TESTPATHINDEX" xml:space="preserve">
+    <value>TEST INDEKSU ŚCIEŻKI</value>
+  </data>
+  <data name="Main_LogADStructure" xml:space="preserve">
+    <value>Zapisz strukturę AD</value>
+  </data>
+  <data name="Main_DumpAutoDutyPluginStructureToDalamudLog" xml:space="preserve">
+    <value>Zapisz strukturę wtyczki AutoDuty w logu Dalamud do analizy.</value>
+  </data>
+  <data name="Main_LogConfig" xml:space="preserve">
+    <value>Zapisz konfigurację</value>
+  </data>
+  <data name="Main_LogActions" xml:space="preserve">
+    <value>Zapisz działania</value>
+  </data>
+  <data name="Main_DumpAutoDutyActionsListCurrentlyEmptyBut" xml:space="preserve">
+    <value>Zapisz listę działań AutoDuty (obecnie pustą, ale pokazującą strukturę).</value>
+  </data>
+  <data name="Main_LogManager" xml:space="preserve">
+    <value>Zapisz menedżera</value>
+  </data>
+  <data name="Main_DumpAutoDutyActionsManagerContainsActionsListWithCommand" xml:space="preserve">
+    <value>Zapisz AutoDuty ActionsManager (zawiera actionsList z definicjami poleceń).</value>
+  </data>
+  <data name="Main_ExplorePaths" xml:space="preserve">
+    <value>Zbadaj ścieżki</value>
+  </data>
+  <data name="Main_ExploreDifferentLocationsForPathDataConfiguration" xml:space="preserve">
+    <value>Zbadaj różne miejsca danych ścieżek (Configuration, MainWindow itd.).</value>
+  </data>
+  <data name="Main_LogTuples" xml:space="preserve">
+    <value>Zapisz krotki</value>
+  </data>
+  <data name="Main_IterateThroughActionsListAndLogEachTuple" xml:space="preserve">
+    <value>Przejdź przez actionsList i zapisz zawartość każdej krotki (definicje poleceń).</value>
+  </data>
+  <data name="Main_PathSelections" xml:space="preserve">
+    <value>Wybory ścieżek</value>
+  </data>
+  <data name="Main_ExplorePathSelectionsByPathDictionaryTerritoryPathMappings" xml:space="preserve">
+    <value>Zbadaj słownik PathSelectionsByPath (mapowanie terytorium → ścieżka).</value>
+  </data>
+  <data name="Main_CheckCurrent" xml:space="preserve">
+    <value>Sprawdź bieżące</value>
+  </data>
+  <data name="Main_CheckWhatPathAutoDutyCurrentlyHasSelected" xml:space="preserve">
+    <value>Sprawdź aktualnie wybraną ścieżkę AutoDuty.</value>
+  </data>
+  <data name="Main_FindMethods" xml:space="preserve">
+    <value>Znajdź metody</value>
+  </data>
+  <data name="Main_FindSaveApplyLoadMethodsInAutoDuty" xml:space="preserve">
+    <value>Znajdź metody Save/Apply/Load w AutoDuty.</value>
+  </data>
+  <data name="Main_ConfigFields" xml:space="preserve">
+    <value>Pola konfiguracji</value>
+  </data>
+  <data name="Main_FindActualConfigFieldNamesForPath" xml:space="preserve">
+    <value>Znajdź rzeczywiste nazwy pól konfiguracji wyboru ścieżki.</value>
+  </data>
+  <data name="Main_CheckRepair" xml:space="preserve">
+    <value>Sprawdź naprawę</value>
+  </data>
+  <data name="Main_Item" xml:space="preserve">
+    <value>Przedmiot {0}</value>
+  </data>
+  <data name="Main_CheckEquipmentDurabilityAndRepairStatus" xml:space="preserve">
+    <value>Sprawdź trwałość wyposażenia i stan naprawy.</value>
+  </data>
+  <data name="Main_TestingModeUnsyncedNoStats" xml:space="preserve">
+    <value>Tryb testowy: Bez synchronizacji (bez statystyk)</value>
+  </data>
+  <data name="Main_WARNINGRunningUnsyncedWithoutLevelSync" xml:space="preserve">
+    <value>OSTRZEŻENIE: Działanie bez synchronizacji poziomu.</value>
+  </data>
+  <data name="Main_TESTPRAEINDEX" xml:space="preserve">
+    <value>TEST INDEKSU PRAE</value>
+  </data>
+  <data name="Main_LogsPraetoriumCallbackIndexAndMissingOptional" xml:space="preserve">
+    <value>Zapisuje indeks callbacku Praetorium i brakujące opcjonalne odblokowania. Nie kolejkuje.</value>
+  </data>
+  <data name="Main_PraetoriumCallback" xml:space="preserve">
+    <value>Callback Praetorium: {0}</value>
+  </data>
+  <data name="Main_MissingOptionalUnlocks" xml:space="preserve">
+    <value>Brakujące opcjonalne odblokowania: {0}</value>
+  </data>
+  <data name="Main_Unlocked" xml:space="preserve">
+    <value>Odblokowane</value>
+  </data>
+  <data name="Main_Missing" xml:space="preserve">
+    <value>Brakujące</value>
+  </data>
+  <data name="Main_QuestIDs" xml:space="preserve">
+    <value>ID zadań fabularnych: {0}</value>
+  </data>
+  <data name="Main_ADSModeActiveAutoDutyReflectionPathDebug" xml:space="preserve">
+    <value>Tryb ADS aktywny. Narzędzia debug refleksji/ścieżek AutoDuty są ukryte.</value>
+  </data>
+  <data name="Main_LeaderRuntime" xml:space="preserve">
+    <value>Lider (w trakcie działania): {0}</value>
+  </data>
+  <data name="Main_CrossWorld" xml:space="preserve">
+    <value>Między światami: {0}</value>
+  </data>
+  <data name="Main_SourceConfiguredCrossWorldRole" xml:space="preserve">
+    <value>Źródło: skonfigurowana rola między światami</value>
+  </data>
+  <data name="Main_Subsystems" xml:space="preserve">
+    <value>Podsystemy</value>
+  </data>
+  <data name="Main_PausedByMOGTOME" xml:space="preserve">
+    <value>Wstrzymane przez MOGTOME</value>
+  </data>
+  <data name="Main_DutyBackend" xml:space="preserve">
+    <value>Backend zadań</value>
+  </data>
+  <data name="Main_LogAllConfiguration" xml:space="preserve">
+    <value>Zapisz całą konfigurację</value>
+  </data>
+  <data name="Main_LogConfigPath" xml:space="preserve">
+    <value>Zapisz ścieżkę konfiguracji</value>
+  </data>
+  <data name="Main_QueueRole" xml:space="preserve">
+    <value>Rola w kolejce</value>
+  </data>
+  <data name="Main_ADSRuntime" xml:space="preserve">
+    <value>Środowisko ADS</value>
+  </data>
+  <data name="Main_Bailout" xml:space="preserve">
+    <value>Awaryjne wyjście</value>
+  </data>
+  <data name="Main_S" xml:space="preserve">
+    <value>{0}s</value>
+  </data>
+  <data name="Main_NotConfigured" xml:space="preserve">
+    <value>Nieskonfigurowane</value>
+  </data>
+  <data name="Main_HQ" xml:space="preserve">
+    <value>HQ</value>
+  </data>
+  <data name="Main_NQ" xml:space="preserve">
+    <value>NQ</value>
+  </data>
+  <data name="Main_X" xml:space="preserve">
+    <value>{0} [{1}] x{2}</value>
+  </data>
+  <data name="Stats_DutyStatistics" xml:space="preserve">
+    <value>Statystyki zadań</value>
+  </data>
+  <data name="Stats_OpenConfig" xml:space="preserve">
+    <value>Otwórz konfigurację</value>
+  </data>
+  <data name="Stats_OpenMOGTOMEConfigurationFolder" xml:space="preserve">
+    <value>Otwórz folder konfiguracji MOGTOME</value>
+  </data>
+  <data name="Stats_KrangleNames" xml:space="preserve">
+    <value>Mieszaj nazwy</value>
+  </data>
+  <data name="Stats_Summary" xml:space="preserve">
+    <value>Podsumowanie</value>
+  </data>
+  <data name="Stats_Detailed" xml:space="preserve">
+    <value>Szczegółowe</value>
+  </data>
+  <data name="Stats_ShowDebugRuns" xml:space="preserve">
+    <value>Pokaż przebiegi debug</value>
+  </data>
+  <data name="Stats_UnsyncedRunsAreNowIncludedInStatistics" xml:space="preserve">
+    <value>Przebiegi bez synchronizacji są teraz uwzględniane w statystykach</value>
+  </data>
+  <data name="Stats_UnsyncedRunsAreHiddenFromStatistics" xml:space="preserve">
+    <value>Przebiegi bez synchronizacji są ukryte w statystykach</value>
+  </data>
+  <data name="Stats_CombinedStats" xml:space="preserve">
+    <value>Łączne statystyki</value>
+  </data>
+  <data name="Stats_TotalRuns" xml:space="preserve">
+    <value>Łącznie przebiegów: {0}</value>
+  </data>
+  <data name="Stats_TotalMogtomes" xml:space="preserve">
+    <value>Łącznie Mogtome: {0}</value>
+  </data>
+  <data name="Stats_CurrentDailyCounter" xml:space="preserve">
+    <value>Bieżący licznik dzienny: {0}</value>
+  </data>
+  <data name="Stats_DailyDecumanaBest" xml:space="preserve">
+    <value>Dzienne Decumana: {0} (Najlepsze: {1})</value>
+  </data>
+  <data name="Stats_NextDailyReset" xml:space="preserve">
+    <value>Następny dzienny reset: {0} ({1})</value>
+  </data>
+  <data name="Stats_TodaySDecumanaStats" xml:space="preserve">
+    <value>Dzisiejsze statystyki Decumana:</value>
+  </data>
+  <data name="Stats_BestToday" xml:space="preserve">
+    <value>  Najlepsze dzisiaj: {0}</value>
+  </data>
+  <data name="Stats_LongestToday" xml:space="preserve">
+    <value>  Najdłuższe dzisiaj: {0}</value>
+  </data>
+  <data name="Stats_RunsToday" xml:space="preserve">
+    <value>  Przebiegi dzisiaj: {0}</value>
+  </data>
+  <data name="Stats_MogtomesToday" xml:space="preserve">
+    <value>  Mogtome dzisiaj: {0}</value>
+  </data>
+  <data name="Stats_ResetAllStats" xml:space="preserve">
+    <value>Resetuj wszystkie statystyki</value>
+  </data>
+  <data name="Stats_JobPerformance" xml:space="preserve">
+    <value>Wydajność profesji</value>
+  </data>
+  <data name="Stats_PlayerStats" xml:space="preserve">
+    <value>Statystyki graczy</value>
+  </data>
+  <data name="Stats_RecentRuns" xml:space="preserve">
+    <value>Ostatnie przebiegi</value>
+  </data>
+  <data name="Stats_Trends" xml:space="preserve">
+    <value>Trendy</value>
+  </data>
+  <data name="Stats_Best" xml:space="preserve">
+    <value>Najlepsze: {0}</value>
+  </data>
+  <data name="Stats_Date" xml:space="preserve">
+    <value>Data: {0}</value>
+  </data>
+  <data name="Stats_Party" xml:space="preserve">
+    <value>Drużyna:</value>
+  </data>
+  <data name="Stats_BestNoRunsYet" xml:space="preserve">
+    <value>Najlepsze: Brak przebiegów</value>
+  </data>
+  <data name="Stats_Longest" xml:space="preserve">
+    <value>Najdłuższe: {0}</value>
+  </data>
+  <data name="Stats_LongestNoRunsYet" xml:space="preserve">
+    <value>Najdłuższe: Brak przebiegów</value>
+  </data>
+  <data name="Stats_DeathsSingleRun" xml:space="preserve">
+    <value>Śmierci (jeden przebieg):</value>
+  </data>
+  <data name="Stats_SelfOthersAll" xml:space="preserve">
+    <value>Własne: {0} | Innych: {1} | Wszystkie: {2}</value>
+  </data>
+  <data name="Stats_DeathsTotal" xml:space="preserve">
+    <value>Śmierci (łącznie):</value>
+  </data>
+  <data name="Stats_Runs" xml:space="preserve">
+    <value>Przebiegi: {0}</value>
+  </data>
+  <data name="Stats_Mogtomes" xml:space="preserve">
+    <value>Mogtome: {0}</value>
+  </data>
+  <data name="Stats_NotLoggedIn" xml:space="preserve">
+    <value>  Nie zalogowano.</value>
+  </data>
+  <data name="Stats_Name" xml:space="preserve">
+    <value>Nazwa</value>
+  </data>
+  <data name="Stats_Job" xml:space="preserve">
+    <value>Profesja</value>
+  </data>
+  <data name="Stats_Level" xml:space="preserve">
+    <value>Poziom</value>
+  </data>
+  <data name="Stats_HMS" xml:space="preserve">
+    <value>{0}h {1:D2}m {2:D2}s</value>
+  </data>
+  <data name="Stats_MS" xml:space="preserve">
+    <value>{0}m {1:D2}s</value>
+  </data>
+  <data name="Stats_None" xml:space="preserve">
+    <value>Brak</value>
+  </data>
+  <data name="Stats_NoRunDataAvailableEnableDetailedTracking" xml:space="preserve">
+    <value>Brak danych przebiegów. Włącz szczegółowe śledzenie i ukończ kilka przebiegów.</value>
+  </data>
+  <data name="Stats_Avg" xml:space="preserve">
+    <value>Średnio: {0}</value>
+  </data>
+  <data name="Stats_Deaths" xml:space="preserve">
+    <value>Śmierci: {0}</value>
+  </data>
+  <data name="Stats_Rate" xml:space="preserve">
+    <value>Wskaźnik: {0:F1}%</value>
+  </data>
+  <data name="Stats_PlayerStatistics" xml:space="preserve">
+    <value>Statystyki graczy</value>
+  </data>
+  <data name="Stats_Player" xml:space="preserve">
+    <value>Gracz███</value>
+  </data>
+  <data name="Stats_You" xml:space="preserve">
+    <value> (Ty)</value>
+  </data>
+  <data name="Stats_Total" xml:space="preserve">
+    <value>Łącznie: {0}</value>
+  </data>
+  <data name="Stats_PraeDecu" xml:space="preserve">
+    <value>Prae: {0} | Decu: {1}</value>
+  </data>
+  <data name="Stats_StreakBest" xml:space="preserve">
+    <value>Seria: {0} (Najlepsza: {1})</value>
+  </data>
+  <data name="Stats_Job2" xml:space="preserve">
+    <value>Profesja: {0}</value>
+  </data>
+  <data name="Stats_RecentRunsLast" xml:space="preserve">
+    <value>Ostatnie przebiegi (ostatnie 25)</value>
+  </data>
+  <data name="Stats_Time" xml:space="preserve">
+    <value>Czas</value>
+  </data>
+  <data name="Stats_Player2" xml:space="preserve">
+    <value>Gracz</value>
+  </data>
+  <data name="Stats_Deaths2" xml:space="preserve">
+    <value>Śmierci</value>
+  </data>
+  <data name="Stats_Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Stats_NotCaptured" xml:space="preserve">
+    <value>{0}: Nie zarejestrowano</value>
+  </data>
+  <data name="Stats_PartyDataNotCaptured" xml:space="preserve">
+    <value>Nie zarejestrowano danych drużyny</value>
+  </data>
+  <data name="Stats_SelfOthersAll2" xml:space="preserve">
+    <value>Własne / Innych / Wszystkie</value>
+  </data>
+  <data name="Stats_Success" xml:space="preserve">
+    <value>Sukces</value>
+  </data>
+  <data name="Stats_NoReasonRecorded" xml:space="preserve">
+    <value>Nie zapisano przyczyny</value>
+  </data>
+  <data name="Stats_Aborted" xml:space="preserve">
+    <value>Przerwano: {0}</value>
+  </data>
+  <data name="Stats_PerformanceTrends" xml:space="preserve">
+    <value>Trendy wydajności</value>
+  </data>
+  <data name="Stats_NoSuccessfulRunDataAvailable" xml:space="preserve">
+    <value>Brak danych udanych przebiegów.</value>
+  </data>
+  <data name="Stats_AverageCompletionTimeLast" xml:space="preserve">
+    <value>Średni czas ukończenia (ostatnie 10): {0}</value>
+  </data>
+  <data name="Stats_AverageCompletionTimeLast2" xml:space="preserve">
+    <value>Średni czas ukończenia (ostatnie 50): {0}</value>
+  </data>
+  <data name="Stats_AverageCompletionTimeAllTime" xml:space="preserve">
+    <value>Średni czas ukończenia (cały okres): {0}</value>
+  </data>
+  <data name="Stats_DeathRateLast" xml:space="preserve">
+    <value>Wskaźnik śmierci (ostatnie 10): {0:F1}%</value>
+  </data>
+  <data name="Stats_DeathRateAllTime" xml:space="preserve">
+    <value>Wskaźnik śmierci (cały okres): {0:F1}%</value>
+  </data>
+  <data name="Stats_MostEfficientJobAvg" xml:space="preserve">
+    <value>Najwydajniejsza profesja: {0} (średnio {1})</value>
+  </data>
+  <data name="Stats_RecentPerformanceTrend" xml:space="preserve">
+    <value>Ostatni trend wydajności:</value>
+  </data>
+  <data name="WarningText_SorryToMakeYouReadThis" xml:space="preserve">
+    <value>Przepraszam, że musisz to czytać.</value>
+  </data>
+  <data name="WarningText_AFewNotesOnMOGTOMEVersionX" xml:space="preserve">
+    <value>Kilka uwag o MOGTOME.</value>
+  </data>
+  <data name="WarningText_ItSExperimentalAndWillBreakOccasionally" xml:space="preserve">
+    <value>to eksperyment i czasami będzie się psuć.</value>
+  </data>
+  <data name="WarningText_PleaseProvideLogsSoICanAnalyze" xml:space="preserve">
+    <value>prześlij logi, abym mógł je przeanalizować!</value>
+  </data>
+  <data name="WarningText_MultiplayerGuideDiscordLinkAndInfoAt" xml:space="preserve">
+    <value>Przewodnik multiplayer, link do Discorda i informacje:</value>
+  </data>
+  <data name="WarningText_ThereAreWaysMOGTOMEIsCurrentlyCrashing" xml:space="preserve">
+    <value>Obecnie są 3 sposoby, w jakie MOGTOME powoduje awarie klientów. (to nie MOGTOME)</value>
+  </data>
+  <data name="WarningText_IfYouHaveRSRUISimulateThe" xml:space="preserve">
+    <value>(1) Jeśli masz RSR -&gt; UI -&gt; Simulate the effect of pressing abilities, wyłącz tę funkcję.</value>
+  </data>
+  <data name="WarningText_DoNotRunDalamudFromTheSame" xml:space="preserve">
+    <value>(2) Nie uruchamiaj Dalamud wielokrotnie z tego samego folderu. Przy wielu klientach powoduje awarie.</value>
+  </data>
+  <data name="WarningText_AUTODUTYRSRNavmeshSometimesWILLHaveRace" xml:space="preserve">
+    <value>AUTODUTY/RSR/navmesh czasami mają race/deadlock i CTD z błędem lub bez.</value>
+  </data>
+  <data name="WarningText_YouWillNeedToUseMultiInstall" xml:space="preserve">
+    <value>Aby to rozwiązać, musisz używać wielu folderów instalacyjnych.</value>
+  </data>
+  <data name="WarningText_ItWillBeTheFirstThingI" xml:space="preserve">
+    <value>To pierwsza rzecz, o którą pytam po wersji MOGTOME.</value>
+  </data>
+  <data name="WarningText_IfYouDonTHaveVeryMuch" xml:space="preserve">
+    <value>(3) Przy małej ilości RAM wiele klientów będzie sprawiać problemy.</value>
+  </data>
+  <data name="WarningText_PlanForGBFreePerClientYou" xml:space="preserve">
+    <value>Przed załadowaniem klientów przygotuj 5GB wolnego RAM na każdego klienta.</value>
+  </data>
+  <data name="WarningText_SeeTheMultiplayerGuideOnHttpsAethertek" xml:space="preserve">
+    <value>Zobacz przewodnik multiplayer na https://aethertek.io/ po wskazówki.</value>
+  </data>
+  <data name="WarningText_NowForSomeTipsAndTricksFor" xml:space="preserve">
+    <value>Teraz kilka wskazówek dotyczących MOGTOME.</value>
+  </data>
+  <data name="WarningText_IfYouAreSelfRepairingSetRepair" xml:space="preserve">
+    <value>1. Przy samodzielnej naprawie ustaw wysoki procent naprawy w wybranej wtyczce backendu.</value>
+  </data>
+  <data name="WarningText_AutoDutyRepairIsStillWeirdSometimesADS" xml:space="preserve">
+    <value>Naprawa AutoDuty czasami nadal działa dziwnie. Tryb ADS używa własnych poleceń naprawy i wymaga testów.</value>
+  </data>
+  <data name="WarningText_MakeAnAutoDutyProfileJustForThis" xml:space="preserve">
+    <value>2. Utwórz osobny profil AutoDuty do tego celu i wybierz go przed uruchomieniem, gdy tryb ADS jest WYŁĄCZONY.</value>
+  </data>
+  <data name="WarningText_MOGTOMEChangesSomeSettingsSoThisKeeps" xml:space="preserve">
+    <value>MOGTOME zmienia niektóre ustawienia, dzięki czemu profile zdobywania poziomów i inne pozostają bezpieczne.</value>
+  </data>
+  <data name="WarningText_JoinTheAutoPartyDiscordHttpsDiscordGg" xml:space="preserve">
+    <value>3. Dołącz do Discorda AutoParty -&gt; https://discord.gg/KyfyAzG6</value>
+  </data>
+  <data name="WarningText_WhenStartingMogtomeMakeSureYouStart" xml:space="preserve">
+    <value>4. Uruchamiając MOGTOME, najpierw uruchom osobę niebędącą liderem. Następnie trzeba</value>
+  </data>
+  <data name="WarningText_ConfigureWHOThePartyLeaderIsBy" xml:space="preserve">
+    <value>ustawić, KTO jest liderem, klikając odświeżenie stanu u lidera drużyny.</value>
+  </data>
+  <data name="WarningText_IDidThisBecauseItsASeriously" xml:space="preserve">
+    <value>Zrobiłem to, ponieważ ustalenie rzeczywistego lidera drużyny jest bardzo irytującą zagadką logiczną.</value>
+  </data>
+  <data name="WarningText_IHaveSomeCommentedOutAndRetired" xml:space="preserve">
+    <value>Mam kilka starych wyłączonych metod, ale były zawodne.</value>
+  </data>
+  <data name="WarningText_ReadThisBeforeRunningMOGTOME" xml:space="preserve">
+    <value>Przeczytaj przed uruchomieniem MOGTOME</value>
+  </data>
+  <data name="WarningText_WarningV" xml:space="preserve">
+    <value>ostrzeżenie v{0}</value>
+  </data>
+  <data name="WarningText_OKIREADIT" xml:space="preserve">
+    <value>OK, PRZECZYTANE</value>
+  </data>
+  <data name="Engine_HasNotBeenStartedSinceLoading" xml:space="preserve">
+    <value>Nie uruchomiono od załadowania.</value>
+  </data>
+  <data name="Engine_DutyStartupPendingAfterExperimentalOpener" xml:space="preserve">
+    <value>Uruchomienie zadania oczekuje po eksperymentalnym otwarciu: {0}</value>
+  </data>
+  <data name="Engine_Initializing" xml:space="preserve">
+    <value>Inicjalizacja...</value>
+  </data>
+  <data name="Engine_PreparingBossModSupport" xml:space="preserve">
+    <value>Przygotowywanie wsparcia BossMod...</value>
+  </data>
+  <data name="Engine_CheckingConflictingPlugins" xml:space="preserve">
+    <value>Sprawdzanie kolidujących wtyczek...</value>
+  </data>
+  <data name="Engine_PreparingADS" xml:space="preserve">
+    <value>Przygotowywanie ADS...</value>
+  </data>
+  <data name="Engine_PreparingAutoDuty" xml:space="preserve">
+    <value>Przygotowywanie AutoDuty...</value>
+  </data>
+  <data name="Engine_ResumingInsideDuty" xml:space="preserve">
+    <value>Wznawianie wewnątrz zadania...</value>
+  </data>
+  <data name="Engine_RunningDuty" xml:space="preserve">
+    <value>Działanie - Zadanie #{0}</value>
+  </data>
+  <data name="Engine_Stopping" xml:space="preserve">
+    <value>Zatrzymywanie...</value>
+  </data>
+  <data name="Engine_Stopped" xml:space="preserve">
+    <value>Zatrzymano: {0}</value>
+  </data>
+  <data name="Engine_InDuty" xml:space="preserve">
+    <value>W zadaniu - #{0} ({1})</value>
+  </data>
+  <data name="Engine_SuspendedWaitingForLoginAndDutyContext" xml:space="preserve">
+    <value>Zawieszono - oczekiwanie na logowanie i kontekst zadania.</value>
+  </data>
+  <data name="Engine_DutyTransitionWaitingForConfirmedDutyContext" xml:space="preserve">
+    <value>Przejście zadania - oczekiwanie na potwierdzony kontekst zadania...</value>
+  </data>
+  <data name="Engine_DutyPendingWaitingForMatchingSupportedTerritory" xml:space="preserve">
+    <value>Zadanie oczekuje - oczekiwanie na zgodną obsługiwaną tożsamość terytorium/CFC.</value>
+  </data>
+  <data name="Engine_EnteringDutyWaitingForReadyDutyContext" xml:space="preserve">
+    <value>Wejście do zadania - oczekiwanie na gotowy kontekst zadania...</value>
+  </data>
+  <data name="Engine_EnteringDutyWaitingForTerritory" xml:space="preserve">
+    <value>Wejście do zadania - oczekiwanie na terytorium...</value>
+  </data>
+  <data name="Engine_DutyPendingUnexpectedOrMissingTerritoryCFC" xml:space="preserve">
+    <value>Zadanie oczekuje - nieoczekiwane lub brakujące terytorium/CFC ({0}); oczekiwanie na obsługiwany kontekst zadania.</value>
+  </data>
+  <data name="Engine_OutsideDutyNext" xml:space="preserve">
+    <value>Poza zadaniem - Następne: #{0}</value>
+  </data>
+  <data name="Engine_WaitingForLeader" xml:space="preserve">
+    <value>Oczekiwanie na lidera - #{0} ({1})</value>
+  </data>
+  <data name="Engine_WaitingForLeader2" xml:space="preserve">
+    <value>Oczekiwanie na lidera - #{0}</value>
+  </data>
+  <data name="Engine_DelayedRequeueInProgress" xml:space="preserve">
+    <value>Trwa opóźnione ponowne kolejkowanie...</value>
+  </data>
+  <data name="Engine_WaitingAfterLeaveDutyS" xml:space="preserve">
+    <value>Oczekiwanie po wyjściu z zadania ({0:F0}s)</value>
+  </data>
+  <data name="Engine_WaitingToStopS" xml:space="preserve">
+    <value>Oczekiwanie na zatrzymanie {0} ({1:F0}s)</value>
+  </data>
+  <data name="Engine_Stopping2" xml:space="preserve">
+    <value>Zatrzymywanie {0}...</value>
+  </data>
+  <data name="Engine_WaitingToQueueS" xml:space="preserve">
+    <value>Oczekiwanie na kolejkę ({0:F0}s)</value>
+  </data>
+  <data name="Engine_Queueing" xml:space="preserve">
+    <value>Kolejkowanie...</value>
+  </data>
+  <data name="Engine_QueueingRegistered" xml:space="preserve">
+    <value>Kolejkowanie: {0} (zarejestrowano, {1})</value>
+  </data>
+  <data name="Engine_QueueingRegistered2" xml:space="preserve">
+    <value>Kolejkowanie: {0} (zarejestrowano)</value>
+  </data>
+  <data name="Engine_QueueingContentsFinderRetryCooldownS" xml:space="preserve">
+    <value>Kolejkowanie: {0} (przerwa przed próbą ContentsFinder {1:F0}s, {2})</value>
+  </data>
+  <data name="Engine_QueueingWaitingForQueueRegistrationS" xml:space="preserve">
+    <value>Kolejkowanie: {0} (oczekiwanie na rejestrację {1:F0}/{2:F0}s, {3})</value>
+  </data>
+  <data name="Engine_QueueingWaitingForQueueRegistrationS2" xml:space="preserve">
+    <value>Kolejkowanie: {0} (oczekiwanie na rejestrację {1:F0}/{2:F0}s)</value>
+  </data>
+  <data name="Engine_QueueingWaiting" xml:space="preserve">
+    <value>Kolejkowanie: {0} (oczekiwanie, {1})</value>
+  </data>
+  <data name="Engine_QueueingWaiting2" xml:space="preserve">
+    <value>Kolejkowanie: {0} (oczekiwanie...)</value>
+  </data>
+  <data name="Engine_LeaveBlocked" xml:space="preserve">
+    <value>{0} - wyjście zablokowane ({1})</value>
+  </data>
+  <data name="Engine_LeaveRequestedWaitingForZoneOutS" xml:space="preserve">
+    <value>Zażądano wyjścia - oczekiwanie na zmianę strefy ({0:F0}s)</value>
+  </data>
+  <data name="Engine_CombatPending" xml:space="preserve">
+    <value>Oczekiwanie na walkę: {0}.</value>
+  </data>
+  <data name="Engine_InDutyS" xml:space="preserve">
+    <value>W zadaniu #{0} - {1:F0}s</value>
+  </data>
+  <data name="Engine_Repairing" xml:space="preserve">
+    <value>Naprawianie...</value>
+  </data>
+  <data name="Engine_RepairDoneResuming" xml:space="preserve">
+    <value>Naprawa zakończona, wznawianie</value>
+  </data>
+  <data name="Engine_RepairingWaitingForTelepotTownS" xml:space="preserve">
+    <value>Naprawianie - oczekiwanie na TelepotTown ({0:F0}s)</value>
+  </data>
+  <data name="Engine_RepairingWaitingFor" xml:space="preserve">
+    <value>Naprawianie - oczekiwanie na {0}</value>
+  </data>
+  <data name="Engine_ContentsFinderQueueCooldownS" xml:space="preserve">
+    <value>Przerwa kolejki ContentsFinder: {0} ({1:F0}s, {2})</value>
+  </data>
+  <data name="Engine_ContentsFinderQueueCooldownS2" xml:space="preserve">
+    <value>Przerwa kolejki ContentsFinder: {0} ({1:F0}s)</value>
+  </data>
+  <data name="Engine_Value" xml:space="preserve">
+    <value>{0}: {1} ({2} / {3})</value>
+  </data>
+  <data name="Engine_Value2" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="Engine_WaitingForPeopleVisible" xml:space="preserve">
+    <value>oczekiwanie na drużynę {1}–4 (widocznych {0})</value>
+  </data>
+  <data name="Engine_WaitingForPartyMembersToLeaveDuty" xml:space="preserve">
+    <value>Oczekiwanie na wyjście członków drużyny z zadania.</value>
+  </data>
+  <data name="Engine_QueueRecoveryWaitingAfterS" xml:space="preserve">
+    <value>Odzyskiwanie kolejki: oczekiwanie po {0} ({1:F0}s)</value>
+  </data>
+  <data name="Engine_QueueRecoveryAllowingRepairsS" xml:space="preserve">
+    <value>Odzyskiwanie kolejki: czas na naprawę ({0:F0}s)</value>
+  </data>
+  <data name="Engine_QueueRecoveryResumingDutyEntry" xml:space="preserve">
+    <value>Odzyskiwanie kolejki: wznowienie wejścia do zadania</value>
+  </data>
+  <data name="Engine_RepairRecoveryWaitingToRequeueS" xml:space="preserve">
+    <value>Odzyskiwanie naprawy: oczekiwanie na ponowne kolejkowanie ({0:F0}s)</value>
+  </data>
+  <data name="Engine_RepairRecoveryRetryWaitingForLeader" xml:space="preserve">
+    <value>Próba odzyskania naprawy {0}: oczekiwanie na lidera</value>
+  </data>
+  <data name="Engine_RepairRecoveryRestarting" xml:space="preserve">
+    <value>Odzyskiwanie naprawy: ponowne uruchamianie {0}</value>
+  </data>
+  <data name="Engine_RepairRecoveryWaitingForLeader" xml:space="preserve">
+    <value>Odzyskiwanie naprawy: oczekiwanie na lidera</value>
+  </data>
+  <data name="Engine_LeaveRequestedViaADSAttemptWaitingFor" xml:space="preserve">
+    <value>Zażądano wyjścia przez ADS (próba #{0}) - oczekiwanie na zmianę strefy</value>
+  </data>
+  <data name="Engine_LeaveRequestedAttemptWaitingForZoneOut" xml:space="preserve">
+    <value>Zażądano wyjścia (próba #{0}) - oczekiwanie na zmianę strefy</value>
+  </data>
+  <data name="Engine_PluginUnloadedOrReloaded" xml:space="preserve">
+    <value>Wtyczka wyładowana lub ponownie załadowana.</value>
+  </data>
+  <data name="Engine_RepairingBeforeStart" xml:space="preserve">
+    <value>Naprawianie przed uruchomieniem...</value>
+  </data>
+  <data name="Engine_StopAfterNextSuccessfulClearAndConfirmed" xml:space="preserve">
+    <value>Zatrzymanie po następnym udanym ukończeniu i potwierdzonym wyjściu.</value>
+  </data>
+  <data name="Engine_InitializationFailed" xml:space="preserve">
+    <value>Inicjalizacja nie powiodła się: {0}</value>
+  </data>
+  <data name="Engine_PraetoriumDailyLimitReached" xml:space="preserve">
+    <value>Osiągnięto dzienny limit Praetorium ({0}/{1}).</value>
+  </data>
+  <data name="Startup_WaitingForDutyReadiness" xml:space="preserve">
+    <value>Oczekiwanie na gotowość zadania.</value>
+  </data>
+  <data name="Startup_DutyStartupCancelled" xml:space="preserve">
+    <value>Uruchomienie zadania anulowane.</value>
+  </data>
+  <data name="Startup_DutyStartupPending" xml:space="preserve">
+    <value>Uruchomienie zadania oczekuje: {0}.</value>
+  </data>
+  <data name="Startup_CombatRecoveryAfterDeathWaitingForContinuous" xml:space="preserve">
+    <value>przywracanie walki po śmierci; oczekiwanie na ciągłą gotowość</value>
+  </data>
+  <data name="Startup_WaitingForDuty" xml:space="preserve">
+    <value>oczekiwanie na zadanie</value>
+  </data>
+  <data name="Startup_ExperimentalOpenerActive" xml:space="preserve">
+    <value>eksperymentalne otwarcie aktywne</value>
+  </data>
+  <data name="Startup_WaitingForLiveDutyTerritoryCFCIdentity" xml:space="preserve">
+    <value>oczekiwanie na bieżącą tożsamość terytorium/CFC zadania</value>
+  </data>
+  <data name="Startup_ADSIsNotLoaded" xml:space="preserve">
+    <value>ADS nie jest załadowany</value>
+  </data>
+  <data name="Startup_HasADSClearanceMWaitingForFour" xml:space="preserve">
+    <value>{0} ma uprawnienia ADS {1} (M{2}); oczekiwanie na wsparcie M3 dla czterech graczy</value>
+  </data>
+  <data name="Startup_StartupInSOfContinuousReadiness" xml:space="preserve">
+    <value>uruchomienie po {0:F1}s ciągłej gotowości</value>
+  </data>
+  <data name="Startup_WaitingForDutyStartSeam" xml:space="preserve">
+    <value>oczekiwanie na punkt rozpoczęcia zadania</value>
+  </data>
+  <data name="Startup_WaitingForReadableADSOwnershipConfirmation" xml:space="preserve">
+    <value>oczekiwanie na odczytywalne potwierdzenie kontroli ADS</value>
+  </data>
+  <data name="Startup_WaitingSForADSOwnershipConfirmation" xml:space="preserve">
+    <value>oczekiwanie {0:F1}s na potwierdzenie kontroli ADS</value>
+  </data>
+  <data name="Startup_HandoffRetryBackoffUntil" xml:space="preserve">
+    <value>przerwa przed ponowieniem przekazania do {0:HH:mm:ss}</value>
+  </data>
+  <data name="Startup_AdStartWasNotHandled" xml:space="preserve">
+    <value>/ad start nie zostało obsłużone</value>
+  </data>
+  <data name="Startup_ADSStartDutyFromInsideAccepted" xml:space="preserve">
+    <value>ADS.StartDutyFromInside zaakceptowane</value>
+  </data>
+  <data name="Startup_ADSStartDutyFromInsideRejectedCommandFallbackSuppressed" xml:space="preserve">
+    <value>ADS.StartDutyFromInside odrzucone; zapasowe polecenie wstrzymane</value>
+  </data>
+  <data name="Startup_TypedEndpointUnavailableSentAdsInsideFallback" xml:space="preserve">
+    <value>typowany endpoint niedostępny; wysłano zapasowe /ads inside</value>
+  </data>
+  <data name="Startup_TypedEndpointUnavailableAndAdsInsideFallback" xml:space="preserve">
+    <value>typowany endpoint niedostępny i zapasowe /ads inside nie powiodło się</value>
+  </data>
+  <data name="Startup_DutyStartupFailed" xml:space="preserve">
+    <value>uruchomienie zadania nie powiodło się: {0}</value>
+  </data>
+  <data name="Startup_CombatRecoveryBackoffUntil" xml:space="preserve">
+    <value>przerwa odzyskiwania walki do {0:HH:mm:ss}</value>
+  </data>
+  <data name="Startup_CombatActivationFailedRetryingAfterSAnd" xml:space="preserve">
+    <value>aktywacja walki nie powiodła się: {0}; ponowienie po 5s i ciągłej gotowości</value>
+  </data>
+  <data name="Startup_WaitingForAuthoritativeOwnership" xml:space="preserve">
+    <value>{0}; oczekiwanie na wiążące potwierdzenie kontroli</value>
+  </data>
+  <data name="Startup_RestartingReadinessDelayWithSRetryBackoff" xml:space="preserve">
+    <value>{0}; ponowienie opóźnienia gotowości z przerwą 5s</value>
+  </data>
+  <data name="Automation_AutoDutyPreparationFailed" xml:space="preserve">
+    <value>Przygotowanie AutoDuty nie powiodło się: {0}</value>
+  </data>
+  <data name="Automation_QueueLeader" xml:space="preserve">
+    <value>Lider kolejki</value>
+  </data>
+  <data name="Automation_FollowerWaitingOnLeader" xml:space="preserve">
+    <value>Uczestnik czeka na lidera</value>
+  </data>
+  <data name="Automation_ADS" xml:space="preserve">
+    <value>ADS</value>
+  </data>
+  <data name="Automation_RepairWaiting" xml:space="preserve">
+    <value>oczekiwanie-na-naprawę</value>
+  </data>
+  <data name="Automation_RepairHandoff" xml:space="preserve">
+    <value>przekazanie-naprawy</value>
+  </data>
+  <data name="Automation_LeaveRequestedWaitingForZoneOut" xml:space="preserve">
+    <value>zażądano wyjścia, oczekiwanie na zmianę strefy</value>
+  </data>
+  <data name="Automation_LeaveRequested" xml:space="preserve">
+    <value>zażądano wyjścia</value>
+  </data>
+  <data name="Automation_ADSInsideOwned" xml:space="preserve">
+    <value>ADS kontroluje wnętrze</value>
+  </data>
+  <data name="Automation_ADSOutsideOwned" xml:space="preserve">
+    <value>ADS kontroluje zewnętrze</value>
+  </data>
+  <data name="Automation_LeaderReady" xml:space="preserve">
+    <value>lider-gotowy</value>
+  </data>
+  <data name="Automation_OutsideArmed" xml:space="preserve">
+    <value>gotowość-na-zewnątrz</value>
+  </data>
+  <data name="Automation_WaitingForEntry" xml:space="preserve">
+    <value>oczekiwanie-na-wejście</value>
+  </data>
+  <data name="Automation_InsideObserved" xml:space="preserve">
+    <value>zaobserwowano-wewnątrz</value>
+  </data>
+  <data name="Automation_Leaving" xml:space="preserve">
+    <value>wychodzenie</value>
+  </data>
+  <data name="Automation_Recovered" xml:space="preserve">
+    <value>odzyskano</value>
+  </data>
+  <data name="Automation_Idle" xml:space="preserve">
+    <value>bezczynność</value>
+  </data>
+  <data name="Automation_ADSDutyBackendInnReturn" xml:space="preserve">
+    <value>Backend zadań ADS i powrót do gospody</value>
+  </data>
+  <data name="Automation_ADSMissing" xml:space="preserve">
+    <value>Brak ADS</value>
+  </data>
+  <data name="Automation_ADSInnReady" xml:space="preserve">
+    <value>Gospoda ADS gotowa</value>
+  </data>
+  <data name="Automation_Value" xml:space="preserve">
+    <value>{0} / {1}</value>
+  </data>
+  <data name="Engine_ManualStop" xml:space="preserve">
+    <value>Ręczne zatrzymanie.</value>
+  </data>
+  <data name="Engine_CleanupFailed" xml:space="preserve">
+    <value>Sprzątanie {0} {1} nie powiodło się: {2}</value>
+  </data>
+  <data name="Role_Tank" xml:space="preserve">
+    <value>Tank</value>
+  </data>
+  <data name="Role_Healer" xml:space="preserve">
+    <value>Healer</value>
+  </data>
+  <data name="Role_Dps" xml:space="preserve">
+    <value>DPS</value>
+  </data>
+  <data name="Rotation_CouldNotDisableCombatComponentsFromThe" xml:space="preserve">
+    <value>Nie udało się wyłączyć komponentów walki z poprzedniego przebiegu.</value>
+  </data>
+  <data name="Rotation_BothBossModVariantsAreStillLoadedConflict" xml:space="preserve">
+    <value>Oba warianty BossMod nadal są załadowane; usuwanie konfliktu musi zakończyć się przed przygotowaniem presetu.</value>
+  </data>
+  <data name="Rotation_BMROrVBM" xml:space="preserve">
+    <value>BMR lub VBM</value>
+  </data>
+  <data name="Rotation_RequiresLoadedBossModSupport" xml:space="preserve">
+    <value>{0} wymaga załadowanego wsparcia BossMod ({1}).</value>
+  </data>
+  <data name="Rotation_BossModPackagedPresetInstallationFailedCheckThat" xml:space="preserve">
+    <value>Instalacja dołączonych presetów BossMod nie powiodła się; sprawdź gotowość IPC presetów i obecność wszystkich sześciu plików.</value>
+  </data>
+  <data name="Rotation_CombatActivationWasRequestedAfterThisDuty" xml:space="preserve">
+    <value>Zażądano aktywacji walki po zakończeniu tego zadania ({0}).</value>
+  </data>
+  <data name="Rotation_CombatActivationFailed" xml:space="preserve">
+    <value>Aktywacja walki nie powiodła się: {0}</value>
+  </data>
+  <data name="Rotation_CouldNotDisableAllMogTomeCombatComponents" xml:space="preserve">
+    <value>Nie udało się wyłączyć wszystkich komponentów walki MogTome ({0}); zobacz nieudane polecenie w logu.</value>
+  </data>
+  <data name="Rotation_RSRHealthRecoveryFailed" xml:space="preserve">
+    <value>Przywrócenie sprawności RSR nie powiodło się ({0}).</value>
+  </data>
+  <data name="Rotation_BossModAvailabilityOrSelectionChangedAfterStartup" xml:space="preserve">
+    <value>Dostępność lub wybór BossMod zmieniły się po uruchomieniu. Zatrzymaj i uruchom MogTome, aby przygotować go ponownie.</value>
+  </data>
+  <data name="Rotation_PresetPreparationFailedCombatWasNotEnabled" xml:space="preserve">
+    <value>Przygotowanie presetu {0} nie powiodło się; walka nie została włączona.</value>
+  </data>
+  <data name="Rotation_RSRAutoIPCAndRotationAutoBoth" xml:space="preserve">
+    <value>RSR Auto IPC i /rotation auto nie powiodły się.</value>
+  </data>
+  <data name="Rotation_CouldNotEnableUsing" xml:space="preserve">
+    <value>Nie udało się włączyć {0} za pomocą {1}.</value>
+  </data>
+  <data name="Path_NotAttempted" xml:space="preserve">
+    <value>Nie próbowano</value>
+  </data>
+  <data name="Path_FAILEDAutoDutyPluginNotFoundOrNot" xml:space="preserve">
+    <value>BŁĄD: Nie znaleziono wtyczki AutoDuty lub nie jest załadowana</value>
+  </data>
+  <data name="Path_OKTerritoryPathSelectionSavedAndVerified" xml:space="preserve">
+    <value>OK: Territory={0}, Path={1} ({2}); wybór zapisany i zweryfikowany</value>
+  </data>
+  <data name="Path_FAILED" xml:space="preserve">
+    <value>BŁĄD: {0}</value>
+  </data>
+  <data name="Conflict_StartupWasStoppedBeforeBossModCleanup" xml:space="preserve">
+    <value>Uruchomienie zatrzymano przed sprzątaniem BossMod.</value>
+  </data>
+  <data name="Conflict_StartupCancelledDuringVBMCleanup" xml:space="preserve">
+    <value>Uruchomienie anulowano podczas sprzątania VBM.</value>
+  </data>
+  <data name="Conflict_VBMCouldNotBeDisabledWhileBoth" xml:space="preserve">
+    <value>Nie udało się wyłączyć VBM, gdy oba warianty BossMod były załadowane.</value>
+  </data>
+  <data name="Conflict_StartupCancelledDuringBMRCleanup" xml:space="preserve">
+    <value>Uruchomienie anulowano podczas sprzątania BMR.</value>
+  </data>
+  <data name="Conflict_BMRCouldNotBeTemporarilyDisabledTo" xml:space="preserve">
+    <value>Nie udało się tymczasowo wyłączyć BMR w celu przywrócenia wspólnych rejestracji IPC.</value>
+  </data>
+  <data name="Conflict_TheNativeTemporaryBMREnableCommandWas" xml:space="preserve">
+    <value>Natywne polecenie tymczasowego włączenia BMR nie zostało obsłużone.</value>
+  </data>
+  <data name="Conflict_StartupCancelledDuringBMRReadiness" xml:space="preserve">
+    <value>Uruchomienie anulowano podczas oczekiwania na gotowość BMR.</value>
+  </data>
+  <data name="Conflict_BMRDidNotBecomeReadyAfterIts" xml:space="preserve">
+    <value>BMR nie osiągnął gotowości po ponownym załadowaniu lub VBM załadowano ponownie.</value>
+  </data>
+  <data name="Conflict_WasEnabledAndHasBeenAutoDisabled" xml:space="preserve">
+    <value>{0} był włączony i został automatycznie wyłączony dla MOGTOME.</value>
+  </data>
+  <data name="Conflict_MOGTOMEKeptRunningClickTheWarningWindow" xml:space="preserve">
+    <value>{0}
+
+MOGTOME nadal działa. Kliknij okno ostrzeżenia raz, aby je zamknąć, lub użyj przycisku wyłączenia, jeśli wtyczka wróci.</value>
+  </data>
+  <data name="Conflict_IsStillEnabledMOGTOMEWillKeepRunning" xml:space="preserve">
+    <value>{0} nadal jest włączony. MOGTOME będzie działać, ale należy wyłączyć go przez {1}.</value>
+  </data>
+  <data name="Conflict_UseTheWarningWindowButtonToTry" xml:space="preserve">
+    <value>{0}
+
+Użyj przycisku w oknie ostrzeżenia, aby ponownie spróbować wyłączyć wtyczkę, lub zamknij ostrzeżenie i kontynuuj.</value>
+  </data>
+  <data name="Conflict_WasEnabledAndHasBeenAutoDisabled2" xml:space="preserve">
+    <value>{0} był włączony i został automatycznie wyłączony dla trybu ADS.</value>
+  </data>
+  <data name="Conflict_IsStillEnabledADSModeExpects" xml:space="preserve">
+    <value>{0} nadal jest włączony. Tryb ADS wymaga {1}.</value>
+  </data>
+  <data name="Blocker_WaitingForMatchingDutyIdentity" xml:space="preserve">
+    <value>oczekiwanie na zgodną tożsamość zadania</value>
+  </data>
+  <data name="Blocker_Loading" xml:space="preserve">
+    <value>ładowanie</value>
+  </data>
+  <data name="Blocker_Combat" xml:space="preserve">
+    <value>walka</value>
+  </data>
+  <data name="Blocker_Cutscene" xml:space="preserve">
+    <value>scena przerywnikowa</value>
+  </data>
+  <data name="Blocker_OccupiedTransition" xml:space="preserve">
+    <value>zajęte przejście</value>
+  </data>
+  <data name="Blocker_WaitingForLogin" xml:space="preserve">
+    <value>oczekiwanie na logowanie</value>
+  </data>
+  <data name="Blocker_WaitingForLocalPlayer" xml:space="preserve">
+    <value>oczekiwanie na lokalnego gracza</value>
+  </data>
+  <data name="Blocker_WaitingForLocalPlayerJob" xml:space="preserve">
+    <value>oczekiwanie na profesję lokalnego gracza</value>
+  </data>
+  <data name="Blocker_WaitingForUnconsciousStateToClear" xml:space="preserve">
+    <value>oczekiwanie na ustąpienie nieprzytomności</value>
+  </data>
+  <data name="Blocker_WaitingForLocalPlayerToBeAlive" xml:space="preserve">
+    <value>oczekiwanie na żywego lokalnego gracza</value>
+  </data>
+  <data name="Blocker_WaitingForAreaTransitionToFinish" xml:space="preserve">
+    <value>oczekiwanie na zakończenie przejścia obszaru</value>
+  </data>
+  <data name="Blocker_WaitingForCutsceneToFinish" xml:space="preserve">
+    <value>oczekiwanie na zakończenie sceny</value>
+  </data>
+  <data name="Blocker_WaitingForCutsceneEventToFinish" xml:space="preserve">
+    <value>oczekiwanie na zakończenie zdarzenia sceny</value>
+  </data>
+  <data name="Window_MOGTOMEStatus" xml:space="preserve">
+    <value>MOGTOME - Status</value>
+  </data>
+  <data name="Window_MOGTOMEConfiguration" xml:space="preserve">
+    <value>MOGTOME - Konfiguracja</value>
+  </data>
+  <data name="Window_MOGTOMEStatistics" xml:space="preserve">
+    <value>MOGTOME - Statystyki</value>
+  </data>
+  <data name="Window_MOGTOMEWarningText" xml:space="preserve">
+    <value>Tekst ostrzeżenia MOGTOME</value>
+  </data>
+  <data name="Config_CombatProvider2" xml:space="preserve">
+    <value>Dostawca walki: {0}</value>
+  </data>
+  <data name="Config_NotConfigured" xml:space="preserve">
+    <value>nieskonfigurowane</value>
+  </data>
+  <data name="Config_OptionalFood" xml:space="preserve">
+    <value>Opcjonalne jedzenie: {0}</value>
+  </data>
+  <data name="Config_HQ" xml:space="preserve">
+    <value>[HQ]</value>
+  </data>
+  <data name="Config_NQ" xml:space="preserve">
+    <value>[NQ]</value>
+  </data>
+  <data name="Config_SelectedID" xml:space="preserve">
+    <value>  Wybrano: {0} {1} (ID: {2})</value>
+  </data>
+  <data name="Main_ForceAutoDutyToSelectModeLoopingDuty" xml:space="preserve">
+    <value>Wymuś wybór AutoDuty:
+Mode: Looping
+Duty Mode: Regular
+Duty: The Praetorium (1044)
+Path: {0}
+
+Zapisuje pełną strukturę AutoDuty do logu Dalamud.</value>
+  </data>
+  <data name="Main_TestPathIndexDiscoveryMethodsComparesDictionaryPaths" xml:space="preserve">
+    <value>Test metod wykrywania indeksów ścieżek.
+Porównuje DictionaryPaths z PathSelectionsByPath.
+Wyniki zapisywane w logu Dalamud.</value>
+  </data>
+  <data name="Main_DumpAutoDutyConfigurationStructureToDalamudLog" xml:space="preserve">
+    <value>Zapisz strukturę Configuration AutoDuty w logu Dalamud.</value>
+  </data>
+  <data name="Plugin_ScrollDownToTheDumpsterFireChannel" xml:space="preserve">
+    <value>Przewiń do kanału &quot;The Dumpster Fire&quot;, aby zgłosić problemy i sugestie dotyczące wtyczki.</value>
+  </data>
+  <data name="Plugin_CheckPartyLeaderSettingsIfTheDuty" xml:space="preserve">
+    <value>Sprawdź ustawienia lidera drużyny, jeśli zadanie nie rozpoczyna się</value>
+  </data>
+  <data name="Plugin_ADSDidNotHandleAdsEnterinnEnsure" xml:space="preserve">
+    <value>ADS nie obsłużył /ads enterinn. Upewnij się, że ADS jest zainstalowany i załadowany.</value>
+  </data>
+  <data name="Warning_SharedMOGTOMEConfigPath" xml:space="preserve">
+    <value>Wspólna ścieżka konfiguracji MOGTOME</value>
+  </data>
+  <data name="Warning_AnotherClientHoldsMOGTOMESConfigDirectory" xml:space="preserve">
+    <value>Inny klient blokuje folder konfiguracji MOGTOME. Uruchamianie wielu klientów z tą samą ścieżką może nadpisać ustawienia kont. Liczba pasujących procesów gry: {0}.</value>
+  </data>
+  <data name="Warning_CancelStart" xml:space="preserve">
+    <value>Anuluj uruchomienie</value>
+  </data>
+  <data name="Warning_AcknowledgeAndStart" xml:space="preserve">
+    <value>Potwierdź i uruchom</value>
+  </data>
+  <data name="Warning_TwistOfFayteConflict" xml:space="preserve">
+    <value>Konflikt Twist of Fayte</value>
+  </data>
+  <data name="Warning_AutoDutyConflict" xml:space="preserve">
+    <value>Konflikt AutoDuty</value>
+  </data>
+  <data name="Warning_PluginConflict" xml:space="preserve">
+    <value>Konflikt wtyczek</value>
+  </data>
+  <data name="Warning_DisableTwistOfFayte" xml:space="preserve">
+    <value>Wyłącz TwistOfFayte</value>
+  </data>
+  <data name="Warning_DisableAutoDuty" xml:space="preserve">
+    <value>Wyłącz AutoDuty</value>
+  </data>
+  <data name="Chat_MOGTOMEStoppedAndClearedPendingStartAnd" xml:space="preserve">
+    <value>[MOGTOME] Zatrzymano i wyczyszczono oczekujące uruchomienie oraz stan zatrzymania po następnym.</value>
+  </data>
+  <data name="Chat_MOGTOMEAlreadyStopped" xml:space="preserve">
+    <value>[MOGTOME] Już zatrzymano: {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEEngineIsStillInitializing" xml:space="preserve">
+    <value>[MOGTOME] Silnik nadal się inicjalizuje.</value>
+  </data>
+  <data name="Chat_MOGTOMEStopAfterNextSuccessfulRunArmed" xml:space="preserve">
+    <value>[MOGTOME] Włączono zatrzymanie po następnym udanym przebiegu.</value>
+  </data>
+  <data name="Chat_MOGTOMEStopAfterNextSuccessfulRunCancelled" xml:space="preserve">
+    <value>[MOGTOME] Anulowano zatrzymanie po następnym udanym przebiegu.</value>
+  </data>
+  <data name="Chat_MOGTOMEMogInnIsOnlyAvailableWhile" xml:space="preserve">
+    <value>[MOGTOME] /mog inn jest dostępne tylko przy zatrzymanym silniku lub aktywnej naprawie.</value>
+  </data>
+  <data name="Chat_MOGTOMEStateDuty" xml:space="preserve">
+    <value>[MOGTOME] Stan: {0} | Zadanie #{1} | {2}</value>
+  </data>
+  <data name="Chat_MOGTOMEDebugMode" xml:space="preserve">
+    <value>[MOGTOME] Tryb debug {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEDebugCheckboxNowVisibleInStats" xml:space="preserve">
+    <value>[MOGTOME] Pole debug jest teraz widoczne w oknie statystyk</value>
+  </data>
+  <data name="Chat_MOGTOME" xml:space="preserve">
+    <value>[MOGTOME] {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEFailedToSendAdsEnterinnCheck" xml:space="preserve">
+    <value>[MOGTOME] Nie udało się wysłać /ads enterinn. Sprawdź log Dalamud.</value>
+  </data>
+  <data name="Chat_MOGTOMEQueuedMainConfigStatsWindowReset" xml:space="preserve">
+    <value>[MOGTOME] Zaplanowano reset okien głównego/konfiguracji/statystyk do 1,1.</value>
+  </data>
+  <data name="Chat_MOGTOMEQueuedRandomVisibleJumpsForMain" xml:space="preserve">
+    <value>[MOGTOME] Zaplanowano losowe widoczne przeskoki okien głównego/konfiguracji/statystyk.</value>
+  </data>
+  <data name="Chat_MOGTOMEEngineIsStillInitializingTryAgain" xml:space="preserve">
+    <value>[MOGTOME] Silnik nadal się inicjalizuje. Spróbuj ponownie za chwilę.</value>
+  </data>
+  <data name="Chat_MOGTOMEAlreadyRunning" xml:space="preserve">
+    <value>[MOGTOME] Już działa</value>
+  </data>
+  <data name="Chat_MOGTOMEStartAlreadyQueued" xml:space="preserve">
+    <value>[MOGTOME] Uruchomienie już zaplanowane.</value>
+  </data>
+  <data name="Chat_MOGTOMEStartQueued" xml:space="preserve">
+    <value>[MOGTOME] Uruchomienie zaplanowane.</value>
+  </data>
+  <data name="Chat_MOGTOMEWarningXASlaveDidNotHandle" xml:space="preserve">
+    <value>[MOGTOME] Ostrzeżenie: XA Slave nie obsłużył {0}; kontynuacja uruchomienia.</value>
+  </data>
+  <data name="Chat_MOGTOMEWarningFailedToSendContinuingStartup" xml:space="preserve">
+    <value>[MOGTOME] Ostrzeżenie: nie udało się wysłać {0}; kontynuacja uruchomienia.</value>
+  </data>
+  <data name="DutyAutomationService_AIDutySolverADSExperimentalModeIs" xml:space="preserve">
+    <value>Eksperymentalny tryb AI Duty Solver (ADS) jest włączony, ale ADS nie jest załadowany.</value>
+  </data>
+  <data name="DutyAutomationService_AutoDutyIsStillInitializingOrFaultedRetry" xml:space="preserve">
+    <value>AutoDuty nadal się inicjalizuje lub jest uszkodzony; ponów MOGTOME po ustabilizowaniu logowania</value>
+  </data>
+  <data name="DutyAutomationService_BundledPraetoriumPathsCouldNotBeInstalled" xml:space="preserve">
+    <value>Nie udało się zainstalować dołączonych ścieżek Praetorium w AutoDuty.</value>
+  </data>
+  <data name="DutyAutomationService_ADSDidNotHandleAdsEnterinnAfter" xml:space="preserve">
+    <value>ADS nie obsłużył /ads enterinn po naprawie. Upewnij się, że ADS jest zainstalowany i załadowany.</value>
+  </data>
+  <data name="Chat_MOGTOMEAutoDutyPreparationFailed" xml:space="preserve">
+    <value>[MOGTOME] Przygotowanie AutoDuty nie powiodło się: {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEPraetoriumCallbackTest" xml:space="preserve">
+    <value>[MOGTOME] Test callbacku Praetorium: {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEMissingOptionalUnlocks" xml:space="preserve">
+    <value>[MOGTOME] Brakujące opcjonalne odblokowania: {0}</value>
+  </data>
+  <data name="MogtomeEngine_CombatCleanupFailedAfterDutyExitContinuing" xml:space="preserve">
+    <value>Sprzątanie walki po wyjściu z zadania nie powiodło się; kontynuacja.</value>
+  </data>
+  <data name="MogtomeEngine_ManualPartyRefreshSkippedInsideDutyUse" xml:space="preserve">
+    <value>Pominięto ręczne odświeżenie drużyny w zadaniu. Użyj Odśwież stan drużyny tylko poza zadaniem, gdy wszyscy opuścili strefę i są widoczni.</value>
+  </data>
+  <data name="MogtomeEngine_NonLeader" xml:space="preserve">
+    <value>uczestnik</value>
+  </data>
+  <data name="MogtomeEngine_ManualPartyRefreshCouldNotDetermineLeader" xml:space="preserve">
+    <value>Ręczne odświeżenie nie ustaliło lidera z bieżącej listy drużyny z tego samego świata. Zachowano rolę {0}.</value>
+  </data>
+  <data name="Chat_MOGTOMEStopAfterNextCompletedStoppingBefore" xml:space="preserve">
+    <value>[MOGTOME] Zatrzymanie po następnym ukończone. Zatrzymywanie przed ponowną kolejką.</value>
+  </data>
+  <data name="Chat_MOGTOMEAlreadyInsideInnTerritory" xml:space="preserve">
+    <value>[MOGTOME] Już w obszarze gospody: {0}.</value>
+  </data>
+  <data name="Chat_MOGTOMENoInnkeeperFoundWithinYMog" xml:space="preserve">
+    <value>[MOGTOME] Nie znaleziono gospodarza w promieniu {0:F0}y. /mog inn nic nie zrobiło.</value>
+  </data>
+  <data name="Chat_MOGTOMEMogInnCancelled" xml:space="preserve">
+    <value>[MOGTOME] /mog inn anulowane: {0}</value>
+  </data>
+  <data name="Warning_Title" xml:space="preserve">
+    <value>Ostrzeżenie MOGTOME</value>
+  </data>
+  <data name="Warning_Dismiss" xml:space="preserve">
+    <value>Zamknij</value>
+  </data>
+  <data name="Language_Label" xml:space="preserve">
+    <value>Język interfejsu</value>
+  </data>
+  <data name="Language_WaitForProfile" xml:space="preserve">
+    <value>Używany jest język klienta gry do czasu dostępności profilu.</value>
+  </data>
+  <data name="Config_Potion" xml:space="preserve">
+    <value>Mikstura</value>
+  </data>
+  <data name="Chat_MessageAndReason" xml:space="preserve">
+    <value>[MOGTOME] {0} {1}</value>
+  </data>
+  <data name="EngineState_Idle" xml:space="preserve">
+    <value>Bezczynność</value>
+  </data>
+  <data name="EngineState_Initializing" xml:space="preserve">
+    <value>Inicjalizacja</value>
+  </data>
+  <data name="EngineState_WaitingOutsideDuty" xml:space="preserve">
+    <value>Oczekiwanie poza zadaniem</value>
+  </data>
+  <data name="EngineState_Queueing" xml:space="preserve">
+    <value>Kolejkowanie</value>
+  </data>
+  <data name="EngineState_InDuty" xml:space="preserve">
+    <value>W zadaniu</value>
+  </data>
+  <data name="EngineState_RepairingOutside" xml:space="preserve">
+    <value>Naprawa na zewnątrz</value>
+  </data>
+  <data name="EngineState_Stopping" xml:space="preserve">
+    <value>Zatrzymywanie</value>
+  </data>
+  <data name="EngineState_Stopped" xml:space="preserve">
+    <value>Zatrzymano</value>
+  </data>
+  <data name="CombatProvider_Bmr" xml:space="preserve">
+    <value>BMR</value>
+  </data>
+  <data name="CombatProvider_Vbm" xml:space="preserve">
+    <value>VBM</value>
+  </data>
+  <data name="CombatProvider_Rsr" xml:space="preserve">
+    <value>RSR</value>
+  </data>
+  <data name="CombatProvider_Wrath" xml:space="preserve">
+    <value>Wrath Combo</value>
+  </data>
+  <data name="Inn_InteractingWithInnkeeper" xml:space="preserve">
+    <value>Interakcja z gospodarzem {0}</value>
+  </data>
+  <data name="Inn_MovingToInnkeeper" xml:space="preserve">
+    <value>Ruch do gospodarza {0}</value>
+  </data>
+  <data name="Inn_MOGTOMEMogInnRequiresALoggedIn" xml:space="preserve">
+    <value>[MOGTOME] /mog inn wymaga zalogowanej postaci.</value>
+  </data>
+  <data name="Inn_EnteredInnTerritorySuccessfully" xml:space="preserve">
+    <value>Pomyślnie wkroczono do obszaru gospody.</value>
+  </data>
+  <data name="Inn_TimedOutWhileTryingToEnterThe" xml:space="preserve">
+    <value>Przekroczono czas próby wejścia do gospody.</value>
+  </data>
+  <data name="Inn_InnEntryFailed" xml:space="preserve">
+    <value>Wejście do gospody nie powiodło się: {0}</value>
+  </data>
+  <data name="Inn_WaitingForInnZoneTransition" xml:space="preserve">
+    <value>Oczekiwanie na zmianę strefy gospody</value>
+  </data>
+  <data name="Inn_InnkeeperIsNoLongerNearby" xml:space="preserve">
+    <value>Gospodarz {0} nie jest już w pobliżu.</value>
+  </data>
+  <data name="Inn_InteractingWith" xml:space="preserve">
+    <value>Interakcja z {0}</value>
+  </data>
+  <data name="Inn_DriftedTooFarAwayFromWhileWaiting" xml:space="preserve">
+    <value>Zbyt duże oddalenie od {0} podczas oczekiwania na interakcję.</value>
+  </data>
+  <data name="Inn_RepositioningNear" xml:space="preserve">
+    <value>Zmiana pozycji w pobliżu {0}</value>
+  </data>
+  <data name="Inn_Retrying" xml:space="preserve">
+    <value>Ponowienie {0}</value>
+  </data>
+  <data name="Time_Calculating" xml:space="preserve">
+    <value>Obliczanie...</value>
+  </data>
+  <data name="Time_Unknown" xml:space="preserve">
+    <value>Nieznane</value>
+  </data>
+  <data name="Time_DH" xml:space="preserve">
+    <value>{0}d {1}h</value>
+  </data>
+  <data name="Time_HM" xml:space="preserve">
+    <value>{0}h {1}m</value>
+  </data>
+  <data name="Time_MS" xml:space="preserve">
+    <value>{0}m {1}s</value>
+  </data>
+  <data name="Engine_DutyComplete" xml:space="preserve">
+    <value>Zadanie ukończone</value>
+  </data>
+  <data name="Engine_BailoutPending" xml:space="preserve">
+    <value>Oczekiwanie na awaryjne wyjście</value>
+  </data>
+  <data name="Config_CombatRotation" xml:space="preserve">
+    <value>Rotacja walki</value>
+  </data>
+  <data name="Config_PotOnBoss" xml:space="preserve">
+    <value>Mikstura na {0}</value>
+  </data>
+  <data name="RepairBlocker_DutyState" xml:space="preserve">
+    <value>stan zadania</value>
+  </data>
+  <data name="RepairBlocker_ZoneTransition" xml:space="preserve">
+    <value>zmiana strefy</value>
+  </data>
+  <data name="RepairBlocker_QueueRegistration" xml:space="preserve">
+    <value>rejestracja kolejki</value>
+  </data>
+  <data name="RepairBlocker_DutyConfirmation" xml:space="preserve">
+    <value>okno potwierdzenia zadania</value>
+  </data>
+  <data name="RepairBlocker_MinimizedDutyConfirmation" xml:space="preserve">
+    <value>zminimalizowane okno potwierdzenia zadania</value>
+  </data>
+  <data name="RepairBlocker_CancelDutyConfirmation" xml:space="preserve">
+    <value>sekwencja anulowania potwierdzenia zadania</value>
+  </data>
+  <data name="RepairBlocker_YesNoDialog" xml:space="preserve">
+    <value>okno SelectYesno</value>
+  </data>
+  <data name="RepairBlocker_Cutscene" xml:space="preserve">
+    <value>scena przerywnikowa</value>
+  </data>
+  <data name="RepairBlocker_Occupied" xml:space="preserve">
+    <value>zajęte przejście</value>
+  </data>
+  <data name="Plugin_CommandMainHelp" xml:space="preserve">
+    <value>Otwórz główne okno MOGTOME.</value>
+  </data>
+  <data name="Plugin_CommandAliasHelp" xml:space="preserve">
+    <value>MOGTOME: /mog [start|stop|stopnext|inn|config|status|debug|ws|j] lub /mog, aby otworzyć UI.</value>
+  </data>
+  <data name="Ads_Empty" xml:space="preserve">
+    <value>ADS.GetStatusJson zwróciło pustą zawartość</value>
+  </data>
+  <data name="Ads_Inactive" xml:space="preserve">
+    <value>Status ADS nie wskazuje aktywnego zadania instancjonowanego</value>
+  </data>
+  <data name="Ads_NoCatalog" xml:space="preserve">
+    <value>Bieżące zadanie ADS nie ma metadanych katalogu</value>
+  </data>
+  <data name="Ads_NoName" xml:space="preserve">
+    <value>Wiersz katalogu bieżącego zadania ADS nie ma nazwy zadania</value>
+  </data>
+  <data name="Ads_NoTerritory" xml:space="preserve">
+    <value>Wiersz katalogu bieżącego zadania ADS nie ma tożsamości terytorium</value>
+  </data>
+  <data name="Ads_NoCfc" xml:space="preserve">
+    <value>Wiersz katalogu bieżącego zadania ADS nie ma tożsamości CFC</value>
+  </data>
+  <data name="Ads_Category" xml:space="preserve">
+    <value>Wiersz katalogu bieżącego zadania ADS ma nieobsługiwaną kategorię '{0}'</value>
+  </data>
+  <data name="Ads_Support" xml:space="preserve">
+    <value>Wiersz katalogu bieżącego zadania ADS ma nieobsługiwany poziom wsparcia '{0}'</value>
+  </data>
+  <data name="Ads_Clearance" xml:space="preserve">
+    <value>Wiersz katalogu bieżącego zadania ADS ma nieobsługiwany stan uprawnień '{0}'</value>
+  </data>
+  <data name="Ads_InvalidJson" xml:space="preserve">
+    <value>ADS.GetStatusJson było nieprawidłowym JSON: {0}</value>
+  </data>
+  <data name="Ads_Unvalidated" xml:space="preserve">
+    <value>Brak zweryfikowanej migawki bieżącego zadania ADS.</value>
+  </data>
+  <data name="Ads_Unloaded" xml:space="preserve">
+    <value>ADS wyładowany.</value>
+  </data>
+  <data name="Ads_Outside" xml:space="preserve">
+    <value>Bieżący klient jest poza zadaniem instancjonowanym.</value>
+  </data>
+  <data name="Ads_NoLiveIdentity" xml:space="preserve">
+    <value>GameMain nie podał bieżącej tożsamości terytorium zadania.</value>
+  </data>
+  <data name="Ads_Changed" xml:space="preserve">
+    <value>Bieżąca tożsamość zadania zmieniła się z terytorium/CFC {0}/{1} na {2}/{3}.</value>
+  </data>
+  <data name="Ads_Mismatch" xml:space="preserve">
+    <value>Tożsamość bieżącego zadania ADS {0}/{1} nie pasuje do bieżącej tożsamości GameMain {2}/{3}.</value>
+  </data>
+  <data name="Ads_Validated" xml:space="preserve">
+    <value>Zweryfikowano migawkę bieżącego zadania ADS dla terytorium/CFC {0}/{1}.</value>
+  </data>
+  <data name="Ads_Unavailable" xml:space="preserve">
+    <value>ADS.GetStatusJson niedostępne: {0}</value>
+  </data>
+  <data name="Ads_Retained" xml:space="preserve">
+    <value>ADS.GetStatusJson niedostępne; zachowano zweryfikowaną migawkę bieżącego zadania dla tej samej bieżącej tożsamości: {0}</value>
+  </data>
+  <data name="Opener_Timeout" xml:space="preserve">
+    <value>10-sekundowy limit eksperymentu</value>
+  </data>
+  <data name="Opener_NoTarget" xml:space="preserve">
+    <value>cel początkowej grupy niedostępny</value>
+  </data>
+  <data name="Opener_NoArea" xml:space="preserve">
+    <value>umiejętność obszarowa {0} niedostępna</value>
+  </data>
+  <data name="Opener_NoInvulnerability" xml:space="preserve">
+    <value>niewrażliwość {0} niedostępna</value>
+  </data>
+  <data name="Opener_NoTerminal" xml:space="preserve">
+    <value>Magitek Terminal 2012811 niedostępny</value>
+  </data>
+  <data name="Opener_NoPlayerAtTerminal" xml:space="preserve">
+    <value>lokalny gracz niedostępny przy terminalu</value>
+  </data>
+  <data name="Opener_Descended" xml:space="preserve">
+    <value>wykryto lokalne zejście terminalem</value>
+  </data>
+  <data name="Opener_NoInteract" xml:space="preserve">
+    <value>interakcja z Magitek Terminal niedostępna</value>
+  </data>
+  <data name="Opener_NoPlayerBeforeMove" xml:space="preserve">
+    <value>lokalny gracz niedostępny przed ruchem do {0}</value>
+  </data>
+  <data name="Opener_NoMove" xml:space="preserve">
+    <value>ruch vnav do {0} niedostępny</value>
+  </data>
+  <data name="Opener_NoPlayerMoving" xml:space="preserve">
+    <value>lokalny gracz niedostępny podczas ruchu</value>
+  </data>
+  <data name="Opener_NoProgress" xml:space="preserve">
+    <value>ruch vnav nie przyniósł postępu</value>
+  </data>
+  <data name="Opener_Pack" xml:space="preserve">
+    <value>początkowa grupa</value>
+  </data>
+  <data name="Opener_Terminal" xml:space="preserve">
+    <value>Magitek Terminal</value>
+  </data>
+  <data name="Engine_AutoQueueing" xml:space="preserve">
+    <value>Automatyczne kolejkowanie</value>
+  </data>
+  <data name="Engine_RepairRecoveryRetry" xml:space="preserve">
+    <value>Próba odzyskania naprawy {0}</value>
+  </data>
+  <data name="Config_ObstacleMapsOn" xml:space="preserve">
+    <value>Włącz mapy przeszkód</value>
+  </data>
+  <data name="Config_ObstacleMapsOnTooltip" xml:space="preserve">
+    <value>Steruje tylko BossMod Reborn. Domyślnie: wyłączone. Stosowane przy uruchomieniu po gotowości BossMod i konfiguracji rotacji, niezależnie od dostawcy walki.</value>
+  </data>
+  <data name="Config_NPCRepairInn" xml:space="preserve">
+    <value>Naprawa u NPC i pokój w gospodzie</value>
+  </data>
+  <data name="Engine_InnRepairFailed" xml:space="preserve">
+    <value>Naprawa w gospodzie nie powiodła się: {0}</value>
+  </data>
+  <data name="Config_NPCRepairInnUldah" xml:space="preserve">
+    <value>Naprawa u NPC i pokój w gospodzie — Ul’dah</value>
+  </data>
+  <data name="Config_NPCRepairInnGridania" xml:space="preserve">
+    <value>Naprawa u NPC i pokój w gospodzie — Gridania</value>
+  </data>
+  <data name="Config_NPCRepairInnLimsa" xml:space="preserve">
+    <value>Naprawa u NPC i pokój w gospodzie — Limsa Lominsa</value>
+  </data>
+  <data name="Config_NPCRepairInnIshgard" xml:space="preserve">
+    <value>Naprawa u NPC i pokój w gospodzie — Ishgard</value>
+  </data>
+  <data name="Config_NPCRepairInnCrystarium" xml:space="preserve">
+    <value>Naprawa u NPC i pokój w gospodzie — Crystarium</value>
+  </data>
+  <data name="Config_NPCRepairInnSharlayan" xml:space="preserve">
+    <value>Naprawa u NPC i pokój w gospodzie — Old Sharlayan</value>
+  </data>
+  <data name="Config_NPCRepairInnTuliyollal" xml:space="preserve">
+    <value>Naprawa u NPC i pokój w gospodzie — Tuliyollal</value>
+  </data>
+  <data name="Config_UnsupportedADSRepairMode" xml:space="preserve">
+    <value>Nieobsługiwany tryb naprawy ADS</value>
+  </data>
+  <data name="Window_BlundervilleFailer" xml:space="preserve">
+    <value>Blunderville Failer</value>
+  </data>
+  <data name="Plugin_CommandBlundervilleHelp" xml:space="preserve">
+    <value>Otwórz podgląd Blunderville Failer (/blunderville lub /bv).</value>
+  </data>
+  <data name="Blunderville_OpenMogtome" xml:space="preserve">
+    <value>Otwórz MOGTOME</value>
+  </data>
+  <data name="Blunderville_FarmingUnavailable" xml:space="preserve">
+    <value>Tylko podgląd: Farmienie Blunderville jest niedostępne. Uruchom i Zatrzymaj są wyłączone.</value>
+  </data>
+  <data name="Blunderville_PurchasesUnavailable" xml:space="preserve">
+    <value>Tylko podgląd: Zakupy ADS są niedostępne. Konfiguracja zakupów jest wyłączona.</value>
+  </data>
+  <data name="Blunderville_ConfigurePurchases" xml:space="preserve">
+    <value>Konfiguruj zakupy</value>
+  </data>
+  <data name="Ui_Color" xml:space="preserve">
+    <value>Kolor</value>
+  </data>
+  <data name="Ui_Teal" xml:space="preserve">
+    <value>Turkusowy</value>
+  </data>
+  <data name="Ui_Blue" xml:space="preserve">
+    <value>Niebieski</value>
+  </data>
+  <data name="Ui_Pink" xml:space="preserve">
+    <value>Różowy</value>
+  </data>
+  <data name="Ui_CustomRgb" xml:space="preserve">
+    <value>Własny RGB</value>
+  </data>
+  <data name="Ui_CompactMode" xml:space="preserve">
+    <value>Tryb kompaktowy</value>
+  </data>
+  <data name="Ui_LoadingFonts" xml:space="preserve">
+    <value>Ładowanie czcionek UI...</value>
+  </data>
+  <data name="Ui_FontFailure" xml:space="preserve">
+    <value>Nie udało się załadować czcionek UI. Zobacz log wtyczki.</value>
+  </data>
+  <data name="Main_Subtitle" xml:space="preserve">
+    <value>Zarządzanie operacjami Grand Tome i silnik zarządzania</value>
+  </data>
+  <data name="Main_OpenBlunderville" xml:space="preserve">
+    <value>Otwórz Blunderville Failer</value>
+  </data>
+  <data name="Main_StateHeading" xml:space="preserve">
+    <value>Stan</value>
+  </data>
+  <data name="Main_StatusHeading" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Main_Running" xml:space="preserve">
+    <value>Działa</value>
+  </data>
+  <data name="Main_Stopped" xml:space="preserve">
+    <value>Zatrzymano</value>
+  </data>
+  <data name="Main_DutyCurrent" xml:space="preserve">
+    <value>Bieżące</value>
+  </data>
+  <data name="Main_DutyCounter" xml:space="preserve">
+    <value>Licznik</value>
+  </data>
+  <data name="Main_DailyDecuHeading" xml:space="preserve">
+    <value>Dzienne przebiegi Decu</value>
+  </data>
+  <data name="Main_DailyResetHeading" xml:space="preserve">
+    <value>Dzienny reset</value>
+  </data>
+  <data name="Main_PartySummary" xml:space="preserve">
+    <value>Podsumowanie drużyny</value>
+  </data>
+  <data name="Main_InParty" xml:space="preserve">
+    <value>W drużynie</value>
+  </data>
+  <data name="Main_NoParty" xml:space="preserve">
+    <value>Nie zaobserwowano członków drużyny.</value>
+  </data>
+  <data name="Main_PartyDetails" xml:space="preserve">
+    <value>Szczegóły drużyny</value>
+  </data>
+  <data name="Main_DutyDetails" xml:space="preserve">
+    <value>Szczegóły zadania</value>
+  </data>
+  <data name="Main_CounterValue" xml:space="preserve">
+    <value>{0} / {1}</value>
+  </data>
+  <data name="Main_ResetUtc" xml:space="preserve">
+    <value>{0:HH:mm} UTC</value>
+  </data>
+  <data name="Main_CurrentProfile" xml:space="preserve">
+    <value>Bieżący profil: {0}</value>
+  </data>
+  <data name="Main_HelpTitle" xml:space="preserve">
+    <value>POMOC</value>
+  </data>
+  <data name="Blunderville_FarmingHeading" xml:space="preserve">
+    <value>Farmienie jest niedostępne w tej kompilacji.</value>
+  </data>
+  <data name="Blunderville_FarmingDetail" xml:space="preserve">
+    <value>Blunderville Failer nie może obecnie służyć do automatycznego farmienia.</value>
+  </data>
+  <data name="Blunderville_PurchasesHeading" xml:space="preserve">
+    <value>Automatyzacja zakupów jest niedostępna.</value>
+  </data>
+  <data name="Blunderville_PurchasesDetail" xml:space="preserve">
+    <value>Automatyczne zakupy są niedostępne w tej kompilacji.</value>
+  </data>
+  <data name="Cleanup_Opener" xml:space="preserve">
+    <value>otwarcie</value>
+  </data>
+  <data name="Cleanup_Backend" xml:space="preserve">
+    <value>backend</value>
+  </data>
+  <data name="Cleanup_Dialogs" xml:space="preserve">
+    <value>okna dialogowe</value>
+  </data>
+  <data name="Cleanup_RepairQueue" xml:space="preserve">
+    <value>kolejka naprawy</value>
+  </data>
+  <data name="Cleanup_DeathTracking" xml:space="preserve">
+    <value>śledzenie śmierci</value>
+  </data>
+  <data name="Cleanup_Combat" xml:space="preserve">
+    <value>walka</value>
+  </data>
+  <data name="Main_Open" xml:space="preserve">
+    <value>Otwórz</value>
+  </data>
+  <data name="Window appearance" xml:space="preserve"><value>Wygląd okna</value></data>
+  <data name="Compact visible on main window" xml:space="preserve"><value>Pokaż tryb kompaktowy w oknie głównym</value></data>
+  <data name="Language visible on main window" xml:space="preserve"><value>Pokaż wybór języka w oknie głównym</value></data>
+  <data name="Transparency" xml:space="preserve"><value>Przezroczystość</value></data>
+  <data name="Opacity (%)" xml:space="preserve"><value>Nieprzezroczystość (%)</value></data>
+  <data name="Auto-fade when unfocused" xml:space="preserve"><value>Automatycznie przygaszaj bez fokusu</value></data>
+  <data name="Unfocused opacity (%)" xml:space="preserve"><value>Nieprzezroczystość bez fokusu (%)</value></data>
+  <data name="Unfocused delay (seconds)" xml:space="preserve"><value>Opóźnienie bez fokusu (sekundy)</value></data>
+</root>

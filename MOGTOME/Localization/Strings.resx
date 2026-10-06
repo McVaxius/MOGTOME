@@ -2049,4 +2049,50 @@ Results logged to Dalamud log.</value>
   <data name="Blunderville_ConfigurePurchases" xml:space="preserve">
     <value>Configure purchases</value>
   </data>
+  <data name="Ui_Color" xml:space="preserve"><value>Color</value></data>
+  <data name="Ui_Teal" xml:space="preserve"><value>Teal</value></data>
+  <data name="Ui_Blue" xml:space="preserve"><value>Blue</value></data>
+  <data name="Ui_Pink" xml:space="preserve"><value>Pink</value></data>
+  <data name="Ui_CustomRgb" xml:space="preserve"><value>Custom RGB</value></data>
+  <data name="Ui_CompactMode" xml:space="preserve"><value>Compact mode</value></data>
+  <data name="Ui_LoadingFonts" xml:space="preserve"><value>Loading UI fonts...</value></data>
+  <data name="Ui_FontFailure" xml:space="preserve"><value>UI fonts failed to load. See the plugin log.</value></data>
+  <data name="Main_Subtitle" xml:space="preserve"><value>Management Of Grand Tome Operations &amp; Management Engine</value></data>
+  <data name="Main_OpenBlunderville" xml:space="preserve"><value>Open the Blunderville Failer</value></data>
+  <data name="Main_StateHeading" xml:space="preserve"><value>State</value></data>
+  <data name="Main_StatusHeading" xml:space="preserve"><value>Status</value></data>
+  <data name="Main_Running" xml:space="preserve"><value>Running</value></data>
+  <data name="Main_Stopped" xml:space="preserve"><value>Stopped</value></data>
+  <data name="Main_DutyCurrent" xml:space="preserve"><value>Current</value></data>
+  <data name="Main_DutyCounter" xml:space="preserve"><value>Counter</value></data>
+  <data name="Main_DailyDecuHeading" xml:space="preserve"><value>Daily Decu runs</value></data>
+  <data name="Main_DailyResetHeading" xml:space="preserve"><value>Daily reset</value></data>
+  <data name="Main_PartySummary" xml:space="preserve"><value>Party summary</value></data>
+  <data name="Main_InParty" xml:space="preserve"><value>In party</value></data>
+  <data name="Main_NoParty" xml:space="preserve"><value>No party members observed.</value></data>
+  <data name="Main_PartyDetails" xml:space="preserve"><value>Party details</value></data>
+  <data name="Main_DutyDetails" xml:space="preserve"><value>Duty details</value></data>
+  <data name="Main_CounterValue" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="Main_ResetUtc" xml:space="preserve"><value>{0:HH:mm} UTC</value></data>
+  <data name="Main_CurrentProfile" xml:space="preserve"><value>Current profile: {0}</value></data>
+  <data name="Main_HelpTitle" xml:space="preserve"><value>HELP</value></data>
+  <data name="Blunderville_FarmingHeading" xml:space="preserve"><value>Farming is unavailable in this build.</value></data>
+  <data name="Blunderville_FarmingDetail" xml:space="preserve"><value>The Blunderville Failer cannot be used for automated farming at this time.</value></data>
+  <data name="Blunderville_PurchasesHeading" xml:space="preserve"><value>Purchase automation is unavailable.</value></data>
+  <data name="Blunderville_PurchasesDetail" xml:space="preserve"><value>Automated purchase functionality is not available in this build.</value></data>
+  <data name="Cleanup_Opener" xml:space="preserve"><value>opener</value></data>
+  <data name="Cleanup_Backend" xml:space="preserve"><value>backend</value></data>
+  <data name="Cleanup_Dialogs" xml:space="preserve"><value>dialogs</value></data>
+  <data name="Cleanup_RepairQueue" xml:space="preserve"><value>repair queue</value></data>
+  <data name="Cleanup_DeathTracking" xml:space="preserve"><value>death tracking</value></data>
+  <data name="Cleanup_Combat" xml:space="preserve"><value>combat</value></data>
+  <data name="Main_Open" xml:space="preserve"><value>Open</value></data>
+  <data name="Window appearance" xml:space="preserve"><value>Window appearance</value></data>
+  <data name="Compact visible on main window" xml:space="preserve"><value>Compact visible on main window</value></data>
+  <data name="Language visible on main window" xml:space="preserve"><value>Language visible on main window</value></data>
+  <data name="Transparency" xml:space="preserve"><value>Transparency</value></data>
+  <data name="Opacity (%)" xml:space="preserve"><value>Opacity (%)</value></data>
+  <data name="Auto-fade when unfocused" xml:space="preserve"><value>Auto-fade when unfocused</value></data>
+  <data name="Unfocused opacity (%)" xml:space="preserve"><value>Unfocused opacity (%)</value></data>
+  <data name="Unfocused delay (seconds)" xml:space="preserve"><value>Unfocused delay (seconds)</value></data>
 </root>

@@ -14,6 +14,7 @@ namespace MOGTOME.Windows;
 
 public class StatsWindow : Window, IDisposable
 {
+    private readonly AethertekUI.Dalamud.MaterialWindowMotion windowMotion = new();
     private enum MainTab { Summary, Detailed }
     private enum DetailedSubTab { JobPerformance, PlayerStats, RecentRuns, Trends }
 
@@ -55,10 +56,15 @@ public class StatsWindow : Window, IDisposable
             pendingWindowPosition = null;
             pendingPositionConditionReset = true;
         }
+        windowMotion.Prepare(this, reducedMotion: false, roundedCorners: true);
     }
+
+    public override void PostDraw()
+        { windowMotion.Restore(this); plugin.Appearance.PaintWindowTitle(WindowName); }
 
     public override void Draw()
     {
+        windowMotion.DrawChrome();
         // Auto-refresh every 10 seconds
         if (DateTime.Now - lastRefresh > TimeSpan.FromSeconds(REFRESH_INTERVAL_SECONDS))
         {
@@ -77,8 +83,15 @@ public class StatsWindow : Window, IDisposable
         var config = plugin.Configuration;
         var state = plugin.State;
 
-        ImGui.TextColored(new Vector4(1.0f, 0.84f, 0.0f, 1.0f), Ui.T("Stats_DutyStatistics"));
-        ImGui.SameLine(ImGui.GetWindowWidth() - 240);
+        ImGui.PushTextWrapPos(0);
+        AethertekUI.MaterialText.TextColored(AethertekUI.MaterialTheme.Current.Colors.Primary, Ui.T("Stats_DutyStatistics"));
+        ImGui.PopTextWrapPos();
+        var krangleEnabled = plugin.Configuration.KrangleNames;
+        var krangleText = krangleEnabled ? Ui.T("Main_UnKrangle") : Ui.T("Stats_KrangleNames");
+        var framePadding = ImGui.GetStyle().FramePadding.X * 2;
+        var openWidth = Math.Max(100, AethertekUI.MaterialText.Measure(Ui.T("Stats_OpenConfig")).X + framePadding);
+        var krangleWidth = Math.Max(120, AethertekUI.MaterialText.Measure(krangleText).X + framePadding);
+        UiLayout.SameLineIfFits(openWidth + krangleWidth + ImGui.GetStyle().ItemSpacing.X);
         if (UiLayout.Button(Ui.L("Stats_OpenConfig"), new Vector2(100, 0)))
         {
             try
@@ -99,9 +112,7 @@ public class StatsWindow : Window, IDisposable
         {
             UiLayout.SetTooltip(Ui.T("Stats_OpenMOGTOMEConfigurationFolder"));
         }
-        ImGui.SameLine();
-        var krangleEnabled = plugin.Configuration.KrangleNames;
-        var krangleText = krangleEnabled ? Ui.T("Main_UnKrangle") : Ui.T("Stats_KrangleNames");
+        UiLayout.SameLineIfFits(krangleWidth);
         if (UiLayout.Button(krangleText + "###Krangle", new Vector2(120, 0)))
         {
             plugin.Configuration.KrangleNames = !krangleEnabled;
@@ -116,7 +127,7 @@ public class StatsWindow : Window, IDisposable
 
         // Main tab navigation
         if (UiLayout.Button(Ui.L("Stats_Summary"))) currentMainTab = MainTab.Summary;
-        ImGui.SameLine();
+        UiLayout.SameLineIfFits(AethertekUI.MaterialText.Measure(Ui.T("Stats_Detailed")).X + framePadding);
         if (UiLayout.Button(Ui.L("Stats_Detailed"))) currentMainTab = MainTab.Detailed;
 
         ImGui.Spacing();
@@ -144,7 +155,7 @@ public class StatsWindow : Window, IDisposable
         if (config.DebugModeEnabled)
         {
             var showDebugRuns = config.ShowDebugRuns;
-            if (ImGui.Checkbox(Ui.L("Stats_ShowDebugRuns"), ref showDebugRuns))
+            if (UiLayout.Checkbox(Ui.L("Stats_ShowDebugRuns"), ref showDebugRuns))
             {
                 config.ShowDebugRuns = showDebugRuns;
                 plugin.ConfigManager.SaveCurrentAccount();
@@ -153,7 +164,7 @@ public class StatsWindow : Window, IDisposable
             }
             if (showDebugRuns)
             {
-                ImGui.TextColored(new Vector4(1.0f, 1.0f, 0.0f, 1.0f), Ui.T("Stats_UnsyncedRunsAreNowIncludedInStatistics"));
+                AethertekUI.MaterialText.TextColored(new Vector4(1.0f, 1.0f, 0.0f, 1.0f), Ui.T("Stats_UnsyncedRunsAreNowIncludedInStatistics"));
             }
             else
             {
@@ -163,11 +174,15 @@ public class StatsWindow : Window, IDisposable
         }
 
         // Side-by-side stats layout
-        if (ImGui.BeginTable("StatsTable", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg))
+        var scale = AethertekUI.MaterialTheme.Metrics.Scale;
+        var minimumWidth = 2 * Math.Max(AethertekUI.MaterialText.Measure(Ui.Duty(1044).Render()).X, AethertekUI.MaterialText.Measure(Ui.Duty(1048).Render()).X)
+            + ImGui.GetStyle().CellPadding.X * 4 + 8 * scale;
+        if (ImGui.BeginTable("StatsTable", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.ScrollX,
+            Vector2.Zero, minimumWidth))
         {
             ImGui.TableSetupColumn(Ui.Duty(1044).Render(), ImGuiTableColumnFlags.WidthStretch, 0.5f);
             ImGui.TableSetupColumn(Ui.Duty(1048).Render(), ImGuiTableColumnFlags.WidthStretch, 0.5f);
-            ImGui.TableHeadersRow();
+            UiLayout.TableHeadersRow();
 
             // Best Time
             ImGui.TableNextRow();
@@ -193,29 +208,31 @@ public class StatsWindow : Window, IDisposable
         ImGui.Spacing();
 
         // Combined Stats
-        if (ImGui.CollapsingHeader(Ui.L("Stats_CombinedStats"), ImGuiTreeNodeFlags.DefaultOpen))
+        if (AethertekUI.MaterialText.CollapsingHeader(Ui.L("Stats_CombinedStats"), ImGuiTreeNodeFlags.DefaultOpen))
         {
-            ImGui.Text(Ui.T("Stats_TotalRuns", config.TotalPraes + config.TotalDecus));
-            ImGui.Text(Ui.T("Stats_TotalMogtomes", config.TotalMogtomesEarned));
-            ImGui.Text(Ui.T("Stats_CurrentDailyCounter", state.DutyCounter));
-            ImGui.Text(Ui.T("Stats_DailyDecumanaBest", state.DecumanaCounter, config.AllTimeMaxDailyDecu));
+            ImGui.PushTextWrapPos(0);
+            AethertekUI.MaterialText.Text(Ui.T("Stats_TotalRuns", config.TotalPraes + config.TotalDecus));
+            AethertekUI.MaterialText.Text(Ui.T("Stats_TotalMogtomes", config.TotalMogtomesEarned));
+            AethertekUI.MaterialText.Text(Ui.T("Stats_CurrentDailyCounter", state.DutyCounter));
+            AethertekUI.MaterialText.Text(Ui.T("Stats_DailyDecumanaBest", state.DecumanaCounter, config.AllTimeMaxDailyDecu));
             
             // Reset time display
             var (countdown, localTime) = plugin.DutyTrackerService.GetResetTimeDisplay();
-            ImGui.Text(Ui.T("Stats_NextDailyReset", countdown, localTime));
+            AethertekUI.MaterialText.Text(Ui.T("Stats_NextDailyReset", countdown, localTime));
             
             // Daily Decumana stats (if any runs today)
             if (config.DailyDecuRuns > 0)
             {
                 ImGui.Spacing();
-                ImGui.TextColored(new Vector4(0.0f, 0.84f, 1.0f, 1.0f), Ui.T("Stats_TodaySDecumanaStats"));
+                AethertekUI.MaterialText.TextColored(AethertekUI.MaterialTheme.Current.Colors.Secondary, Ui.T("Stats_TodaySDecumanaStats"));
                 if (config.DailyDecuBestTime < float.MaxValue)
-                    ImGui.Text(Ui.T("Stats_BestToday", FormatTime(config.DailyDecuBestTime)));
+                    AethertekUI.MaterialText.Text(Ui.T("Stats_BestToday", FormatTime(config.DailyDecuBestTime)));
                 if (config.DailyDecuLongestRun > 0)
-                    ImGui.Text(Ui.T("Stats_LongestToday", FormatTime(config.DailyDecuLongestRun)));
-                ImGui.Text(Ui.T("Stats_RunsToday", config.DailyDecuRuns));
-                ImGui.Text(Ui.T("Stats_MogtomesToday", config.DailyDecuMogtomesEarned));
+                    AethertekUI.MaterialText.Text(Ui.T("Stats_LongestToday", FormatTime(config.DailyDecuLongestRun)));
+                AethertekUI.MaterialText.Text(Ui.T("Stats_RunsToday", config.DailyDecuRuns));
+                AethertekUI.MaterialText.Text(Ui.T("Stats_MogtomesToday", config.DailyDecuMogtomesEarned));
             }
+            ImGui.PopTextWrapPos();
         }
 
         ImGui.Spacing();
@@ -229,13 +246,14 @@ public class StatsWindow : Window, IDisposable
 
     private void DrawDetailedTab()
     {
+        var padding = ImGui.GetStyle().FramePadding.X * 2;
         // Sub-tab navigation
         if (UiLayout.Button(Ui.L("Stats_JobPerformance"))) currentDetailedTab = DetailedSubTab.JobPerformance;
-        ImGui.SameLine();
+        UiLayout.SameLineIfFits(AethertekUI.MaterialText.Measure(Ui.T("Stats_PlayerStats")).X + padding);
         if (UiLayout.Button(Ui.L("Stats_PlayerStats"))) currentDetailedTab = DetailedSubTab.PlayerStats;
-        ImGui.SameLine();
+        UiLayout.SameLineIfFits(AethertekUI.MaterialText.Measure(Ui.T("Stats_RecentRuns")).X + padding);
         if (UiLayout.Button(Ui.L("Stats_RecentRuns"))) currentDetailedTab = DetailedSubTab.RecentRuns;
-        ImGui.SameLine();
+        UiLayout.SameLineIfFits(AethertekUI.MaterialText.Measure(Ui.T("Stats_Trends")).X + padding);
         if (UiLayout.Button(Ui.L("Stats_Trends"))) currentDetailedTab = DetailedSubTab.Trends;
 
         ImGui.Separator();
@@ -265,13 +283,14 @@ public class StatsWindow : Window, IDisposable
         int totalDeathsSelf, int totalDeathsOthers, int totalDeathsAll,
         int totalRuns, int mogtomesEarned)
     {
-        ImGui.TextColored(new Vector4(0.0f, 0.84f, 1.0f, 1.0f), dutyName);
+        ImGui.PushTextWrapPos(0);
+        AethertekUI.MaterialText.TextColored(AethertekUI.MaterialTheme.Current.Colors.Secondary, dutyName);
         ImGui.Separator();
         
         // Best Time
         if (bestTime < float.MaxValue)
         {
-            ImGui.Text(Ui.T("Stats_Best", FormatTime(bestTime)));
+            AethertekUI.MaterialText.Text(Ui.T("Stats_Best", FormatTime(bestTime)));
             UiLayout.TextDisabled(Ui.T("Stats_Date", bestTimeDate));
             
             // Party display - multi-line formatting
@@ -313,7 +332,7 @@ public class StatsWindow : Window, IDisposable
         // Longest Run
         if (longestRun > 0)
         {
-            ImGui.Text(Ui.T("Stats_Longest", FormatTime(longestRun)));
+            AethertekUI.MaterialText.Text(Ui.T("Stats_Longest", FormatTime(longestRun)));
             UiLayout.TextDisabled(Ui.T("Stats_Date", longestRunDate));
             
             // Party display - multi-line formatting
@@ -353,17 +372,18 @@ public class StatsWindow : Window, IDisposable
         ImGui.Spacing();
 
         // Deaths
-        ImGui.Text(Ui.T("Stats_DeathsSingleRun"));
+        AethertekUI.MaterialText.Text(Ui.T("Stats_DeathsSingleRun"));
         UiLayout.TextDisabled(Ui.T("Stats_SelfOthersAll", mostDeathsSelf, mostDeathsOthers, mostDeathsAll));
         
-        ImGui.Text(Ui.T("Stats_DeathsTotal"));
+        AethertekUI.MaterialText.Text(Ui.T("Stats_DeathsTotal"));
         UiLayout.TextDisabled(Ui.T("Stats_SelfOthersAll", totalDeathsSelf, totalDeathsOthers, totalDeathsAll));
 
         ImGui.Spacing();
 
         // Counts
-        ImGui.Text(Ui.T("Stats_Runs", totalRuns));
-        ImGui.Text(Ui.T("Stats_Mogtomes", mogtomesEarned));
+        AethertekUI.MaterialText.Text(Ui.T("Stats_Runs", totalRuns));
+        AethertekUI.MaterialText.Text(Ui.T("Stats_Mogtomes", mogtomesEarned));
+        ImGui.PopTextWrapPos();
     }
 
     private void ResetAllStats(Configuration config)
@@ -449,7 +469,7 @@ public class StatsWindow : Window, IDisposable
             ImGui.TableSetupColumn(Ui.T("Stats_Name"), ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableSetupColumn(Ui.T("Stats_Job"), ImGuiTableColumnFlags.WidthFixed, 60);
             ImGui.TableSetupColumn(Ui.T("Stats_Level"), ImGuiTableColumnFlags.WidthFixed, 50);
-            ImGui.TableHeadersRow();
+            UiLayout.TableHeadersRow();
 
             if (party.Length > 0)
             {
@@ -465,14 +485,14 @@ public class StatsWindow : Window, IDisposable
                     var name = member.Name.ToString();
                     if (krangle && !string.IsNullOrEmpty(name))
                         name = KrangleService.KrangleName(name);
-                    ImGui.Text(name);
+                    AethertekUI.MaterialText.Text(name);
 
                     ImGui.TableSetColumnIndex(1);
                     var jobAbbr = Ui.Job(member.ClassJob.RowId).Render();
-                    ImGui.Text(jobAbbr);
+                    AethertekUI.MaterialText.Text(jobAbbr);
 
                     ImGui.TableSetColumnIndex(2);
-                    ImGui.Text(member.Level.ToString());
+                    AethertekUI.MaterialText.Text(member.Level.ToString());
                 }
             }
             else if (localPlayer != null)
@@ -484,14 +504,14 @@ public class StatsWindow : Window, IDisposable
                 var name = localPlayer.Name.ToString();
                 if (krangle && !string.IsNullOrEmpty(name))
                     name = KrangleService.KrangleName(name);
-                ImGui.Text(name);
+                AethertekUI.MaterialText.Text(name);
 
                 ImGui.TableSetColumnIndex(1);
                 var jobAbbr = Ui.Job(localPlayer.ClassJob.RowId).Render();
-                ImGui.Text(jobAbbr);
+                AethertekUI.MaterialText.Text(jobAbbr);
 
                 ImGui.TableSetColumnIndex(2);
-                ImGui.Text(localPlayer.Level.ToString());
+                AethertekUI.MaterialText.Text(localPlayer.Level.ToString());
             }
 
             ImGui.EndTable();
@@ -551,7 +571,7 @@ public class StatsWindow : Window, IDisposable
 
     private void DrawJobPerformance()
     {
-        ImGui.Text(Ui.T("Stats_JobPerformance"));
+        UiLayout.Wrapped(Ui.T("Stats_JobPerformance"));
         ImGui.Separator();
         
         if (!plugin.Configuration.EnableDetailedTracking || plugin.RunHistoryService.RunHistory.Count == 0)
@@ -562,23 +582,9 @@ public class StatsWindow : Window, IDisposable
 
         var jobStats = plugin.RunHistoryService.GetJobStatistics();
         
-        // Create job cards in a grid layout
-        int columns = 3;
-        int currentColumn = 0;
-        
         foreach (var jobStat in jobStats.OrderByDescending(x => x.Value.TotalRuns))
         {
             DrawJobCard(jobStat.Key, jobStat.Value);
-            
-            currentColumn++;
-            if (currentColumn < columns)
-            {
-                ImGui.SameLine();
-            }
-            else
-            {
-                currentColumn = 0;
-            }
         }
     }
 
@@ -586,32 +592,41 @@ public class StatsWindow : Window, IDisposable
     {
         var jobName = GetJobName(jobId);
         var role = GetJobRole(jobId);
-        
-        ImGui.BeginChild($"JobCard_{jobId}", new Vector2(180, 140), true);
+        var scale = AethertekUI.MaterialTheme.Metrics.Scale;
+        var header = string.Create(Ui.Culture, $"{jobName} ({role})");
+        var width = Math.Min(UiLayout.AvailableWidth, Math.Max(180 * scale,
+            AethertekUI.MaterialText.Measure(header).X + ImGui.GetStyle().WindowPadding.X * 2 + 2 * scale));
+        var successRate = stats.TotalRuns > 0 ? (float)stats.SuccessfulRuns / stats.TotalRuns * 100 : 0f;
+        var rows = new[] { header, Ui.T("Stats_Runs", stats.TotalRuns), Ui.T("Stats_Avg", FormatTime(stats.AverageTime)),
+            Ui.T("Stats_Best", FormatTime(stats.BestTime)), Ui.T("Stats_Deaths", stats.TotalDeaths), Ui.T("Stats_Rate", successRate), Ui.T("Stats_Mogtomes", stats.TotalMogtomes) };
+        var style = ImGui.GetStyle(); var wrapWidth = Math.Max(1, width - style.WindowPadding.X * 2 - style.ChildBorderSize * 2);
+        var height = MathF.Ceiling(style.WindowPadding.Y * 2 + rows.Sum(row => AethertekUI.MaterialText.Measure(row, false, wrapWidth).Y + style.ItemSpacing.Y) + 1 + style.ItemSpacing.Y + 2 * scale);
+        UiLayout.SameLineIfFits(width);
+        ImGui.BeginChild($"JobCard_{jobId}", new Vector2(width, height), true);
+        ImGui.PushTextWrapPos(0);
         
         // Job header with role
-        ImGui.Text(string.Create(Ui.Culture, $"{jobName} ({role})"));
+        AethertekUI.MaterialText.Text(header);
         ImGui.Separator();
         
         // Stats
-        ImGui.Text(Ui.T("Stats_Runs", stats.TotalRuns));
-        ImGui.Text(Ui.T("Stats_Avg", FormatTime(stats.AverageTime)));
-        ImGui.Text(Ui.T("Stats_Best", FormatTime(stats.BestTime)));
-        ImGui.Text(Ui.T("Stats_Deaths", stats.TotalDeaths));
+        AethertekUI.MaterialText.Text(Ui.T("Stats_Runs", stats.TotalRuns));
+        AethertekUI.MaterialText.Text(Ui.T("Stats_Avg", FormatTime(stats.AverageTime)));
+        AethertekUI.MaterialText.Text(Ui.T("Stats_Best", FormatTime(stats.BestTime)));
+        AethertekUI.MaterialText.Text(Ui.T("Stats_Deaths", stats.TotalDeaths));
         
         // Success rate with color coding
-        var successRate = stats.TotalRuns > 0 ? (float)stats.SuccessfulRuns / stats.TotalRuns * 100 : 0f;
         var rateColor = successRate > 95 ? new Vector4(0, 1, 0, 1) : successRate > 90 ? new Vector4(1, 1, 0, 1) : new Vector4(1, 0, 0, 1);
-        ImGui.TextColored(rateColor, Ui.T("Stats_Rate", successRate));
+        AethertekUI.MaterialText.TextColored(rateColor, Ui.T("Stats_Rate", successRate));
         
-        ImGui.Text(Ui.T("Stats_Mogtomes", stats.TotalMogtomes));
-        
+        AethertekUI.MaterialText.Text(Ui.T("Stats_Mogtomes", stats.TotalMogtomes));
+        ImGui.PopTextWrapPos();
         ImGui.EndChild();
     }
 
     private void DrawPlayerStatistics()
     {
-        ImGui.Text(Ui.T("Stats_PlayerStatistics"));
+        UiLayout.Wrapped(Ui.T("Stats_PlayerStatistics"));
         ImGui.Separator();
         
         if (!plugin.Configuration.EnableDetailedTracking || plugin.RunHistoryService.RunHistory.Count == 0)
@@ -633,28 +648,39 @@ public class StatsWindow : Window, IDisposable
         var displayName = plugin.Configuration.StatsKrangleNames ? Ui.T("Stats_Player") : stats.PlayerName;
         if (stats.IsLocalPlayer) displayName += Ui.T("Stats_You");
         
-        ImGui.BeginChild($"PlayerCard_{playerId}", new Vector2(250, 120), true);
+        var scale = AethertekUI.MaterialTheme.Metrics.Scale;
+        var width = Math.Min(UiLayout.AvailableWidth, Math.Max(250 * scale,
+            AethertekUI.MaterialText.Measure(displayName).X + ImGui.GetStyle().WindowPadding.X * 2 + 2 * scale));
+        var rows = new List<string> { displayName };
+        if (!plugin.Configuration.StatsKrangleNames) rows.Add("(" + stats.WorldName + ")");
+        rows.AddRange(new[] { Ui.T("Stats_Total", stats.TotalRuns), Ui.T("Stats_PraeDecu", stats.PraetoriumRuns, stats.DecumanaRuns),
+            Ui.T("Stats_Avg", FormatTime(stats.AverageTime)), Ui.T("Stats_Best", FormatTime(stats.BestTime)), Ui.T("Stats_StreakBest", stats.CurrentStreak, stats.BestStreak),
+            Ui.T("Stats_Job2", GetJobName(stats.MostPlayedJob)), Ui.T("Stats_Mogtomes", stats.TotalMogtomes) });
+        var style = ImGui.GetStyle(); var wrapWidth = Math.Max(1, width - style.WindowPadding.X * 2 - style.ChildBorderSize * 2);
+        var height = MathF.Ceiling(style.WindowPadding.Y * 2 + rows.Sum(row => AethertekUI.MaterialText.Measure(row, false, wrapWidth).Y + style.ItemSpacing.Y) + 1 + style.ItemSpacing.Y + 2 * scale);
+        ImGui.BeginChild($"PlayerCard_{playerId}", new Vector2(width, height), true);
+        ImGui.PushTextWrapPos(0);
         
-        ImGui.Text(string.Create(Ui.Culture, $"{displayName}"));
+        AethertekUI.MaterialText.Text(string.Create(Ui.Culture, $"{displayName}"));
         if (!plugin.Configuration.StatsKrangleNames)
-            ImGui.Text(string.Create(Ui.Culture, $"({stats.WorldName})"));
+            AethertekUI.MaterialText.Text(string.Create(Ui.Culture, $"({stats.WorldName})"));
         
         ImGui.Separator();
         
-        ImGui.Text(Ui.T("Stats_Total", stats.TotalRuns));
-        ImGui.Text(Ui.T("Stats_PraeDecu", stats.PraetoriumRuns, stats.DecumanaRuns));
-        ImGui.Text(Ui.T("Stats_Avg", FormatTime(stats.AverageTime)));
-        ImGui.Text(Ui.T("Stats_Best", FormatTime(stats.BestTime)));
-        ImGui.Text(Ui.T("Stats_StreakBest", stats.CurrentStreak, stats.BestStreak));
-        ImGui.Text(Ui.T("Stats_Job2", GetJobName(stats.MostPlayedJob)));
-        ImGui.Text(Ui.T("Stats_Mogtomes", stats.TotalMogtomes));
-        
+        AethertekUI.MaterialText.Text(Ui.T("Stats_Total", stats.TotalRuns));
+        AethertekUI.MaterialText.Text(Ui.T("Stats_PraeDecu", stats.PraetoriumRuns, stats.DecumanaRuns));
+        AethertekUI.MaterialText.Text(Ui.T("Stats_Avg", FormatTime(stats.AverageTime)));
+        AethertekUI.MaterialText.Text(Ui.T("Stats_Best", FormatTime(stats.BestTime)));
+        AethertekUI.MaterialText.Text(Ui.T("Stats_StreakBest", stats.CurrentStreak, stats.BestStreak));
+        AethertekUI.MaterialText.Text(Ui.T("Stats_Job2", GetJobName(stats.MostPlayedJob)));
+        AethertekUI.MaterialText.Text(Ui.T("Stats_Mogtomes", stats.TotalMogtomes));
+        ImGui.PopTextWrapPos();
         ImGui.EndChild();
     }
 
     private void DrawRecentRuns()
     {
-        ImGui.Text(Ui.T("Stats_RecentRunsLast"));
+        UiLayout.Wrapped(Ui.T("Stats_RecentRunsLast"));
         ImGui.Separator();
         
         // Auto-refresh every 10 seconds if window is open
@@ -679,19 +705,33 @@ public class StatsWindow : Window, IDisposable
         }
 
         var recentRuns = plugin.RunHistoryService.GetRecentRuns(25);
-        
-        if (ImGui.BeginTable("RecentRunsTable", 8, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.ScrollY))
+        var scale = AethertekUI.MaterialTheme.Metrics.Scale;
+        var captions = new[] { Ui.T("Stats_Time"), Ui.T("Stats_Player2"), Ui.T("Stats_Job"), Ui.T("Config_Duty"),
+            Ui.T("Stats_Time"), Ui.T("Config_Party"), Ui.T("Stats_Deaths2"), Ui.T("Stats_Status") };
+        var widths = new[] { 60f, 120f, 40f, 50f, 50f, 180f, 70f, 180f }.Select(width => width * scale).ToArray();
+        var padding = 2 * scale;
+        for (var column = 0; column < captions.Length; column++)
+            widths[column] = MathF.Ceiling(Math.Max(widths[column], AethertekUI.MaterialText.Measure(captions[column]).X + padding));
+        foreach (var run in recentRuns)
+        {
+            var members = plugin.RunHistoryService.GetPartyMembersForRun(run);
+            var party = members.Count > 0
+                ? string.Join("\n", members.Select(member => "   " + (plugin.Configuration.StatsKrangleNames ? KrangleService.KrangleName(member) : member)))
+                : run.PartySize > 0 ? Ui.T("Stats_NotCaptured", run.PartySize) : Ui.T("Stats_PartyDataNotCaptured");
+            var cells = new[] { run.Timestamp.ToString("HH:mm", Ui.Culture), plugin.Configuration.StatsKrangleNames ? Ui.T("Stats_Player") : run.PlayerName,
+                GetJobName(run.JobId), Ui.Duty(run.TerritoryId).Render(), FormatTime(run.CompletionTime), party,
+                string.Create(Ui.Culture, $"{run.SelfDeathCount}/{run.OtherDeathCount}/{GetTotalDeaths(run)}"),
+                RunHistoryService.IsSuccessful(run) ? Ui.T("Stats_Success") : Ui.T("Stats_Aborted", string.IsNullOrWhiteSpace(run.AbortReason) ? Ui.T("Stats_NoReasonRecorded") : run.AbortReason) };
+            for (var column = 0; column < cells.Length; column++)
+                widths[column] = MathF.Ceiling(Math.Max(widths[column], AethertekUI.MaterialText.Measure(cells[column]).X + padding));
+        }
+
+        if (ImGui.BeginTable("RecentRunsTable", 8, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.ScrollY | ImGuiTableFlags.ScrollX))
         {
             // Headers
-            ImGui.TableSetupColumn(Ui.T("Stats_Time"), ImGuiTableColumnFlags.WidthFixed, 60);
-            ImGui.TableSetupColumn(Ui.T("Stats_Player2"), ImGuiTableColumnFlags.WidthFixed, 120);
-            ImGui.TableSetupColumn(Ui.T("Stats_Job"), ImGuiTableColumnFlags.WidthFixed, 40);
-            ImGui.TableSetupColumn(Ui.T("Config_Duty"), ImGuiTableColumnFlags.WidthFixed, 50);
-            ImGui.TableSetupColumn(Ui.T("Stats_Time"), ImGuiTableColumnFlags.WidthFixed, 50);
-            ImGui.TableSetupColumn(Ui.T("Config_Party"), ImGuiTableColumnFlags.WidthFixed, 180);
-            ImGui.TableSetupColumn(Ui.T("Stats_Deaths2"), ImGuiTableColumnFlags.WidthFixed, 70);
-            ImGui.TableSetupColumn(Ui.T("Stats_Status"), ImGuiTableColumnFlags.WidthFixed, 180);
-            ImGui.TableHeadersRow();
+            for (var column = 0; column < captions.Length; column++)
+                ImGui.TableSetupColumn(captions[column], ImGuiTableColumnFlags.WidthFixed, widths[column]);
+            UiLayout.TableHeadersRow();
             
             // Data rows
             foreach (var run in recentRuns)
@@ -699,32 +739,32 @@ public class StatsWindow : Window, IDisposable
                 ImGui.TableNextRow();
                 
                 ImGui.TableSetColumnIndex(0);
-                ImGui.Text(run.Timestamp.ToString("HH:mm", Ui.Culture));
+                AethertekUI.MaterialText.Text(run.Timestamp.ToString("HH:mm", Ui.Culture));
                 
                 ImGui.TableSetColumnIndex(1);
                 var displayName = plugin.Configuration.StatsKrangleNames ? Ui.T("Stats_Player") : run.PlayerName;
-                ImGui.Text(displayName);
+                AethertekUI.MaterialText.Text(displayName);
                 
                 ImGui.TableSetColumnIndex(2);
-                ImGui.Text(GetJobName(run.JobId));
+                AethertekUI.MaterialText.Text(GetJobName(run.JobId));
                 
                 ImGui.TableSetColumnIndex(3);
-                ImGui.Text(Ui.Duty(run.TerritoryId).Render());
+                AethertekUI.MaterialText.Text(Ui.Duty(run.TerritoryId).Render());
                 
                 ImGui.TableSetColumnIndex(4);
-                ImGui.Text(FormatTime(run.CompletionTime));
+                AethertekUI.MaterialText.Text(FormatTime(run.CompletionTime));
                 
                 ImGui.TableSetColumnIndex(5);
                 // Show party size and members on separate lines
                 var partyMembers = plugin.RunHistoryService.GetPartyMembersForRun(run);
                 if (partyMembers.Count > 0)
                 {
-                    ImGui.Text(string.Create(Ui.Culture, $"{partyMembers.Count}:"));
+                    AethertekUI.MaterialText.Text(string.Create(Ui.Culture, $"{partyMembers.Count}:"));
                     foreach (var member in partyMembers)
                     {
                         var displayMember = plugin.Configuration.StatsKrangleNames ? 
                             KrangleService.KrangleName(member) : member;
-                        ImGui.Text(string.Create(Ui.Culture, $"   {displayMember}"));
+                        AethertekUI.MaterialText.Text(string.Create(Ui.Culture, $"   {displayMember}"));
                     }
                 }
                 else
@@ -732,18 +772,18 @@ public class StatsWindow : Window, IDisposable
                     var fallbackPartyText = run.PartySize > 0
                         ? Ui.T("Stats_NotCaptured", run.PartySize)
                         : Ui.T("Stats_PartyDataNotCaptured");
-                    ImGui.Text(fallbackPartyText);
+                    AethertekUI.MaterialText.Text(fallbackPartyText);
                 }
                 
                 ImGui.TableSetColumnIndex(6);
-                ImGui.Text(string.Create(Ui.Culture, $"{run.SelfDeathCount}/{run.OtherDeathCount}/{GetTotalDeaths(run)}"));
+                AethertekUI.MaterialText.Text(string.Create(Ui.Culture, $"{run.SelfDeathCount}/{run.OtherDeathCount}/{GetTotalDeaths(run)}"));
                 if (ImGui.IsItemHovered())
                     UiLayout.SetTooltip(Ui.T("Stats_SelfOthersAll2"));
                 
                 ImGui.TableSetColumnIndex(7);
                 var successful = RunHistoryService.IsSuccessful(run);
                 var statusColor = successful ? new Vector4(0, 1, 0, 1) : new Vector4(1, 0, 0, 1);
-                ImGui.TextColored(statusColor, successful
+                AethertekUI.MaterialText.TextColored(statusColor, successful
                     ? Ui.T("Stats_Success")
                     : Ui.T("Stats_Aborted", (string.IsNullOrWhiteSpace(run.AbortReason) ? Ui.T("Stats_NoReasonRecorded") : run.AbortReason)));
             }
@@ -754,7 +794,7 @@ public class StatsWindow : Window, IDisposable
 
     private void DrawPerformanceTrends()
     {
-        ImGui.Text(Ui.T("Stats_PerformanceTrends"));
+        UiLayout.Wrapped(Ui.T("Stats_PerformanceTrends"));
         ImGui.Separator();
         
         if (!plugin.Configuration.EnableDetailedTracking || plugin.RunHistoryService.RunHistory.Count == 0)
@@ -773,15 +813,15 @@ public class StatsWindow : Window, IDisposable
         var last50 = allRuns.TakeLast(50);
         
         // Display metrics
-        ImGui.Text(Ui.T("Stats_AverageCompletionTimeLast", FormatTime(last10.DefaultIfEmpty().Average(x => x?.CompletionTime ?? 0f))));
-        ImGui.Text(Ui.T("Stats_AverageCompletionTimeLast2", FormatTime(last50.DefaultIfEmpty().Average(x => x?.CompletionTime ?? 0f))));
-        ImGui.Text(Ui.T("Stats_AverageCompletionTimeAllTime", FormatTime(allRuns.Average(x => x?.CompletionTime ?? 0f))));
+        UiLayout.Wrapped(Ui.T("Stats_AverageCompletionTimeLast", FormatTime(last10.DefaultIfEmpty().Average(x => x?.CompletionTime ?? 0f))));
+        UiLayout.Wrapped(Ui.T("Stats_AverageCompletionTimeLast2", FormatTime(last50.DefaultIfEmpty().Average(x => x?.CompletionTime ?? 0f))));
+        UiLayout.Wrapped(Ui.T("Stats_AverageCompletionTimeAllTime", FormatTime(allRuns.Average(x => x?.CompletionTime ?? 0f))));
         
         var deathRate10 = last10.Any() ? (float)last10.Count(x => GetTotalDeaths(x) > 0) / last10.Count() * 100 : 0;
         var deathRateAll = (float)allRuns.Count(x => GetTotalDeaths(x) > 0) / allRuns.Count * 100;
         
-        ImGui.Text(Ui.T("Stats_DeathRateLast", deathRate10));
-        ImGui.Text(Ui.T("Stats_DeathRateAllTime", deathRateAll));
+        UiLayout.Wrapped(Ui.T("Stats_DeathRateLast", deathRate10));
+        UiLayout.Wrapped(Ui.T("Stats_DeathRateAllTime", deathRateAll));
         
         // Most efficient job
         var bestJob = allRuns
@@ -792,18 +832,18 @@ public class StatsWindow : Window, IDisposable
         
         if (bestJob != null)
         {
-            ImGui.Text(Ui.T("Stats_MostEfficientJobAvg", GetJobName(bestJob.JobId), FormatTime(bestJob.AvgTime)));
+            UiLayout.Wrapped(Ui.T("Stats_MostEfficientJobAvg", GetJobName(bestJob.JobId), FormatTime(bestJob.AvgTime)));
         }
         
         // Recent performance trend
         ImGui.Spacing();
-        ImGui.Text(Ui.T("Stats_RecentPerformanceTrend"));
+        UiLayout.Wrapped(Ui.T("Stats_RecentPerformanceTrend"));
         var recentRuns = allRuns.TakeLast(10).Reverse().ToList();
         for (int i = 0; i < recentRuns.Count; i++)
         {
             var run = recentRuns[i];
             var timeStr = FormatTime(run.CompletionTime);
-            ImGui.Text(string.Create(Ui.Culture, $"  {run.Timestamp:MM/dd HH:mm} - {GetJobName(run.JobId)} - {timeStr}"));
+            UiLayout.Wrapped(string.Create(Ui.Culture, $"  {run.Timestamp:MM/dd HH:mm} - {GetJobName(run.JobId)} - {timeStr}"));
         }
     }
 

@@ -1,0 +1,2098 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms</value>
+  </resheader>
+  <data name="Config_SetupWizard" xml:space="preserve">
+    <value>Мастер настройки</value>
+  </data>
+  <data name="Config_DependencyCheck" xml:space="preserve">
+    <value>Проверка зависимостей</value>
+  </data>
+  <data name="Config_Party" xml:space="preserve">
+    <value>Группа</value>
+  </data>
+  <data name="Config_Duty" xml:space="preserve">
+    <value>Задание</value>
+  </data>
+  <data name="Config_FoodPots" xml:space="preserve">
+    <value>Еда и зелья</value>
+  </data>
+  <data name="Config_Repair" xml:space="preserve">
+    <value>Ремонт</value>
+  </data>
+  <data name="Config_Advanced" xml:space="preserve">
+    <value>Дополнительно</value>
+  </data>
+  <data name="Config_BackendMode" xml:space="preserve">
+    <value>Режим модуля выполнения</value>
+  </data>
+  <data name="Config_UseADSPrimaryBackend" xml:space="preserve">
+    <value>Использовать ADS (основной модуль)</value>
+  </data>
+  <data name="Config_ADSHandlesDutyAutomationAndInnReturn" xml:space="preserve">
+    <value>ADS управляет заданиями и возвратом в гостиницу. AutoDuty — альтернативный модуль выполнения.</value>
+  </data>
+  <data name="Config_AutoDutyIsTheAlternativeDutyBackendADS" xml:space="preserve">
+    <value>AutoDuty — альтернативный модуль заданий. ADS нужен только при выборе режима ADS или запросе /mog inn.</value>
+  </data>
+  <data name="Config_RequiredPlugins" xml:space="preserve">
+    <value>Необходимые плагины</value>
+  </data>
+  <data name="Config_SetupRequirementsAreIncompleteTheWizardIs" xml:space="preserve">
+    <value>Обязательная настройка не завершена. Мастер носит справочный характер и не блокирует запуск.</value>
+  </data>
+  <data name="Config_RSRRotationSolverReborn" xml:space="preserve">
+    <value>RSR (RotationSolverReborn)</value>
+  </data>
+  <data name="Config_Installed" xml:space="preserve">
+    <value>Установлен</value>
+  </data>
+  <data name="Config_NOTFOUND" xml:space="preserve">
+    <value>НЕ НАЙДЕН</value>
+  </data>
+  <data name="Config_BossModPassiveSupportBMROrVBM" xml:space="preserve">
+    <value>Пассивная поддержка BossMod (BMR или VBM)</value>
+  </data>
+  <data name="Config_BMRLoaded" xml:space="preserve">
+    <value>BMR загружен</value>
+  </data>
+  <data name="Config_VBMLoaded" xml:space="preserve">
+    <value>VBM загружен</value>
+  </data>
+  <data name="Config_BossModRebornBMR" xml:space="preserve">
+    <value>BossModReborn (BMR)</value>
+  </data>
+  <data name="Config_BossModVBM" xml:space="preserve">
+    <value>BossMod (VBM)</value>
+  </data>
+  <data name="Config_RSRHandlesAttacksTheLoadedBossModVariant" xml:space="preserve">
+    <value>RSR управляет атаками; загруженная версия BossMod автоматически использует passive - tank/melee/ranged.</value>
+  </data>
+  <data name="Config_BMRHandlesAttacksAndMovementWithFRENRIDER" xml:space="preserve">
+    <value>BMR управляет атаками и движением через FRENRIDER - TANK/MELEE/RANGED или ваш выбранный пресет.</value>
+  </data>
+  <data name="Config_VBMHandlesAttacksAndMovementWithFRENRIDER" xml:space="preserve">
+    <value>VBM управляет атаками и движением через FRENRIDER - TANK/MELEE/RANGED или ваш выбранный пресет.</value>
+  </data>
+  <data name="Config_WrathHandlesAttacksUsingItsCurrentSettings" xml:space="preserve">
+    <value>Wrath управляет атаками с текущими настройками.</value>
+  </data>
+  <data name="Config_UseManualBossModPreset" xml:space="preserve">
+    <value>Использовать пресет BossMod вручную</value>
+  </data>
+  <data name="Config_PresetName" xml:space="preserve">
+    <value>Имя пресета</value>
+  </data>
+  <data name="Config_EnterAnExistingPresetNameBeforeStarting" xml:space="preserve">
+    <value>Перед запуском укажите имя существующего пресета.</value>
+  </data>
+  <data name="Config_MOGTOMESelectsItsPackagedActivePresetBy" xml:space="preserve">
+    <value>MOGTOME выбирает встроенный активный пресет по текущей роли в начале каждого задания.</value>
+  </data>
+  <data name="Config_BothBossModVariantsAreLoadedStartDisables" xml:space="preserve">
+    <value>Загружены обе версии BossMod. Запуск отключает VBM и перезагружает BMR; выбор VBM меняется на BMR, а RSR остаётся выбранным.</value>
+  </data>
+  <data name="Config_MOGTOMERunsXaSkipcutscenesOnBeforeEvery" xml:space="preserve">
+    <value>MOGTOME выполняет /xa skipcutscenes on перед каждым ручным запуском.</value>
+  </data>
+  <data name="Config_OptionalEnablesMogInnDelegation" xml:space="preserve">
+    <value>Необязательно. Позволяет передавать выполнение /mog inn.</value>
+  </data>
+  <data name="Config_OptionalPlugins" xml:space="preserve">
+    <value>Необязательные плагины</value>
+  </data>
+  <data name="Config_OptionalNotRequiredByMOGTOME" xml:space="preserve">
+    <value>Необязательно. Не требуется для MOGTOME.</value>
+  </data>
+  <data name="Config_RecommendedAppearanceNameplateRandomizer" xml:space="preserve">
+    <value>Рекомендуется. Случайная смена внешности и отображаемых имён.</value>
+  </data>
+  <data name="Config_CustomResolutionPpByX0ade" xml:space="preserve">
+    <value>CustomResolution (1pp by 0x0ade)</value>
+  </data>
+  <data name="Config_ExperimentalAndNotRecommendedLowSpecHelper" xml:space="preserve">
+    <value>Экспериментально и не рекомендуется. Помощник для слабых ПК.</value>
+  </data>
+  <data name="Config_MaybeCrashyWithClients" xml:space="preserve">
+    <value>Возможны сбои с 2 и более клиентами</value>
+  </data>
+  <data name="Config_WillCauseSomeIssuesSometimes" xml:space="preserve">
+    <value>Иногда может вызывать проблемы.</value>
+  </data>
+  <data name="Config_DPSDhogPotatoSystem" xml:space="preserve">
+    <value>DPS (Dhog Potato System)</value>
+  </data>
+  <data name="Config_MayHavePathingIssues" xml:space="preserve">
+    <value>Возможны проблемы с маршрутами.</value>
+  </data>
+  <data name="Config_ExperimentalAndNotRecommendedRemoteHUDControl" xml:space="preserve">
+    <value>Экспериментально и не рекомендуется. Удалённый HUD и управление.</value>
+  </data>
+  <data name="Config_VeryNewPluginUnknownIssues" xml:space="preserve">
+    <value>Очень новый плагин; проблемы неизвестны.</value>
+  </data>
+  <data name="Config_ConflictingPlugins" xml:space="preserve">
+    <value>Конфликтующие плагины</value>
+  </data>
+  <data name="Config_AutoDutyPath" xml:space="preserve">
+    <value>Маршрут AutoDuty</value>
+  </data>
+  <data name="Config_PraetoriumPathINSTALLED" xml:space="preserve">
+    <value>Маршрут Praetorium: УСТАНОВЛЕН ({0})</value>
+  </data>
+  <data name="Config_PraetoriumPathNOTFOUND" xml:space="preserve">
+    <value>Маршрут Praetorium: НЕ НАЙДЕН ({0})</value>
+  </data>
+  <data name="Config_InstallBundledPraetoriumPaths" xml:space="preserve">
+    <value>Установить встроенные маршруты Praetorium</value>
+  </data>
+  <data name="Config_ThisCopiesTheBundledW2WPraetoriumPath" xml:space="preserve">
+    <value>Копирует встроенные файлы маршрутов W2W Praetorium из папки данных MOGTOME в папку маршрутов AutoDuty.</value>
+  </data>
+  <data name="Config_ADSIsOptionalInAutoDutyModeMog" xml:space="preserve">
+    <value>ADS необязателен в режиме AutoDuty; /mog inn требует ADS при явном запросе.</value>
+  </data>
+  <data name="Config_ADSModeNotes" xml:space="preserve">
+    <value>Примечания к режиму ADS</value>
+  </data>
+  <data name="Config_ADSModeDisablesAutoDutyImmediatelyAndAgain" xml:space="preserve">
+    <value>Режим ADS отключает AutoDuty сразу и повторно при запуске. Очередь использует управление ADS и прямую регистрацию в Duty Finder.</value>
+  </data>
+  <data name="Config_RepairInnLeaveSwitchToAdsNpcrepair" xml:space="preserve">
+    <value>Ремонт, гостиница и выход используют /ads npcrepair, /ads selfrepair, /ads enterinn и /ads leave.</value>
+  </data>
+  <data name="Config_TheCheckboxChangesTheDutyBackendADS" xml:space="preserve">
+    <value>Флажок меняет модуль заданий. ADS нужен только при выбранном режиме ADS.</value>
+  </data>
+  <data name="Config_OK" xml:space="preserve">
+    <value>[OK]</value>
+  </data>
+  <data name="Config_CopyRepo" xml:space="preserve">
+    <value>Копировать репозиторий</value>
+  </data>
+  <data name="Config_CopyRepoURLToClipboardThenAdd" xml:space="preserve">
+    <value>Скопируйте URL репозитория и добавьте его в
+Dalamud Settings &gt; Experimental &gt; Custom Plugin Repositories</value>
+  </data>
+  <data name="Config_NotInstalledOptional" xml:space="preserve">
+    <value>Не установлен (необязательно)</value>
+  </data>
+  <data name="Config_EnabledKnownMOGTOMEConflict" xml:space="preserve">
+    <value>Включён — известный конфликт с MOGTOME</value>
+  </data>
+  <data name="Config_InstalledButDisabled" xml:space="preserve">
+    <value>Установлен, но отключён</value>
+  </data>
+  <data name="Config_NotInstalled" xml:space="preserve">
+    <value>Не установлен</value>
+  </data>
+  <data name="Config_DisableNow" xml:space="preserve">
+    <value>Отключить сейчас</value>
+  </data>
+  <data name="Config_MOGTOMETriesXldisablepluginTwistOfFayteWhenYouStart" xml:space="preserve">
+    <value>MOGTOME пытается выполнить /xldisableplugin TwistOfFayte при запуске, но больше не блокирует запуск.</value>
+  </data>
+  <data name="Config_ThisGuideIsAdvisoryItNeverInstalls" xml:space="preserve">
+    <value>Это справочное руководство. Оно не устанавливает, не включает, не отключает и не настраивает другие плагины. Оно лишь сохраняет выбранные настройки MOGTOME.</value>
+  </data>
+  <data name="Config_CompletedForThisAccountWizardVersion" xml:space="preserve">
+    <value>Завершено для этой учётной записи (версия мастера {0}).</value>
+  </data>
+  <data name="Config_RunSetupWizardAgain" xml:space="preserve">
+    <value>Повторить мастер настройки</value>
+  </data>
+  <data name="Config_Backend" xml:space="preserve">
+    <value>Модуль выполнения</value>
+  </data>
+  <data name="Config_CombatProvider" xml:space="preserve">
+    <value>Поставщик боевой автоматизации</value>
+  </data>
+  <data name="Config_RequiredPlugins2" xml:space="preserve">
+    <value>Необходимые плагины</value>
+  </data>
+  <data name="Config_PartySetup" xml:space="preserve">
+    <value>Настройка группы</value>
+  </data>
+  <data name="Config_OptionalSettings" xml:space="preserve">
+    <value>Необязательные настройки</value>
+  </data>
+  <data name="Config_Review" xml:space="preserve">
+    <value>Проверка</value>
+  </data>
+  <data name="Config_StepOf" xml:space="preserve">
+    <value>Шаг {0} из {1}: {2}</value>
+  </data>
+  <data name="Config_ADSIsThePrimaryMOGTOMEBackendAutoDuty" xml:space="preserve">
+    <value>ADS — основной модуль MOGTOME. AutoDuty остаётся альтернативой. Выбор меняет только сохранённый модуль MOGTOME.</value>
+  </data>
+  <data name="Config_ADSPrimaryBackend" xml:space="preserve">
+    <value>ADS (основной модуль)</value>
+  </data>
+  <data name="Config_AutoDutyAlternativeBackend" xml:space="preserve">
+    <value>AutoDuty (альтернативный модуль)</value>
+  </data>
+  <data name="Config_ADSMustBeLoadedForThisSelection" xml:space="preserve">
+    <value>Для этого выбора ADS должен быть загружен.</value>
+  </data>
+  <data name="Config_AutoDutyAndTheSelectedPraetoriumPathMust" xml:space="preserve">
+    <value>Для этого выбора нужны AutoDuty и выбранный маршрут Praetorium.</value>
+  </data>
+  <data name="Config_ChooseTheCombatProviderMOGTOMEShouldRequest" xml:space="preserve">
+    <value>Выберите поставщика боевой автоматизации, которого MOGTOME должен использовать с выбранным модулем.</value>
+  </data>
+  <data name="Config_SelectedCombatProvider" xml:space="preserve">
+    <value>Выбранный поставщик боевой автоматизации</value>
+  </data>
+  <data name="Config_LoadTheSelectedProviderRSRAlsoRequires" xml:space="preserve">
+    <value>Загрузите выбранного поставщика; RSR также требует BMR или VBM для пассивной поддержки.</value>
+  </data>
+  <data name="Config_MarkTheClientThatQueuesDutiesAs" xml:space="preserve">
+    <value>Отметьте клиент, ставящий задания в очередь, как лидера группы. Каждый клиент должен самостоятельно проверить свою настройку.</value>
+  </data>
+  <data name="Config_IAmThePartyLeader" xml:space="preserve">
+    <value>Я лидер группы</value>
+  </data>
+  <data name="Config_CrossWorldParty" xml:space="preserve">
+    <value>Группа между мирами</value>
+  </data>
+  <data name="Config_UsePartySettingsForTheFullQueue" xml:space="preserve">
+    <value>Используйте настройки группы для полных правил очереди и разового обновления состояния вне задания.</value>
+  </data>
+  <data name="Config_FoodPotionsAndRepairAreOptionalConfigure" xml:space="preserve">
+    <value>Еда, зелья и ремонт необязательны. При желании настройте их на соответствующих вкладках; отсутствие настройки поддерживается.</value>
+  </data>
+  <data name="Config_FoodPotsAndRepairRemainAvailableAfter" xml:space="preserve">
+    <value>Еда, зелья и ремонт доступны и после мастера; настройки внешних плагинов здесь не меняются.</value>
+  </data>
+  <data name="Config_FinishSetup" xml:space="preserve">
+    <value>Завершить настройку</value>
+  </data>
+  <data name="Config_Back" xml:space="preserve">
+    <value>Назад</value>
+  </data>
+  <data name="Config_Next" xml:space="preserve">
+    <value>Далее</value>
+  </data>
+  <data name="Config_ADSSelectedBackend" xml:space="preserve">
+    <value>ADS (выбранный модуль)</value>
+  </data>
+  <data name="Config_AutoDutyPlusSelectedPraetoriumPath" xml:space="preserve">
+    <value>AutoDuty и выбранный маршрут Praetorium</value>
+  </data>
+  <data name="Config_LoadADS" xml:space="preserve">
+    <value>Загрузите ADS.</value>
+  </data>
+  <data name="Config_LoadAutoDutyAndInstallTheSelectedPraetorium" xml:space="preserve">
+    <value>Загрузите AutoDuty и установите выбранный маршрут Praetorium.</value>
+  </data>
+  <data name="Config_LoadTheProviderSelectedInStepRSR" xml:space="preserve">
+    <value>Загрузите поставщика, выбранного на шаге 2; RSR также требует BMR или VBM.</value>
+  </data>
+  <data name="Config_LoadVnavmesh" xml:space="preserve">
+    <value>Загрузите vnavmesh.</value>
+  </data>
+  <data name="Config_LoadXASlaveForXaSkipcutscenesOn" xml:space="preserve">
+    <value>Загрузите XA Slave для /xa skipcutscenes on.</value>
+  </data>
+  <data name="Config_LoadYesAlreadyForDialogs" xml:space="preserve">
+    <value>Загрузите YesAlready для диалогов.</value>
+  </data>
+  <data name="Config_OperatorClickedOnlyCopiesMOGTOMESBundled" xml:space="preserve">
+    <value>Только по нажатию оператора: копирует встроенные файлы MOGTOME в папку маршрутов AutoDuty.</value>
+  </data>
+  <data name="Config_LifestreamAndTextAdvanceAreOptionalAndDo" xml:space="preserve">
+    <value>Lifestream и TextAdvance необязательны и не влияют на эти проверки.</value>
+  </data>
+  <data name="Config_ADSPrimary" xml:space="preserve">
+    <value>ADS (основной)</value>
+  </data>
+  <data name="Config_AutoDutyAlternative" xml:space="preserve">
+    <value>AutoDuty (альтернативный)</value>
+  </data>
+  <data name="Config_Backend2" xml:space="preserve">
+    <value>Модуль выполнения: {0}</value>
+  </data>
+  <data name="Config_Ready" xml:space="preserve">
+    <value>готово</value>
+  </data>
+  <data name="Config_Incomplete" xml:space="preserve">
+    <value>не завершено</value>
+  </data>
+  <data name="Config_RequiredChecks" xml:space="preserve">
+    <value>Обязательные проверки: {0}</value>
+  </data>
+  <data name="Config_Leader" xml:space="preserve">
+    <value>лидер</value>
+  </data>
+  <data name="Config_Participant" xml:space="preserve">
+    <value>участник</value>
+  </data>
+  <data name="Config_PartyRole" xml:space="preserve">
+    <value>Роль в группе: {0}</value>
+  </data>
+  <data name="Config_OptionalRepairThreshold" xml:space="preserve">
+    <value>Необязательный порог ремонта: {0}%</value>
+  </data>
+  <data name="Config_FinishRecordsOnlyThatThisAccountCompleted" xml:space="preserve">
+    <value>Завершение лишь записывает, что эта учётная запись прошла данную версию мастера. Оно не ограничивает запуск и не меняет другой плагин.</value>
+  </data>
+  <data name="Config_Ready2" xml:space="preserve">
+    <value>Готово</value>
+  </data>
+  <data name="Config_PartySettings" xml:space="preserve">
+    <value>Настройки группы</value>
+  </data>
+  <data name="Config_RuntimeRoleFollowsThisSavedSettingUse" xml:space="preserve">
+    <value>Рабочая роль следует сохранённой настройке. Используйте обновление состояния группы вне задания для разового определения лидера в одном мире.</value>
+  </data>
+  <data name="Config_EnableIfYouReInACross" xml:space="preserve">
+    <value>Включите, если вы в группе между мирами.</value>
+  </data>
+  <data name="Config_OnlyQueueWithExactlyVisiblePeople" xml:space="preserve">
+    <value>Требовать минимум участников</value>
+  </data>
+  <data name="Config_MinimumPartyMembers" xml:space="preserve">
+    <value>Минимум участников</value>
+  </data>
+  <data name="Config_AppliesOnlyToSameWorldLeadersIn" xml:space="preserve">
+    <value>Очередь допускает выбранный минимум и до 4 видимых участников. Один игрок считается за 1. По умолчанию: 4. Только для лидеров одного мира в синхронизированных режимах, поскольку видимость межмировой группы ненадёжна. Тестовый режим без синхронизации исключён.</value>
+  </data>
+  <data name="Config_RuntimePartyState" xml:space="preserve">
+    <value>Текущее состояние группы:</value>
+  </data>
+  <data name="Config_Yes" xml:space="preserve">
+    <value>Да</value>
+  </data>
+  <data name="Config_No" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="Config_LeaderRightNow" xml:space="preserve">
+    <value>Лидер сейчас: {0}</value>
+  </data>
+  <data name="Config_SourceConfiguredCrossWorldRole" xml:space="preserve">
+    <value>Источник: настроенная роль между мирами.</value>
+  </data>
+  <data name="Config_SourceConfiguredRoleRefreshPartyStateOnly" xml:space="preserve">
+    <value>Источник: настроенная роль. Обновление состояния группы лишь один раз проверяет текущий список одного мира.</value>
+  </data>
+  <data name="Config_RefreshPartyState" xml:space="preserve">
+    <value>Обновить состояние группы</value>
+  </data>
+  <data name="Config_OneTimeSameWorldLeaderDetectionUse" xml:space="preserve">
+    <value>Разовое определение лидера в одном мире. Только вне задания после появления всей группы.</value>
+  </data>
+  <data name="Config_PartyBehaviour" xml:space="preserve">
+    <value>Поведение группы:</value>
+  </data>
+  <data name="Config_LeaderQueuesDutiesAndControlsTheMOGTOME" xml:space="preserve">
+    <value>- Лидер: ставит задания в очередь и управляет выполнением MOGTOME.</value>
+  </data>
+  <data name="Config_NonLeaderWaitsForPartyQueuePops" xml:space="preserve">
+    <value>- Участник: ждёт приглашения в задание и ремонтируется самостоятельно.</value>
+  </data>
+  <data name="Config_RepairMOGTOMEPausesItsOwnManualQueue" xml:space="preserve">
+    <value>- Ремонт: MOGTOME приостанавливает ручные попытки очереди на время ремонта, затем возобновляет их.</value>
+  </data>
+  <data name="Config_DetectionRefreshPartyStateIsManualOnly" xml:space="preserve">
+    <value>- Определение: обновление состояния группы запускается вручную и не назначает лидера по одиночным или неполным данным.</value>
+  </data>
+  <data name="Config_DutySettings" xml:space="preserve">
+    <value>Настройки задания</value>
+  </data>
+  <data name="Config_DutyCounter" xml:space="preserve">
+    <value>Счётчик заданий</value>
+  </data>
+  <data name="Config_ReturnToEntranceDelaySeconds" xml:space="preserve">
+    <value>Задержка возврата ко входу (секунды)</value>
+  </data>
+  <data name="Config_ReturnToEntranceDelayHelp" xml:space="preserve">
+    <value>Задержка начинается при обнаружении смерти в активном задании и продолжается при свёрнутом запросе возврата. Подтверждённая гибель всей группы пропускает задержку для текущей смерти, даже если другой участник ожил раньше. После задержки или подтверждённой гибели видимые запросы Return принимаются при следующем обычном обновлении; свёрнутые открываются и проверяются на следующем обновлении. По умолчанию: 60 секунд; минимум: 1. Для ADS и AutoDuty. Воскрешения и перемещения в закрытые зоны остаются немедленными.</value>
+  </data>
+  <data name="Config_CurrentPraetoriumRunCountSetToFor" xml:space="preserve">
+    <value>Текущее число прохождений Praetorium. Установите 0 для первого прохождения за день.</value>
+  </data>
+  <data name="Config_PraetoriumAutoDutyPath" xml:space="preserve">
+    <value>Маршрут Praetorium AutoDuty</value>
+  </data>
+  <data name="Config_BundledWithMOGTOMEAndCopiedIntoAutoDuty" xml:space="preserve">
+    <value>Включён в MOGTOME и копируется в папку маршрутов AutoDuty при запуске или установке. По умолчанию: phecda.</value>
+  </data>
+  <data name="Config_ADSModeIgnoresAutoDutyPathSelection" xml:space="preserve">
+    <value>Режим ADS игнорирует выбор маршрута AutoDuty.</value>
+  </data>
+  <data name="Config_PraetoriumThreshold" xml:space="preserve">
+    <value>Порог Praetorium</value>
+  </data>
+  <data name="Config_SwitchToDecumanaAfterThisManyPraetorium" xml:space="preserve">
+    <value>Переключиться на Decumana после этого числа прохождений Praetorium.</value>
+  </data>
+  <data name="Config_PraetoriumDailyLimit" xml:space="preserve">
+    <value>Дневной лимит Praetorium</value>
+  </data>
+  <data name="Config_StopAfterThisManySuccessfulPraetoriumClears" xml:space="preserve">
+    <value>Остановиться после этого числа успешных прохождений Praetorium за сегодня. Decumana и прерванные попытки не учитываются.</value>
+  </data>
+  <data name="Config_QuitCommand" xml:space="preserve">
+    <value>Команда выхода</value>
+  </data>
+  <data name="Config_RunsOnceWhenThePraetoriumDailyLimit" xml:space="preserve">
+    <value>Выполняется один раз после выхода из задания при достижении дневного лимита Praetorium.</value>
+  </data>
+  <data name="Config_TestingModeUnsyncedUncheckLevelSyncYourself" xml:space="preserve">
+    <value>Тестовый режим: без синхронизации (отключите level sync вручную, если хотите это сделать. Статистика не записывается)</value>
+  </data>
+  <data name="Config_WARNINGRunningUnsyncedWithoutLevelSyncTesting" xml:space="preserve">
+    <value>ВНИМАНИЕ: выполнение без синхронизации уровня (тестовый режим, без статистики).</value>
+  </data>
+  <data name="Config_DefaultUnsyncLevelSyncSyncLevelSync" xml:space="preserve">
+    <value>По умолчанию: Unsync+Level Sync (Sync+Level Sync, чтобы избежать очереди со случайными игроками).</value>
+  </data>
+  <data name="Config_TestingModeActiveEnableDebugToChange" xml:space="preserve">
+    <value>[Тестовый режим активен — включите отладку для изменения]</value>
+  </data>
+  <data name="Config_Food" xml:space="preserve">
+    <value>Еда</value>
+  </data>
+  <data name="Config_UseHQFood" xml:space="preserve">
+    <value>Использовать еду HQ</value>
+  </data>
+  <data name="Config_UsesTheSelectedMealAsHQWhen" xml:space="preserve">
+    <value>При включении использует выбранную еду качества HQ; отключите для обычного качества.</value>
+  </data>
+  <data name="Config_ClearFood" xml:space="preserve">
+    <value>Убрать еду</value>
+  </data>
+  <data name="Config_NoFoodSelectedFoodIsOptional" xml:space="preserve">
+    <value>  Еда не выбрана. Еда необязательна.</value>
+  </data>
+  <data name="Config_Potions" xml:space="preserve">
+    <value>Зелья</value>
+  </data>
+  <data name="Config_UseHQPotion" xml:space="preserve">
+    <value>Использовать зелье HQ</value>
+  </data>
+  <data name="Config_UsesTheSelectedMedicineAsHQWhen" xml:space="preserve">
+    <value>При включении использует выбранное средство качества HQ; отключите для обычных настоек и зелий.</value>
+  </data>
+  <data name="Config_ClearPotion" xml:space="preserve">
+    <value>Убрать зелье</value>
+  </data>
+  <data name="Config_PotOnGaius" xml:space="preserve">
+    <value>Зелье на Gaius</value>
+  </data>
+  <data name="Config_PotOnPhantomGaius" xml:space="preserve">
+    <value>Зелье на Phantom Gaius</value>
+  </data>
+  <data name="Config_NoPotionSelectedPotionsAreOptional" xml:space="preserve">
+    <value>  Зелье не выбрано. Зелья необязательны.</value>
+  </data>
+  <data name="Config_Select" xml:space="preserve">
+    <value>Выбрать {0}...</value>
+  </data>
+  <data name="Config_Search" xml:space="preserve">
+    <value>Поиск</value>
+  </data>
+  <data name="Config_NoResultsTryADifferentSearchTerm" xml:space="preserve">
+    <value>Нет результатов. Попробуйте другой запрос.</value>
+  </data>
+  <data name="Config_TypeAtLeastCharactersToSearch" xml:space="preserve">
+    <value>Введите не менее 2 символов для поиска...</value>
+  </data>
+  <data name="Config_RepairSettings" xml:space="preserve">
+    <value>Настройки ремонта</value>
+  </data>
+  <data name="Config_RepairThreshold" xml:space="preserve">
+    <value>Порог ремонта (%)</value>
+  </data>
+  <data name="Config_RepairWhenEquipmentDurabilityFallsBelowThis" xml:space="preserve">
+    <value>Ремонтировать при прочности снаряжения ниже этого процента. Установите 0 для отключения авторемонта.</value>
+  </data>
+  <data name="Config_RepairMode" xml:space="preserve">
+    <value>Режим ремонта</value>
+  </data>
+  <data name="Config_RepairModeHelp" xml:space="preserve">
+    <value>Ремонт NPC + номер в гостинице завершается только после входа ADS в номер.</value>
+  </data>
+  <data name="Config_RepairBehavior" xml:space="preserve">
+    <value>Поведение ремонта:</value>
+  </data>
+  <data name="Config_LeaderRepairsAutomaticallyBetweenDutiesWhenThreshold" xml:space="preserve">
+    <value>- Лидер: автоматически ремонтируется между заданиями при достижении порога</value>
+  </data>
+  <data name="Config_NonLeaderRepairsIndependentlyAfterSecondOutside" xml:space="preserve">
+    <value>- Участник: ремонтируется самостоятельно через 1 секунду вне задания</value>
+  </data>
+  <data name="Config_SoloTreatedAsLeaderAutomatically" xml:space="preserve">
+    <value>- Один игрок: автоматически считается лидером</value>
+  </data>
+  <data name="Config_ADSRepairCommand" xml:space="preserve">
+    <value>- Команда ремонта ADS: {0}</value>
+  </data>
+  <data name="Config_AutoDutyModeRepairMETHODSelfNPCIs" xml:space="preserve">
+    <value>- Режим AutoDuty: МЕТОД ремонта (самостоятельно/NPC) задаётся в AutoDuty; возврат в гостиницу использует /ads enterinn</value>
+  </data>
+  <data name="Config_Status" xml:space="preserve">
+    <value>Состояние:</value>
+  </data>
+  <data name="Config_CurrentThreshold" xml:space="preserve">
+    <value>  Текущий порог: {0}%</value>
+  </data>
+  <data name="Config_Enabled" xml:space="preserve">
+    <value>Включено</value>
+  </data>
+  <data name="Config_Disabled" xml:space="preserve">
+    <value>Отключено</value>
+  </data>
+  <data name="Config_AutoRepair" xml:space="preserve">
+    <value>  Авторемонт: {0}</value>
+  </data>
+  <data name="Config_Self" xml:space="preserve">
+    <value>Самостоятельно</value>
+  </data>
+  <data name="Config_NPC" xml:space="preserve">
+    <value>NPC</value>
+  </data>
+  <data name="Config_ADSRepairMethod" xml:space="preserve">
+    <value>  Метод ремонта ADS: {0}</value>
+  </data>
+  <data name="Config_ExperimentalADS" xml:space="preserve">
+    <value>Экспериментальный ADS</value>
+  </data>
+  <data name="Config_ExperimentalFirstRoomSkipPraetorium" xml:space="preserve">
+    <value>Экспериментальный пропуск первой комнаты (Praetorium)</value>
+  </data>
+  <data name="Config_ADSPraetoriumOnlyEveryParticipatingClientMust" xml:space="preserve">
+    <value>Только ADS/Praetorium. Каждый клиент должен включить локально. После успеха или любого сбоя MOGTOME передаёт управление ADS.</value>
+  </data>
+  <data name="Config_AvailableOnlyWhenADSIsTheSelected" xml:space="preserve">
+    <value>Доступно только при выбранном ADS; сохранённый параметр неактивен в режиме AutoDuty.</value>
+  </data>
+  <data name="Config_Debug" xml:space="preserve">
+    <value>Отладка</value>
+  </data>
+  <data name="Config_DebugCounter" xml:space="preserve">
+    <value>Счётчик отладки</value>
+  </data>
+  <data name="Config_CrashRecoveryOffsetIfYouRestartedMid" xml:space="preserve">
+    <value>Смещение для восстановления после сбоя. При перезапуске посреди сессии укажите последнее
+известное число прохождений для правильного учёта за сегодня.</value>
+  </data>
+  <data name="Config_BailoutTimeoutSec" xml:space="preserve">
+    <value>Тайм-аут аварийного выхода (с)</value>
+  </data>
+  <data name="Config_LeaveDutyIfStuckForThisMany" xml:space="preserve">
+    <value>Выйти из задания при застревании на это число секунд. По умолчанию: 1200 (20 мин).</value>
+  </data>
+  <data name="Main_V" xml:space="preserve">
+    <value>v{0}</value>
+  </data>
+  <data name="Main_KoFi" xml:space="preserve">
+    <value>♡ Ko-fi ♡</value>
+  </data>
+  <data name="Main_SupportDevelopmentOnKoFi" xml:space="preserve">
+    <value>Поддержать разработку на Ko-fi</value>
+  </data>
+  <data name="Main_StateInitializing" xml:space="preserve">
+    <value>Состояние: инициализация</value>
+  </data>
+  <data name="Main_StatusWaitingForAccountAndEngineInitialization" xml:space="preserve">
+    <value>Состояние: ожидание инициализации учётной записи и движка.</value>
+  </data>
+  <data name="Main_Config" xml:space="preserve">
+    <value>Настройки</value>
+  </data>
+  <data name="Main_Stats" xml:space="preserve">
+    <value>Статистика</value>
+  </data>
+  <data name="Main_Reset" xml:space="preserve">
+    <value>Сбросить</value>
+  </data>
+  <data name="Main_State" xml:space="preserve">
+    <value>Состояние: {0}</value>
+  </data>
+  <data name="Main_Status" xml:space="preserve">
+    <value>Статус: {0}</value>
+  </data>
+  <data name="Main_Start" xml:space="preserve">
+    <value>Запуск</value>
+  </data>
+  <data name="Main_Stop" xml:space="preserve">
+    <value>Стоп</value>
+  </data>
+  <data name="Main_UnKrangle" xml:space="preserve">
+    <value>Отменить Krangle</value>
+  </data>
+  <data name="Main_Krangle" xml:space="preserve">
+    <value>Krangle</value>
+  </data>
+  <data name="Main_ObfuscateNamesWithMilitaryExerciseWordsUseful" xml:space="preserve">
+    <value>Скрыть имена за военными терминами и названиями упражнений.
+Полезно для снимков экрана.</value>
+  </data>
+  <data name="Main_CancelStopAfterNext" xml:space="preserve">
+    <value>Отменить стоп после следующего</value>
+  </data>
+  <data name="Main_StopAfterNextSuccess" xml:space="preserve">
+    <value>Стоп после следующего успеха</value>
+  </data>
+  <data name="Main_ArmedStopsAfterASuccessfulRunIs" xml:space="preserve">
+    <value>Включено: остановка после записи успешного прохождения и подтверждения выхода из задания.</value>
+  </data>
+  <data name="Main_RuntimeOnlyAbortedRunsDoNotConsume" xml:space="preserve">
+    <value>Только в текущем сеансе. Прерванные попытки не расходуют этот запрос.</value>
+  </data>
+  <data name="Main_HELP" xml:space="preserve">
+    <value>-&gt;!ПОМОЩЬ!&lt;-</value>
+  </data>
+  <data name="Main_MainWindowSettings" xml:space="preserve">
+    <value>Настройки главного окна</value>
+  </data>
+  <data name="Main_AIDutySolverADS" xml:space="preserve">
+    <value>AI Duty Solver (ADS)</value>
+  </data>
+  <data name="Main_DutyBackendSelectorEnablingADSImmediatelySends" xml:space="preserve">
+    <value>Выбор модуля заданий.
+Включение ADS сразу отправляет /xldisableplugin AutoDuty.
+ADS необязателен в режиме AutoDuty и используется только при запросе /mog inn.</value>
+  </data>
+  <data name="Main_ADSDutyBackendActiveADSAlsoHandles" xml:space="preserve">
+    <value>Модуль ADS активен. ADS также управляет входом в гостиницу.</value>
+  </data>
+  <data name="Main_AutoDutyDutyBackendActiveADSIsOptional" xml:space="preserve">
+    <value>Модуль AutoDuty активен. ADS необязателен для /mog inn.</value>
+  </data>
+  <data name="Main_DutyInformation" xml:space="preserve">
+    <value>Информация о задании</value>
+  </data>
+  <data name="Main_CounterPraeDailyPraetoriumLimit" xml:space="preserve">
+    <value>Счётчик: {0} / {1} Prae | Дневной лимит Praetorium: {2}</value>
+  </data>
+  <data name="Main_DailyDecuRunsToday" xml:space="preserve">
+    <value>Decu за день: {0} прохождений сегодня</value>
+  </data>
+  <data name="Main_Current" xml:space="preserve">
+    <value>Текущее: {0}</value>
+  </data>
+  <data name="Main_DailyReset" xml:space="preserve">
+    <value>Ежедневный сброс: {0} ({1})</value>
+  </data>
+  <data name="Main_TESTINGMODEUnsynced" xml:space="preserve">
+    <value>[ТЕСТОВЫЙ РЕЖИМ — без синхронизации]</value>
+  </data>
+  <data name="Main_LastClearS" xml:space="preserve">
+    <value>Последнее прохождение: {0:F0}с</value>
+  </data>
+  <data name="Main_TimeInDutyS" xml:space="preserve">
+    <value>Время в задании: {0:F0}с</value>
+  </data>
+  <data name="Main_DeathsThisRunSelfOthersAll" xml:space="preserve">
+    <value>Смерти за попытку: свои {0} | другие {1} | всего {2}</value>
+  </data>
+  <data name="Main_DebugTools" xml:space="preserve">
+    <value>Инструменты отладки</value>
+  </data>
+  <data name="Main_FORCEPATHSELECTION" xml:space="preserve">
+    <value>ПРИНУДИТЕЛЬНЫЙ ВЫБОР МАРШРУТА</value>
+  </data>
+  <data name="Main_Result" xml:space="preserve">
+    <value>Результат: {0}</value>
+  </data>
+  <data name="Main_TESTPATHINDEX" xml:space="preserve">
+    <value>ПРОВЕРИТЬ ИНДЕКС МАРШРУТА</value>
+  </data>
+  <data name="Main_LogADStructure" xml:space="preserve">
+    <value>Записать структуру AD</value>
+  </data>
+  <data name="Main_DumpAutoDutyPluginStructureToDalamudLog" xml:space="preserve">
+    <value>Выгрузить структуру AutoDuty в журнал Dalamud для исследования.</value>
+  </data>
+  <data name="Main_LogConfig" xml:space="preserve">
+    <value>Записать настройки</value>
+  </data>
+  <data name="Main_LogActions" xml:space="preserve">
+    <value>Записать действия</value>
+  </data>
+  <data name="Main_DumpAutoDutyActionsListCurrentlyEmptyBut" xml:space="preserve">
+    <value>Выгрузить список Actions AutoDuty (сейчас пуст, но показывает структуру).</value>
+  </data>
+  <data name="Main_LogManager" xml:space="preserve">
+    <value>Записать менеджер</value>
+  </data>
+  <data name="Main_DumpAutoDutyActionsManagerContainsActionsListWithCommand" xml:space="preserve">
+    <value>Выгрузить ActionsManager AutoDuty (содержит actionsList с определениями команд).</value>
+  </data>
+  <data name="Main_ExplorePaths" xml:space="preserve">
+    <value>Исследовать маршруты</value>
+  </data>
+  <data name="Main_ExploreDifferentLocationsForPathDataConfiguration" xml:space="preserve">
+    <value>Исследовать расположения данных маршрутов (Configuration, MainWindow и другие).</value>
+  </data>
+  <data name="Main_LogTuples" xml:space="preserve">
+    <value>Записать кортежи</value>
+  </data>
+  <data name="Main_IterateThroughActionsListAndLogEachTuple" xml:space="preserve">
+    <value>Перебрать actionsList и записать содержимое каждого кортежа (определения команд).</value>
+  </data>
+  <data name="Main_PathSelections" xml:space="preserve">
+    <value>Выбор маршрутов</value>
+  </data>
+  <data name="Main_ExplorePathSelectionsByPathDictionaryTerritoryPathMappings" xml:space="preserve">
+    <value>Исследовать словарь PathSelectionsByPath (территории → маршруты).</value>
+  </data>
+  <data name="Main_CheckCurrent" xml:space="preserve">
+    <value>Проверить текущий</value>
+  </data>
+  <data name="Main_CheckWhatPathAutoDutyCurrentlyHasSelected" xml:space="preserve">
+    <value>Проверить текущий выбранный маршрут AutoDuty.</value>
+  </data>
+  <data name="Main_FindMethods" xml:space="preserve">
+    <value>Найти методы</value>
+  </data>
+  <data name="Main_FindSaveApplyLoadMethodsInAutoDuty" xml:space="preserve">
+    <value>Найти методы Save/Apply/Load в AutoDuty.</value>
+  </data>
+  <data name="Main_ConfigFields" xml:space="preserve">
+    <value>Поля настроек</value>
+  </data>
+  <data name="Main_FindActualConfigFieldNamesForPath" xml:space="preserve">
+    <value>Найти реальные имена полей выбора маршрута.</value>
+  </data>
+  <data name="Main_CheckRepair" xml:space="preserve">
+    <value>Проверить ремонт</value>
+  </data>
+  <data name="Main_Item" xml:space="preserve">
+    <value>Предмет {0}</value>
+  </data>
+  <data name="Main_CheckEquipmentDurabilityAndRepairStatus" xml:space="preserve">
+    <value>Проверить прочность снаряжения и состояние ремонта.</value>
+  </data>
+  <data name="Main_TestingModeUnsyncedNoStats" xml:space="preserve">
+    <value>Тестовый режим: без синхронизации (без статистики)</value>
+  </data>
+  <data name="Main_WARNINGRunningUnsyncedWithoutLevelSync" xml:space="preserve">
+    <value>ВНИМАНИЕ: выполнение без синхронизации уровня.</value>
+  </data>
+  <data name="Main_TESTPRAEINDEX" xml:space="preserve">
+    <value>ПРОВЕРИТЬ ИНДЕКС PRAE</value>
+  </data>
+  <data name="Main_LogsPraetoriumCallbackIndexAndMissingOptional" xml:space="preserve">
+    <value>Записать индекс callback Praetorium и отсутствующие необязательные открытия. Не ставит в очередь.</value>
+  </data>
+  <data name="Main_PraetoriumCallback" xml:space="preserve">
+    <value>Callback Praetorium: {0}</value>
+  </data>
+  <data name="Main_MissingOptionalUnlocks" xml:space="preserve">
+    <value>Отсутствующие необязательные открытия: {0}</value>
+  </data>
+  <data name="Main_Unlocked" xml:space="preserve">
+    <value>Открыто</value>
+  </data>
+  <data name="Main_Missing" xml:space="preserve">
+    <value>Отсутствует</value>
+  </data>
+  <data name="Main_QuestIDs" xml:space="preserve">
+    <value>ID заданий: {0}</value>
+  </data>
+  <data name="Main_ADSModeActiveAutoDutyReflectionPathDebug" xml:space="preserve">
+    <value>Режим ADS активен. Отладка reflection и маршрутов AutoDuty скрыта.</value>
+  </data>
+  <data name="Main_LeaderRuntime" xml:space="preserve">
+    <value>Лидер (во время работы): {0}</value>
+  </data>
+  <data name="Main_CrossWorld" xml:space="preserve">
+    <value>Между мирами: {0}</value>
+  </data>
+  <data name="Main_SourceConfiguredCrossWorldRole" xml:space="preserve">
+    <value>Источник: настроенная роль между мирами</value>
+  </data>
+  <data name="Main_Subsystems" xml:space="preserve">
+    <value>Подсистемы</value>
+  </data>
+  <data name="Main_PausedByMOGTOME" xml:space="preserve">
+    <value>Приостановлено MOGTOME</value>
+  </data>
+  <data name="Main_DutyBackend" xml:space="preserve">
+    <value>Модуль заданий</value>
+  </data>
+  <data name="Main_LogAllConfiguration" xml:space="preserve">
+    <value>Записать все настройки</value>
+  </data>
+  <data name="Main_LogConfigPath" xml:space="preserve">
+    <value>Записать путь настроек</value>
+  </data>
+  <data name="Main_QueueRole" xml:space="preserve">
+    <value>Роль в очереди</value>
+  </data>
+  <data name="Main_ADSRuntime" xml:space="preserve">
+    <value>Работа ADS</value>
+  </data>
+  <data name="Main_Bailout" xml:space="preserve">
+    <value>Аварийный выход</value>
+  </data>
+  <data name="Main_S" xml:space="preserve">
+    <value>{0}с</value>
+  </data>
+  <data name="Main_NotConfigured" xml:space="preserve">
+    <value>Не настроено</value>
+  </data>
+  <data name="Main_HQ" xml:space="preserve">
+    <value>HQ</value>
+  </data>
+  <data name="Main_NQ" xml:space="preserve">
+    <value>NQ</value>
+  </data>
+  <data name="Main_X" xml:space="preserve">
+    <value>{0} [{1}] x{2}</value>
+  </data>
+  <data name="Stats_DutyStatistics" xml:space="preserve">
+    <value>Статистика заданий</value>
+  </data>
+  <data name="Stats_OpenConfig" xml:space="preserve">
+    <value>Открыть настройки</value>
+  </data>
+  <data name="Stats_OpenMOGTOMEConfigurationFolder" xml:space="preserve">
+    <value>Открыть папку настроек MOGTOME</value>
+  </data>
+  <data name="Stats_KrangleNames" xml:space="preserve">
+    <value>Скрывать имена через Krangle</value>
+  </data>
+  <data name="Stats_Summary" xml:space="preserve">
+    <value>Сводка</value>
+  </data>
+  <data name="Stats_Detailed" xml:space="preserve">
+    <value>Подробно</value>
+  </data>
+  <data name="Stats_ShowDebugRuns" xml:space="preserve">
+    <value>Показывать отладочные прохождения</value>
+  </data>
+  <data name="Stats_UnsyncedRunsAreNowIncludedInStatistics" xml:space="preserve">
+    <value>Прохождения без синхронизации включены в статистику</value>
+  </data>
+  <data name="Stats_UnsyncedRunsAreHiddenFromStatistics" xml:space="preserve">
+    <value>Прохождения без синхронизации скрыты из статистики</value>
+  </data>
+  <data name="Stats_CombinedStats" xml:space="preserve">
+    <value>Общая статистика</value>
+  </data>
+  <data name="Stats_TotalRuns" xml:space="preserve">
+    <value>Всего прохождений: {0}</value>
+  </data>
+  <data name="Stats_TotalMogtomes" xml:space="preserve">
+    <value>Всего Mogtomes: {0}</value>
+  </data>
+  <data name="Stats_CurrentDailyCounter" xml:space="preserve">
+    <value>Текущий дневной счётчик: {0}</value>
+  </data>
+  <data name="Stats_DailyDecumanaBest" xml:space="preserve">
+    <value>Decumana за день: {0} (лучшее: {1})</value>
+  </data>
+  <data name="Stats_NextDailyReset" xml:space="preserve">
+    <value>Следующий ежедневный сброс: {0} ({1})</value>
+  </data>
+  <data name="Stats_TodaySDecumanaStats" xml:space="preserve">
+    <value>Статистика Decumana за сегодня:</value>
+  </data>
+  <data name="Stats_BestToday" xml:space="preserve">
+    <value>  Лучшее сегодня: {0}</value>
+  </data>
+  <data name="Stats_LongestToday" xml:space="preserve">
+    <value>  Самое долгое сегодня: {0}</value>
+  </data>
+  <data name="Stats_RunsToday" xml:space="preserve">
+    <value>  Прохождений сегодня: {0}</value>
+  </data>
+  <data name="Stats_MogtomesToday" xml:space="preserve">
+    <value>  Mogtomes сегодня: {0}</value>
+  </data>
+  <data name="Stats_ResetAllStats" xml:space="preserve">
+    <value>Сбросить всю статистику</value>
+  </data>
+  <data name="Stats_JobPerformance" xml:space="preserve">
+    <value>Результаты по профессиям</value>
+  </data>
+  <data name="Stats_PlayerStats" xml:space="preserve">
+    <value>Статистика игроков</value>
+  </data>
+  <data name="Stats_RecentRuns" xml:space="preserve">
+    <value>Недавние прохождения</value>
+  </data>
+  <data name="Stats_Trends" xml:space="preserve">
+    <value>Тенденции</value>
+  </data>
+  <data name="Stats_Best" xml:space="preserve">
+    <value>Лучшее: {0}</value>
+  </data>
+  <data name="Stats_Date" xml:space="preserve">
+    <value>Дата: {0}</value>
+  </data>
+  <data name="Stats_Party" xml:space="preserve">
+    <value>Группа:</value>
+  </data>
+  <data name="Stats_BestNoRunsYet" xml:space="preserve">
+    <value>Лучшее: прохождений ещё нет</value>
+  </data>
+  <data name="Stats_Longest" xml:space="preserve">
+    <value>Самое долгое: {0}</value>
+  </data>
+  <data name="Stats_LongestNoRunsYet" xml:space="preserve">
+    <value>Самое долгое: прохождений ещё нет</value>
+  </data>
+  <data name="Stats_DeathsSingleRun" xml:space="preserve">
+    <value>Смерти (одно прохождение):</value>
+  </data>
+  <data name="Stats_SelfOthersAll" xml:space="preserve">
+    <value>Свои: {0} | другие: {1} | всего: {2}</value>
+  </data>
+  <data name="Stats_DeathsTotal" xml:space="preserve">
+    <value>Смерти (всего):</value>
+  </data>
+  <data name="Stats_Runs" xml:space="preserve">
+    <value>Прохождения: {0}</value>
+  </data>
+  <data name="Stats_Mogtomes" xml:space="preserve">
+    <value>Mogtomes: {0}</value>
+  </data>
+  <data name="Stats_NotLoggedIn" xml:space="preserve">
+    <value>  Вход не выполнен.</value>
+  </data>
+  <data name="Stats_Name" xml:space="preserve">
+    <value>Имя</value>
+  </data>
+  <data name="Stats_Job" xml:space="preserve">
+    <value>Профессия</value>
+  </data>
+  <data name="Stats_Level" xml:space="preserve">
+    <value>Уровень</value>
+  </data>
+  <data name="Stats_HMS" xml:space="preserve">
+    <value>{0}ч {1:D2}м {2:D2}с</value>
+  </data>
+  <data name="Stats_MS" xml:space="preserve">
+    <value>{0}м {1:D2}с</value>
+  </data>
+  <data name="Stats_None" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="Stats_NoRunDataAvailableEnableDetailedTracking" xml:space="preserve">
+    <value>Нет данных прохождений. Включите подробное отслеживание и завершите несколько заданий.</value>
+  </data>
+  <data name="Stats_Avg" xml:space="preserve">
+    <value>Среднее: {0}</value>
+  </data>
+  <data name="Stats_Deaths" xml:space="preserve">
+    <value>Смерти: {0}</value>
+  </data>
+  <data name="Stats_Rate" xml:space="preserve">
+    <value>Частота: {0:F1}%</value>
+  </data>
+  <data name="Stats_PlayerStatistics" xml:space="preserve">
+    <value>Статистика игрока</value>
+  </data>
+  <data name="Stats_Player" xml:space="preserve">
+    <value>Игрок███</value>
+  </data>
+  <data name="Stats_You" xml:space="preserve">
+    <value> (Вы)</value>
+  </data>
+  <data name="Stats_Total" xml:space="preserve">
+    <value>Всего: {0}</value>
+  </data>
+  <data name="Stats_PraeDecu" xml:space="preserve">
+    <value>Prae: {0} | Decu: {1}</value>
+  </data>
+  <data name="Stats_StreakBest" xml:space="preserve">
+    <value>Серия: {0} (лучшая: {1})</value>
+  </data>
+  <data name="Stats_Job2" xml:space="preserve">
+    <value>Профессия: {0}</value>
+  </data>
+  <data name="Stats_RecentRunsLast" xml:space="preserve">
+    <value>Недавние прохождения (последние 25)</value>
+  </data>
+  <data name="Stats_Time" xml:space="preserve">
+    <value>Время</value>
+  </data>
+  <data name="Stats_Player2" xml:space="preserve">
+    <value>Игрок</value>
+  </data>
+  <data name="Stats_Deaths2" xml:space="preserve">
+    <value>Смерти</value>
+  </data>
+  <data name="Stats_Status" xml:space="preserve">
+    <value>Статус</value>
+  </data>
+  <data name="Stats_NotCaptured" xml:space="preserve">
+    <value>{0}: не записано</value>
+  </data>
+  <data name="Stats_PartyDataNotCaptured" xml:space="preserve">
+    <value>Данные группы не записаны</value>
+  </data>
+  <data name="Stats_SelfOthersAll2" xml:space="preserve">
+    <value>Свои / другие / всего</value>
+  </data>
+  <data name="Stats_Success" xml:space="preserve">
+    <value>Успех</value>
+  </data>
+  <data name="Stats_NoReasonRecorded" xml:space="preserve">
+    <value>Причина не записана</value>
+  </data>
+  <data name="Stats_Aborted" xml:space="preserve">
+    <value>Прервано: {0}</value>
+  </data>
+  <data name="Stats_PerformanceTrends" xml:space="preserve">
+    <value>Тенденции результатов</value>
+  </data>
+  <data name="Stats_NoSuccessfulRunDataAvailable" xml:space="preserve">
+    <value>Нет данных успешных прохождений.</value>
+  </data>
+  <data name="Stats_AverageCompletionTimeLast" xml:space="preserve">
+    <value>Среднее время прохождения (последние 10): {0}</value>
+  </data>
+  <data name="Stats_AverageCompletionTimeLast2" xml:space="preserve">
+    <value>Среднее время прохождения (последние 50): {0}</value>
+  </data>
+  <data name="Stats_AverageCompletionTimeAllTime" xml:space="preserve">
+    <value>Среднее время прохождения (всё время): {0}</value>
+  </data>
+  <data name="Stats_DeathRateLast" xml:space="preserve">
+    <value>Частота смертей (последние 10): {0:F1}%</value>
+  </data>
+  <data name="Stats_DeathRateAllTime" xml:space="preserve">
+    <value>Частота смертей (всё время): {0:F1}%</value>
+  </data>
+  <data name="Stats_MostEfficientJobAvg" xml:space="preserve">
+    <value>Самая эффективная профессия: {0} (среднее {1})</value>
+  </data>
+  <data name="Stats_RecentPerformanceTrend" xml:space="preserve">
+    <value>Тенденция последних результатов:</value>
+  </data>
+  <data name="WarningText_SorryToMakeYouReadThis" xml:space="preserve">
+    <value>Извините, что приходится это читать.</value>
+  </data>
+  <data name="WarningText_AFewNotesOnMOGTOMEVersionX" xml:space="preserve">
+    <value>Несколько замечаний о MOGTOME.</value>
+  </data>
+  <data name="WarningText_ItSExperimentalAndWillBreakOccasionally" xml:space="preserve">
+    <value>Он экспериментальный и иногда будет ломаться.</value>
+  </data>
+  <data name="WarningText_PleaseProvideLogsSoICanAnalyze" xml:space="preserve">
+    <value>Пожалуйста, предоставляйте журналы для анализа!</value>
+  </data>
+  <data name="WarningText_MultiplayerGuideDiscordLinkAndInfoAt" xml:space="preserve">
+    <value>Руководство для нескольких игроков, ссылка Discord и информация:</value>
+  </data>
+  <data name="WarningText_ThereAreWaysMOGTOMEIsCurrentlyCrashing" xml:space="preserve">
+    <value>Сейчас есть 3 ситуации, вызывающие сбои клиентов при использовании MOGTOME. (Причина не в MOGTOME).</value>
+  </data>
+  <data name="WarningText_IfYouHaveRSRUISimulateThe" xml:space="preserve">
+    <value>(1) Если включено RSR -&gt; UI -&gt; Simulate the effect of pressing abilities, отключите эту функцию.</value>
+  </data>
+  <data name="WarningText_DoNotRunDalamudFromTheSame" xml:space="preserve">
+    <value>(2) Не запускайте Dalamud несколько раз из одной папки. При нескольких клиентах это может вызывать сбои.</value>
+  </data>
+  <data name="WarningText_AUTODUTYRSRNavmeshSometimesWILLHaveRace" xml:space="preserve">
+    <value>AUTODUTY/RSR/navmesh иногда сталкиваются с гонками или взаимоблокировками и закрывают игру, с ошибкой или без.</value>
+  </data>
+  <data name="WarningText_YouWillNeedToUseMultiInstall" xml:space="preserve">
+    <value>Для решения нужны отдельные папки установки.</value>
+  </data>
+  <data name="WarningText_ItWillBeTheFirstThingI" xml:space="preserve">
+    <value>Это будет первый вопрос после версии MOGTOME.</value>
+  </data>
+  <data name="WarningText_IfYouDonTHaveVeryMuch" xml:space="preserve">
+    <value>(3) Если у вас мало оперативной памяти, много клиентов вызовут проблемы.</value>
+  </data>
+  <data name="WarningText_PlanForGBFreePerClientYou" xml:space="preserve">
+    <value>Перед загрузкой клиентов предусмотрите 5 ГБ свободной памяти на каждый клиент.</value>
+  </data>
+  <data name="WarningText_SeeTheMultiplayerGuideOnHttpsAethertek" xml:space="preserve">
+    <value>Советы есть в руководстве на https://aethertek.io/.</value>
+  </data>
+  <data name="WarningText_NowForSomeTipsAndTricksFor" xml:space="preserve">
+    <value>Теперь несколько советов по MOGTOME.</value>
+  </data>
+  <data name="WarningText_IfYouAreSelfRepairingSetRepair" xml:space="preserve">
+    <value>1. Если ремонтируетесь самостоятельно, установите высокий процент ремонта в выбранном модуле.</value>
+  </data>
+  <data name="WarningText_AutoDutyRepairIsStillWeirdSometimesADS" xml:space="preserve">
+    <value>Ремонт AutoDuty иногда всё ещё ведёт себя странно. ADS использует собственные команды ремонта и требует проверки.</value>
+  </data>
+  <data name="WarningText_MakeAnAutoDutyProfileJustForThis" xml:space="preserve">
+    <value>2. Создайте отдельный профиль AutoDuty и выберите его перед запуском, когда режим ADS ВЫКЛЮЧЕН.</value>
+  </data>
+  <data name="WarningText_MOGTOMEChangesSomeSettingsSoThisKeeps" xml:space="preserve">
+    <value>MOGTOME меняет некоторые настройки; отдельный профиль защищает ваши профили прокачки и другие.</value>
+  </data>
+  <data name="WarningText_JoinTheAutoPartyDiscordHttpsDiscordGg" xml:space="preserve">
+    <value>3. Присоединяйтесь к Discord AutoParty -&gt; https://discord.gg/KyfyAzG6</value>
+  </data>
+  <data name="WarningText_WhenStartingMogtomeMakeSureYouStart" xml:space="preserve">
+    <value>4. При запуске MOGTOME сначала запустите клиента, который не является лидером. Также нужно</value>
+  </data>
+  <data name="WarningText_ConfigureWHOThePartyLeaderIsBy" xml:space="preserve">
+    <value>указать, КТО лидер, нажав обновление состояния на клиенте лидера.</value>
+  </data>
+  <data name="WarningText_IDidThisBecauseItsASeriously" xml:space="preserve">
+    <value>Это сделано потому, что надёжно определить настоящего лидера группы — очень неприятная логическая задача.</value>
+  </data>
+  <data name="WarningText_IHaveSomeCommentedOutAndRetired" xml:space="preserve">
+    <value>Есть закомментированные и устаревшие методы для этого, но они были ненадёжными.</value>
+  </data>
+  <data name="WarningText_ReadThisBeforeRunningMOGTOME" xml:space="preserve">
+    <value>Прочитайте перед запуском MOGTOME</value>
+  </data>
+  <data name="WarningText_WarningV" xml:space="preserve">
+    <value>предупреждение v{0}</value>
+  </data>
+  <data name="WarningText_OKIREADIT" xml:space="preserve">
+    <value>ХОРОШО, Я ПРОЧИТАЛ</value>
+  </data>
+  <data name="Engine_HasNotBeenStartedSinceLoading" xml:space="preserve">
+    <value>Не запускался после загрузки.</value>
+  </data>
+  <data name="Engine_DutyStartupPendingAfterExperimentalOpener" xml:space="preserve">
+    <value>Запуск задания ожидает завершения экспериментального открытия: {0}</value>
+  </data>
+  <data name="Engine_Initializing" xml:space="preserve">
+    <value>Инициализация...</value>
+  </data>
+  <data name="Engine_PreparingBossModSupport" xml:space="preserve">
+    <value>Подготовка поддержки BossMod...</value>
+  </data>
+  <data name="Engine_CheckingConflictingPlugins" xml:space="preserve">
+    <value>Проверка конфликтующих плагинов...</value>
+  </data>
+  <data name="Engine_PreparingADS" xml:space="preserve">
+    <value>Подготовка ADS...</value>
+  </data>
+  <data name="Engine_PreparingAutoDuty" xml:space="preserve">
+    <value>Подготовка AutoDuty...</value>
+  </data>
+  <data name="Engine_ResumingInsideDuty" xml:space="preserve">
+    <value>Возобновление внутри задания...</value>
+  </data>
+  <data name="Engine_RunningDuty" xml:space="preserve">
+    <value>Выполнение — задание #{0}</value>
+  </data>
+  <data name="Engine_Stopping" xml:space="preserve">
+    <value>Остановка...</value>
+  </data>
+  <data name="Engine_Stopped" xml:space="preserve">
+    <value>Остановлено: {0}</value>
+  </data>
+  <data name="Engine_InDuty" xml:space="preserve">
+    <value>В задании — #{0} ({1})</value>
+  </data>
+  <data name="Engine_SuspendedWaitingForLoginAndDutyContext" xml:space="preserve">
+    <value>Приостановлено — ожидание входа и контекста задания.</value>
+  </data>
+  <data name="Engine_DutyTransitionWaitingForConfirmedDutyContext" xml:space="preserve">
+    <value>Переход задания — ожидание подтверждённого контекста...</value>
+  </data>
+  <data name="Engine_DutyPendingWaitingForMatchingSupportedTerritory" xml:space="preserve">
+    <value>Задание ожидает — нужна совпадающая поддерживаемая территория и идентичность CFC.</value>
+  </data>
+  <data name="Engine_EnteringDutyWaitingForReadyDutyContext" xml:space="preserve">
+    <value>Вход в задание — ожидание готового контекста...</value>
+  </data>
+  <data name="Engine_EnteringDutyWaitingForTerritory" xml:space="preserve">
+    <value>Вход в задание — ожидание территории...</value>
+  </data>
+  <data name="Engine_DutyPendingUnexpectedOrMissingTerritoryCFC" xml:space="preserve">
+    <value>Задание ожидает — неожиданная или отсутствующая территория/CFC ({0}); ожидание поддерживаемого контекста.</value>
+  </data>
+  <data name="Engine_OutsideDutyNext" xml:space="preserve">
+    <value>Вне задания — следующее: #{0}</value>
+  </data>
+  <data name="Engine_WaitingForLeader" xml:space="preserve">
+    <value>Ожидание лидера — #{0} ({1})</value>
+  </data>
+  <data name="Engine_WaitingForLeader2" xml:space="preserve">
+    <value>Ожидание лидера — #{0}</value>
+  </data>
+  <data name="Engine_DelayedRequeueInProgress" xml:space="preserve">
+    <value>Выполняется отложенный возврат в очередь...</value>
+  </data>
+  <data name="Engine_WaitingAfterLeaveDutyS" xml:space="preserve">
+    <value>Ожидание после выхода из задания ({0:F0}с)</value>
+  </data>
+  <data name="Engine_WaitingToStopS" xml:space="preserve">
+    <value>Ожидание остановки {0} ({1:F0}с)</value>
+  </data>
+  <data name="Engine_Stopping2" xml:space="preserve">
+    <value>Остановка {0}...</value>
+  </data>
+  <data name="Engine_WaitingToQueueS" xml:space="preserve">
+    <value>Ожидание очереди ({0:F0}с)</value>
+  </data>
+  <data name="Engine_Queueing" xml:space="preserve">
+    <value>Постановка в очередь...</value>
+  </data>
+  <data name="Engine_QueueingRegistered" xml:space="preserve">
+    <value>В очереди: {0} (зарегистрировано, {1})</value>
+  </data>
+  <data name="Engine_QueueingRegistered2" xml:space="preserve">
+    <value>В очереди: {0} (зарегистрировано)</value>
+  </data>
+  <data name="Engine_QueueingContentsFinderRetryCooldownS" xml:space="preserve">
+    <value>В очереди: {0} (задержка повтора ContentsFinder {1:F0}с, {2})</value>
+  </data>
+  <data name="Engine_QueueingWaitingForQueueRegistrationS" xml:space="preserve">
+    <value>В очереди: {0} (ожидание регистрации {1:F0}/{2:F0}с, {3})</value>
+  </data>
+  <data name="Engine_QueueingWaitingForQueueRegistrationS2" xml:space="preserve">
+    <value>В очереди: {0} (ожидание регистрации {1:F0}/{2:F0}с)</value>
+  </data>
+  <data name="Engine_QueueingWaiting" xml:space="preserve">
+    <value>В очереди: {0} (ожидание, {1})</value>
+  </data>
+  <data name="Engine_QueueingWaiting2" xml:space="preserve">
+    <value>В очереди: {0} (ожидание...)</value>
+  </data>
+  <data name="Engine_LeaveBlocked" xml:space="preserve">
+    <value>{0} — выход заблокирован ({1})</value>
+  </data>
+  <data name="Engine_LeaveRequestedWaitingForZoneOutS" xml:space="preserve">
+    <value>Выход запрошен — ожидание смены зоны ({0:F0}с)</value>
+  </data>
+  <data name="Engine_CombatPending" xml:space="preserve">
+    <value>Бой ожидает: {0}.</value>
+  </data>
+  <data name="Engine_InDutyS" xml:space="preserve">
+    <value>В задании #{0} — {1:F0}с</value>
+  </data>
+  <data name="Engine_Repairing" xml:space="preserve">
+    <value>Ремонт...</value>
+  </data>
+  <data name="Engine_RepairDoneResuming" xml:space="preserve">
+    <value>Ремонт завершён, возобновление</value>
+  </data>
+  <data name="Engine_RepairingWaitingForTelepotTownS" xml:space="preserve">
+    <value>Ремонт — ожидание TelepotTown ({0:F0}с)</value>
+  </data>
+  <data name="Engine_RepairingWaitingFor" xml:space="preserve">
+    <value>Ремонт — ожидание {0}</value>
+  </data>
+  <data name="Engine_ContentsFinderQueueCooldownS" xml:space="preserve">
+    <value>Задержка очереди ContentsFinder: {0} ({1:F0}с, {2})</value>
+  </data>
+  <data name="Engine_ContentsFinderQueueCooldownS2" xml:space="preserve">
+    <value>Задержка очереди ContentsFinder: {0} ({1:F0}с)</value>
+  </data>
+  <data name="Engine_Value" xml:space="preserve">
+    <value>{0}: {1} ({2} / {3})</value>
+  </data>
+  <data name="Engine_Value2" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="Engine_WaitingForPeopleVisible" xml:space="preserve">
+    <value>ожидание группы из {1}–4 участников (видно {0})</value>
+  </data>
+  <data name="Engine_WaitingForPartyMembersToLeaveDuty" xml:space="preserve">
+    <value>Ожидание выхода участников группы из задания.</value>
+  </data>
+  <data name="Engine_QueueRecoveryWaitingAfterS" xml:space="preserve">
+    <value>Восстановление очереди: ожидание после {0} ({1:F0}с)</value>
+  </data>
+  <data name="Engine_QueueRecoveryAllowingRepairsS" xml:space="preserve">
+    <value>Восстановление очереди: разрешён ремонт ({0:F0}с)</value>
+  </data>
+  <data name="Engine_QueueRecoveryResumingDutyEntry" xml:space="preserve">
+    <value>Восстановление очереди: возобновление входа в задание</value>
+  </data>
+  <data name="Engine_RepairRecoveryWaitingToRequeueS" xml:space="preserve">
+    <value>Восстановление ремонта: ожидание очереди ({0:F0}с)</value>
+  </data>
+  <data name="Engine_RepairRecoveryRetryWaitingForLeader" xml:space="preserve">
+    <value>Повтор восстановления ремонта {0}: ожидание лидера</value>
+  </data>
+  <data name="Engine_RepairRecoveryRestarting" xml:space="preserve">
+    <value>Восстановление ремонта: перезапуск {0}</value>
+  </data>
+  <data name="Engine_RepairRecoveryWaitingForLeader" xml:space="preserve">
+    <value>Восстановление ремонта: ожидание лидера</value>
+  </data>
+  <data name="Engine_LeaveRequestedViaADSAttemptWaitingFor" xml:space="preserve">
+    <value>Выход запрошен через ADS (попытка #{0}) — ожидание смены зоны</value>
+  </data>
+  <data name="Engine_LeaveRequestedAttemptWaitingForZoneOut" xml:space="preserve">
+    <value>Выход запрошен (попытка #{0}) — ожидание смены зоны</value>
+  </data>
+  <data name="Engine_PluginUnloadedOrReloaded" xml:space="preserve">
+    <value>Плагин выгружен или перезагружен.</value>
+  </data>
+  <data name="Engine_RepairingBeforeStart" xml:space="preserve">
+    <value>Ремонт перед запуском...</value>
+  </data>
+  <data name="Engine_StopAfterNextSuccessfulClearAndConfirmed" xml:space="preserve">
+    <value>Остановка после следующего успешного прохождения и подтверждённого выхода.</value>
+  </data>
+  <data name="Engine_InitializationFailed" xml:space="preserve">
+    <value>Ошибка инициализации: {0}</value>
+  </data>
+  <data name="Engine_PraetoriumDailyLimitReached" xml:space="preserve">
+    <value>Дневной лимит Praetorium достигнут ({0}/{1}).</value>
+  </data>
+  <data name="Startup_WaitingForDutyReadiness" xml:space="preserve">
+    <value>Ожидание готовности задания.</value>
+  </data>
+  <data name="Startup_DutyStartupCancelled" xml:space="preserve">
+    <value>Запуск задания отменён.</value>
+  </data>
+  <data name="Startup_DutyStartupPending" xml:space="preserve">
+    <value>Запуск задания ожидает: {0}.</value>
+  </data>
+  <data name="Startup_CombatRecoveryAfterDeathWaitingForContinuous" xml:space="preserve">
+    <value>восстановление боя после смерти; ожидание непрерывной готовности</value>
+  </data>
+  <data name="Startup_WaitingForDuty" xml:space="preserve">
+    <value>ожидание задания</value>
+  </data>
+  <data name="Startup_ExperimentalOpenerActive" xml:space="preserve">
+    <value>экспериментальная начальная последовательность активна</value>
+  </data>
+  <data name="Startup_WaitingForLiveDutyTerritoryCFCIdentity" xml:space="preserve">
+    <value>ожидание текущей идентичности территории/CFC</value>
+  </data>
+  <data name="Startup_ADSIsNotLoaded" xml:space="preserve">
+    <value>ADS не загружен</value>
+  </data>
+  <data name="Startup_HasADSClearanceMWaitingForFour" xml:space="preserve">
+    <value>{0} имеет разрешение ADS {1} (M{2}); ожидание поддержки M3 для четырёх игроков</value>
+  </data>
+  <data name="Startup_StartupInSOfContinuousReadiness" xml:space="preserve">
+    <value>запуск после {0:F1}с непрерывной готовности</value>
+  </data>
+  <data name="Startup_WaitingForDutyStartSeam" xml:space="preserve">
+    <value>ожидание перехода начала задания</value>
+  </data>
+  <data name="Startup_WaitingForReadableADSOwnershipConfirmation" xml:space="preserve">
+    <value>ожидание читаемого подтверждения управления ADS</value>
+  </data>
+  <data name="Startup_WaitingSForADSOwnershipConfirmation" xml:space="preserve">
+    <value>ожидание {0:F1}с подтверждения управления ADS</value>
+  </data>
+  <data name="Startup_HandoffRetryBackoffUntil" xml:space="preserve">
+    <value>задержка повтора передачи управления до {0:HH:mm:ss}</value>
+  </data>
+  <data name="Startup_AdStartWasNotHandled" xml:space="preserve">
+    <value>/ad start не обработан</value>
+  </data>
+  <data name="Startup_ADSStartDutyFromInsideAccepted" xml:space="preserve">
+    <value>ADS.StartDutyFromInside принят</value>
+  </data>
+  <data name="Startup_ADSStartDutyFromInsideRejectedCommandFallbackSuppressed" xml:space="preserve">
+    <value>ADS.StartDutyFromInside отклонён; резервная команда подавлена</value>
+  </data>
+  <data name="Startup_TypedEndpointUnavailableSentAdsInsideFallback" xml:space="preserve">
+    <value>типизированная конечная точка недоступна; отправлена резервная /ads inside</value>
+  </data>
+  <data name="Startup_TypedEndpointUnavailableAndAdsInsideFallback" xml:space="preserve">
+    <value>типизированная конечная точка недоступна, резервная /ads inside не сработала</value>
+  </data>
+  <data name="Startup_DutyStartupFailed" xml:space="preserve">
+    <value>ошибка запуска задания: {0}</value>
+  </data>
+  <data name="Startup_CombatRecoveryBackoffUntil" xml:space="preserve">
+    <value>задержка восстановления боя до {0:HH:mm:ss}</value>
+  </data>
+  <data name="Startup_CombatActivationFailedRetryingAfterSAnd" xml:space="preserve">
+    <value>ошибка активации боя: {0}; повтор через 5 с после непрерывной готовности</value>
+  </data>
+  <data name="Startup_WaitingForAuthoritativeOwnership" xml:space="preserve">
+    <value>{0}; ожидание надёжного подтверждения управления</value>
+  </data>
+  <data name="Startup_RestartingReadinessDelayWithSRetryBackoff" xml:space="preserve">
+    <value>{0}; перезапуск задержки готовности с ожиданием повтора 5 с</value>
+  </data>
+  <data name="Automation_AutoDutyPreparationFailed" xml:space="preserve">
+    <value>Ошибка подготовки AutoDuty: {0}</value>
+  </data>
+  <data name="Automation_QueueLeader" xml:space="preserve">
+    <value>Лидер очереди</value>
+  </data>
+  <data name="Automation_FollowerWaitingOnLeader" xml:space="preserve">
+    <value>Участник ожидает лидера</value>
+  </data>
+  <data name="Automation_ADS" xml:space="preserve">
+    <value>ADS</value>
+  </data>
+  <data name="Automation_RepairWaiting" xml:space="preserve">
+    <value>ожидание ремонта</value>
+  </data>
+  <data name="Automation_RepairHandoff" xml:space="preserve">
+    <value>передача ремонта</value>
+  </data>
+  <data name="Automation_LeaveRequestedWaitingForZoneOut" xml:space="preserve">
+    <value>выход запрошен, ожидание смены зоны</value>
+  </data>
+  <data name="Automation_LeaveRequested" xml:space="preserve">
+    <value>выход запрошен</value>
+  </data>
+  <data name="Automation_ADSInsideOwned" xml:space="preserve">
+    <value>ADS управляет внутри</value>
+  </data>
+  <data name="Automation_ADSOutsideOwned" xml:space="preserve">
+    <value>ADS управляет снаружи</value>
+  </data>
+  <data name="Automation_LeaderReady" xml:space="preserve">
+    <value>лидер готов</value>
+  </data>
+  <data name="Automation_OutsideArmed" xml:space="preserve">
+    <value>снаружи активировано</value>
+  </data>
+  <data name="Automation_WaitingForEntry" xml:space="preserve">
+    <value>ожидание входа</value>
+  </data>
+  <data name="Automation_InsideObserved" xml:space="preserve">
+    <value>нахождение внутри подтверждено</value>
+  </data>
+  <data name="Automation_Leaving" xml:space="preserve">
+    <value>выход</value>
+  </data>
+  <data name="Automation_Recovered" xml:space="preserve">
+    <value>восстановлено</value>
+  </data>
+  <data name="Automation_Idle" xml:space="preserve">
+    <value>бездействие</value>
+  </data>
+  <data name="Automation_ADSDutyBackendInnReturn" xml:space="preserve">
+    <value>Модуль ADS заданий + возврат в гостиницу</value>
+  </data>
+  <data name="Automation_ADSMissing" xml:space="preserve">
+    <value>ADS отсутствует</value>
+  </data>
+  <data name="Automation_ADSInnReady" xml:space="preserve">
+    <value>Гостиница ADS готова</value>
+  </data>
+  <data name="Automation_Value" xml:space="preserve">
+    <value>{0} / {1}</value>
+  </data>
+  <data name="Engine_ManualStop" xml:space="preserve">
+    <value>Ручная остановка.</value>
+  </data>
+  <data name="Engine_CleanupFailed" xml:space="preserve">
+    <value>{0} Сбой очистки «{1}»: {2}</value>
+  </data>
+  <data name="Role_Tank" xml:space="preserve">
+    <value>Танк</value>
+  </data>
+  <data name="Role_Healer" xml:space="preserve">
+    <value>Целитель</value>
+  </data>
+  <data name="Role_Dps" xml:space="preserve">
+    <value>DPS</value>
+  </data>
+  <data name="Rotation_CouldNotDisableCombatComponentsFromThe" xml:space="preserve">
+    <value>Не удалось отключить боевые компоненты предыдущего прохождения.</value>
+  </data>
+  <data name="Rotation_BothBossModVariantsAreStillLoadedConflict" xml:space="preserve">
+    <value>Обе версии BossMod ещё загружены; устранение конфликтов должно завершиться до подготовки пресетов.</value>
+  </data>
+  <data name="Rotation_BMROrVBM" xml:space="preserve">
+    <value>BMR или VBM</value>
+  </data>
+  <data name="Rotation_RequiresLoadedBossModSupport" xml:space="preserve">
+    <value>{0} требует загруженной поддержки BossMod ({1}).</value>
+  </data>
+  <data name="Rotation_BossModPackagedPresetInstallationFailedCheckThat" xml:space="preserve">
+    <value>Не удалось установить встроенные пресеты BossMod; проверьте готовность IPC пресетов и наличие всех шести файлов.</value>
+  </data>
+  <data name="Rotation_CombatActivationWasRequestedAfterThisDuty" xml:space="preserve">
+    <value>Активация боя запрошена после завершения задания ({0}).</value>
+  </data>
+  <data name="Rotation_CombatActivationFailed" xml:space="preserve">
+    <value>Ошибка активации боя: {0}</value>
+  </data>
+  <data name="Rotation_CouldNotDisableAllMogTomeCombatComponents" xml:space="preserve">
+    <value>Не удалось отключить все боевые компоненты MogTome ({0}); смотрите неудачную команду в журнале.</value>
+  </data>
+  <data name="Rotation_RSRHealthRecoveryFailed" xml:space="preserve">
+    <value>Не удалось восстановить здоровье RSR ({0}).</value>
+  </data>
+  <data name="Rotation_BossModAvailabilityOrSelectionChangedAfterStartup" xml:space="preserve">
+    <value>Доступность или выбор BossMod изменились после запуска. Остановите и запустите MogTome для повторной подготовки.</value>
+  </data>
+  <data name="Rotation_PresetPreparationFailedCombatWasNotEnabled" xml:space="preserve">
+    <value>Подготовка пресета {0} не удалась; бой не включён.</value>
+  </data>
+  <data name="Rotation_RSRAutoIPCAndRotationAutoBoth" xml:space="preserve">
+    <value>Не сработали ни RSR Auto IPC, ни /rotation auto.</value>
+  </data>
+  <data name="Rotation_CouldNotEnableUsing" xml:space="preserve">
+    <value>Не удалось включить {0} через {1}.</value>
+  </data>
+  <data name="Path_NotAttempted" xml:space="preserve">
+    <value>Не проверялось</value>
+  </data>
+  <data name="Path_FAILEDAutoDutyPluginNotFoundOrNot" xml:space="preserve">
+    <value>ОШИБКА: плагин AutoDuty не найден или не загружен</value>
+  </data>
+  <data name="Path_OKTerritoryPathSelectionSavedAndVerified" xml:space="preserve">
+    <value>OK: Territory={0}, Path={1} ({2}); выбор сохранён и проверен</value>
+  </data>
+  <data name="Path_FAILED" xml:space="preserve">
+    <value>ОШИБКА: {0}</value>
+  </data>
+  <data name="Conflict_StartupWasStoppedBeforeBossModCleanup" xml:space="preserve">
+    <value>Запуск остановлен до очистки BossMod.</value>
+  </data>
+  <data name="Conflict_StartupCancelledDuringVBMCleanup" xml:space="preserve">
+    <value>Запуск отменён во время очистки VBM.</value>
+  </data>
+  <data name="Conflict_VBMCouldNotBeDisabledWhileBoth" xml:space="preserve">
+    <value>Не удалось отключить VBM при загруженных обеих версиях BossMod.</value>
+  </data>
+  <data name="Conflict_StartupCancelledDuringBMRCleanup" xml:space="preserve">
+    <value>Запуск отменён во время очистки BMR.</value>
+  </data>
+  <data name="Conflict_BMRCouldNotBeTemporarilyDisabledTo" xml:space="preserve">
+    <value>Не удалось временно отключить BMR для восстановления общих регистраций IPC.</value>
+  </data>
+  <data name="Conflict_TheNativeTemporaryBMREnableCommandWas" xml:space="preserve">
+    <value>Штатная команда временного включения BMR не обработана.</value>
+  </data>
+  <data name="Conflict_StartupCancelledDuringBMRReadiness" xml:space="preserve">
+    <value>Запуск отменён при ожидании готовности BMR.</value>
+  </data>
+  <data name="Conflict_BMRDidNotBecomeReadyAfterIts" xml:space="preserve">
+    <value>BMR не стал готов после перезагрузки либо VBM загрузился снова.</value>
+  </data>
+  <data name="Conflict_WasEnabledAndHasBeenAutoDisabled" xml:space="preserve">
+    <value>{0} был включён и автоматически отключён для MOGTOME.</value>
+  </data>
+  <data name="Conflict_MOGTOMEKeptRunningClickTheWarningWindow" xml:space="preserve">
+    <value>{0}
+
+MOGTOME продолжил работу. Нажмите окно предупреждения, чтобы закрыть его, либо кнопку отключения, если плагин вернётся.</value>
+  </data>
+  <data name="Conflict_IsStillEnabledMOGTOMEWillKeepRunning" xml:space="preserve">
+    <value>{0} всё ещё включён. MOGTOME продолжит работу, но следует отключить его командой {1}.</value>
+  </data>
+  <data name="Conflict_UseTheWarningWindowButtonToTry" xml:space="preserve">
+    <value>{0}
+
+Нажмите кнопку окна предупреждения для повторного отключения либо закройте предупреждение и продолжайте.</value>
+  </data>
+  <data name="Conflict_WasEnabledAndHasBeenAutoDisabled2" xml:space="preserve">
+    <value>{0} был включён и автоматически отключён для режима ADS.</value>
+  </data>
+  <data name="Conflict_IsStillEnabledADSModeExpects" xml:space="preserve">
+    <value>{0} всё ещё включён. Режим ADS ожидает {1}.</value>
+  </data>
+  <data name="Blocker_WaitingForMatchingDutyIdentity" xml:space="preserve">
+    <value>ожидание совпадающей идентичности задания</value>
+  </data>
+  <data name="Blocker_Loading" xml:space="preserve">
+    <value>загрузка</value>
+  </data>
+  <data name="Blocker_Combat" xml:space="preserve">
+    <value>бой</value>
+  </data>
+  <data name="Blocker_Cutscene" xml:space="preserve">
+    <value>ролик</value>
+  </data>
+  <data name="Blocker_OccupiedTransition" xml:space="preserve">
+    <value>занятый переход</value>
+  </data>
+  <data name="Blocker_WaitingForLogin" xml:space="preserve">
+    <value>ожидание входа</value>
+  </data>
+  <data name="Blocker_WaitingForLocalPlayer" xml:space="preserve">
+    <value>ожидание локального игрока</value>
+  </data>
+  <data name="Blocker_WaitingForLocalPlayerJob" xml:space="preserve">
+    <value>ожидание профессии локального игрока</value>
+  </data>
+  <data name="Blocker_WaitingForUnconsciousStateToClear" xml:space="preserve">
+    <value>ожидание завершения состояния без сознания</value>
+  </data>
+  <data name="Blocker_WaitingForLocalPlayerToBeAlive" xml:space="preserve">
+    <value>ожидание живого локального игрока</value>
+  </data>
+  <data name="Blocker_WaitingForAreaTransitionToFinish" xml:space="preserve">
+    <value>ожидание завершения перехода области</value>
+  </data>
+  <data name="Blocker_WaitingForCutsceneToFinish" xml:space="preserve">
+    <value>ожидание завершения ролика</value>
+  </data>
+  <data name="Blocker_WaitingForCutsceneEventToFinish" xml:space="preserve">
+    <value>ожидание завершения события ролика</value>
+  </data>
+  <data name="Window_MOGTOMEStatus" xml:space="preserve">
+    <value>MOGTOME — Статус</value>
+  </data>
+  <data name="Window_MOGTOMEConfiguration" xml:space="preserve">
+    <value>MOGTOME — Настройки</value>
+  </data>
+  <data name="Window_MOGTOMEStatistics" xml:space="preserve">
+    <value>MOGTOME — Статистика</value>
+  </data>
+  <data name="Window_MOGTOMEWarningText" xml:space="preserve">
+    <value>Предупреждения MOGTOME</value>
+  </data>
+  <data name="Config_CombatProvider2" xml:space="preserve">
+    <value>Поставщик боевой автоматизации: {0}</value>
+  </data>
+  <data name="Config_NotConfigured" xml:space="preserve">
+    <value>не настроено</value>
+  </data>
+  <data name="Config_OptionalFood" xml:space="preserve">
+    <value>Необязательная еда: {0}</value>
+  </data>
+  <data name="Config_HQ" xml:space="preserve">
+    <value>[HQ]</value>
+  </data>
+  <data name="Config_NQ" xml:space="preserve">
+    <value>[NQ]</value>
+  </data>
+  <data name="Config_SelectedID" xml:space="preserve">
+    <value>  Выбрано: {0} {1} (ID: {2})</value>
+  </data>
+  <data name="Main_ForceAutoDutyToSelectModeLoopingDuty" xml:space="preserve">
+    <value>Принудительно выбрать в AutoDuty:
+Mode: Looping
+Duty Mode: Regular
+Duty: The Praetorium (1044)
+Path: {0}
+
+Записывает всю структуру AutoDuty в журнал Dalamud.</value>
+  </data>
+  <data name="Main_TestPathIndexDiscoveryMethodsComparesDictionaryPaths" xml:space="preserve">
+    <value>Проверить методы определения индекса маршрута.
+Сравнивает DictionaryPaths и PathSelectionsByPath.
+Результаты записываются в журнал Dalamud.</value>
+  </data>
+  <data name="Main_DumpAutoDutyConfigurationStructureToDalamudLog" xml:space="preserve">
+    <value>Выгрузить структуру Configuration AutoDuty в журнал Dalamud.</value>
+  </data>
+  <data name="Plugin_ScrollDownToTheDumpsterFireChannel" xml:space="preserve">
+    <value>Прокрутите до канала "The Dumpster Fire" для вопросов и предложений по плагинам.</value>
+  </data>
+  <data name="Plugin_CheckPartyLeaderSettingsIfTheDuty" xml:space="preserve">
+    <value>Проверьте настройки лидера, если задание не начинается</value>
+  </data>
+  <data name="Plugin_ADSDidNotHandleAdsEnterinnEnsure" xml:space="preserve">
+    <value>ADS не обработал /ads enterinn. Проверьте, что ADS установлен и загружен.</value>
+  </data>
+  <data name="Warning_SharedMOGTOMEConfigPath" xml:space="preserve">
+    <value>Общий путь настроек MOGTOME</value>
+  </data>
+  <data name="Warning_AnotherClientHoldsMOGTOMESConfigDirectory" xml:space="preserve">
+    <value>Другой клиент удерживает блокировку папки настроек MOGTOME. Запуск нескольких клиентов с одним путём может перезаписать настройки учётных записей. Совпадающих процессов игры: {0}.</value>
+  </data>
+  <data name="Warning_CancelStart" xml:space="preserve">
+    <value>Отменить запуск</value>
+  </data>
+  <data name="Warning_AcknowledgeAndStart" xml:space="preserve">
+    <value>Подтвердить и запустить</value>
+  </data>
+  <data name="Warning_TwistOfFayteConflict" xml:space="preserve">
+    <value>Конфликт Twist of Fayte</value>
+  </data>
+  <data name="Warning_AutoDutyConflict" xml:space="preserve">
+    <value>Конфликт AutoDuty</value>
+  </data>
+  <data name="Warning_PluginConflict" xml:space="preserve">
+    <value>Конфликт плагинов</value>
+  </data>
+  <data name="Warning_DisableTwistOfFayte" xml:space="preserve">
+    <value>Отключить TwistOfFayte</value>
+  </data>
+  <data name="Warning_DisableAutoDuty" xml:space="preserve">
+    <value>Отключить AutoDuty</value>
+  </data>
+  <data name="Chat_MOGTOMEStoppedAndClearedPendingStartAnd" xml:space="preserve">
+    <value>[MOGTOME] Остановлено; ожидающий запуск и остановка после следующего сброшены.</value>
+  </data>
+  <data name="Chat_MOGTOMEAlreadyStopped" xml:space="preserve">
+    <value>[MOGTOME] Уже остановлено: {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEEngineIsStillInitializing" xml:space="preserve">
+    <value>[MOGTOME] Движок ещё инициализируется.</value>
+  </data>
+  <data name="Chat_MOGTOMEStopAfterNextSuccessfulRunArmed" xml:space="preserve">
+    <value>[MOGTOME] Остановка после следующего успешного прохождения включена.</value>
+  </data>
+  <data name="Chat_MOGTOMEStopAfterNextSuccessfulRunCancelled" xml:space="preserve">
+    <value>[MOGTOME] Остановка после следующего успешного прохождения отменена.</value>
+  </data>
+  <data name="Chat_MOGTOMEMogInnIsOnlyAvailableWhile" xml:space="preserve">
+    <value>[MOGTOME] /mog inn доступен только при остановленном движке или активном ремонте.</value>
+  </data>
+  <data name="Chat_MOGTOMEStateDuty" xml:space="preserve">
+    <value>[MOGTOME] Состояние: {0} | Задание #{1} | {2}</value>
+  </data>
+  <data name="Chat_MOGTOMEDebugMode" xml:space="preserve">
+    <value>[MOGTOME] Режим отладки {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEDebugCheckboxNowVisibleInStats" xml:space="preserve">
+    <value>[MOGTOME] Флажок отладки теперь виден в окне статистики</value>
+  </data>
+  <data name="Chat_MOGTOME" xml:space="preserve">
+    <value>[MOGTOME] {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEFailedToSendAdsEnterinnCheck" xml:space="preserve">
+    <value>[MOGTOME] Не удалось отправить /ads enterinn. Смотрите журнал Dalamud.</value>
+  </data>
+  <data name="Chat_MOGTOMEQueuedMainConfigStatsWindowReset" xml:space="preserve">
+    <value>[MOGTOME] Сброс главного окна, настроек и статистики в 1,1 поставлен в очередь.</value>
+  </data>
+  <data name="Chat_MOGTOMEQueuedRandomVisibleJumpsForMain" xml:space="preserve">
+    <value>[MOGTOME] Случайные перемещения видимых окон главного окна, настроек и статистики поставлены в очередь.</value>
+  </data>
+  <data name="Chat_MOGTOMEEngineIsStillInitializingTryAgain" xml:space="preserve">
+    <value>[MOGTOME] Движок ещё инициализируется. Повторите через некоторое время.</value>
+  </data>
+  <data name="Chat_MOGTOMEAlreadyRunning" xml:space="preserve">
+    <value>[MOGTOME] Уже работает</value>
+  </data>
+  <data name="Chat_MOGTOMEStartAlreadyQueued" xml:space="preserve">
+    <value>[MOGTOME] Запуск уже в очереди.</value>
+  </data>
+  <data name="Chat_MOGTOMEStartQueued" xml:space="preserve">
+    <value>[MOGTOME] Запуск в очереди.</value>
+  </data>
+  <data name="Chat_MOGTOMEWarningXASlaveDidNotHandle" xml:space="preserve">
+    <value>[MOGTOME] Внимание: XA Slave не обработал {0}; запуск продолжается.</value>
+  </data>
+  <data name="Chat_MOGTOMEWarningFailedToSendContinuingStartup" xml:space="preserve">
+    <value>[MOGTOME] Внимание: не удалось отправить {0}; запуск продолжается.</value>
+  </data>
+  <data name="DutyAutomationService_AIDutySolverADSExperimentalModeIs" xml:space="preserve">
+    <value>Экспериментальный режим AI Duty Solver (ADS) включён, но ADS не загружен.</value>
+  </data>
+  <data name="DutyAutomationService_AutoDutyIsStillInitializingOrFaultedRetry" xml:space="preserve">
+    <value>AutoDuty ещё инициализируется или в состоянии ошибки; повторите MOGTOME после завершения входа</value>
+  </data>
+  <data name="DutyAutomationService_BundledPraetoriumPathsCouldNotBeInstalled" xml:space="preserve">
+    <value>Не удалось установить встроенные маршруты Praetorium в AutoDuty.</value>
+  </data>
+  <data name="DutyAutomationService_ADSDidNotHandleAdsEnterinnAfter" xml:space="preserve">
+    <value>ADS не обработал /ads enterinn после ремонта. Проверьте, что ADS установлен и загружен.</value>
+  </data>
+  <data name="Chat_MOGTOMEAutoDutyPreparationFailed" xml:space="preserve">
+    <value>[MOGTOME] Ошибка подготовки AutoDuty: {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEPraetoriumCallbackTest" xml:space="preserve">
+    <value>[MOGTOME] Проверка callback Praetorium: {0}</value>
+  </data>
+  <data name="Chat_MOGTOMEMissingOptionalUnlocks" xml:space="preserve">
+    <value>[MOGTOME] Отсутствующие необязательные открытия: {0}</value>
+  </data>
+  <data name="MogtomeEngine_CombatCleanupFailedAfterDutyExitContinuing" xml:space="preserve">
+    <value>Не удалось очистить бой после выхода из задания; работа продолжается.</value>
+  </data>
+  <data name="MogtomeEngine_ManualPartyRefreshSkippedInsideDutyUse" xml:space="preserve">
+    <value>Обновление группы вручную пропущено внутри задания. Обновляйте состояние только вне задания, когда вся группа вышла и стала видна.</value>
+  </data>
+  <data name="MogtomeEngine_NonLeader" xml:space="preserve">
+    <value>участник</value>
+  </data>
+  <data name="MogtomeEngine_ManualPartyRefreshCouldNotDetermineLeader" xml:space="preserve">
+    <value>Ручное обновление не определило лидера по текущему списку одного мира. Сохраняется роль {0}.</value>
+  </data>
+  <data name="Chat_MOGTOMEStopAfterNextCompletedStoppingBefore" xml:space="preserve">
+    <value>[MOGTOME] Остановка после следующего выполнена. Остановка до повторной очереди.</value>
+  </data>
+  <data name="Chat_MOGTOMEAlreadyInsideInnTerritory" xml:space="preserve">
+    <value>[MOGTOME] Уже в гостинице: {0}.</value>
+  </data>
+  <data name="Chat_MOGTOMENoInnkeeperFoundWithinYMog" xml:space="preserve">
+    <value>[MOGTOME] Не найден гостиничный служащий в пределах {0:F0}y. /mog inn ничего не сделал.</value>
+  </data>
+  <data name="Chat_MOGTOMEMogInnCancelled" xml:space="preserve">
+    <value>[MOGTOME] /mog inn отменён: {0}</value>
+  </data>
+  <data name="Warning_Title" xml:space="preserve">
+    <value>Предупреждение MOGTOME</value>
+  </data>
+  <data name="Warning_Dismiss" xml:space="preserve">
+    <value>Закрыть</value>
+  </data>
+  <data name="Language_Label" xml:space="preserve">
+    <value>Язык интерфейса</value>
+  </data>
+  <data name="Language_WaitForProfile" xml:space="preserve">
+    <value>До появления профиля используется язык игрового клиента.</value>
+  </data>
+  <data name="Config_Potion" xml:space="preserve">
+    <value>Зелье</value>
+  </data>
+  <data name="Chat_MessageAndReason" xml:space="preserve">
+    <value>[MOGTOME] {0} {1}</value>
+  </data>
+  <data name="EngineState_Idle" xml:space="preserve">
+    <value>Бездействие</value>
+  </data>
+  <data name="EngineState_Initializing" xml:space="preserve">
+    <value>Инициализация</value>
+  </data>
+  <data name="EngineState_WaitingOutsideDuty" xml:space="preserve">
+    <value>Ожидание вне задания</value>
+  </data>
+  <data name="EngineState_Queueing" xml:space="preserve">
+    <value>В очереди</value>
+  </data>
+  <data name="EngineState_InDuty" xml:space="preserve">
+    <value>В задании</value>
+  </data>
+  <data name="EngineState_RepairingOutside" xml:space="preserve">
+    <value>Ремонт снаружи</value>
+  </data>
+  <data name="EngineState_Stopping" xml:space="preserve">
+    <value>Остановка</value>
+  </data>
+  <data name="EngineState_Stopped" xml:space="preserve">
+    <value>Остановлено</value>
+  </data>
+  <data name="CombatProvider_Bmr" xml:space="preserve">
+    <value>BMR</value>
+  </data>
+  <data name="CombatProvider_Vbm" xml:space="preserve">
+    <value>VBM</value>
+  </data>
+  <data name="CombatProvider_Rsr" xml:space="preserve">
+    <value>RSR</value>
+  </data>
+  <data name="CombatProvider_Wrath" xml:space="preserve">
+    <value>Wrath Combo</value>
+  </data>
+  <data name="Inn_InteractingWithInnkeeper" xml:space="preserve">
+    <value>Взаимодействие со служащим гостиницы {0}</value>
+  </data>
+  <data name="Inn_MovingToInnkeeper" xml:space="preserve">
+    <value>Движение к служащему гостиницы {0}</value>
+  </data>
+  <data name="Inn_MOGTOMEMogInnRequiresALoggedIn" xml:space="preserve">
+    <value>[MOGTOME] /mog inn требует персонажа, вошедшего в игру.</value>
+  </data>
+  <data name="Inn_EnteredInnTerritorySuccessfully" xml:space="preserve">
+    <value>Успешный вход в гостиницу.</value>
+  </data>
+  <data name="Inn_TimedOutWhileTryingToEnterThe" xml:space="preserve">
+    <value>Истекло время попытки входа в гостиницу.</value>
+  </data>
+  <data name="Inn_InnEntryFailed" xml:space="preserve">
+    <value>Ошибка входа в гостиницу: {0}</value>
+  </data>
+  <data name="Inn_WaitingForInnZoneTransition" xml:space="preserve">
+    <value>Ожидание перехода в гостиницу</value>
+  </data>
+  <data name="Inn_InnkeeperIsNoLongerNearby" xml:space="preserve">
+    <value>Служащий гостиницы {0} больше не рядом.</value>
+  </data>
+  <data name="Inn_InteractingWith" xml:space="preserve">
+    <value>Взаимодействие с {0}</value>
+  </data>
+  <data name="Inn_DriftedTooFarAwayFromWhileWaiting" xml:space="preserve">
+    <value>Слишком далеко от {0} во время ожидания взаимодействия.</value>
+  </data>
+  <data name="Inn_RepositioningNear" xml:space="preserve">
+    <value>Перемещение ближе к {0}</value>
+  </data>
+  <data name="Inn_Retrying" xml:space="preserve">
+    <value>Повтор {0}</value>
+  </data>
+  <data name="Time_Calculating" xml:space="preserve">
+    <value>Вычисление...</value>
+  </data>
+  <data name="Time_Unknown" xml:space="preserve">
+    <value>Неизвестно</value>
+  </data>
+  <data name="Time_DH" xml:space="preserve">
+    <value>{0}д {1}ч</value>
+  </data>
+  <data name="Time_HM" xml:space="preserve">
+    <value>{0}ч {1}м</value>
+  </data>
+  <data name="Time_MS" xml:space="preserve">
+    <value>{0}м {1}с</value>
+  </data>
+  <data name="Engine_DutyComplete" xml:space="preserve">
+    <value>Задание завершено</value>
+  </data>
+  <data name="Engine_BailoutPending" xml:space="preserve">
+    <value>Аварийный выход ожидает</value>
+  </data>
+  <data name="Config_CombatRotation" xml:space="preserve">
+    <value>Боевая ротация</value>
+  </data>
+  <data name="Config_PotOnBoss" xml:space="preserve">
+    <value>Зелье на {0}</value>
+  </data>
+  <data name="RepairBlocker_DutyState" xml:space="preserve">
+    <value>состояние задания</value>
+  </data>
+  <data name="RepairBlocker_ZoneTransition" xml:space="preserve">
+    <value>смена зоны</value>
+  </data>
+  <data name="RepairBlocker_QueueRegistration" xml:space="preserve">
+    <value>регистрация очереди</value>
+  </data>
+  <data name="RepairBlocker_DutyConfirmation" xml:space="preserve">
+    <value>окно подтверждения задания</value>
+  </data>
+  <data name="RepairBlocker_MinimizedDutyConfirmation" xml:space="preserve">
+    <value>свёрнутое подтверждение задания</value>
+  </data>
+  <data name="RepairBlocker_CancelDutyConfirmation" xml:space="preserve">
+    <value>последовательность отмены подтверждения задания</value>
+  </data>
+  <data name="RepairBlocker_YesNoDialog" xml:space="preserve">
+    <value>диалог SelectYesno</value>
+  </data>
+  <data name="RepairBlocker_Cutscene" xml:space="preserve">
+    <value>ролик</value>
+  </data>
+  <data name="RepairBlocker_Occupied" xml:space="preserve">
+    <value>занятый переход</value>
+  </data>
+  <data name="Plugin_CommandMainHelp" xml:space="preserve">
+    <value>Открыть главное окно MOGTOME.</value>
+  </data>
+  <data name="Plugin_CommandAliasHelp" xml:space="preserve">
+    <value>MOGTOME: /mog [start|stop|stopnext|inn|config|status|debug|ws|j] или /mog для открытия интерфейса.</value>
+  </data>
+  <data name="Ads_Empty" xml:space="preserve"><value>ADS.GetStatusJson вернул пустые данные</value></data>
+  <data name="Ads_Inactive" xml:space="preserve"><value>Состояние ADS не указывает активное отдельное задание</value></data>
+  <data name="Ads_NoCatalog" xml:space="preserve"><value>У текущего задания ADS нет метаданных каталога</value></data>
+  <data name="Ads_NoName" xml:space="preserve"><value>В строке каталога текущего задания ADS нет имени задания</value></data>
+  <data name="Ads_NoTerritory" xml:space="preserve"><value>В строке каталога текущего задания ADS нет идентичности территории</value></data>
+  <data name="Ads_NoCfc" xml:space="preserve"><value>В строке каталога текущего задания ADS нет идентичности CFC</value></data>
+  <data name="Ads_Category" xml:space="preserve"><value>В строке каталога текущего задания ADS неподдерживаемая категория '{0}'</value></data>
+  <data name="Ads_Support" xml:space="preserve"><value>В строке каталога текущего задания ADS неподдерживаемый уровень поддержки '{0}'</value></data>
+  <data name="Ads_Clearance" xml:space="preserve"><value>В строке каталога текущего задания ADS неподдерживаемый статус допуска '{0}'</value></data>
+  <data name="Ads_InvalidJson" xml:space="preserve"><value>ADS.GetStatusJson вернул неверный JSON: {0}</value></data>
+  <data name="Ads_Unvalidated" xml:space="preserve"><value>Нет проверенного снимка текущего задания ADS.</value></data>
+  <data name="Ads_Unloaded" xml:space="preserve"><value>ADS выгружен.</value></data>
+  <data name="Ads_Outside" xml:space="preserve"><value>Игровой клиент вне отдельного задания.</value></data>
+  <data name="Ads_NoLiveIdentity" xml:space="preserve"><value>GameMain не предоставил текущую идентичность территории задания.</value></data>
+  <data name="Ads_Changed" xml:space="preserve"><value>Текущая идентичность задания изменилась с территории/CFC {0}/{1} на {2}/{3}.</value></data>
+  <data name="Ads_Mismatch" xml:space="preserve"><value>Идентичность текущего задания ADS {0}/{1} не совпадает с текущей идентичностью GameMain {2}/{3}.</value></data>
+  <data name="Ads_Validated" xml:space="preserve"><value>Снимок текущего задания ADS проверен для территории/CFC {0}/{1}.</value></data>
+  <data name="Ads_Unavailable" xml:space="preserve"><value>ADS.GetStatusJson недоступен: {0}</value></data>
+  <data name="Ads_Retained" xml:space="preserve"><value>ADS.GetStatusJson недоступен; сохраняется проверенный снимок для той же текущей идентичности: {0}</value></data>
+  <data name="Opener_Timeout" xml:space="preserve"><value>эксперимент превысил 10 секунд</value></data>
+  <data name="Opener_NoTarget" xml:space="preserve"><value>цель начальной группы недоступна</value></data>
+  <data name="Opener_NoArea" xml:space="preserve"><value>действие по площади {0} недоступно</value></data>
+  <data name="Opener_NoInvulnerability" xml:space="preserve"><value>неуязвимость {0} недоступна</value></data>
+  <data name="Opener_NoTerminal" xml:space="preserve"><value>Magitek Terminal 2012811 недоступен</value></data>
+  <data name="Opener_NoPlayerAtTerminal" xml:space="preserve"><value>локальный игрок недоступен у терминала</value></data>
+  <data name="Opener_Descended" xml:space="preserve"><value>обнаружен локальный спуск от терминала</value></data>
+  <data name="Opener_NoInteract" xml:space="preserve"><value>взаимодействие с Magitek Terminal недоступно</value></data>
+  <data name="Opener_NoPlayerBeforeMove" xml:space="preserve"><value>локальный игрок недоступен до движения к {0}</value></data>
+  <data name="Opener_NoMove" xml:space="preserve"><value>движение vnav к {0} недоступно</value></data>
+  <data name="Opener_NoPlayerMoving" xml:space="preserve"><value>локальный игрок недоступен во время движения</value></data>
+  <data name="Opener_NoProgress" xml:space="preserve"><value>движение vnav не дало продвижения</value></data>
+  <data name="Opener_Pack" xml:space="preserve"><value>начальная группа</value></data>
+  <data name="Opener_Terminal" xml:space="preserve"><value>магитехнический терминал</value></data>
+  <data name="Engine_AutoQueueing" xml:space="preserve"><value>Автоматическая очередь</value></data>
+  <data name="Engine_RepairRecoveryRetry" xml:space="preserve"><value>Повтор восстановления ремонта {0}</value></data>
+  <data name="Config_ObstacleMapsOn" xml:space="preserve"><value>Включить карты препятствий</value></data>
+  <data name="Config_ObstacleMapsOnTooltip" xml:space="preserve"><value>Управляет только BossMod Reborn. По умолчанию: выключено. Применяется при запуске после готовности BossMod и настройки ротации независимо от поставщика боя.</value></data>
+  <data name="Config_NPCRepairInn" xml:space="preserve">
+    <value>Ремонт NPC + номер в гостинице</value>
+  </data>
+  <data name="Engine_InnRepairFailed" xml:space="preserve">
+    <value>Ошибка ремонта в гостинице: {0}</value>
+  </data>
+  <data name="Config_NPCRepairInnUldah" xml:space="preserve">
+    <value>Ремонт NPC + номер в гостинице — Ul’dah</value>
+  </data>
+  <data name="Config_NPCRepairInnGridania" xml:space="preserve">
+    <value>Ремонт NPC + номер в гостинице — Gridania</value>
+  </data>
+  <data name="Config_NPCRepairInnLimsa" xml:space="preserve">
+    <value>Ремонт NPC + номер в гостинице — Limsa Lominsa</value>
+  </data>
+  <data name="Config_NPCRepairInnIshgard" xml:space="preserve">
+    <value>Ремонт NPC + номер в гостинице — Ishgard</value>
+  </data>
+  <data name="Config_NPCRepairInnCrystarium" xml:space="preserve">
+    <value>Ремонт NPC + номер в гостинице — Crystarium</value>
+  </data>
+  <data name="Config_NPCRepairInnSharlayan" xml:space="preserve">
+    <value>Ремонт NPC + номер в гостинице — Old Sharlayan</value>
+  </data>
+  <data name="Config_NPCRepairInnTuliyollal" xml:space="preserve">
+    <value>Ремонт NPC + номер в гостинице — Tuliyollal</value>
+  </data>
+  <data name="Config_UnsupportedADSRepairMode" xml:space="preserve">
+    <value>Неподдерживаемый режим ремонта ADS</value>
+  </data>
+  <data name="Window_BlundervilleFailer" xml:space="preserve">
+    <value>Blunderville Failer</value>
+  </data>
+  <data name="Plugin_CommandBlundervilleHelp" xml:space="preserve">
+    <value>Открыть предварительный просмотр Blunderville Failer (/blunderville или /bv).</value>
+  </data>
+  <data name="Blunderville_OpenMogtome" xml:space="preserve">
+    <value>Открыть MOGTOME</value>
+  </data>
+  <data name="Blunderville_FarmingUnavailable" xml:space="preserve">
+    <value>Только просмотр: автоматический фарм Blunderville недоступен. Запуск и Стоп отключены.</value>
+  </data>
+  <data name="Blunderville_PurchasesUnavailable" xml:space="preserve">
+    <value>Только просмотр: покупки через ADS недоступны. Настройка покупок отключена.</value>
+  </data>
+  <data name="Blunderville_ConfigurePurchases" xml:space="preserve">
+    <value>Настроить покупки</value>
+  </data>
+  <data name="Ui_Color" xml:space="preserve"><value>Цвет</value></data>
+  <data name="Ui_Teal" xml:space="preserve"><value>Бирюзовый</value></data>
+  <data name="Ui_Blue" xml:space="preserve"><value>Синий</value></data>
+  <data name="Ui_Pink" xml:space="preserve"><value>Розовый</value></data>
+  <data name="Ui_CustomRgb" xml:space="preserve"><value>Свой RGB</value></data>
+  <data name="Ui_CompactMode" xml:space="preserve"><value>Компактный режим</value></data>
+  <data name="Ui_LoadingFonts" xml:space="preserve"><value>Загрузка шрифтов интерфейса...</value></data>
+  <data name="Ui_FontFailure" xml:space="preserve"><value>Не удалось загрузить шрифты интерфейса. Смотрите журнал плагина.</value></data>
+  <data name="Main_Subtitle" xml:space="preserve"><value>Management Of Grand Tome Operations &amp; Management Engine</value></data>
+  <data name="Main_OpenBlunderville" xml:space="preserve"><value>Открыть Blunderville Failer</value></data>
+  <data name="Main_StateHeading" xml:space="preserve"><value>Состояние</value></data>
+  <data name="Main_StatusHeading" xml:space="preserve"><value>Статус</value></data>
+  <data name="Main_Running" xml:space="preserve"><value>Работает</value></data>
+  <data name="Main_Stopped" xml:space="preserve"><value>Остановлено</value></data>
+  <data name="Main_DutyCurrent" xml:space="preserve"><value>Текущее</value></data>
+  <data name="Main_DutyCounter" xml:space="preserve"><value>Счётчик</value></data>
+  <data name="Main_DailyDecuHeading" xml:space="preserve"><value>Прохождения Decu за день</value></data>
+  <data name="Main_DailyResetHeading" xml:space="preserve"><value>Ежедневный сброс</value></data>
+  <data name="Main_PartySummary" xml:space="preserve"><value>Сводка группы</value></data>
+  <data name="Main_InParty" xml:space="preserve"><value>В группе</value></data>
+  <data name="Main_NoParty" xml:space="preserve"><value>Участники группы не обнаружены.</value></data>
+  <data name="Main_PartyDetails" xml:space="preserve"><value>Подробности группы</value></data>
+  <data name="Main_DutyDetails" xml:space="preserve"><value>Подробности задания</value></data>
+  <data name="Main_CounterValue" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="Main_ResetUtc" xml:space="preserve"><value>{0:HH:mm} UTC</value></data>
+  <data name="Main_CurrentProfile" xml:space="preserve"><value>Текущий профиль: {0}</value></data>
+  <data name="Main_HelpTitle" xml:space="preserve"><value>ПОМОЩЬ</value></data>
+  <data name="Blunderville_FarmingHeading" xml:space="preserve"><value>Фарм недоступен в этой версии.</value></data>
+  <data name="Blunderville_FarmingDetail" xml:space="preserve"><value>Сейчас Blunderville Failer нельзя использовать для автоматического фарма.</value></data>
+  <data name="Blunderville_PurchasesHeading" xml:space="preserve"><value>Автоматические покупки недоступны.</value></data>
+  <data name="Blunderville_PurchasesDetail" xml:space="preserve"><value>В этой версии функция автоматической покупки недоступна.</value></data>
+  <data name="Cleanup_Opener" xml:space="preserve"><value>начальная последовательность</value></data>
+  <data name="Cleanup_Backend" xml:space="preserve"><value>модуль выполнения</value></data>
+  <data name="Cleanup_Dialogs" xml:space="preserve"><value>диалоги</value></data>
+  <data name="Cleanup_RepairQueue" xml:space="preserve"><value>очередь ремонта</value></data>
+  <data name="Cleanup_DeathTracking" xml:space="preserve"><value>отслеживание смертей</value></data>
+  <data name="Cleanup_Combat" xml:space="preserve"><value>бой</value></data>
+  <data name="Main_Open" xml:space="preserve"><value>Открыть</value></data>
+  <data name="Window appearance" xml:space="preserve"><value>Внешний вид окна</value></data>
+  <data name="Compact visible on main window" xml:space="preserve"><value>Показывать компактный режим в главном окне</value></data>
+  <data name="Language visible on main window" xml:space="preserve"><value>Показывать выбор языка в главном окне</value></data>
+  <data name="Transparency" xml:space="preserve"><value>Прозрачность</value></data>
+  <data name="Opacity (%)" xml:space="preserve"><value>Непрозрачность (%)</value></data>
+  <data name="Auto-fade when unfocused" xml:space="preserve"><value>Автоматически затемнять без фокуса</value></data>
+  <data name="Unfocused opacity (%)" xml:space="preserve"><value>Непрозрачность без фокуса (%)</value></data>
+  <data name="Unfocused delay (seconds)" xml:space="preserve"><value>Задержка без фокуса (секунды)</value></data>
+</root>
