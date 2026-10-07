@@ -60,7 +60,7 @@ MOGTOME automates farming of The Praetorium (99 runs) and The Porta Decumana (un
 - **AutoDuty**: "Leave Duty" disabled OR "Only when duty complete"
 - **YesAlready**: Configured for repair, exit, sealed area dialogs
 
-See [how-to-import-plugins.md](how-to-import-plugins.md) for detailed setup instructions.
+See [Configuration](#configuration) for the per-account Setup Wizard.
 
 ---
 
@@ -78,11 +78,10 @@ See [how-to-import-plugins.md](how-to-import-plugins.md) for detailed setup inst
 
 ### Release Version
 
-*Once published to official Dalamud repository:*
-
-1. `/xlplugins` → Search for "MOGTOME"
-2. Click Install
-3. Enable the plugin
+1. Open `/xlsettings` → **Experimental** → **Custom Plugin Repositories**
+2. Add `https://aethertek.io/x.json`, ensure the repository is enabled, and save
+3. Open `/xlplugins` → **All Plugins** → Search for "MOGTOME"
+4. Click **Install** and enable the plugin
 
 ---
 
