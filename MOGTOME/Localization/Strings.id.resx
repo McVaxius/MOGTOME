@@ -2245,4 +2245,10 @@ Hasil dicatat ke log Dalamud.</value>
   <data name="Auto-fade when unfocused" xml:space="preserve"><value>Redupkan otomatis saat tidak fokus</value></data>
   <data name="Unfocused opacity (%)" xml:space="preserve"><value>Opasitas saat tidak fokus (%)</value></data>
   <data name="Unfocused delay (seconds)" xml:space="preserve"><value>Jeda saat tidak fokus (detik)</value></data>
+  <data name="Stats_DateTime" xml:space="preserve"><value>Tanggal dan waktu</value></data>
+  <data name="Stats_Duration" xml:space="preserve"><value>Durasi</value></data>
+  <data name="Rotation_BossModSessionChanged" xml:space="preserve"><value>Penyedia pertempuran, akun, karakter, atau profil telah berubah. Sesi pertempuran sebelumnya berakhir; mulai lagi untuk menggunakan pilihan baru.</value></data>
+  <data name="Rotation_BossModSettingsUnconfirmed" xml:space="preserve"><value>Pengaturan BossMod tidak dapat dikonfirmasi. Periksa log plugin untuk pembacaan yang tidak tersedia atau penulisan yang ditolak.</value></data>
+  <data name="Config_BossModCatalogUnavailable" xml:space="preserve"><value>Katalog preset tidak tersedia; pilihan tersimpan dipertahankan.</value></data>
+  <data name="Config_BossModCatalogEmpty" xml:space="preserve"><value>Tidak ada preset yang dapat dipilih; pilihan tersimpan dipertahankan.</value></data>
 </root>

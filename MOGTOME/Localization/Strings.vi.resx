@@ -2245,4 +2245,10 @@ Ghi kết quả vào log Dalamud.</value>
   <data name="Auto-fade when unfocused" xml:space="preserve"><value>Tự giảm độ đục khi mất tiêu điểm</value></data>
   <data name="Unfocused opacity (%)" xml:space="preserve"><value>Độ đục khi mất tiêu điểm (%)</value></data>
   <data name="Unfocused delay (seconds)" xml:space="preserve"><value>Độ trễ khi mất tiêu điểm (giây)</value></data>
+  <data name="Stats_DateTime" xml:space="preserve"><value>Ngày và giờ</value></data>
+  <data name="Stats_Duration" xml:space="preserve"><value>Thời lượng</value></data>
+  <data name="Rotation_BossModSessionChanged" xml:space="preserve"><value>Nhà cung cấp chiến đấu, tài khoản, nhân vật hoặc hồ sơ đã thay đổi. Phiên chiến đấu trước đã kết thúc; hãy bắt đầu lại để dùng lựa chọn mới.</value></data>
+  <data name="Rotation_BossModSettingsUnconfirmed" xml:space="preserve"><value>Không thể xác nhận cài đặt BossMod. Xem nhật ký plugin để biết thao tác đọc không khả dụng hoặc thao tác ghi bị từ chối.</value></data>
+  <data name="Config_BossModCatalogUnavailable" xml:space="preserve"><value>Không thể đọc danh mục thiết lập sẵn; lựa chọn đã lưu được giữ nguyên.</value></data>
+  <data name="Config_BossModCatalogEmpty" xml:space="preserve"><value>Không có thiết lập sẵn có thể chọn; lựa chọn đã lưu được giữ nguyên.</value></data>
 </root>

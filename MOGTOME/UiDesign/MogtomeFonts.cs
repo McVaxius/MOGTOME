@@ -32,18 +32,19 @@ internal sealed class MogtomeFonts : IDisposable
         var glyphs = ranges.ToArray();
         handles = MogtomePresentation.FontSizes.Select((size, index) => atlas.NewDelegateFontHandle(toolkit => toolkit.OnPreBuild(build =>
         {
+            build.NewImAtlas.TexDesiredWidth = 4096;
+            build.NewImAtlas.TexDesiredHeight = 4096;
             size = MogtomePresentation.AtlasHeight((MogtomeFontRole)index);
             var config = new SafeFontConfig { SizePx = size, GlyphRanges = glyphs };
             var fonts = Environment.GetFolderPath(Environment.SpecialFolder.Fonts);
             build.Font = build.AddFontFromFile(Path.Combine(fonts, MogtomePresentation.FontFile((MogtomeFontRole)index)), config);
             build.AddFontFromFile(Path.Combine(fonts, "seguisym.ttf"), new SafeFontConfig { SizePx = size, MergeFont = build.Font, GlyphRanges = glyphs });
-            foreach (var locale in new[] { "ja", "ko", "zh-Hans" }.OrderBy(code => code == selected ? 0 : 1))
-                build.AddDalamudAssetFont(DalamudAsset.NotoSansCjkRegular, new SafeFontConfig
-                {
-                    SizePx = size, MergeFont = build.Font, GlyphRanges = glyphs,
-                    // Verified host TTC faces: Japanese0, Korean1, Simplified Chinese2, Traditional Chinese3.
-                    FontNo = locale switch { "ja" => 0, "ko" => 1, _ => 2 },
-                });
+            // Verified bundled TTC faces: JP=0, KR=1, SC=2, TC=3.
+            build.AddDalamudAssetFont(DalamudAsset.NotoSansCjkRegular, new SafeFontConfig
+            {
+                SizePx = size, MergeFont = build.Font, GlyphRanges = glyphs,
+                FontNo = selected switch { "ko" => 1, "zh-Hans" or "zh-CN" => 2, "zh-Hant" or "zh-TW" => 3, _ => 0 },
+            });
             build.AttachExtraGlyphsForDalamudLanguage(new SafeFontConfig { SizePx = size, MergeFont = build.Font });
             build.AddGameSymbol(new SafeFontConfig { SizePx = size, MergeFont = build.Font });
         }))).ToArray();

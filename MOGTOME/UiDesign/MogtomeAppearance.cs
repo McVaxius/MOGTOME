@@ -107,6 +107,7 @@ internal sealed class MogtomeAppearance : IDisposable
     }
     internal IDisposable Font(MogtomeFontRole role) => fonts!.Push(role);
     internal void PaintWindowTitle(string name) => UiLayout.PaintWindowTitle(name,shapedText.Renderer);
+    internal void PaintWindowTitleWithButtons(Window owner) => UiLayout.PaintWindowTitleWithButtons(owner,shapedText.Renderer);
     internal void Draw(WindowSystem windows)
     {
         using var shaping = shapedText.Push();

@@ -2245,4 +2245,10 @@ Sonuçlar Dalamud günlüğüne yazılır.</value>
   <data name="Auto-fade when unfocused" xml:space="preserve"><value>Odak yokken otomatik soldur</value></data>
   <data name="Unfocused opacity (%)" xml:space="preserve"><value>Odak yokken opaklık (%)</value></data>
   <data name="Unfocused delay (seconds)" xml:space="preserve"><value>Odak kaybı gecikmesi (saniye)</value></data>
+  <data name="Stats_DateTime" xml:space="preserve"><value>Tarih ve saat</value></data>
+  <data name="Stats_Duration" xml:space="preserve"><value>Süre</value></data>
+  <data name="Rotation_BossModSessionChanged" xml:space="preserve"><value>Savaş sağlayıcısı, hesap, karakter veya profil değişti. Önceki savaş oturumu sona erdi; yeni seçimi kullanmak için yeniden başlatın.</value></data>
+  <data name="Rotation_BossModSettingsUnconfirmed" xml:space="preserve"><value>BossMod ayarları doğrulanamadı. Kullanılamayan okuma veya reddedilen yazma işlemi için eklenti günlüğünü kontrol edin.</value></data>
+  <data name="Config_BossModCatalogUnavailable" xml:space="preserve"><value>Ön ayar kataloğu kullanılamıyor; kaydedilen seçim korunuyor.</value></data>
+  <data name="Config_BossModCatalogEmpty" xml:space="preserve"><value>Seçilebilir ön ayar yok; kaydedilen seçim korunuyor.</value></data>
 </root>

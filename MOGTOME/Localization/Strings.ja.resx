@@ -2089,4 +2089,10 @@ DictionaryPathsとPathSelectionsByPathを比較します。
   <data name="Auto-fade when unfocused" xml:space="preserve"><value>フォーカスがないときに自動で薄くする</value></data>
   <data name="Unfocused opacity (%)" xml:space="preserve"><value>非フォーカス時の不透明度 (%)</value></data>
   <data name="Unfocused delay (seconds)" xml:space="preserve"><value>非フォーカス時の待機時間 (秒)</value></data>
+  <data name="Stats_DateTime" xml:space="preserve"><value>日時</value></data>
+  <data name="Stats_Duration" xml:space="preserve"><value>所要時間</value></data>
+  <data name="Rotation_BossModSessionChanged" xml:space="preserve"><value>戦闘プロバイダー、アカウント、キャラクター、またはプロファイルが変更されました。前の戦闘セッションは終了しました。新しい選択を使用するには、もう一度開始してください。</value></data>
+  <data name="Rotation_BossModSettingsUnconfirmed" xml:space="preserve"><value>BossMod の設定を確認できませんでした。読み取り不可または書き込み拒否の詳細はプラグインログを確認してください。</value></data>
+  <data name="Config_BossModCatalogUnavailable" xml:space="preserve"><value>プリセット一覧を取得できません。保存済みの選択は維持されます。</value></data>
+  <data name="Config_BossModCatalogEmpty" xml:space="preserve"><value>選択可能なプリセットがありません。保存済みの選択は維持されます。</value></data>
 </root>

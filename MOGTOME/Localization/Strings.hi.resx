@@ -2261,4 +2261,10 @@ DictionaryPaths और PathSelectionsByPath की तुलना करता 
   <data name="Unfocused delay (seconds)" xml:space="preserve">
     <value>फ़ोकस न होने का विलंब (सेकंड)</value>
   </data>
+  <data name="Stats_DateTime" xml:space="preserve"><value>तारीख और समय</value></data>
+  <data name="Stats_Duration" xml:space="preserve"><value>अवधि</value></data>
+  <data name="Rotation_BossModSessionChanged" xml:space="preserve"><value>युद्ध प्रदाता, खाता, पात्र या प्रोफ़ाइल बदल गई है। पिछला युद्ध सत्र समाप्त हो गया है; नए चयन का उपयोग करने के लिए फिर से शुरू करें।</value></data>
+  <data name="Rotation_BossModSettingsUnconfirmed" xml:space="preserve"><value>BossMod सेटिंग की पुष्टि नहीं हो सकी। अनुपलब्ध पठन या अस्वीकृत लेखन के विवरण के लिए प्लगइन लॉग देखें।</value></data>
+  <data name="Config_BossModCatalogUnavailable" xml:space="preserve"><value>प्रीसेट सूची उपलब्ध नहीं है; सहेजा गया चयन बरकरार है।</value></data>
+  <data name="Config_BossModCatalogEmpty" xml:space="preserve"><value>चुनने योग्य कोई प्रीसेट उपलब्ध नहीं है; सहेजा गया चयन बरकरार है।</value></data>
 </root>

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Numerics;
 using System.IO;
 using Dalamud.Interface.Utility;
+using Dalamud.Interface;
 using Dalamud.Interface.Windowing;
 using Dalamud.Bindings.ImGui;
 using MOGTOME.Models;
@@ -35,6 +36,45 @@ public class MainWindow : Window, IDisposable
             MinimumSize = new Vector2(380, 300),
             MaximumSize = new Vector2(1500, 1400),
         };
+        TitleBarButtons.Add(new()
+        {
+            Icon = FontAwesomeIcon.Cog, Priority = 0, IconOffset = new(2, 1),
+            Click = button => { if (button == ImGuiMouseButton.Left) plugin.ConfigWindow.Toggle(); },
+            ShowTooltip = () => UiLayout.SetTooltip(Ui.T("Main_Config")),
+        });
+        TitleBarButtons.Add(new()
+        {
+            Icon = FontAwesomeIcon.ChartBar, Priority = -10, IconOffset = new(2, 1),
+            Click = button => { if (button == ImGuiMouseButton.Left) plugin.StatsWindow.Toggle(); },
+            ShowTooltip = () => UiLayout.SetTooltip(Ui.T("Main_Stats")),
+        });
+        TitleBarButtons.Add(new()
+        {
+            Icon = FontAwesomeIcon.Play, Priority = -20, IconOffset = new(2, 1),
+            Click = button => { if (button == ImGuiMouseButton.Left) StartFromMain(); },
+            ShowTooltip = () => UiLayout.SetTooltip(Ui.T("Main_Start") + (plugin.Engine == null
+                ? "\n" + Ui.T("Main_StatusWaitingForAccountAndEngineInitialization")
+                : plugin.IsEngineStartQueued ? "\n" + Ui.T("Chat_MOGTOMEStartAlreadyQueued")
+                : plugin.Engine.IsRunning ? "\n" + Ui.T("Main_Running") + "\n" + plugin.Engine.Status.Render() : string.Empty)),
+        });
+        TitleBarButtons.Add(new()
+        {
+            Icon = FontAwesomeIcon.Stop, Priority = -30, IconOffset = new(2, 1),
+            Click = button => { if (button == ImGuiMouseButton.Left) StopFromMain(); },
+            ShowTooltip = () => UiLayout.SetTooltip(Ui.T("Main_Stop") + (plugin.IsEngineStartQueued
+                ? "\n" + Ui.T("Chat_MOGTOMEStartAlreadyQueued")
+                : plugin.Engine == null ? "\n" + Ui.T("Main_StatusWaitingForAccountAndEngineInitialization")
+                : "\n" + Ui.T(plugin.Engine.IsRunning ? "Main_Running" : "Main_Stopped") + "\n" + plugin.Engine.Status.Render())),
+        });
+        TitleBarButtons.Add(new()
+        {
+            Icon = FontAwesomeIcon.Clock, Priority = -40, IconOffset = new(2, 1),
+            Click = button => { if (button == ImGuiMouseButton.Left) plugin.Engine?.ToggleStopAfterNextSuccessfulRun(); },
+            ShowTooltip = () => UiLayout.SetTooltip(Ui.T(plugin.Engine?.StopAfterNextSuccessfulRunArmed == true
+                ? "Main_CancelStopAfterNext" : "Main_StopAfterNextSuccess") + "\n" + Ui.T(plugin.Engine == null
+                ? "Main_StatusWaitingForAccountAndEngineInitialization" : plugin.Engine.StopAfterNextSuccessfulRunArmed
+                    ? "Main_ArmedStopsAfterASuccessfulRunIs" : "Main_RuntimeOnlyAbortedRunsDoNotConsume")),
+        });
     }
 
     public void Dispose() { }
@@ -49,6 +89,11 @@ public class MainWindow : Window, IDisposable
     {
         WindowName = Ui.T("Window_MOGTOMEStatus") + " v" + CurrentVersion + "###MogtomeMain";
         Size = MogtomePresentation.Compact ? new Vector2(1097, 777) : new Vector2(1228, 896);
+        SizeConstraints = new WindowSizeConstraints
+        {
+            MinimumSize = new Vector2(Math.Max(380, UiLayout.TitleMinimumWidth(this) / Math.Max(.01f, ImGuiHelpers.GlobalScale)), 300),
+            MaximumSize = new Vector2(1500, 1400),
+        };
         if (pendingWindowPosition.HasValue)
         {
             Position = pendingWindowPosition.Value;
@@ -60,7 +105,19 @@ public class MainWindow : Window, IDisposable
     }
 
     public override void PostDraw()
-        { windowMotion.Restore(this); plugin.Appearance.PaintWindowTitle(WindowName); }
+        { windowMotion.Restore(this); plugin.Appearance.PaintWindowTitleWithButtons(this); }
+
+    private void StartFromMain()
+    {
+        if (plugin.Engine is { IsRunning: false } && !plugin.IsEngineStartQueued)
+            plugin.QueueEngineStart("main window", notifyChat: false);
+    }
+
+    private void StopFromMain()
+    {
+        if (plugin.Engine?.IsRunning == true || plugin.IsEngineStartQueued)
+            plugin.StopEngine();
+    }
 
     public override void Draw()
     {
@@ -281,11 +338,11 @@ public class MainWindow : Window, IDisposable
                 startStyle.Color(ImGuiCol.ButtonHovered, MaterialColor.Layer(colors.Primary, colors.OnPrimary, .08f));
                 startStyle.Color(ImGuiCol.ButtonActive, MaterialColor.Layer(colors.Primary, colors.OnPrimary, .14f));
                 startStyle.Color(ImGuiCol.Text, colors.OnPrimary);
-                if (Action(Ui.L("Main_Start"), MaterialIcon.Play, 132, true)) plugin.QueueEngineStart("main window", notifyChat: false);
+                if (Action(Ui.L("Main_Start"), MaterialIcon.Play, 132, true)) StartFromMain();
             }
             ImGui.EndDisabled();
             ImGui.BeginDisabled(!engine.IsRunning && !plugin.IsEngineStartQueued);
-            if (Action(Ui.L("Main_Stop"), MaterialIcon.Stop, 123)) plugin.StopEngine();
+            if (Action(Ui.L("Main_Stop"), MaterialIcon.Stop, 123)) StopFromMain();
             ImGui.EndDisabled();
         }
         if (Action(Ui.L("Main_Config"), MaterialIcon.Settings, 100, engine == null)) plugin.ConfigWindow.Toggle();

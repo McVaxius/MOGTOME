@@ -1,5 +1,23 @@
 # Changelog
 
+## Unreleased - CJK atlas construction
+
+- Request a 4096 x 4096 managed atlas and merge one bundled Noto CJK face per font role for the selected language, including Simplified and Traditional Chinese aliases. Preserve existing font sizes, glyph ranges, Windows and symbol fonts, and font lifecycle.
+
+## Unreleased - Combat settings and titlebar shortcuts
+
+- Populate the manual BossMod preset selector from the selected provider's complete native catalog. Retain literal names and saved selections when the catalog is unavailable or empty; replace a deleted active manual selection only with a valid displayed preset. Manual controls remain available during a run and notify the existing settings lifecycle.
+- Capture supported preset, BMR saved AI selector and preferred-distance originals before owned changes. Confirm writes through native readback, retain the original across later settings changes, and conditionally restore owned fields on cleanup while preserving external edits and provider replacement. Apply changed manual settings without restarting duty progression or reopening terminal combat cleanup.
+- Add Config, Stats, Start, Stop and Stop after next success shortcuts to the native main titlebar. Recheck existing start and cancellation guards on each click, retain all body controls, and reserve translated title and icon width before window motion.
+
+## Unreleased - Community invite
+
+- Update the existing Discord community action to https://discord.gg/ac6gjDvR8R.
+
+## Unreleased - Recent runs readability
+
+- Remove only the Player and Job columns from Recent runs, retaining captured history, Party details and the separate statistics tabs. Show local date/time in the selected UI culture with a separate Duration column, and wrap the complete status/reason in a bounded column without truncating it or widening the whole table.
+
 ## Unreleased - GitHub Actions dependency alignment
 
 - Pin the existing AethertekUI Actions checkout to published revision `6c193cf06ac67f954c549cafc2033ac0efdd630a`, which includes the Hindi text host and renderer. This fixes missing-text-API compilation after a consumer is published before its library; local workflow validation and hosted build results are separate.

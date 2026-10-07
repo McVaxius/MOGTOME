@@ -10,6 +10,7 @@ using Dalamud.Bindings.ImGui;
 using Dalamud.Plugin.Services;
 using Lumina.Excel.Sheets;
 using MOGTOME.Models;
+using MOGTOME.IPC;
 
 namespace MOGTOME.Windows;
 
@@ -388,7 +389,8 @@ public class ConfigWindow : Window, IDisposable
         }
         var config = plugin.Configuration;
         ImGui.PushID(id);
-        ImGui.BeginDisabled(plugin.Engine?.IsRunning == true || plugin.Engine?.IsStartupPending == true);
+        var startupPending = plugin.Engine?.IsStartupPending == true || plugin.IsEngineStartQueued;
+        ImGui.BeginDisabled(plugin.Engine?.IsRunning == true || startupPending);
         UiLayout.Wrapped(Ui.T("Config_CombatRotation"));
         var providerWidth = Enum.GetValues<CombatProvider>().Max(provider => AethertekUI.MaterialText.Measure(Ui.EnumLabel(provider)).X)
             + ImGui.GetStyle().FramePadding.X * 2 + ImGui.GetFrameHeight();
@@ -420,26 +422,23 @@ public class ConfigWindow : Window, IDisposable
             CombatProvider.Vbm => Ui.T("Config_VBMHandlesAttacksAndMovementWithFRENRIDER"),
             _ => Ui.T("Config_WrathHandlesAttacksUsingItsCurrentSettings"),
         });
+        ImGui.EndDisabled();
 
         if (config.CombatProvider is CombatProvider.Bmr or CombatProvider.Vbm)
         {
+            ImGui.BeginDisabled(startupPending);
             var manualPreset = config.UseManualBossModPreset;
             if (UiLayout.Checkbox(Ui.L("Config_UseManualBossModPreset"), ref manualPreset))
             {
                 config.UseManualBossModPreset = manualPreset;
                 plugin.ConfigManager.SaveCurrentAccount();
+                plugin.ConfigManager.NotifyConfigurationChanged();
             }
 
             if (manualPreset)
             {
-                var presetName = config.ManualBossModPresetName;
                 UiLayout.Wrapped(Ui.T("Config_PresetName"));
-                ImGui.SetNextItemWidth(Math.Min(260 * ImGuiHelpers.GlobalScale, UiLayout.AvailableWidth));
-                if (UiLayout.InputText("###Config_PresetName", ref presetName, 128))
-                {
-                    config.ManualBossModPresetName = presetName;
-                    plugin.ConfigManager.SaveCurrentAccount();
-                }
+                DrawManualPresetDropdown(config, startupPending);
                 if (string.IsNullOrWhiteSpace(config.ManualBossModPresetName))
                     UiLayout.Wrapped(Ui.T("Config_EnterAnExistingPresetNameBeforeStarting"));
             }
@@ -447,11 +446,78 @@ public class ConfigWindow : Window, IDisposable
             {
                 UiLayout.Wrapped(Ui.T("Config_MOGTOMESelectsItsPackagedActivePresetBy"));
             }
+            ImGui.EndDisabled();
         }
-        ImGui.EndDisabled();
         if (depBmr && depVbm)
             UiLayout.Wrapped(Ui.T("Config_BothBossModVariantsAreLoadedStartDisables"));
         ImGui.PopID();
+    }
+
+    private void DrawManualPresetDropdown(Configuration config, bool startupPending)
+    {
+        var catalog = plugin.BossModIPC.ReadPresetCatalog(config.CombatProvider);
+        var replacement = BossModIPC.ResolvePresetSelection(config.ManualBossModPresetName, catalog);
+        if (!startupPending && replacement != config.ManualBossModPresetName)
+        {
+            config.ManualBossModPresetName = replacement;
+            plugin.ConfigManager.SaveCurrentAccount();
+            plugin.ConfigManager.NotifyConfigurationChanged();
+        }
+
+        ImGui.BeginDisabled(!catalog.Readable || catalog.DisplayedNames.Count == 0);
+        var name = config.ManualBossModPresetName;
+        using var lineHeight = AethertekUI.MaterialText.PushLineHeight(name);
+        var origin = ImGui.GetCursorScreenPos();
+        var width = Math.Min(260 * ImGuiHelpers.GlobalScale, UiLayout.AvailableWidth);
+        ImGui.SetNextItemWidth(width);
+        var height = ImGui.GetFrameHeight();
+        var padding = ImGui.GetStyle().FramePadding;
+        var list = ImGui.GetWindowDrawList();
+        var font = ImGui.GetFont();
+        var fontSize = ImGui.GetFontSize();
+        var color = ImGui.GetColorU32(ImGuiCol.Text);
+        var textSize = AethertekUI.MaterialText.Measure(name);
+        // Dynamic native names are literal, including ##/### and command-reserved words.
+        var open = ImGui.BeginCombo("###Config_PresetName", string.Empty);
+        list.PushClipRect(origin, origin + new Vector2(Math.Max(padding.X, width - height), height), true);
+        try { AethertekUI.MaterialText.AddText(list, font, fontSize, origin + new Vector2(padding.X, (height - textSize.Y) * .5f), color, name); }
+        finally { list.PopClipRect(); }
+        if (!open && textSize.X > width - height - padding.X && ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
+            AethertekUI.MaterialText.SetTooltip(name);
+        if (open)
+        {
+            try
+            {
+                for (var index = 0; index < catalog.DisplayedNames.Count; index++)
+                {
+                    var nativeName = catalog.DisplayedNames[index];
+                    var selected = string.Equals(name, nativeName, StringComparison.Ordinal);
+                    var optionOrigin = ImGui.GetCursorScreenPos();
+                    var optionWidth = ImGui.GetContentRegionAvail().X;
+                    var optionColor = ImGui.GetColorU32(ImGuiCol.Text);
+                    ImGui.PushStyleColor(ImGuiCol.Text, Vector4.Zero);
+                    var clicked = ImGui.Selectable("###Preset" + index, selected, ImGuiSelectableFlags.None,
+                        new Vector2(0, Math.Max(ImGui.GetTextLineHeight(), AethertekUI.MaterialText.Measure(nativeName).Y)));
+                    ImGui.PopStyleColor();
+                    AethertekUI.MaterialText.AddText(ImGui.GetWindowDrawList(), optionOrigin, optionColor, nativeName);
+                    if (AethertekUI.MaterialText.Measure(nativeName).X > optionWidth && ImGui.IsItemHovered())
+                        AethertekUI.MaterialText.SetTooltip(nativeName);
+                    if (clicked && config.ManualBossModPresetName != nativeName)
+                    {
+                        config.ManualBossModPresetName = nativeName;
+                        plugin.ConfigManager.SaveCurrentAccount();
+                        plugin.ConfigManager.NotifyConfigurationChanged();
+                    }
+                    if (selected) ImGui.SetItemDefaultFocus();
+                }
+            }
+            finally { ImGui.EndCombo(); }
+        }
+        ImGui.EndDisabled();
+        if (!catalog.Readable)
+            UiLayout.Wrapped(Ui.T("Config_BossModCatalogUnavailable"));
+        else if (catalog.DisplayedNames.Count == 0)
+            UiLayout.Wrapped(Ui.T("Config_BossModCatalogEmpty"));
     }
 
     private void DrawRemainingDependencies(Configuration config)

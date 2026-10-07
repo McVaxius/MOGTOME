@@ -2095,4 +2095,10 @@ Path: {0}
   <data name="Auto-fade when unfocused" xml:space="preserve"><value>失去焦点后自动淡化</value></data>
   <data name="Unfocused opacity (%)" xml:space="preserve"><value>未聚焦时的不透明度 (%)</value></data>
   <data name="Unfocused delay (seconds)" xml:space="preserve"><value>失去焦点后的等待时间 (秒)</value></data>
+  <data name="Stats_DateTime" xml:space="preserve"><value>日期和时间</value></data>
+  <data name="Stats_Duration" xml:space="preserve"><value>耗时</value></data>
+  <data name="Rotation_BossModSessionChanged" xml:space="preserve"><value>战斗提供方、账号、角色或配置方案已更改。之前的战斗会话已结束；请重新启动以使用新的选择。</value></data>
+  <data name="Rotation_BossModSettingsUnconfirmed" xml:space="preserve"><value>无法确认 BossMod 设置。请查看插件日志，了解无法读取或写入被拒绝的详情。</value></data>
+  <data name="Config_BossModCatalogUnavailable" xml:space="preserve"><value>无法获取预设列表；保留已保存的选择。</value></data>
+  <data name="Config_BossModCatalogEmpty" xml:space="preserve"><value>没有可选预设；保留已保存的选择。</value></data>
 </root>

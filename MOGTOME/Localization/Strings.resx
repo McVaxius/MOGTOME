@@ -2095,4 +2095,10 @@ Results logged to Dalamud log.</value>
   <data name="Auto-fade when unfocused" xml:space="preserve"><value>Auto-fade when unfocused</value></data>
   <data name="Unfocused opacity (%)" xml:space="preserve"><value>Unfocused opacity (%)</value></data>
   <data name="Unfocused delay (seconds)" xml:space="preserve"><value>Unfocused delay (seconds)</value></data>
+  <data name="Stats_DateTime" xml:space="preserve"><value>Date and time</value></data>
+  <data name="Stats_Duration" xml:space="preserve"><value>Duration</value></data>
+  <data name="Rotation_BossModSessionChanged" xml:space="preserve"><value>The combat provider, account, character or profile changed. The previous combat session ended; start again to use the new selection.</value></data>
+  <data name="Rotation_BossModSettingsUnconfirmed" xml:space="preserve"><value>BossMod settings could not be confirmed. Check the plugin log for the unavailable read or rejected write.</value></data>
+  <data name="Config_BossModCatalogUnavailable" xml:space="preserve"><value>Preset catalog unavailable; the saved choice is retained.</value></data>
+  <data name="Config_BossModCatalogEmpty" xml:space="preserve"><value>No selectable presets are available; the saved choice is retained.</value></data>
 </root>

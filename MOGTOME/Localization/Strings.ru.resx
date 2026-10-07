@@ -2095,4 +2095,10 @@ Path: {0}
   <data name="Auto-fade when unfocused" xml:space="preserve"><value>Автоматически затемнять без фокуса</value></data>
   <data name="Unfocused opacity (%)" xml:space="preserve"><value>Непрозрачность без фокуса (%)</value></data>
   <data name="Unfocused delay (seconds)" xml:space="preserve"><value>Задержка без фокуса (секунды)</value></data>
+  <data name="Stats_DateTime" xml:space="preserve"><value>Дата и время</value></data>
+  <data name="Stats_Duration" xml:space="preserve"><value>Длительность</value></data>
+  <data name="Rotation_BossModSessionChanged" xml:space="preserve"><value>Изменился боевой модуль, учётная запись, персонаж или профиль. Предыдущий боевой сеанс завершён; запустите заново, чтобы использовать новый выбор.</value></data>
+  <data name="Rotation_BossModSettingsUnconfirmed" xml:space="preserve"><value>Не удалось подтвердить настройки BossMod. Сведения о недоступном чтении или отклонённой записи есть в журнале плагина.</value></data>
+  <data name="Config_BossModCatalogUnavailable" xml:space="preserve"><value>Каталог пресетов недоступен; сохранённый выбор оставлен без изменений.</value></data>
+  <data name="Config_BossModCatalogEmpty" xml:space="preserve"><value>Нет доступных для выбора пресетов; сохранённый выбор оставлен без изменений.</value></data>
 </root>

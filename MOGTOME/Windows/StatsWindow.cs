@@ -706,9 +706,9 @@ public class StatsWindow : Window, IDisposable
 
         var recentRuns = plugin.RunHistoryService.GetRecentRuns(25);
         var scale = AethertekUI.MaterialTheme.Metrics.Scale;
-        var captions = new[] { Ui.T("Stats_Time"), Ui.T("Stats_Player2"), Ui.T("Stats_Job"), Ui.T("Config_Duty"),
-            Ui.T("Stats_Time"), Ui.T("Config_Party"), Ui.T("Stats_Deaths2"), Ui.T("Stats_Status") };
-        var widths = new[] { 60f, 120f, 40f, 50f, 50f, 180f, 70f, 180f }.Select(width => width * scale).ToArray();
+        var captions = new[] { Ui.T("Stats_DateTime"), Ui.T("Config_Duty"), Ui.T("Stats_Duration"),
+            Ui.T("Config_Party"), Ui.T("Stats_Deaths2"), Ui.T("Stats_Status") };
+        var widths = new[] { 140f, 50f, 50f, 180f, 70f, 180f }.Select(width => width * scale).ToArray();
         var padding = 2 * scale;
         for (var column = 0; column < captions.Length; column++)
             widths[column] = MathF.Ceiling(Math.Max(widths[column], AethertekUI.MaterialText.Measure(captions[column]).X + padding));
@@ -718,15 +718,15 @@ public class StatsWindow : Window, IDisposable
             var party = members.Count > 0
                 ? string.Join("\n", members.Select(member => "   " + (plugin.Configuration.StatsKrangleNames ? KrangleService.KrangleName(member) : member)))
                 : run.PartySize > 0 ? Ui.T("Stats_NotCaptured", run.PartySize) : Ui.T("Stats_PartyDataNotCaptured");
-            var cells = new[] { run.Timestamp.ToString("HH:mm", Ui.Culture), plugin.Configuration.StatsKrangleNames ? Ui.T("Stats_Player") : run.PlayerName,
-                GetJobName(run.JobId), Ui.Duty(run.TerritoryId).Render(), FormatTime(run.CompletionTime), party,
-                string.Create(Ui.Culture, $"{run.SelfDeathCount}/{run.OtherDeathCount}/{GetTotalDeaths(run)}"),
-                RunHistoryService.IsSuccessful(run) ? Ui.T("Stats_Success") : Ui.T("Stats_Aborted", string.IsNullOrWhiteSpace(run.AbortReason) ? Ui.T("Stats_NoReasonRecorded") : run.AbortReason) };
+            // Status retains a bounded width and wraps instead of widening the table to the whole reason.
+            var cells = new[] { run.Timestamp.ToLocalTime().ToString("g", Ui.Culture), Ui.Duty(run.TerritoryId).Render(),
+                FormatTime(run.CompletionTime), party,
+                string.Create(Ui.Culture, $"{run.SelfDeathCount}/{run.OtherDeathCount}/{GetTotalDeaths(run)}") };
             for (var column = 0; column < cells.Length; column++)
                 widths[column] = MathF.Ceiling(Math.Max(widths[column], AethertekUI.MaterialText.Measure(cells[column]).X + padding));
         }
 
-        if (ImGui.BeginTable("RecentRunsTable", 8, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.ScrollY | ImGuiTableFlags.ScrollX))
+        if (ImGui.BeginTable("RecentRunsTable", 6, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.ScrollY | ImGuiTableFlags.ScrollX))
         {
             // Headers
             for (var column = 0; column < captions.Length; column++)
@@ -739,22 +739,15 @@ public class StatsWindow : Window, IDisposable
                 ImGui.TableNextRow();
                 
                 ImGui.TableSetColumnIndex(0);
-                AethertekUI.MaterialText.Text(run.Timestamp.ToString("HH:mm", Ui.Culture));
+                AethertekUI.MaterialText.Text(run.Timestamp.ToLocalTime().ToString("g", Ui.Culture));
                 
                 ImGui.TableSetColumnIndex(1);
-                var displayName = plugin.Configuration.StatsKrangleNames ? Ui.T("Stats_Player") : run.PlayerName;
-                AethertekUI.MaterialText.Text(displayName);
-                
-                ImGui.TableSetColumnIndex(2);
-                AethertekUI.MaterialText.Text(GetJobName(run.JobId));
-                
-                ImGui.TableSetColumnIndex(3);
                 AethertekUI.MaterialText.Text(Ui.Duty(run.TerritoryId).Render());
                 
-                ImGui.TableSetColumnIndex(4);
+                ImGui.TableSetColumnIndex(2);
                 AethertekUI.MaterialText.Text(FormatTime(run.CompletionTime));
                 
-                ImGui.TableSetColumnIndex(5);
+                ImGui.TableSetColumnIndex(3);
                 // Show party size and members on separate lines
                 var partyMembers = plugin.RunHistoryService.GetPartyMembersForRun(run);
                 if (partyMembers.Count > 0)
@@ -775,17 +768,21 @@ public class StatsWindow : Window, IDisposable
                     AethertekUI.MaterialText.Text(fallbackPartyText);
                 }
                 
-                ImGui.TableSetColumnIndex(6);
+                ImGui.TableSetColumnIndex(4);
                 AethertekUI.MaterialText.Text(string.Create(Ui.Culture, $"{run.SelfDeathCount}/{run.OtherDeathCount}/{GetTotalDeaths(run)}"));
                 if (ImGui.IsItemHovered())
                     UiLayout.SetTooltip(Ui.T("Stats_SelfOthersAll2"));
                 
-                ImGui.TableSetColumnIndex(7);
+                ImGui.TableSetColumnIndex(5);
                 var successful = RunHistoryService.IsSuccessful(run);
                 var statusColor = successful ? new Vector4(0, 1, 0, 1) : new Vector4(1, 0, 0, 1);
-                AethertekUI.MaterialText.TextColored(statusColor, successful
-                    ? Ui.T("Stats_Success")
-                    : Ui.T("Stats_Aborted", (string.IsNullOrWhiteSpace(run.AbortReason) ? Ui.T("Stats_NoReasonRecorded") : run.AbortReason)));
+                ImGui.PushStyleColor(ImGuiCol.Text, statusColor);
+                try
+                {
+                    UiLayout.Wrapped(successful ? Ui.T("Stats_Success")
+                        : Ui.T("Stats_Aborted", string.IsNullOrWhiteSpace(run.AbortReason) ? Ui.T("Stats_NoReasonRecorded") : run.AbortReason));
+                }
+                finally { ImGui.PopStyleColor(); }
             }
             
             ImGui.EndTable();

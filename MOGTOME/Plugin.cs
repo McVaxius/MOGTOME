@@ -24,7 +24,7 @@ namespace MOGTOME;
 
 public sealed class Plugin : IDalamudPlugin
 {
-    public const string DiscordUrl = "https://discord.gg/VsXqydsvpu";
+    public const string DiscordUrl = "https://discord.gg/ac6gjDvR8R";
     public static string DiscordChannelHint => Ui.T("Plugin_ScrollDownToTheDumpsterFireChannel");
     public static string StartReminderToastMessage => Ui.GameT("Plugin_CheckPartyLeaderSettingsIfTheDuty");
 
@@ -242,6 +242,8 @@ public sealed class Plugin : IDalamudPlugin
         {
             Engine.Dispose();
         }
+
+        RotationService.Dispose();
 
         RunHistoryService.Dispose();
         DeathTrackingService.Dispose();
@@ -578,6 +580,12 @@ public sealed class Plugin : IDalamudPlugin
 
     private void OnFrameworkUpdate(IFramework fw)
     {
+        RotationService.ObserveSessionDeparture();
+        if (ClientState.IsLoggedIn && Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.LoggingOut])
+        {
+            RotationService.EndSessionForLogout();
+            return;
+        }
         // Delayed login detection (LocalPlayer may not be ready immediately)
         if (ClientState.IsLoggedIn && !wasLoggedIn)
         {

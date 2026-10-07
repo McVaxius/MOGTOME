@@ -2,6 +2,7 @@ using System;
 using System.Numerics;
 using System.Linq;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Windowing;
 using AethertekUI;
 using MOGTOME.UiDesign;
 
@@ -273,7 +274,24 @@ internal static class UiLayout
             finally { ImGui.PopID(); }
         }
     }
-    internal static unsafe void PaintWindowTitle(string name, MaterialTextRenderer renderer)
+    internal static float TitleMinimumWidth(Window owner)
+    {
+        var style = ImGui.GetStyle();
+        var fontSize = ImGui.GetFontSize();
+        var collapse = (owner.Flags & (ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.Modal)) == 0;
+        var left = style.FramePadding.X + (collapse && style.WindowMenuButtonPosition == ImGuiDir.Left ? fontSize + style.ItemInnerSpacing.X : 0);
+        var right = fontSize + style.FramePadding.X * 2 + TitleButtonCount(owner) * (fontSize + style.ItemInnerSpacing.X)
+            + (collapse && style.WindowMenuButtonPosition == ImGuiDir.Right ? fontSize + style.ItemInnerSpacing.X : 0);
+        return left + MaterialText.Measure(owner.WindowName.Split("##", 2)[0]).X + right + style.ItemInnerSpacing.X;
+    }
+    private static int TitleButtonCount(Window owner)
+        => owner.TitleBarButtons.Count(button => !owner.IsClickthrough || button.AvailableClickthrough)
+            + (owner.AllowPinning || owner.AllowClickthrough || owner.AllowBackgroundBlur ? 1 : 0);
+    internal static void PaintWindowTitle(string name, MaterialTextRenderer renderer)
+        => PaintTitle(name, null, renderer);
+    internal static void PaintWindowTitleWithButtons(Window owner, MaterialTextRenderer renderer)
+        => PaintTitle(owner.WindowName, owner, renderer);
+    private static unsafe void PaintTitle(string name, Window? owner, MaterialTextRenderer renderer)
     {
         var text=name.Split("##",2)[0];
         if (!MaterialText.RequiresShaping(text)) return;
@@ -301,6 +319,9 @@ internal static class UiLayout
         var collapse=(window.Flags&(ImGuiWindowFlags.NoCollapse|ImGuiWindowFlags.Modal))==0;
         var left=style.FramePadding.X+(collapse&&style.WindowMenuButtonPosition==ImGuiDir.Left?fontSize+style.ItemInnerSpacing.X:0);
         var right=style.FramePadding.X+(window.HasCloseButton?fontSize+style.ItemInnerSpacing.X:0)+(collapse&&style.WindowMenuButtonPosition==ImGuiDir.Right?fontSize+style.ItemInnerSpacing.X:0);
+        if (owner is not null)
+            right = fontSize + style.FramePadding.X * 2 + TitleButtonCount(owner) * (fontSize + style.ItemInnerSpacing.X)
+                + (collapse && style.WindowMenuButtonPosition == ImGuiDir.Right ? fontSize + style.ItemInnerSpacing.X : 0);
         var p=min+new Vector2(left+Math.Max(0,window.Size.X-left-right-measured.X)*style.WindowTitleAlign.X-Math.Min(0,layout.Rasterize().Offset.X),(height-measured.Y)*.5f);
         list.PushClipRect(Vector2.Max(min+new Vector2(left,0),window.OuterRectClipped.Min),Vector2.Min(max-new Vector2(right,0),window.OuterRectClipped.Max),false);
         try { MaterialText.AddText(list,font,fontSize,p,ImGui.GetColorU32(ImGuiCol.Text),text); }

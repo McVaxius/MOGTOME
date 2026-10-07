@@ -2245,4 +2245,10 @@ Wyniki zapisywane w logu Dalamud.</value>
   <data name="Auto-fade when unfocused" xml:space="preserve"><value>Automatycznie przygaszaj bez fokusu</value></data>
   <data name="Unfocused opacity (%)" xml:space="preserve"><value>Nieprzezroczystość bez fokusu (%)</value></data>
   <data name="Unfocused delay (seconds)" xml:space="preserve"><value>Opóźnienie bez fokusu (sekundy)</value></data>
+  <data name="Stats_DateTime" xml:space="preserve"><value>Data i czas</value></data>
+  <data name="Stats_Duration" xml:space="preserve"><value>Czas trwania</value></data>
+  <data name="Rotation_BossModSessionChanged" xml:space="preserve"><value>Zmieniono moduł walki, konto, postać lub profil. Poprzednia sesja walki została zakończona; uruchom ponownie, aby użyć nowego wyboru.</value></data>
+  <data name="Rotation_BossModSettingsUnconfirmed" xml:space="preserve"><value>Nie udało się potwierdzić ustawień BossMod. Informacje o niedostępnym odczycie lub odrzuconym zapisie znajdują się w dzienniku wtyczki.</value></data>
+  <data name="Config_BossModCatalogUnavailable" xml:space="preserve"><value>Katalog ustawień wstępnych jest niedostępny; zapisany wybór zostaje zachowany.</value></data>
+  <data name="Config_BossModCatalogEmpty" xml:space="preserve"><value>Brak ustawień wstępnych do wyboru; zapisany wybór zostaje zachowany.</value></data>
 </root>

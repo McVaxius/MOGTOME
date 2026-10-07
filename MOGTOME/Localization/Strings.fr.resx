@@ -2089,4 +2089,10 @@ Résultats dans le journal Dalamud.</value>
   <data name="Auto-fade when unfocused" xml:space="preserve"><value>Atténuer automatiquement sans focus</value></data>
   <data name="Unfocused opacity (%)" xml:space="preserve"><value>Opacité sans focus (%)</value></data>
   <data name="Unfocused delay (seconds)" xml:space="preserve"><value>Délai sans focus (secondes)</value></data>
+  <data name="Stats_DateTime" xml:space="preserve"><value>Date et heure</value></data>
+  <data name="Stats_Duration" xml:space="preserve"><value>Durée</value></data>
+  <data name="Rotation_BossModSessionChanged" xml:space="preserve"><value>Le fournisseur de combat, le compte, le personnage ou le profil a changé. La session de combat précédente est terminée ; redémarrez pour utiliser la nouvelle sélection.</value></data>
+  <data name="Rotation_BossModSettingsUnconfirmed" xml:space="preserve"><value>Les paramètres de BossMod n’ont pas pu être confirmés. Consultez le journal du plugin pour connaître la lecture indisponible ou l’écriture refusée.</value></data>
+  <data name="Config_BossModCatalogUnavailable" xml:space="preserve"><value>Catalogue des préréglages indisponible ; le choix enregistré est conservé.</value></data>
+  <data name="Config_BossModCatalogEmpty" xml:space="preserve"><value>Aucun préréglage sélectionnable n’est disponible ; le choix enregistré est conservé.</value></data>
 </root>

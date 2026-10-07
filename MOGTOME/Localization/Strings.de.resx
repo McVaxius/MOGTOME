@@ -2089,4 +2089,10 @@ Ergebnisse im Dalamud-Protokoll.</value>
   <data name="Auto-fade when unfocused" xml:space="preserve"><value>Ohne Fokus automatisch verblassen</value></data>
   <data name="Unfocused opacity (%)" xml:space="preserve"><value>Deckkraft ohne Fokus (%)</value></data>
   <data name="Unfocused delay (seconds)" xml:space="preserve"><value>Verzögerung ohne Fokus (Sekunden)</value></data>
+  <data name="Stats_DateTime" xml:space="preserve"><value>Datum und Uhrzeit</value></data>
+  <data name="Stats_Duration" xml:space="preserve"><value>Dauer</value></data>
+  <data name="Rotation_BossModSessionChanged" xml:space="preserve"><value>Kampfanbieter, Konto, Charakter oder Profil haben sich geändert. Die vorherige Kampfsitzung wurde beendet; erneut starten, um die neue Auswahl zu verwenden.</value></data>
+  <data name="Rotation_BossModSettingsUnconfirmed" xml:space="preserve"><value>Die BossMod-Einstellungen konnten nicht bestätigt werden. Das Plugin-Protokoll enthält Angaben zur nicht verfügbaren Abfrage oder abgelehnten Änderung.</value></data>
+  <data name="Config_BossModCatalogUnavailable" xml:space="preserve"><value>Der Voreinstellungskatalog ist nicht verfügbar; die gespeicherte Auswahl bleibt erhalten.</value></data>
+  <data name="Config_BossModCatalogEmpty" xml:space="preserve"><value>Keine auswählbaren Voreinstellungen verfügbar; die gespeicherte Auswahl bleibt erhalten.</value></data>
 </root>
