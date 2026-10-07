@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using MOGTOME.Models;
 using MOGTOME.Services;
 
@@ -228,6 +229,67 @@ public sealed class AdsCurrentDutyReadinessTests
 
         Assert.Null(service.CurrentDuty);
         Assert.Equal("ADS unloaded.", service.CurrentDutyDetail);
+    }
+
+    [Theory]
+    [InlineData(null, false)]
+    [InlineData("true", true)]
+    [InlineData("false", false)]
+    [InlineData("\"true\"", false)]
+    [InlineData("null", false)]
+    public void InteractionVbmPauseRequiresTheOptionalBoolean(string? value, bool expected)
+    {
+        var status = JsonNode.Parse(StatusJson())!.AsObject();
+        status["executionPhase"] = "AttemptingInteractableObjective";
+        if (value is not null)
+            status["interactionVbmPauseActive"] = JsonNode.Parse(value);
+        Assert.Equal(expected, Parse(status.ToJsonString()).InteractionVbmPauseActive);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void InteractionVbmPauseRequiresOwnedMatchingCurrentDutyAndClearsOnRelease(bool typedAvailable)
+    {
+        var loaded = true;
+        var owned = true;
+        var status = JsonNode.Parse(StatusJson())!.AsObject();
+        status["ownershipMode"] = "OwnedStartInside";
+        status["interactionVbmPauseActive"] = true;
+        var service = CreateService(() => loaded,
+            () => typedAvailable ? owned : throw new InvalidOperationException("typed unavailable"),
+            () => status.ToJsonString(), () => CapturedAtUtc);
+
+        service.Refresh(true, 1036, 4, force: true);
+        Assert.True(service.IsInteractionVbmPauseActive);
+
+        status["interactionVbmPauseActive"] = false;
+        service.Refresh(true, 1036, 4, force: true);
+        Assert.False(service.IsInteractionVbmPauseActive);
+
+        status.Remove("interactionVbmPauseActive");
+        service.Refresh(true, 1036, 4, force: true);
+        Assert.False(service.IsInteractionVbmPauseActive);
+
+        status["interactionVbmPauseActive"] = true;
+        owned = false;
+        status["ownershipMode"] = "Observing";
+        service.Refresh(true, 1036, 4, force: true);
+        Assert.False(service.IsInteractionVbmPauseActive);
+
+        owned = true;
+        status["ownershipMode"] = "OwnedStartInside";
+        service.Refresh(true, 1036, 5, force: true);
+        Assert.False(service.IsInteractionVbmPauseActive);
+        service.Refresh(true, 1036, 4, force: true);
+        Assert.True(service.IsInteractionVbmPauseActive);
+        service.Refresh(false, 1036, 4, force: true);
+        Assert.False(service.IsInteractionVbmPauseActive);
+
+        service.Refresh(true, 1036, 4, force: true);
+        loaded = false;
+        service.Refresh(true, 1036, 4, force: true);
+        Assert.False(service.IsInteractionVbmPauseActive);
     }
 
     private static AdsCurrentDutySnapshot Parse(string json)

@@ -313,7 +313,7 @@ public class MainWindow : Window, IDisposable
             return width;
         }
         var stopNextLabel = engine?.StopAfterNextSuccessfulRunArmed == true ? Ui.T("Main_CancelStopAfterNext") : Ui.T("Main_StopAfterNextSuccess");
-        var actionHeight = (MogtomePresentation.Compact ? 44 : 55) * scale;
+        var actionHeight = MaterialControlMetrics.Measure(MaterialTheme.Metrics, ImGui.GetTextLineHeight(), MaterialControlContext.Toolbar).Height;
         foreach (var (label, weight, lowerRow) in new[]
         {
             (Ui.T("Main_Start"), 132f, false), (Ui.T("Main_Stop"), 123f, false),

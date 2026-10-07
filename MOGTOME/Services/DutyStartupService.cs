@@ -25,7 +25,8 @@ internal sealed class DutyStartupService(
     Func<float> getDutyRemainingTime,
     Action<string> logInformation,
     Action<string> logWarning,
-    Action? invalidateCombat = null)
+    Action? invalidateCombat = null,
+    Func<bool>? deferCombatActivation = null)
 {
     private const double PraetoriumReadyFallbackSeconds = 15.0;
     private readonly AdsHandoffState handoffState = new();
@@ -101,6 +102,7 @@ internal sealed class DutyStartupService(
         (uint TerritoryTypeId, uint ContentFinderConditionId) identity,
         AdsHandoffReadinessConditions conditions, DateTime nowUtc)
     {
+        adsDutyIpcService.TrackLiveDutyIdentity(inDuty, identity.TerritoryTypeId, identity.ContentFinderConditionId);
         // A duty flag may precede GameMain leaving the overworld. Do not bind
         // the session to that outgoing territory while its CFC is still zero.
         var sessionTerritory = inDuty && identity.ContentFinderConditionId == 0 ? 0 : identity.TerritoryTypeId;
@@ -304,6 +306,11 @@ internal sealed class DutyStartupService(
         if (!IsCurrent(operation)) return false;
         if (CombatActivated)
             return true;
+        if (deferCombatActivation?.Invoke() == true)
+        {
+            Pending(Ui.M("Startup_WaitingForDutyReadiness"));
+            return false;
+        }
         if (now < nextCombatAttemptUtc)
         {
             Pending(Ui.M("Startup_CombatRecoveryBackoffUntil", nextCombatAttemptUtc));
@@ -319,6 +326,11 @@ internal sealed class DutyStartupService(
             {
                 CombatActivated = true;
                 return true;
+            }
+            if (deferCombatActivation?.Invoke() == true)
+            {
+                Pending(Ui.M("Startup_WaitingForDutyReadiness"));
+                return false;
             }
             failure = combatFailure();
         }

@@ -101,11 +101,18 @@ public sealed class AdsDutyIpcService : IDisposable
 
     public AdsDutyOwnershipSnapshot Current { get; private set; } = AdsDutyOwnershipSnapshot.Empty;
     public AdsCurrentDutySnapshot? CurrentDuty { get; private set; }
+    public bool IsInteractionVbmPauseActive => Current.IsOwned && CurrentDuty?.InteractionVbmPauseActive == true;
     public string CurrentDutyDetail => CurrentDutyMessage.English;
     internal UiText CurrentDutyMessage { get; private set; } = Ui.M("Ads_Unvalidated");
 
     public void Dispose()
     {
+    }
+
+    internal bool RefreshInteractionVbmPause()
+    {
+        Refresh(trackedInInstancedDuty, trackedTerritoryTypeId, trackedContentFinderConditionId, force: true);
+        return IsInteractionVbmPauseActive;
     }
 
     public AdsDutyOwnershipSnapshot Refresh(
@@ -288,7 +295,7 @@ public sealed class AdsDutyIpcService : IDisposable
             detail));
     }
 
-    private void TrackLiveDutyIdentity(
+    internal void TrackLiveDutyIdentity(
         bool inInstancedDuty,
         uint territoryTypeId,
         uint contentFinderConditionId)

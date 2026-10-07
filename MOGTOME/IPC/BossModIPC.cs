@@ -67,6 +67,7 @@ public class BossModIPC : IDisposable
     private readonly IDalamudPluginInterface pluginInterface;
     private readonly IPluginLog log;
     private readonly ICommandManager commandManager;
+    private AdsDutyIpcService? adsDutyIpcService;
     private BossModSettingsOwnership? ownedSettings;
     private WeakReference<object>? ownedProvider;
     private (string Account, string Character, Configuration Config, string Provider) ownedIdentity;
@@ -94,8 +95,24 @@ public class BossModIPC : IDisposable
     internal bool BeginOwnedBossModSettings(CombatProvider provider, string account, string character, Configuration config)
         => PrepareOwnedBossModSettings(provider == CombatProvider.Vbm ? "VBM" : "BMR", account, character, config);
 
-    internal bool IsOwnedProviderCurrent => ownedSettings is null || TryReadOwnedBossModSettings(out _);
+    internal bool RetireDepartedOwnedBossModSettings()
+    {
+        if (ownedSettings is null || !TryGetLiveBossMod(ownedIdentity.Provider, out var live, out _, out _)
+            || ownedProvider!.TryGetTarget(out var captured) && ReferenceEquals(captured, live))
+            return false;
+        LastStatus = "BossMod provider reloaded; the departed session cannot be restored into its replacement.";
+        log.Warning($"[MOGTOME] Owned BossMod settings cleanup was incomplete: {LastStatus}");
+        ownedSettings = null;
+        ownedProvider = null;
+        cleanupStarted = cleanupFailed = false;
+        cleanupRuntimeExpected = cleanupRuntimeTarget = null;
+        return true;
+    }
+
+    internal bool IsOwnedProviderCurrent => ownedSettings is null || TryReadOwnedBossModSettings(out _, allowCleanup: true);
     internal bool BeginOwnedBossModCleanup() => BeginOwnedBossModCleanup(ownedIdentity.Account, ownedIdentity.Character);
+    internal void SetAdsDutyIpcService(AdsDutyIpcService service) => adsDutyIpcService = service;
+    internal bool IsVbmInteractionPauseActive => adsDutyIpcService?.RefreshInteractionVbmPause() == true;
 
     private static object? GetInstanceMember(object root, string name)
         => TryGetInstanceMember(root, name, out var value) ? value : null;
@@ -231,16 +248,28 @@ public class BossModIPC : IDisposable
     {
         var provider = GetBossModProvider(rotationProvider);
         var identity = (Account: account, Character: character, Config: config, Provider: provider);
-        if (ownedSettings is not null && ownedIdentity != identity)
-            ReleaseOwnedBossModSettings(false);
         if (!TryGetLiveBossMod(provider, out var live, out var assembly, out var detail))
         {
             LastStatus = detail;
             return false;
         }
-        if (ownedSettings is not null && (!ownedProvider!.TryGetTarget(out var captured) || !ReferenceEquals(captured, live)))
+        if (ownedSettings is not null && ownedIdentity.Provider == provider
+            && (!ownedProvider!.TryGetTarget(out var captured) || !ReferenceEquals(captured, live)))
+        {
+            LastStatus = "BossMod provider reloaded; the departed session cannot be restored into its replacement.";
+            log.Warning($"[MOGTOME] Owned BossMod settings cleanup was incomplete: {LastStatus}");
+            ownedSettings = null;
+            ownedProvider = null;
+            cleanupStarted = cleanupFailed = false;
+            cleanupRuntimeExpected = cleanupRuntimeTarget = null;
+        }
+        if (ownedSettings is not null && (cleanupStarted || cleanupFailed))
+            return false;
+        if (ownedSettings is not null && ownedIdentity != identity)
         {
             ReleaseOwnedBossModSettings(false);
+            if (ownedSettings is not null)
+                return false;
         }
         if (ownedSettings is null)
         {
@@ -251,9 +280,11 @@ public class BossModIPC : IDisposable
         return true;
     }
 
-    private bool TryReadOwnedBossModSettings(out BossModSettingsSnapshot snapshot)
+    private bool TryReadOwnedBossModSettings(out BossModSettingsSnapshot snapshot, bool allowCleanup = false)
     {
         snapshot = BossModSettingsSnapshot.Unavailable;
+        if (!allowCleanup && (cleanupStarted || cleanupFailed))
+            return false;
         if (ownedSettings is null)
         {
             LastStatus = "No owned BossMod settings session.";
@@ -314,13 +345,18 @@ public class BossModIPC : IDisposable
         try
         {
             var service = assembly.GetType("BossMod.Service");
+            var rootType = assembly.GetType("BossMod.ConfigRoot");
+            var aiConfigType = assembly.GetType("BossMod.AI.AIConfig");
             const BindingFlags flags = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
             var root = service?.GetProperty("Config", flags)?.GetValue(null) ?? service?.GetField("Config", flags)?.GetValue(null);
-            if (root is null || LiveMember(root, "Nodes") is not IEnumerable nodes)
+            if (rootType is null || aiConfigType is null || rootType.Assembly != assembly
+                || aiConfigType.Assembly != assembly || root?.GetType() != rootType)
                 return null;
-            foreach (var node in nodes)
-                if (node?.GetType().FullName == "BossMod.AI.AIConfig" && node.GetType().Assembly == assembly)
-                    return node;
+            var accessor = rootType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly)
+                .SingleOrDefault(method => method.Name == "Get" && method.IsGenericMethodDefinition
+                    && method.GetGenericArguments().Length == 1 && method.GetParameters().Length == 0);
+            var node = accessor?.MakeGenericMethod(aiConfigType).Invoke(root, null);
+            return node?.GetType() == aiConfigType ? node : null;
         }
         catch { }
         return null;
@@ -352,12 +388,17 @@ public class BossModIPC : IDisposable
             && string.Equals(catalog.NativeNames.FirstOrDefault(candidate =>
                 string.Equals(candidate.Trim(), name.Trim(), StringComparison.OrdinalIgnoreCase)), name, StringComparison.Ordinal);
 
+    private bool IsRestorableAiSelector(string? name, BossModPresetCatalog catalog)
+        => name is not null ? IsExactAiSelector(name, catalog)
+            : catalog.Readable && !catalog.NativeNames.Any(string.IsNullOrWhiteSpace);
+
     internal bool ApplyOwnedBossModPreset(string presetName)
     {
         if (string.IsNullOrWhiteSpace(presetName))
             return true;
         if (!TryReadOwnedBossModSettings(out var before))
             return false;
+        var ownership = ownedSettings!;
         var catalog = ReadPresetCatalog(ownedIdentity.Provider);
         if (!catalog.Readable || !IsExactRuntimePreset(presetName)
             || ownedSettings!.Original.Runtime is not { } original
@@ -370,26 +411,39 @@ public class BossModIPC : IDisposable
         if (ownedIdentity.Provider == "BMR")
         {
             var selector = ownedSettings.Original.StoredAiSelector;
-            if (!ownedSettings.Original.StoredSelectorReadable || selector is null
-                || !IsExactAiSelector(selector, catalog) || !IsExactAiSelector(presetName, catalog)
+            if (!ownedSettings.Original.StoredSelectorReadable
+                || !IsRestorableAiSelector(selector, catalog) || !IsExactAiSelector(presetName, catalog)
                 || !ownedSettings.CanChangeStoredSelector(before))
             {
                 LastStatus = "BMR preset retained: the original saved AI selector has no verified exact restoration path.";
                 return false;
             }
-            if (!WriteAiSelector(presetName) || !TryReadOwnedBossModSettings(out var selectorApplied)
+            WriteAiSelector(presetName);
+            if (!TryReadOwnedBossModSettings(out var selectorApplied)
+                || !ReferenceEquals(ownedSettings, ownership)
                 || !selectorApplied.StoredSelectorReadable || selectorApplied.StoredAiSelector != presetName)
             {
                 LastStatus = "BMR saved AI preset write could not be confirmed.";
                 return false;
             }
-            ownedSettings.OwnStoredSelector(presetName);
+            ownership.OwnStoredSelector(presetName);
+            if (!ownership.CanChangeRuntime(selectorApplied))
+            {
+                LastStatus = "BossMod runtime changed during the selector callback; that external selection was retained.";
+                return false;
+            }
+        }
+        if (ownedIdentity.Provider == "VBM" && IsVbmInteractionPauseActive)
+        {
+            LastStatus = "VBM preset activation deferred while ADS holds an interaction.";
+            return false;
         }
         var requested = new BossModRuntimePresetState(false, new[] { presetName });
         var submitted = WriteRuntimePreset(ownedIdentity.Provider, requested);
-        if (TryReadOwnedBossModSettings(out var applied) && BossModRuntimePresetState.Matches(applied.Runtime, requested))
+        if (TryReadOwnedBossModSettings(out var applied) && ReferenceEquals(ownedSettings, ownership)
+            && BossModRuntimePresetState.Matches(applied.Runtime, requested))
         {
-            ownedSettings!.OwnRuntime(requested);
+            ownership.OwnRuntime(requested);
             LastStatus = $"{ownedIdentity.Provider} preset '{presetName}' confirmed.";
             return true;
         }
@@ -398,14 +452,13 @@ public class BossModIPC : IDisposable
         return false;
     }
 
-    private bool WriteAiSelector(string name)
+    private void WriteAiSelector(string name)
     {
         try
         {
             pluginInterface.GetIpcSubscriber<string, object>("BossMod.AI.SetPreset").InvokeAction(name);
-            return true;
         }
-        catch (Exception ex) { log.Debug($"BossMod AI preset setter unavailable: {ex.GetBaseException().Message}"); return false; }
+        catch (Exception ex) { log.Debug($"BossMod AI preset setter unavailable: {ex.GetBaseException().Message}"); }
     }
 
     private bool WriteRuntimePreset(string provider, BossModRuntimePresetState state)
@@ -446,11 +499,18 @@ public class BossModIPC : IDisposable
                 || command.StartsWith("/vbmai follow ", StringComparison.Ordinal))
             && command.StartsWith(ownedIdentity.Provider == "VBM" ? "/vbmai " : "/bmrai ", StringComparison.Ordinal);
         var before = BossModSettingsSnapshot.Unavailable;
-        var canObserve = relevant && TryReadOwnedBossModSettings(out before);
+        if (relevant && (cleanupStarted || cleanupFailed) && !command.EndsWith(" off", StringComparison.Ordinal))
+            return false;
+        var canObserve = relevant && TryReadOwnedBossModSettings(out before, allowCleanup: cleanupStarted);
         if (relevant && !canObserve)
             return false;
+        if (command == "/vbmai on" && IsVbmInteractionPauseActive)
+        {
+            LastStatus = "VBM AI activation deferred while ADS holds an interaction.";
+            return false;
+        }
         var submitted = sendCommand(command);
-        if (submitted && canObserve && TryReadOwnedBossModSettings(out var after))
+        if (submitted && canObserve && TryReadOwnedBossModSettings(out var after, allowCleanup: cleanupStarted))
         {
             var enabled = !command.EndsWith(" off", StringComparison.Ordinal);
             if (cleanupStarted && BossModRuntimePresetState.Matches(before.Runtime, cleanupRuntimeExpected)
@@ -464,12 +524,12 @@ public class BossModIPC : IDisposable
     internal bool BeginOwnedBossModCleanup(string account, string character)
     {
         cleanupStarted = ownedSettings is not null && ownedIdentity.Account == account && ownedIdentity.Character == character;
-        cleanupFailed = false;
         cleanupRuntimeExpected = null;
         cleanupRuntimeTarget = null;
         if (!cleanupStarted)
-            return true;
-        if (!TryReadOwnedBossModSettings(out var current))
+            return !cleanupFailed;
+        cleanupFailed = false;
+        if (!TryReadOwnedBossModSettings(out var current, allowCleanup: true))
         {
             cleanupFailed = true;
             return false;
@@ -483,17 +543,40 @@ public class BossModIPC : IDisposable
         }
         if (ownedSettings.OwnedStoredSelector is { } selector
             && current.StoredSelectorReadable && current.StoredAiSelector == selector
-            && ownedSettings.Original.StoredAiSelector is { } originalSelector)
+            && ownedSettings.Original.StoredSelectorReadable)
         {
-            if (!IsExactAiSelector(originalSelector, ReadPresetCatalog(ownedIdentity.Provider))
-                || !WriteAiSelector(originalSelector) || !TryReadOwnedBossModSettings(out var after)
-                || !after.StoredSelectorReadable || after.StoredAiSelector != originalSelector)
+            var ownership = ownedSettings;
+            var originalSelector = ownership.Original.StoredAiSelector;
+            var originalAvailable = IsRestorableAiSelector(originalSelector, ReadPresetCatalog(ownedIdentity.Provider));
+            if (!originalAvailable)
             {
                 LastStatus = "BMR saved AI selector restoration could not be confirmed.";
                 cleanupFailed = true;
             }
             else
-                ownedSettings.OwnStoredSelector(originalSelector);
+            {
+                WriteAiSelector(originalSelector ?? string.Empty);
+                if (!TryReadOwnedBossModSettings(out var after, allowCleanup: true)
+                    || !ReferenceEquals(ownedSettings, ownership))
+                {
+                    LastStatus = "BMR saved AI selector restoration could not be confirmed.";
+                    cleanupFailed = true;
+                    return false;
+                }
+                if (after.Runtime is not null && !BossModRuntimePresetState.Matches(cleanupRuntimeExpected, after.Runtime))
+                {
+                    cleanupRuntimeExpected = after.Runtime;
+                    cleanupRuntimeTarget = ownership.GetRuntimeCleanupTarget(after, turnEverythingOff: false);
+                }
+                current = after;
+                if (!after.StoredSelectorReadable || after.StoredAiSelector != originalSelector)
+                {
+                    LastStatus = "BMR saved AI selector restoration could not be confirmed.";
+                    cleanupFailed = true;
+                }
+                else
+                    ownership.OwnStoredSelector(originalSelector);
+            }
         }
         else if (ownedSettings.OwnedStoredSelector is not null && !current.StoredSelectorReadable)
         {
@@ -507,7 +590,7 @@ public class BossModIPC : IDisposable
             {
                 pluginInterface.GetIpcSubscriber<List<string>, bool, List<string>>("BossMod.Configuration")
                     .InvokeFunc(new List<string> { "AIConfig", "PreferredDistance", originalDistance.ToString("R", CultureInfo.CurrentCulture) }, true);
-                if (!TryReadOwnedBossModSettings(out var after) || after.PreferredDistance != originalDistance)
+                if (!TryReadOwnedBossModSettings(out var after, allowCleanup: true) || after.PreferredDistance != originalDistance)
                 {
                     LastStatus = "Preferred-distance restoration could not be confirmed.";
                     cleanupFailed = true;
@@ -526,26 +609,31 @@ public class BossModIPC : IDisposable
     internal bool EndOwnedBossModCleanup(bool turnEverythingOff, bool releaseSession = true)
     {
         if (!cleanupStarted || ownedSettings is null)
-            return true;
+            return !cleanupFailed;
         if (cleanupRuntimeExpected is not null)
         {
-            if (!TryReadOwnedBossModSettings(out var current))
+            if (!TryReadOwnedBossModSettings(out var current, allowCleanup: true) || current.Runtime is null)
                 cleanupFailed = true;
             else if (BossModRuntimePresetState.Matches(current.Runtime, cleanupRuntimeExpected)
                 || ownedSettings.MatchesKnownAiRuntimeEffect(cleanupRuntimeExpected, current))
             {
                 var target = turnEverythingOff ? new BossModRuntimePresetState(true, Array.Empty<string>()) : cleanupRuntimeTarget;
-                if (target is not null && !BossModRuntimePresetState.Matches(current.Runtime, target)
-                    && (!target.Names.All(IsExactRuntimePreset) || !WriteRuntimePreset(ownedIdentity.Provider, target)
-                        || !TryReadOwnedBossModSettings(out var restored) || !BossModRuntimePresetState.Matches(restored.Runtime, target)))
+                if (target is not null && !BossModRuntimePresetState.Matches(current.Runtime, target))
                 {
-                    LastStatus = "BossMod runtime preset cleanup could not be confirmed.";
-                    cleanupFailed = true;
+                    var ownership = ownedSettings;
+                    var namesAvailable = target.Names.All(IsExactRuntimePreset);
+                    if (namesAvailable) WriteRuntimePreset(ownedIdentity.Provider, target);
+                    if (!namesAvailable || !TryReadOwnedBossModSettings(out var restored, allowCleanup: true)
+                        || !ReferenceEquals(ownedSettings, ownership) || !BossModRuntimePresetState.Matches(restored.Runtime, target))
+                    {
+                        LastStatus = "BossMod runtime preset cleanup could not be confirmed.";
+                        cleanupFailed = true;
+                    }
                 }
             }
         }
         var succeeded = !cleanupFailed;
-        if (releaseSession)
+        if (releaseSession && succeeded)
         {
             ownedSettings = null;
             ownedProvider = null;
@@ -576,9 +664,10 @@ public class BossModIPC : IDisposable
                 LastStatus = "Packaged presets retained: the complete current selection has no verified restoration path.";
                 return false;
             }
-            var runtimeWasOwned = ownedSettings!.CanChangeRuntime(before);
+            var ownership = ownedSettings!;
+            var runtimeWasOwned = ownership.CanChangeRuntime(before);
             var installed = InstallPackagedPresets(forceRecreate: true) == PackagedPresetNames.Length;
-            if (!TryReadOwnedBossModSettings(out var after))
+            if (!TryReadOwnedBossModSettings(out var after) || !ReferenceEquals(ownedSettings, ownership))
                 return false;
             if (!BossModRuntimePresetState.Matches(previous, after.Runtime))
             {
@@ -589,14 +678,15 @@ public class BossModIPC : IDisposable
                     LastStatus = "Packaged preset refresh observed a different selection; that external selection was retained.";
                     return false;
                 }
-                if (runtimeWasOwned) ownedSettings.OwnRuntime(expected);
+                if (runtimeWasOwned) ownership.OwnRuntime(expected);
                 _ = WriteRuntimePreset(ownedIdentity.Provider, previous);
-                if (!TryReadOwnedBossModSettings(out var restored) || !BossModRuntimePresetState.Matches(previous, restored.Runtime))
+                if (!TryReadOwnedBossModSettings(out var restored) || !ReferenceEquals(ownedSettings, ownership)
+                    || !BossModRuntimePresetState.Matches(previous, restored.Runtime))
                 {
                     LastStatus = "Packaged presets were refreshed, but the previous complete selection could not be confirmed.";
                     return false;
                 }
-                if (runtimeWasOwned) ownedSettings.OwnRuntime(previous);
+                if (runtimeWasOwned) ownership.OwnRuntime(previous);
             }
             return installed;
         }
@@ -1247,7 +1337,7 @@ internal sealed class BossModSettingsOwnership(string provider, BossModSettingsS
         => Original.PreferredDistance is { } originalDistance && double.IsFinite(originalDistance)
             && current == (OwnedDistance ?? originalDistance);
     internal void OwnRuntime(BossModRuntimePresetState state) => OwnedRuntime = state;
-    internal void OwnStoredSelector(string selector) => OwnedStoredSelector = selector;
+    internal void OwnStoredSelector(string? selector) => OwnedStoredSelector = selector;
     internal void OwnDistance(double distance) => OwnedDistance = distance;
     internal bool MatchesOwnedRuntime(BossModSettingsSnapshot current)
     {

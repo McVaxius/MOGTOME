@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased - Button sizing (I491)
+
+- Use font-aware Toolbar sizing for ordinary buttons and reduce icon-button padding and main/Blunderville action heights to full text/icon content. Preserve fonts, native IDs/actions, weighted full-width slots and small/dense controls.
+- Current Debug/x64 compilation passes. Final actual-product native checks pass 9714 assertions across 32 focused scenes and 112 pointer activations, with integer exit 0 in all 2 routes. Coverage uses English/Hindi captions, original exercised font roles, both densities, 100/150 percent scale and enlarged text; game/GPU acceptance remains separate.
+
 ## Unreleased - CJK atlas construction
 
 - Request a 4096 x 4096 managed atlas and merge one bundled Noto CJK face per font role for the selected language, including Simplified and Traditional Chinese aliases. Preserve existing font sizes, glyph ranges, Windows and symbol fonts, and font lifecycle.
@@ -8,6 +13,8 @@
 
 - Populate the manual BossMod preset selector from the selected provider's complete native catalog. Retain literal names and saved selections when the catalog is unavailable or empty; replace a deleted active manual selection only with a valid displayed preset. Manual controls remain available during a run and notify the existing settings lifecycle.
 - Capture supported preset, BMR saved AI selector and preferred-distance originals before owned changes. Confirm writes through native readback, retain the original across later settings changes, and conditionally restore owned fields on cleanup while preserving external edits and provider replacement. Apply changed manual settings without restarting duty progression or reopening terminal combat cleanup.
+- Read the native AI config through its zero-argument generic accessor and permit startup from a legitimately unset BMR AI selector. Restore null through a catalog-checked non-null clear argument and exact readback. Retain same-provider cleanup failures for explicit recovery, confirm writes after dispatch exceptions, and preserve independent selector/runtime/distance changes and captured-owner boundaries.
+- After an explicitly attempted start proves the captured provider was replaced, report the departed cleanup incomplete and leave the replacement untouched; the next explicit start captures its own baseline. Current ownership/lifecycle and ADS-readiness tests pass 155/155 with no failures/skips; unchanged mogtome.bat builds Debug/x64 with zero warnings/errors. Installed-provider and game acceptance remain user-controlled.
 - Add Config, Stats, Start, Stop and Stop after next success shortcuts to the native main titlebar. Recheck existing start and cancellation guards on each click, retain all body controls, and reserve translated title and icon width before window motion.
 
 ## Unreleased - Community invite
@@ -17,6 +24,7 @@
 ## Unreleased - Recent runs readability
 
 - Remove only the Player and Job columns from Recent runs, retaining captured history, Party details and the separate statistics tabs. Show local date/time in the selected UI culture with a separate Duration column, and wrap the complete status/reason in a bounded column without truncating it or widening the whole table.
+- Current unchanged-launcher Debug/x64 build passes with zero warnings/errors. Focused English/Russian native checks pass 6,166 assertions across sixteen scenes; root independently reran Russian. Checks retain cultured local dates, durations, complete wrapped statuses through finite scrolling, Party details/fallbacks and unchanged history/configuration. Fifteen current 750-key catalogs pass. Managed-host/game acceptance remains separate.
 
 ## Unreleased - GitHub Actions dependency alignment
 

@@ -15,6 +15,8 @@ internal static class UiLayout
     internal static bool Button(string label, Vector2 size = default)
     {
         var visible = label.Split("##", 2)[0];
+        using var controls = ImGui.GetStyle().FramePadding.Y == 0 || MaterialControls.Context == MaterialControlContext.Dense
+            ? default(MaterialControls.ControlScope) : MaterialControls.Push(MaterialControlContext.Toolbar);
         using var height = MaterialText.PushLineHeight(visible);
         size.X = MaterialLayout.FitNextItemWidth(size.X, MaterialText.Measure(visible).X + ImGui.GetStyle().FramePadding.X * 2);
         if (!MaterialText.RequiresShaping(visible)) return ImGui.Button(label, size);
@@ -55,12 +57,18 @@ internal static class UiLayout
         return ImGui.InputInt(Ui.L(key), ref value);
     }
 
-    internal static float IconButtonWidth(string label) => MaterialText.Measure(label.Split("##", 2)[0]).X + 58 * MaterialTheme.Metrics.Scale;
+    internal static float IconButtonWidth(string label) => MaterialText.Measure(label.Split("##", 2)[0]).X + 32 * MaterialTheme.Metrics.Scale
+        + 2 * MaterialControlMetrics.Measure(MaterialTheme.Metrics, ImGui.GetTextLineHeight(), MaterialControlContext.Toolbar).NativePadding.X;
     internal static float IconButtonHeight(string label, float width, float minimum)
     {
         var scale = MaterialTheme.Metrics.Scale;
         var text = label.Split("##", 2)[0];
-        return Math.Max(minimum, MaterialText.Measure(text).Y + (MogtomePresentation.Compact ? 16 : 22) * scale);
+        using var controls = ImGui.GetStyle().FramePadding.Y == 0 || MaterialControls.Context == MaterialControlContext.Dense
+            ? default(MaterialControls.ControlScope) : MaterialControls.Push(MaterialControlContext.Toolbar);
+        var paddingY = ImGui.GetStyle().FramePadding.Y;
+        using var height = MaterialText.PushLineHeight(text);
+        return Math.Max(minimum, Math.Max(MaterialControls.Metrics.Height,
+            Math.Max(MaterialText.Measure(text).Y, 22 * scale) + 2 * paddingY));
     }
     internal static void SameLineIfFits(float width)
     {
@@ -71,9 +79,14 @@ internal static class UiLayout
     {
         var text = display ?? raw.Split("##", 2)[0];
         var scale = MaterialTheme.Metrics.Scale;
+        using var controls = ImGui.GetStyle().FramePadding.Y == 0 || MaterialControls.Context == MaterialControlContext.Dense
+            ? default(MaterialControls.ControlScope) : MaterialControls.Push(MaterialControlContext.Toolbar);
+        var paddingY = ImGui.GetStyle().FramePadding.Y;
+        using var height = MaterialText.PushLineHeight(text);
         size.X = MaterialLayout.FitNextItemWidth(size.X, IconButtonWidth(text));
         var textSize = MaterialText.Measure(text);
-        size.Y = Math.Max(size.Y, textSize.Y + (MogtomePresentation.Compact ? 16 : 22) * scale);
+        size.Y = Math.Max(size.Y, Math.Max(MaterialControls.Metrics.Height,
+            Math.Max(textSize.Y, 22 * scale) + 2 * paddingY));
         var foreground = ImGui.GetStyle().Colors[(int)ImGuiCol.Text];
         ImGui.PushStyleColor(ImGuiCol.Text, Vector4.Zero);
         var clicked = ImGui.Button(raw, size);
@@ -81,7 +94,7 @@ internal static class UiLayout
         var min = ImGui.GetItemRectMin(); var max = ImGui.GetItemRectMax(); var list = ImGui.GetWindowDrawList();
         list.AddRect(min, max, MaterialCanvas.Color(MaterialTheme.Current.Colors.OutlineVariant), 4 * scale);
         var groupWidth = textSize.X + 32 * scale;
-        var left = min.X + Math.Max(12 * scale, (max.X - min.X - groupWidth) * .5f);
+        var left = min.X + Math.Max(ImGui.GetStyle().FramePadding.X, (max.X - min.X - groupWidth) * .5f);
         foreground.W *= ImGui.GetStyle().Alpha;
         list.PushClipRect(min, max, true);
         MaterialIcons.Draw(icon, new(left, min.Y + (max.Y - min.Y - 22 * scale) * .5f), 22 * scale, foreground);

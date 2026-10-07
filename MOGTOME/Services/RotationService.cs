@@ -50,6 +50,9 @@ public class RotationService : IDisposable
         DisableRotationForDutyEnd("rotation service disposal");
     }
 
+    internal void SetAdsDutyIpcService(AdsDutyIpcService service) => bossModIPC.SetAdsDutyIpcService(service);
+    internal bool IsVbmActivationDeferred => preparedBossMod == CombatProvider.Vbm && bossModIPC.IsVbmInteractionPauseActive;
+
     private string ReadCharacterIdentity()
     {
         var character = configManager.GetCurrentCharacterConfig();
@@ -125,9 +128,13 @@ public class RotationService : IDisposable
             settingsPending = false;
             return true;
         }
+        if (IsVbmActivationDeferred)
+            return false;
         if (!ValidateManualPresetSelection(config) || preparedBossMod is null
             || !bossModIPC.PreparePresetForStart(preparedBossMod.Value, passive: false, config.UseManualBossModPreset, config.ManualBossModPresetName))
         {
+            if (IsVbmActivationDeferred)
+                return false;
             settingsPending = false;
             log.Warning($"[MOGTOME][Rotation] Live preset application was unconfirmed: {bossModIPC.LastSettingsStatus}");
             return Fail(Ui.M("Rotation_BossModSettingsUnconfirmed"));
@@ -141,7 +148,15 @@ public class RotationService : IDisposable
     public bool Initialize(bool preferBmr = false)
     {
         if (!DisableEnabledComponents())
+        {
+            if (bossModIPC.RetireDepartedOwnedBossModSettings())
+            {
+                preparedConfig = null;
+                sessionEnded = true;
+                rotationDisableSentForDuty = true;
+            }
             return Fail(Ui.M("Rotation_CouldNotDisableCombatComponentsFromThe"));
+        }
         ResetDutyRotationState("engine start");
         preparedBossMod = null;
         preparedConfig = null;
@@ -232,12 +247,16 @@ public class RotationService : IDisposable
             log.Debug($"[MOGTOME][Rotation] Skipped selected combat provider enable; already enabled for this duty ({reason})");
             return true;
         }
+        if (IsVbmActivationDeferred)
+            return false;
 
         var provider = configManager.GetActiveConfig().CombatProvider;
         try
         {
             if (!EnableSelectedProvider() || rotationDisableSentForDuty)
             {
+                if (!rotationDisableSentForDuty && IsVbmActivationDeferred)
+                    return false;
                 DisableEnabledComponents();
                 return false;
             }
@@ -400,7 +419,11 @@ public class RotationService : IDisposable
 
             if (!ValidateManualPresetSelection(config) || !bossModIPC.PreparePresetForStart(preparedBossMod.Value, provider == CombatProvider.Rsr,
                     config.UseManualBossModPreset, config.ManualBossModPresetName))
+            {
+                if (IsVbmActivationDeferred)
+                    return false;
                 return Fail(Ui.M("Rotation_PresetPreparationFailedCombatWasNotEnabled", preparedBossMod));
+            }
         }
 
         if (rotationDisableSentForDuty) return false;
@@ -427,7 +450,11 @@ public class RotationService : IDisposable
         }
         enabledComponents.Add(aiProvider);
         if (command.Length == 0 || !bossModIPC.SendCommand(command, $"enable {aiProvider}"))
+        {
+            if (IsVbmActivationDeferred)
+                return false;
             return Fail(Ui.M("Rotation_CouldNotEnableUsing", aiProvider, command));
+        }
         appliedPresetSettings = CurrentPresetSettings(config);
         settingsPending = false;
         return !rotationDisableSentForDuty;

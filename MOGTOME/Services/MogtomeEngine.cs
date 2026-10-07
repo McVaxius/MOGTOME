@@ -175,8 +175,10 @@ public class MogtomeEngine
         this.clientState = clientState;
         this.commandManager = commandManager;
         this.cancelQueuedStart = cancelQueuedStart;
+        var adsDutyIpcService = new AdsDutyIpcService(Plugin.PluginInterface, log);
+        rotationService.SetAdsDutyIpcService(adsDutyIpcService);
         dutyStartup = new DutyStartupService(
-            new AdsDutyIpcService(Plugin.PluginInterface, log),
+            adsDutyIpcService,
             () => dutyAutomationService.UseAdsExperimental,
             autoDutyIPC.StartDuty,
             () => rotationService.EnableRotationOncePerDuty("ready in-duty startup"),
@@ -184,7 +186,8 @@ public class MogtomeEngine
             commandManager.ProcessCommand,
             GameHelpers.GetDutyRemainingTime,
             message => log.Information(message), message => log.Warning(message),
-            rotationService.InvalidateCombatActivation);
+            rotationService.InvalidateCombatActivation,
+            () => rotationService.IsVbmActivationDeferred);
         firstRoomSkip = new PraetoriumFirstRoomSkipService(
             log,
             Plugin.Framework,

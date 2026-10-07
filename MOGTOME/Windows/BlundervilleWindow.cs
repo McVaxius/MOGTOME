@@ -108,7 +108,7 @@ public sealed class BlundervilleWindow : Window, IDisposable
             ImGui.BeginDisabled();
             using var font = plugin.Appearance.Font(MogtomeFontRole.Strong);
             var width = (UiLayout.AvailableWidth - ImGui.GetStyle().ItemSpacing.X) / 2;
-            var actionHeight = (MogtomePresentation.Compact ? 42 : 46) * scale;
+            var actionHeight = MaterialControlMetrics.Measure(MaterialTheme.Metrics, ImGui.GetTextLineHeight(), MaterialControlContext.Toolbar).Height;
             UiLayout.IconButton(Ui.L("Main_Start"), MaterialIcon.Play, new Vector2(width, actionHeight));
             if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) UiLayout.SetTooltip(Ui.T("Blunderville_FarmingUnavailable"));
             UiLayout.SameLineIfFits(Math.Max(width, UiLayout.IconButtonWidth(Ui.T("Main_Stop"))));
