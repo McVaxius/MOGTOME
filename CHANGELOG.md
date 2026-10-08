@@ -1,3 +1,7 @@
+2026-10-08 - GitHub Actions Backpack dependency
+
+- Publish the shared Backpack icon used by shopping-grid headers before MOGTOME builds. Retain the read-only, non-expiring SSH library checkout.
+
 2026-10-08 - GitHub Actions shared-library repair
 
 - Build against published AethertekUI main so current shared APIs are available. Retain repository-specific read-only SSH deploy keys, which do not expire, and disabled credential persistence. Publish library APIs before consumer changes.
