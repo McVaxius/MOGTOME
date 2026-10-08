@@ -2329,4 +2329,26 @@ Wyniki zapisywane w logu Dalamud.</value>
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>Zaplanowany zakup</value></data>
   <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Stan rejestracji lub ekwipunku niedostępny</value></data>
   <data name="BV_RegistrationHelp" xml:space="preserve"><value>Kolekcje: zielony znacznik = zarejestrowane lub w ekwipunku; czerwony X = potwierdzony brak; żółty ? = planowany zakup; szary ? = nieznany stan. Pozostałe pola są puste.</value></data>
+  <data name="Shop_Title" xml:space="preserve"><value>Sklep MOGTOME</value></data>
+  <data name="Shop_Button" xml:space="preserve"><value>SKLEP</value></data>
+  <data name="Shop_Refresh" xml:space="preserve"><value>Odśwież</value></data>
+  <data name="Shop_City" xml:space="preserve"><value>Miasto handlarza</value></data>
+  <data name="Shop_Currency" xml:space="preserve"><value>Tomestone</value></data>
+  <data name="Shop_ReviewRequired" xml:space="preserve"><value>Zakup lub przeniesienie stosu wymaga sprawdzenia. Sprawdź torby i walutę przed zdjęciem blokady.</value></data>
+  <data name="Shop_Merging" xml:space="preserve"><value>Łączenie stosów tomestone…</value></data>
+  <data name="Shop_MergeUncertain" xml:space="preserve"><value>Nie potwierdzono zmian stosów. Sprawdź torby przed kolejną próbą.</value></data>
+  <data name="Shop_Travel" xml:space="preserve"><value>Podróż do handlarza Moogle…</value></data>
+  <data name="Shop_UnitPrice" xml:space="preserve"><value>Koszt za przedmiot. Różne waluty są połączone znakiem +; najedź na cenę, aby zobaczyć nazwy.</value></data>
+  <data name="Shop_RowPrice" xml:space="preserve"><value>Pozostały koszt do docelowej liczby przedmiotów, zaokrąglony do pełnych pakietów wymiany. Nazwy walut są w podpowiedzi.</value></data>
+  <data name="Shop_Bundle" xml:space="preserve"><value>Każda wymiana daje {0} przedmiotów.</value></data>
+  <data name="Shop_Balance" xml:space="preserve"><value>{0} — w torbach: {1} | potrzeba: {2}</value></data>
+  <data name="Shop_Help" xml:space="preserve"><value>Koszyk określa docelową liczbę w torbach. Kup uzupełnia brakujące sztuki; 0 wyłącza cel.</value></data>
+  <data name="Shop_NoCatalog" xml:space="preserve"><value>Bieżąca oferta Moogle jest niedostępna.</value></data>
+  <data name="Shop_NoFunds" xml:space="preserve"><value>Za mało waluty; zakupy zatrzymane.</value></data>
+  <data name="Shop_UncertainPurchase" xml:space="preserve"><value>Wynik zakupu niepewny; zatrzymano. Sprawdź torby i wszystkie waluty przed ponowną próbą.</value></data>
+  <data name="Shop_Reviewed" xml:space="preserve"><value>Torby i waluty sprawdzone; usuń blokadę</value></data>
+  <data name="Shop_NoTrader" xml:space="preserve"><value>Wędrowny Moogle jest niedostępny w wybranym mieście.</value></data>
+  <data name="Shop_Clear" xml:space="preserve">
+    <value>WYCZYŚĆ</value>
+  </data>
 </root>

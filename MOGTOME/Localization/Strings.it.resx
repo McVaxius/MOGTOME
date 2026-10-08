@@ -2179,4 +2179,26 @@ I risultati sono registrati nel log Dalamud.</value>
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>Acquisto previsto</value></data>
   <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Registrazione o inventario non disponibile</value></data>
   <data name="BV_RegistrationHelp" xml:space="preserve"><value>Collezionabili: spunta verde = registrato o nell’inventario; X rossa = assenza confermata; ? giallo = acquisto previsto; ? grigio = stato sconosciuto. Gli altri restano vuoti.</value></data>
+  <data name="Shop_Title" xml:space="preserve"><value>Negozio MOGTOME</value></data>
+  <data name="Shop_Button" xml:space="preserve"><value>NEGOZIO</value></data>
+  <data name="Shop_Refresh" xml:space="preserve"><value>Aggiorna</value></data>
+  <data name="Shop_City" xml:space="preserve"><value>Città del mercante</value></data>
+  <data name="Shop_Currency" xml:space="preserve"><value>Tomestone</value></data>
+  <data name="Shop_ReviewRequired" xml:space="preserve"><value>Occorre verificare un acquisto o uno spostamento di pile. Controlla borse e valute prima di rimuovere il blocco.</value></data>
+  <data name="Shop_Merging" xml:space="preserve"><value>Unione delle pile di tomestone…</value></data>
+  <data name="Shop_MergeUncertain" xml:space="preserve"><value>Impossibile confermare le modifiche alle pile. Controlla le borse prima di riprovare.</value></data>
+  <data name="Shop_Travel" xml:space="preserve"><value>Viaggio verso il mercante moguri…</value></data>
+  <data name="Shop_UnitPrice" xml:space="preserve"><value>Costo per oggetto. Più valute sono unite da +; passa sul prezzo per vederne i nomi.</value></data>
+  <data name="Shop_RowPrice" xml:space="preserve"><value>Costo restante per la quantità desiderata, arrotondato a lotti interi. Passa sul costo per vedere le valute.</value></data>
+  <data name="Shop_Bundle" xml:space="preserve"><value>Ogni scambio fornisce {0} oggetto/i.</value></data>
+  <data name="Shop_Balance" xml:space="preserve"><value>{0} — posseduti: {1} | necessari: {2}</value></data>
+  <data name="Shop_Help" xml:space="preserve"><value>Il carrello indica il totale desiderato nelle borse. Acquista completa la quantità mancante; 0 disattiva un obiettivo.</value></data>
+  <data name="Shop_NoCatalog" xml:space="preserve"><value>Offerta attuale del moguri non disponibile.</value></data>
+  <data name="Shop_NoFunds" xml:space="preserve"><value>Valuta insufficiente; acquisti interrotti.</value></data>
+  <data name="Shop_UncertainPurchase" xml:space="preserve"><value>Esito dell’acquisto incerto; interrotto. Controlla borse e tutte le valute prima di riprovare.</value></data>
+  <data name="Shop_Reviewed" xml:space="preserve"><value>Borse e valute controllate; rimuovi blocco</value></data>
+  <data name="Shop_NoTrader" xml:space="preserve"><value>Moguri itinerante non disponibile nella città scelta.</value></data>
+  <data name="Shop_Clear" xml:space="preserve">
+    <value>SVUOTA</value>
+  </data>
 </root>

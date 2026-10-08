@@ -2329,4 +2329,26 @@ Sonuçlar Dalamud günlüğüne yazılır.</value>
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>Satın alınması planlandı</value></data>
   <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Kayıt veya envanter bilgisi kullanılamıyor</value></data>
   <data name="BV_RegistrationHelp" xml:space="preserve"><value>Koleksiyonlar: yeşil onay = kayıtlı veya envanterde; kırmızı X = yokluğu doğrulandı; sarı ? = satın alma planlandı; gri ? = durum bilinmiyor. Diğer eşyalar boş gösterilir.</value></data>
+  <data name="Shop_Title" xml:space="preserve"><value>MOGTOME Mağazası</value></data>
+  <data name="Shop_Button" xml:space="preserve"><value>MAĞAZA</value></data>
+  <data name="Shop_Refresh" xml:space="preserve"><value>Yenile</value></data>
+  <data name="Shop_City" xml:space="preserve"><value>Tüccar şehri</value></data>
+  <data name="Shop_Currency" xml:space="preserve"><value>Tomestone</value></data>
+  <data name="Shop_ReviewRequired" xml:space="preserve"><value>Bir satın alma veya yığın taşıma işlemi incelenmeli. Bekletmeyi kaldırmadan önce çantaları ve para birimlerini kontrol edin.</value></data>
+  <data name="Shop_Merging" xml:space="preserve"><value>Tomestone yığınları birleştiriliyor…</value></data>
+  <data name="Shop_MergeUncertain" xml:space="preserve"><value>Yığın değişiklikleri doğrulanamadı. Tekrar denemeden önce çantaları kontrol edin.</value></data>
+  <data name="Shop_Travel" xml:space="preserve"><value>Moogle tüccarına gidiliyor…</value></data>
+  <data name="Shop_UnitPrice" xml:space="preserve"><value>Öğe başına maliyet. Birden fazla para birimi + ile bağlanır; adları görmek için fiyatın üzerine gelin.</value></data>
+  <data name="Shop_RowPrice" xml:space="preserve"><value>Hedef envanter miktarı için kalan maliyet, tam takas paketlerine yukarı yuvarlanır. Para birimi adları ipucundadır.</value></data>
+  <data name="Shop_Bundle" xml:space="preserve"><value>Her takas {0} öğe verir.</value></data>
+  <data name="Shop_Balance" xml:space="preserve"><value>{0} — mevcut: {1} | gereken: {2}</value></data>
+  <data name="Shop_Help" xml:space="preserve"><value>Sepet çantalarda istediğiniz toplam miktarı belirtir. Satın al eksikleri tamamlar; 0 hedefi devre dışı bırakır.</value></data>
+  <data name="Shop_NoCatalog" xml:space="preserve"><value>Güncel Moogle teklifi kullanılamıyor.</value></data>
+  <data name="Shop_NoFunds" xml:space="preserve"><value>Para birimi yetersiz; alışveriş durduruldu.</value></data>
+  <data name="Shop_UncertainPurchase" xml:space="preserve"><value>Satın alma sonucu belirsiz; durduruldu. Tekrar denemeden önce çantaları ve tüm para birimlerini kontrol edin.</value></data>
+  <data name="Shop_Reviewed" xml:space="preserve"><value>Çantalar ve para birimleri kontrol edildi; bekletmeyi kaldır</value></data>
+  <data name="Shop_NoTrader" xml:space="preserve"><value>Gezgin Moogle seçilen şehirde bulunamıyor.</value></data>
+  <data name="Shop_Clear" xml:space="preserve">
+    <value>TEMİZLE</value>
+  </data>
 </root>

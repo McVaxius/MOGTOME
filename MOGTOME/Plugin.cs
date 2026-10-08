@@ -91,6 +91,9 @@ public sealed class Plugin : IDalamudPlugin
     public DutyAutomationService DutyAutomationService { get; private set; }
     public MogtomeEngine Engine { get; private set; }
     public BlundervilleService Blunderville { get; private set; }
+    public MoogleShopService MoogleShop { get; private set; }
+    private int moogleShopActionGeneration;
+    public bool IsMoogleShopActionQueued { get; private set; }
     private int blundervilleActionGeneration;
     public bool IsBlundervilleActionQueued { get; private set; }
 
@@ -99,6 +102,7 @@ public sealed class Plugin : IDalamudPlugin
     public ConfigWindow ConfigWindow { get; init; }
     public MainWindow MainWindow { get; init; }
     public BlundervilleWindow BlundervilleWindow { get; init; }
+    public MoogleShopWindow MoogleShopWindow { get; init; }
     public StatsWindow StatsWindow { get; init; }
     public ActionWarningWindow ActionWarningWindow { get; init; }
     public WarningTextWindow WarningTextWindow { get; init; }
@@ -174,6 +178,7 @@ public sealed class Plugin : IDalamudPlugin
         Engine = null!;
 
         Blunderville = new BlundervilleService(this);
+        MoogleShop = new MoogleShopService(this);
 
         Appearance = new(this);
 
@@ -181,12 +186,14 @@ public sealed class Plugin : IDalamudPlugin
         ConfigWindow = new ConfigWindow(this, Log);
         MainWindow = new MainWindow(this);
         BlundervilleWindow = new BlundervilleWindow(this);
+        MoogleShopWindow = new MoogleShopWindow(this);
         StatsWindow = new StatsWindow(this);
         ActionWarningWindow = new ActionWarningWindow(this);
         WarningTextWindow = new WarningTextWindow(this);
         WindowSystem.AddWindow(ConfigWindow);
         WindowSystem.AddWindow(MainWindow);
         WindowSystem.AddWindow(BlundervilleWindow);
+        WindowSystem.AddWindow(MoogleShopWindow);
         WindowSystem.AddWindow(StatsWindow);
         WindowSystem.AddWindow(ActionWarningWindow);
         WindowSystem.AddWindow(WarningTextWindow);
@@ -228,6 +235,8 @@ public sealed class Plugin : IDalamudPlugin
     public void Dispose()
     {
         ++blundervilleActionGeneration;
+        ++moogleShopActionGeneration;
+        MoogleShop.Dispose();
         Blunderville.Dispose();
         CancelQueuedEngineStart();
         DutyStateService.DutyCompleted -= OnDutyCompleted;
@@ -285,7 +294,40 @@ public sealed class Plugin : IDalamudPlugin
 
     private void OnCommand(string command, string args)
     {
+        if (args.Trim().Equals("shop", StringComparison.OrdinalIgnoreCase)) { OpenMoogleShop(); return; }
         MainWindow.Toggle();
+    }
+
+    public void OpenMoogleShop()
+    {
+        MoogleShopWindow.IsOpen = true;
+        RefreshMoogleShop();
+    }
+
+    public void RefreshMoogleShop()
+        => GameHelpers.QueueFrameworkAction("Moogle shop", "Refresh", TimeSpan.Zero, MoogleShop.RefreshCatalog);
+
+    public void RequestMoogleShopBuy()
+    {
+        if (IsMoogleShopActionQueued || MoogleShop.IsRunning || Blunderville.IsRunning || IsBlundervilleActionQueued ||
+            IsEngineStartQueued || Engine?.IsRunning == true) return;
+        var generation = ++moogleShopActionGeneration;
+        IsMoogleShopActionQueued = true;
+        GameHelpers.QueueFrameworkAction("Moogle shop", "Buy", TimeSpan.Zero, () =>
+        {
+            if (generation != moogleShopActionGeneration) return;
+            IsMoogleShopActionQueued = false;
+            MoogleShop.Buy();
+        });
+    }
+
+    public void StopMoogleShop()
+    {
+        ++moogleShopActionGeneration;
+        IsMoogleShopActionQueued = false;
+        if (MoogleShop == null) return;
+        MoogleShop.RequestStop();
+        GameHelpers.QueueFrameworkAction("Moogle shop", "Stop", TimeSpan.Zero, MoogleShop.Stop);
     }
 
     private void OnBlundervilleCommand(string command, string args)
@@ -305,7 +347,7 @@ public sealed class Plugin : IDalamudPlugin
 
     public void RequestBlundervilleAction(bool buy)
     {
-        if (IsBlundervilleActionQueued || Blunderville.IsRunning || IsEngineStartQueued || Engine?.IsRunning == true) return;
+        if (IsBlundervilleActionQueued || Blunderville.IsRunning || MoogleShop?.IsRunning == true || IsMoogleShopActionQueued || IsEngineStartQueued || Engine?.IsRunning == true) return;
         var generation = ++blundervilleActionGeneration;
         IsBlundervilleActionQueued = true;
         GameHelpers.QueueFrameworkAction("Blunderville", buy ? "Buy" : "Start", TimeSpan.Zero, () =>
@@ -349,6 +391,9 @@ public sealed class Plugin : IDalamudPlugin
         var arg = args.Trim().ToLowerInvariant();
         switch (arg)
         {
+            case "shop":
+                OpenMoogleShop();
+                break;
             case "start":
                 QueueEngineStart("slash command", notifyChat: true);
                 break;
@@ -484,7 +529,7 @@ public sealed class Plugin : IDalamudPlugin
 
     public void QueueEngineStart(string source, bool notifyChat)
     {
-        if (Blunderville?.IsRunning == true || IsBlundervilleActionQueued)
+        if (Blunderville?.IsRunning == true || IsBlundervilleActionQueued || MoogleShop?.IsRunning == true || IsMoogleShopActionQueued)
         {
             if (notifyChat) ChatGui.Print(Ui.GameT("BV_Unavailable"));
             return;
@@ -537,9 +582,11 @@ public sealed class Plugin : IDalamudPlugin
     public bool StopEngine(string? reason = null)
     {
         var stoppedBlunderville = Blunderville?.IsRunning == true || IsBlundervilleActionQueued;
+        var stoppedShop = MoogleShop?.IsRunning == true || IsMoogleShopActionQueued;
+        StopMoogleShop();
         StopBlunderville();
         UiText stopReason = reason == null ? Ui.M("Engine_ManualStop") : (UiText)reason;
-        var stopped = IsEngineStartQueued || stoppedBlunderville;
+        var stopped = IsEngineStartQueued || stoppedBlunderville || stoppedShop;
         CancelQueuedEngineStart();
         if (Engine?.IsRunning == true)
         {
@@ -630,6 +677,7 @@ public sealed class Plugin : IDalamudPlugin
         if (ClientState.IsLoggedIn && Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.LoggingOut])
         {
             if (Blunderville.IsRunning) Blunderville.Stop();
+            if (MoogleShop.IsRunning || IsMoogleShopActionQueued) StopMoogleShop();
             RotationService.EndSessionForLogout();
             return;
         }
@@ -726,6 +774,7 @@ public sealed class Plugin : IDalamudPlugin
             Engine.Update();
         }
         DadIpcService.Update();
+        MoogleShop.Update();
         Blunderville.Update();
     }
 
@@ -733,7 +782,7 @@ public sealed class Plugin : IDalamudPlugin
     {
         if (!pendingEngineStartRequest)
             return;
-        if (Blunderville?.IsRunning == true || IsBlundervilleActionQueued)
+        if (Blunderville?.IsRunning == true || IsBlundervilleActionQueued || MoogleShop?.IsRunning == true || IsMoogleShopActionQueued)
         {
             CancelQueuedEngineStart();
             return;

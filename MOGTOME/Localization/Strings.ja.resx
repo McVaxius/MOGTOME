@@ -2173,4 +2173,26 @@ DictionaryPathsとPathSelectionsByPathを比較します。
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>購入予定</value></data>
   <data name="BV_RegistrationUnknown" xml:space="preserve"><value>登録状況または所持品を確認できません</value></data>
   <data name="BV_RegistrationHelp" xml:space="preserve"><value>登録可能品：緑のチェック＝登録済みまたは所持中、赤のX＝未登録・未所持を確認、黄色の?＝購入予定、灰色の?＝状態不明。その他は空欄です。</value></data>
+  <data name="Shop_Title" xml:space="preserve"><value>MOGTOME ショップ</value></data>
+  <data name="Shop_Button" xml:space="preserve"><value>ショップ</value></data>
+  <data name="Shop_Refresh" xml:space="preserve"><value>更新</value></data>
+  <data name="Shop_City" xml:space="preserve"><value>交換場所</value></data>
+  <data name="Shop_Currency" xml:space="preserve"><value>トームストーン</value></data>
+  <data name="Shop_ReviewRequired" xml:space="preserve"><value>購入またはスタック移動の確認が必要です。保留を解除する前に所持品と通貨を確認してください。</value></data>
+  <data name="Shop_Merging" xml:space="preserve"><value>トームストーンのスタックをまとめています…</value></data>
+  <data name="Shop_MergeUncertain" xml:space="preserve"><value>スタックの変更を確認できませんでした。再試行前に所持品を確認してください。</value></data>
+  <data name="Shop_Travel" xml:space="preserve"><value>モーグリの交換所へ移動中…</value></data>
+  <data name="Shop_UnitPrice" xml:space="preserve"><value>アイテム1個あたりの費用。複数の通貨は + で表示します。価格にカーソルを合わせると通貨名を確認できます。</value></data>
+  <data name="Shop_RowPrice" xml:space="preserve"><value>目標所持数までに必要な費用。交換単位に切り上げます。通貨名はツールチップで確認できます。</value></data>
+  <data name="Shop_Bundle" xml:space="preserve"><value>1回の交換で {0} 個入手します。</value></data>
+  <data name="Shop_Balance" xml:space="preserve"><value>{0} — 所持数: {1} | 必要数: {2}</value></data>
+  <data name="Shop_Help" xml:space="preserve"><value>カートに目標所持数を入力してください。購入で不足分を補います。0で購入対象から外れます。</value></data>
+  <data name="Shop_NoCatalog" xml:space="preserve"><value>現在のモーグリ交換品を確認できません。</value></data>
+  <data name="Shop_NoFunds" xml:space="preserve"><value>通貨が不足しています。購入を停止しました。</value></data>
+  <data name="Shop_UncertainPurchase" xml:space="preserve"><value>購入結果を確認できません。停止しました。再試行前に所持品と全通貨を確認してください。</value></data>
+  <data name="Shop_Reviewed" xml:space="preserve"><value>所持品と通貨を確認済み：保留を解除</value></data>
+  <data name="Shop_NoTrader" xml:space="preserve"><value>選択した都市の旅のモーグリを確認できません。</value></data>
+  <data name="Shop_Clear" xml:space="preserve">
+    <value>クリア</value>
+  </data>
 </root>

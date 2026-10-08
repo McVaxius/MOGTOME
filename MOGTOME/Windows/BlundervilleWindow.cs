@@ -96,7 +96,7 @@ public sealed class BlundervilleWindow : Window, IDisposable
         var hasWallet = BlundervilleGameAdapter.TryWallet(out var wallet);
         UiLayout.Wrapped(Ui.T("BV_Progress", service.SessionCycles, hasWallet ? wallet.ToString(Ui.Culture) : "?"));
         var unavailable = !service.Ready || service.IsRunning || plugin.IsBlundervilleActionQueued ||
-            plugin.IsEngineStartQueued || plugin.Engine?.IsRunning == true;
+            plugin.IsEngineStartQueued || plugin.Engine?.IsRunning == true || plugin.MoogleShop.IsRunning || plugin.IsMoogleShopActionQueued;
         ImGui.BeginDisabled(unavailable);
         if (UiLayout.Button(Ui.L("Main_Start"))) plugin.RequestBlundervilleAction(buy: false);
         UiLayout.SameLineIfFits(UiLayout.IconButtonWidth(Ui.T("BV_Buy")));
@@ -165,6 +165,11 @@ public sealed class BlundervilleWindow : Window, IDisposable
         var offers = catalog.GroupBy(o => o.ItemId).Select(g => g.First()).ToDictionary(o => o.ItemId);
         using (plugin.Appearance.Font(MogtomeFontRole.CompactHeading))
             UiLayout.SingleLine(Ui.T("BV_ShopTargets"));
+        UiLayout.SameLineIfFits(UiLayout.IconButtonWidth(Ui.T("Shop_Clear")));
+        ImGui.BeginDisabled(plugin.IsEngineStartQueued || plugin.Engine?.IsRunning == true ||
+            plugin.MoogleShop.IsRunning || plugin.IsMoogleShopActionQueued || settings.PurchaseTargets.Count == 0);
+        if (UiLayout.Button(Ui.L("Shop_Clear"))) { settings.PurchaseTargets.Clear(); changed = true; }
+        ImGui.EndDisabled();
         var rows = offers.Keys.Concat(settings.PurchaseTargets.Keys).Distinct()
             .Select(id => (Id: id, Name: Ui.Item(id).Render()))
             .OrderBy(row => row.Name, StringComparer.Create(Ui.Culture, true)).ToArray();
@@ -290,7 +295,7 @@ public sealed class BlundervilleWindow : Window, IDisposable
 
     private static string EndingLabel(BlundervilleEndingLocation location) => Ui.T("BV_Inn" + location);
 
-    private static void DrawRegistration(BlundervilleRegistration registration, bool planned)
+    internal static void DrawRegistration(BlundervilleRegistration registration, bool planned)
     {
         if (registration == BlundervilleRegistration.None) return;
         var size = ImGui.GetTextLineHeight();

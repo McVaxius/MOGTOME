@@ -86,7 +86,7 @@ public sealed class BlundervilleService : IDisposable
     private bool Request(Stage requested)
     {
         if (Volatile.Read(ref stopRequested) != 0) return Reject("BV_Stopped");
-        if (!Ready || IsRunning || plugin.Engine.IsRunning || plugin.IsEngineStartQueued)
+        if (!Ready || IsRunning || plugin.Engine.IsRunning || plugin.IsEngineStartQueued || plugin.MoogleShop?.IsRunning == true || plugin.IsMoogleShopActionQueued)
             return Reject("BV_Unavailable");
         var inArena = Plugin.ClientState.TerritoryType == BlundervilleGameAdapter.Arena;
         if ((inArena && requested != Stage.Farming) ||
@@ -101,6 +101,7 @@ public sealed class BlundervilleService : IDisposable
         if (requested == Stage.Farming && !BlundervilleProgress.HasLimit(Settings)) return Reject("BV_NeedLimit");
         if ((requested == Stage.Shopping || Settings.ShopWhenFinished) &&
             (uncertainPurchase || Settings.PurchaseReviewRequired)) return Reject("BV_UncertainPurchase");
+        if (plugin.Configuration.MoogleShop.PurchaseReviewRequired) return Reject("Shop_ReviewRequired");
         if (!catalogLoaded) LoadCatalog();
         if (!BlundervilleGameAdapter.TryWallet(out var wallet)) return Reject("BV_NoWallet");
         if (BlundervilleGameAdapter.Role() == BlundervilleRole.Unknown) return Reject("BV_NoRole");
@@ -165,7 +166,7 @@ public sealed class BlundervilleService : IDisposable
                 {
                     Plugin.Log.Information("[MOGTOME][BV][Reload] consumed {Marker}; scenario={Scenario}", loadMarker, scenario);
                     // Refuse to disturb another owner's activity during startup cleanup.
-                    if (!IsRunning && !plugin.Engine.IsRunning && !plugin.IsEngineStartQueued)
+                    if (!IsRunning && !plugin.Engine.IsRunning && !plugin.IsEngineStartQueued && plugin.MoogleShop?.IsRunning != true && !plugin.IsMoogleShopActionQueued)
                     {
                         StopCore(false);
                         var accepted = !reload.IsCancelled && Ready && (scenario == BlundervilleReloadScenario.Start ? Start() : Buy());
@@ -655,7 +656,8 @@ public sealed class BlundervilleService : IDisposable
             plugin.ConfigManager.SaveCurrentAccount();
         }
         // An unreadable pending confirmation must not fall through to automatic acceptance after Stop.
-        if (!Settings.PurchaseReviewRequired || !BlundervilleGameAdapter.Visible("SelectYesno")) plugin.YesAlreadyIPC.Unpause();
+        if ((!Settings.PurchaseReviewRequired && !plugin.Configuration.MoogleShop.PurchaseReviewRequired) ||
+            (!BlundervilleGameAdapter.Visible("SelectYesno") && !BlundervilleGameAdapter.Visible("ShopExchangeItemDialog"))) plugin.YesAlreadyIPC.Unpause();
         pendingPurchase = null;
         settlingPurchase = null;
         settlingCleanupSubmitted = false;

@@ -2329,4 +2329,26 @@ Resultados registrados no log Dalamud.</value>
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>Compra programada</value></data>
   <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Registro ou inventário indisponível</value></data>
   <data name="BV_RegistrationHelp" xml:space="preserve"><value>Colecionáveis: marca verde = registrado ou no inventário; X vermelho = ausência confirmada; ? amarelo = compra prevista; ? cinza = estado desconhecido. Os demais ficam em branco.</value></data>
+  <data name="Shop_Title" xml:space="preserve"><value>Loja MOGTOME</value></data>
+  <data name="Shop_Button" xml:space="preserve"><value>LOJA</value></data>
+  <data name="Shop_Refresh" xml:space="preserve"><value>Atualizar</value></data>
+  <data name="Shop_City" xml:space="preserve"><value>Cidade do mercador</value></data>
+  <data name="Shop_Currency" xml:space="preserve"><value>Tomestone</value></data>
+  <data name="Shop_ReviewRequired" xml:space="preserve"><value>Uma compra ou movimentação de pilha precisa de revisão. Confira bolsas e moedas antes de liberar o bloqueio.</value></data>
+  <data name="Shop_Merging" xml:space="preserve"><value>Combinando pilhas de tomestones…</value></data>
+  <data name="Shop_MergeUncertain" xml:space="preserve"><value>Não foi possível confirmar as mudanças nas pilhas. Confira as bolsas antes de tentar novamente.</value></data>
+  <data name="Shop_Travel" xml:space="preserve"><value>Viajando até o mercador moogle…</value></data>
+  <data name="Shop_UnitPrice" xml:space="preserve"><value>Custo por item. Várias moedas são unidas por +; passe o cursor sobre o preço para ver os nomes.</value></data>
+  <data name="Shop_RowPrice" xml:space="preserve"><value>Custo restante para a quantidade desejada, arredondado para lotes inteiros. Passe o cursor para ver as moedas.</value></data>
+  <data name="Shop_Bundle" xml:space="preserve"><value>Cada troca entrega {0} item(ns).</value></data>
+  <data name="Shop_Balance" xml:space="preserve"><value>{0} — disponível: {1} | necessário: {2}</value></data>
+  <data name="Shop_Help" xml:space="preserve"><value>O carrinho indica o total desejado nas bolsas. Comprar completa o que falta; 0 desativa uma meta.</value></data>
+  <data name="Shop_NoCatalog" xml:space="preserve"><value>Oferta atual do moogle indisponível.</value></data>
+  <data name="Shop_NoFunds" xml:space="preserve"><value>Moeda insuficiente; compras interrompidas.</value></data>
+  <data name="Shop_UncertainPurchase" xml:space="preserve"><value>Resultado da compra incerto; interrompido. Confira bolsas e todas as moedas antes de tentar novamente.</value></data>
+  <data name="Shop_Reviewed" xml:space="preserve"><value>Bolsas e moedas conferidas; liberar bloqueio</value></data>
+  <data name="Shop_NoTrader" xml:space="preserve"><value>Moogle itinerante indisponível na cidade escolhida.</value></data>
+  <data name="Shop_Clear" xml:space="preserve">
+    <value>LIMPAR</value>
+  </data>
 </root>

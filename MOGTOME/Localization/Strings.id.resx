@@ -2329,4 +2329,26 @@ Hasil dicatat ke log Dalamud.</value>
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>Dijadwalkan untuk dibeli</value></data>
   <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Status pendaftaran atau inventaris tidak tersedia</value></data>
   <data name="BV_RegistrationHelp" xml:space="preserve"><value>Koleksi: centang hijau = terdaftar atau di inventaris; X merah = dipastikan belum ada; ? kuning = pembelian dijadwalkan; ? abu-abu = status tidak diketahui. Item lain kosong.</value></data>
+  <data name="Shop_Title" xml:space="preserve"><value>Toko MOGTOME</value></data>
+  <data name="Shop_Button" xml:space="preserve"><value>TOKO</value></data>
+  <data name="Shop_Refresh" xml:space="preserve"><value>Segarkan</value></data>
+  <data name="Shop_City" xml:space="preserve"><value>Kota pedagang</value></data>
+  <data name="Shop_Currency" xml:space="preserve"><value>Tomestone</value></data>
+  <data name="Shop_ReviewRequired" xml:space="preserve"><value>Pembelian atau pemindahan tumpukan perlu diperiksa. Periksa tas dan mata uang sebelum membuka penahanan.</value></data>
+  <data name="Shop_Merging" xml:space="preserve"><value>Menggabungkan tumpukan tomestone…</value></data>
+  <data name="Shop_MergeUncertain" xml:space="preserve"><value>Perubahan tumpukan tidak dapat dikonfirmasi. Periksa tas sebelum mencoba lagi.</value></data>
+  <data name="Shop_Travel" xml:space="preserve"><value>Menuju pedagang Moogle…</value></data>
+  <data name="Shop_UnitPrice" xml:space="preserve"><value>Biaya per item. Beberapa mata uang dihubungkan dengan +; arahkan kursor ke harga untuk melihat namanya.</value></data>
+  <data name="Shop_RowPrice" xml:space="preserve"><value>Sisa biaya untuk jumlah yang diinginkan, dibulatkan ke atas per paket penukaran. Arahkan kursor untuk nama mata uang.</value></data>
+  <data name="Shop_Bundle" xml:space="preserve"><value>Setiap penukaran memberi {0} item.</value></data>
+  <data name="Shop_Balance" xml:space="preserve"><value>{0} — dimiliki: {1} | dibutuhkan: {2}</value></data>
+  <data name="Shop_Help" xml:space="preserve"><value>Keranjang menunjukkan total yang diinginkan dalam tas. Beli melengkapi kekurangan; 0 menonaktifkan target.</value></data>
+  <data name="Shop_NoCatalog" xml:space="preserve"><value>Penawaran Moogle saat ini tidak tersedia.</value></data>
+  <data name="Shop_NoFunds" xml:space="preserve"><value>Mata uang tidak cukup; pembelian dihentikan.</value></data>
+  <data name="Shop_UncertainPurchase" xml:space="preserve"><value>Hasil pembelian tidak pasti; dihentikan. Periksa tas dan semua mata uang sebelum mencoba lagi.</value></data>
+  <data name="Shop_Reviewed" xml:space="preserve"><value>Tas dan mata uang diperiksa; buka penahanan</value></data>
+  <data name="Shop_NoTrader" xml:space="preserve"><value>Moogle keliling tidak tersedia di kota yang dipilih.</value></data>
+  <data name="Shop_Clear" xml:space="preserve">
+    <value>KOSONGKAN</value>
+  </data>
 </root>

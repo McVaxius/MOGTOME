@@ -2179,4 +2179,26 @@ Path: {0}
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>Запланировано к покупке</value></data>
   <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Регистрация или инвентарь недоступны</value></data>
   <data name="BV_RegistrationHelp" xml:space="preserve"><value>Коллекционные предметы: зелёная галочка = зарегистрирован или в инвентаре; красный X = подтверждённое отсутствие; жёлтый ? = покупка запланирована; серый ? = статус неизвестен. Остальные поля пустые.</value></data>
+  <data name="Shop_Title" xml:space="preserve"><value>Магазин MOGTOME</value></data>
+  <data name="Shop_Button" xml:space="preserve"><value>МАГАЗИН</value></data>
+  <data name="Shop_Refresh" xml:space="preserve"><value>Обновить</value></data>
+  <data name="Shop_City" xml:space="preserve"><value>Город торговца</value></data>
+  <data name="Shop_Currency" xml:space="preserve"><value>Томстоун</value></data>
+  <data name="Shop_ReviewRequired" xml:space="preserve"><value>Покупка или перенос стопки требует проверки. Проверьте сумки и валюту перед снятием блокировки.</value></data>
+  <data name="Shop_Merging" xml:space="preserve"><value>Объединение стопок томстоунов…</value></data>
+  <data name="Shop_MergeUncertain" xml:space="preserve"><value>Изменения стопок не подтверждены. Проверьте сумки перед новой попыткой.</value></data>
+  <data name="Shop_Travel" xml:space="preserve"><value>Путешествие к торговцу муглу…</value></data>
+  <data name="Shop_UnitPrice" xml:space="preserve"><value>Стоимость одного предмета. Несколько валют соединены знаком +; наведите курсор на цену для просмотра названий.</value></data>
+  <data name="Shop_RowPrice" xml:space="preserve"><value>Оставшаяся стоимость до желаемого количества, с округлением до целых наборов обмена. Названия валют — в подсказке.</value></data>
+  <data name="Shop_Bundle" xml:space="preserve"><value>Каждый обмен даёт {0} предмет(ов).</value></data>
+  <data name="Shop_Balance" xml:space="preserve"><value>{0} — в сумках: {1} | требуется: {2}</value></data>
+  <data name="Shop_Help" xml:space="preserve"><value>В корзине укажите желаемое количество в сумках. Покупка восполнит недостающее; 0 отключает цель.</value></data>
+  <data name="Shop_NoCatalog" xml:space="preserve"><value>Текущее предложение мугла недоступно.</value></data>
+  <data name="Shop_NoFunds" xml:space="preserve"><value>Недостаточно валюты; покупки остановлены.</value></data>
+  <data name="Shop_UncertainPurchase" xml:space="preserve"><value>Результат покупки неизвестен; остановлено. Проверьте сумки и все валюты перед новой попыткой.</value></data>
+  <data name="Shop_Reviewed" xml:space="preserve"><value>Сумки и валюты проверены; снять блокировку</value></data>
+  <data name="Shop_NoTrader" xml:space="preserve"><value>Странствующий мугл недоступен в выбранном городе.</value></data>
+  <data name="Shop_Clear" xml:space="preserve">
+    <value>ОЧИСТИТЬ</value>
+  </data>
 </root>

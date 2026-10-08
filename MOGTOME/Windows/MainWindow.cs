@@ -115,7 +115,7 @@ public class MainWindow : Window, IDisposable
 
     private void StopFromMain()
     {
-        if (plugin.Engine?.IsRunning == true || plugin.IsEngineStartQueued)
+        if (plugin.Engine?.IsRunning == true || plugin.IsEngineStartQueued || plugin.MoogleShop?.IsRunning == true || plugin.IsMoogleShopActionQueued || plugin.Blunderville?.IsRunning == true || plugin.IsBlundervilleActionQueued)
             plugin.StopEngine();
     }
 
@@ -318,6 +318,7 @@ public class MainWindow : Window, IDisposable
         {
             (Ui.T("Main_Start"), 132f, false), (Ui.T("Main_Stop"), 123f, false),
             (Ui.T("Main_Config"), 100f, false), (Ui.T("Main_Reset"), 97f, false),
+            (Ui.T("Shop_Button"), 100f, false),
             (Ui.T("Main_Stats"), 92f, false), (Ui.T("Main_UnKrangle"), 103f, false),
             (Ui.T("Main_Krangle"), 103f, false), (stopNextLabel, 205f, true),
             (Ui.T("Main_HelpTitle"), 98f, true), (Ui.T("Config_RefreshPartyState"), 126f, true),
@@ -330,7 +331,7 @@ public class MainWindow : Window, IDisposable
         }
         if (engine != null)
         {
-            ImGui.BeginDisabled(engine.IsRunning || plugin.IsEngineStartQueued);
+            ImGui.BeginDisabled(engine.IsRunning || plugin.IsEngineStartQueued || plugin.MoogleShop.IsRunning || plugin.IsMoogleShopActionQueued || plugin.Blunderville.IsRunning || plugin.IsBlundervilleActionQueued);
             using (var startStyle = new MaterialStyleScope())
             {
                 var colors = MaterialTheme.Current.Colors;
@@ -341,11 +342,12 @@ public class MainWindow : Window, IDisposable
                 if (Action(Ui.L("Main_Start"), MaterialIcon.Play, 132, true)) StartFromMain();
             }
             ImGui.EndDisabled();
-            ImGui.BeginDisabled(!engine.IsRunning && !plugin.IsEngineStartQueued);
+            ImGui.BeginDisabled(!engine.IsRunning && !plugin.IsEngineStartQueued && !plugin.MoogleShop.IsRunning && !plugin.IsMoogleShopActionQueued && !plugin.Blunderville.IsRunning && !plugin.IsBlundervilleActionQueued);
             if (Action(Ui.L("Main_Stop"), MaterialIcon.Stop, 123)) StopFromMain();
             ImGui.EndDisabled();
         }
         if (Action(Ui.L("Main_Config"), MaterialIcon.Settings, 100, engine == null)) plugin.ConfigWindow.Toggle();
+        if (Action(Ui.L("Shop_Button"), MaterialIcon.Cart, 100)) plugin.OpenMoogleShop();
         if (Action(Ui.L("Main_Reset"), MaterialIcon.Refresh, 97))
         {
             plugin.State.DutyCounter = 0; plugin.State.DecumanaCounter = 0; plugin.Configuration.DutyCounter = 0;

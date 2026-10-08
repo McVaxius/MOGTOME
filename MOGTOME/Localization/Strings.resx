@@ -2179,4 +2179,26 @@ Results logged to Dalamud log.</value>
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>Scheduled to be purchased</value></data>
   <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Registration or inventory unavailable</value></data>
   <data name="BV_RegistrationHelp" xml:space="preserve"><value>Collectibles: green check = registered or in inventory; red X = confirmed missing; yellow ? = scheduled purchase; grey ? = unavailable truth. Other items are blank.</value></data>
+  <data name="Shop_Title" xml:space="preserve"><value>MOGTOME Shop</value></data>
+  <data name="Shop_Button" xml:space="preserve"><value>SHOP</value></data>
+  <data name="Shop_Refresh" xml:space="preserve"><value>Refresh</value></data>
+  <data name="Shop_City" xml:space="preserve"><value>Trader city</value></data>
+  <data name="Shop_Currency" xml:space="preserve"><value>Tomestone</value></data>
+  <data name="Shop_ReviewRequired" xml:space="preserve"><value>A purchase or stack move needs review. Check your bags and currency before clearing the hold.</value></data>
+  <data name="Shop_Merging" xml:space="preserve"><value>Combining tomestone stacks…</value></data>
+  <data name="Shop_MergeUncertain" xml:space="preserve"><value>Stack changes could not be confirmed. Check your bags before trying again.</value></data>
+  <data name="Shop_Travel" xml:space="preserve"><value>Travelling to the Moogle trader…</value></data>
+  <data name="Shop_UnitPrice" xml:space="preserve"><value>Cost per item. Multiple currencies are joined with +; hover the price for their names.</value></data>
+  <data name="Shop_RowPrice" xml:space="preserve"><value>Remaining cost for the desired inventory count, rounded up to whole exchange bundles. Hover for currency names.</value></data>
+  <data name="Shop_Bundle" xml:space="preserve"><value>Each exchange receives {0} item(s).</value></data>
+  <data name="Shop_Balance" xml:space="preserve"><value>{0} — on hand: {1} | needed: {2}</value></data>
+  <data name="Shop_Help" xml:space="preserve"><value>Set cart counts to your desired bag totals. Buy purchases the deficit; 0 disables a target.</value></data>
+  <data name="Shop_NoCatalog" xml:space="preserve"><value>Current Moogle offer unavailable.</value></data>
+  <data name="Shop_NoFunds" xml:space="preserve"><value>Insufficient currency; shopping stopped.</value></data>
+  <data name="Shop_UncertainPurchase" xml:space="preserve"><value>Purchase result uncertain; stopped. Check bags and all currencies before trying again.</value></data>
+  <data name="Shop_Reviewed" xml:space="preserve"><value>I checked bags and currencies; clear hold</value></data>
+  <data name="Shop_NoTrader" xml:space="preserve"><value>Itinerant Moogle unavailable in the selected city.</value></data>
+  <data name="Shop_Clear" xml:space="preserve">
+    <value>CLEAR</value>
+  </data>
 </root>

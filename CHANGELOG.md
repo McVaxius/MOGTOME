@@ -1,6 +1,19 @@
+2026-10-08 - Shopping list CLEAR and Moogle menu fix
+
+- Add CLEAR to the Moogle and Blunderville lists. Reset only desired quantities for the active account, retain every catalog row and ownership indicator, and disable clearing during queued or active automation.
+- Handle the Moogle's native icon-choice menu as well as plain choices, select only the exact current exchange, and cancel through the translated Cancel option. A manual Buy can resume a recognized trader menu; unchanged menus time out without repeated selection or interaction.
+- Read displayed menu text from the custom script sheet's text column and wait for menu readiness. Validate fixed-quantity confirmations through their native item, reward quantity and currency amounts instead of requiring a quantity editor.
+
 2026-10-08 - GitHub Actions Backpack dependency
 
 - Publish the shared Backpack icon used by shopping-grid headers before MOGTOME builds. Retain the read-only, non-expiring SSH library checkout.
+
+2026-10-08 - Moogle shopping list (development)
+
+- Add Main's SHOP button and `/mog shop` / `/mogtome shop` for a separate account-scoped Moogle shopping list with a configurable Limsa, Ul'dah or Gridania trader.
+- Show the current festival-eligible exchange in the accepted single-row item/cart/backpack/price/total/registration grid, retaining every literal currency cost and bag balance. Buy fills deficits in whole exchange bundles; opening and reload remain passive.
+- Validate native offers, funds, capacity and exact acquisition/spending before continuing. Close the trader to consolidate partial tomestone stacks, verify one native move at a time, and retain a review hold on uncertainty. Stop/logout/unload cancel owned actions; ordinary farming, Blunderville and Moogle shopping remain exclusive.
+- Live purchase and repeat-Buy receipts are recorded in TODO.md. Stack consolidation and other unexercised cases remain pending separately.
 
 2026-10-08 - GitHub Actions shared-library repair
 

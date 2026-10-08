@@ -2173,4 +2173,26 @@ Résultats dans le journal Dalamud.</value>
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>Achat prévu</value></data>
   <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Enregistrement ou inventaire indisponible</value></data>
   <data name="BV_RegistrationHelp" xml:space="preserve"><value>Objets à enregistrer : coche verte = enregistré ou en inventaire ; X rouge = absence confirmée ; ? jaune = achat prévu ; ? gris = état inconnu. Les autres restent vides.</value></data>
+  <data name="Shop_Title" xml:space="preserve"><value>Boutique MOGTOME</value></data>
+  <data name="Shop_Button" xml:space="preserve"><value>BOUTIQUE</value></data>
+  <data name="Shop_Refresh" xml:space="preserve"><value>Actualiser</value></data>
+  <data name="Shop_City" xml:space="preserve"><value>Ville du marchand</value></data>
+  <data name="Shop_Currency" xml:space="preserve"><value>Mémoquartz</value></data>
+  <data name="Shop_ReviewRequired" xml:space="preserve"><value>Un achat ou un déplacement de pile doit être vérifié. Vérifiez vos sacs et monnaies avant de lever le blocage.</value></data>
+  <data name="Shop_Merging" xml:space="preserve"><value>Regroupement des piles de mémoquartz…</value></data>
+  <data name="Shop_MergeUncertain" xml:space="preserve"><value>La modification des piles n’a pas pu être confirmée. Vérifiez vos sacs avant de réessayer.</value></data>
+  <data name="Shop_Travel" xml:space="preserve"><value>Voyage vers le marchand mog…</value></data>
+  <data name="Shop_UnitPrice" xml:space="preserve"><value>Coût par objet. Plusieurs monnaies sont reliées par + ; survolez le prix pour voir leurs noms.</value></data>
+  <data name="Shop_RowPrice" xml:space="preserve"><value>Coût restant pour la quantité souhaitée en inventaire, arrondi aux lots entiers. Survolez pour les noms des monnaies.</value></data>
+  <data name="Shop_Bundle" xml:space="preserve"><value>Chaque échange donne {0} objet(s).</value></data>
+  <data name="Shop_Balance" xml:space="preserve"><value>{0} — en inventaire : {1} | nécessaire : {2}</value></data>
+  <data name="Shop_Help" xml:space="preserve"><value>Le panier indique le total souhaité dans vos sacs. Acheter complète la quantité manquante ; 0 désactive un objectif.</value></data>
+  <data name="Shop_NoCatalog" xml:space="preserve"><value>Offre actuelle du mog indisponible.</value></data>
+  <data name="Shop_NoFunds" xml:space="preserve"><value>Monnaie insuffisante ; achats arrêtés.</value></data>
+  <data name="Shop_UncertainPurchase" xml:space="preserve"><value>Résultat de l’achat incertain ; arrêt. Vérifiez les sacs et toutes les monnaies avant de réessayer.</value></data>
+  <data name="Shop_Reviewed" xml:space="preserve"><value>Sacs et monnaies vérifiés ; lever le blocage</value></data>
+  <data name="Shop_NoTrader" xml:space="preserve"><value>Mog itinérant indisponible dans la ville choisie.</value></data>
+  <data name="Shop_Clear" xml:space="preserve">
+    <value>VIDER</value>
+  </data>
 </root>

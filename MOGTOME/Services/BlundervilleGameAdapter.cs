@@ -446,7 +446,7 @@ internal sealed unsafe class BlundervilleGameAdapter
         return ClickRegisteredButton(node);
     }
 
-    private static bool ClickRegisteredButton(AtkResNode* node)
+    internal static bool ClickRegisteredButton(AtkResNode* node)
     {
         if (node == null) return false;
         var registered = node->AtkEventManager.Event;
@@ -502,7 +502,7 @@ internal sealed unsafe class BlundervilleGameAdapter
                     Plugin.Log.Warning("[MOGTOME][BV] owned purchase prompt={Prompt}", GameText.ReadVisibleText(yesno->PromptText->NodeText.AsSpan()));
             }
             if (addon->AtkValues == null) continue;
-            for (var i = 0; i < Math.Min(32, (int)addon->AtkValuesCount); i++)
+            for (var i = 0; i < Math.Min(64, (int)addon->AtkValuesCount); i++)
                 if (addon->AtkValues[i].Type is AtkValueType.Int or AtkValueType.UInt)
                     Plugin.Log.Warning("[MOGTOME][BV] confirmation field index={Index}; type={Type}; number={Number}", i, addon->AtkValues[i].Type, Number(addon->AtkValues[i]));
         }

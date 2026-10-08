@@ -2329,4 +2329,26 @@ Ghi kết quả vào log Dalamud.</value>
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>Đã lên kế hoạch mua</value></data>
   <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Không có thông tin đăng ký hoặc túi đồ</value></data>
   <data name="BV_RegistrationHelp" xml:space="preserve"><value>Vật phẩm đăng ký: dấu kiểm xanh = đã đăng ký hoặc có trong túi; X đỏ = xác nhận chưa có; ? vàng = dự định mua; ? xám = chưa rõ trạng thái. Vật phẩm khác để trống.</value></data>
+  <data name="Shop_Title" xml:space="preserve"><value>Cửa hàng MOGTOME</value></data>
+  <data name="Shop_Button" xml:space="preserve"><value>CỬA HÀNG</value></data>
+  <data name="Shop_Refresh" xml:space="preserve"><value>Làm mới</value></data>
+  <data name="Shop_City" xml:space="preserve"><value>Thành phố thương nhân</value></data>
+  <data name="Shop_Currency" xml:space="preserve"><value>Tomestone</value></data>
+  <data name="Shop_ReviewRequired" xml:space="preserve"><value>Cần kiểm tra giao dịch hoặc việc chuyển chồng vật phẩm. Kiểm tra túi và tiền trước khi bỏ tạm dừng.</value></data>
+  <data name="Shop_Merging" xml:space="preserve"><value>Đang gộp các chồng tomestone…</value></data>
+  <data name="Shop_MergeUncertain" xml:space="preserve"><value>Không xác nhận được thay đổi chồng vật phẩm. Kiểm tra túi trước khi thử lại.</value></data>
+  <data name="Shop_Travel" xml:space="preserve"><value>Đang đến thương nhân Moogle…</value></data>
+  <data name="Shop_UnitPrice" xml:space="preserve"><value>Giá mỗi vật phẩm. Nhiều loại tiền được nối bằng +; rê chuột lên giá để xem tên.</value></data>
+  <data name="Shop_RowPrice" xml:space="preserve"><value>Chi phí còn thiếu để đạt số lượng mong muốn, làm tròn lên theo lô đổi. Rê chuột để xem tên tiền.</value></data>
+  <data name="Shop_Bundle" xml:space="preserve"><value>Mỗi lần đổi nhận {0} vật phẩm.</value></data>
+  <data name="Shop_Balance" xml:space="preserve"><value>{0} — đang có: {1} | cần: {2}</value></data>
+  <data name="Shop_Help" xml:space="preserve"><value>Giỏ hàng là tổng số mong muốn trong túi. Mua bổ sung phần còn thiếu; 0 tắt mục tiêu.</value></data>
+  <data name="Shop_NoCatalog" xml:space="preserve"><value>Không có ưu đãi Moogle hiện tại.</value></data>
+  <data name="Shop_NoFunds" xml:space="preserve"><value>Không đủ tiền; đã dừng mua.</value></data>
+  <data name="Shop_UncertainPurchase" xml:space="preserve"><value>Kết quả mua chưa rõ; đã dừng. Kiểm tra túi và mọi loại tiền trước khi thử lại.</value></data>
+  <data name="Shop_Reviewed" xml:space="preserve"><value>Đã kiểm tra túi và tiền; bỏ tạm dừng</value></data>
+  <data name="Shop_NoTrader" xml:space="preserve"><value>Không có Moogle du hành ở thành phố đã chọn.</value></data>
+  <data name="Shop_Clear" xml:space="preserve">
+    <value>XÓA</value>
+  </data>
 </root>

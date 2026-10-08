@@ -2179,4 +2179,26 @@ Path: {0}
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>计划购买</value></data>
   <data name="BV_RegistrationUnknown" xml:space="preserve"><value>无法获取登记状态或背包信息</value></data>
   <data name="BV_RegistrationHelp" xml:space="preserve"><value>可登记物品：绿色勾表示已登记或背包内持有；红色X表示确认未拥有；黄色?表示计划购买；灰色?表示状态未知。其他物品留空。</value></data>
+  <data name="Shop_Title" xml:space="preserve"><value>MOGTOME 商店</value></data>
+  <data name="Shop_Button" xml:space="preserve"><value>商店</value></data>
+  <data name="Shop_Refresh" xml:space="preserve"><value>刷新</value></data>
+  <data name="Shop_City" xml:space="preserve"><value>商人城市</value></data>
+  <data name="Shop_Currency" xml:space="preserve"><value>神典石</value></data>
+  <data name="Shop_ReviewRequired" xml:space="preserve"><value>购买或堆叠移动需要检查。解除暂停前，请检查背包和货币。</value></data>
+  <data name="Shop_Merging" xml:space="preserve"><value>正在合并神典石堆叠…</value></data>
+  <data name="Shop_MergeUncertain" xml:space="preserve"><value>无法确认堆叠变化。再次尝试前请检查背包。</value></data>
+  <data name="Shop_Travel" xml:space="preserve"><value>正在前往莫古力商人…</value></data>
+  <data name="Shop_UnitPrice" xml:space="preserve"><value>每件物品的价格。多种货币以 + 连接；将鼠标悬停在价格上查看货币名称。</value></data>
+  <data name="Shop_RowPrice" xml:space="preserve"><value>达到目标持有数量所需的费用，按完整兑换批次向上取整。悬停查看货币名称。</value></data>
+  <data name="Shop_Bundle" xml:space="preserve"><value>每次兑换获得 {0} 件物品。</value></data>
+  <data name="Shop_Balance" xml:space="preserve"><value>{0} — 持有：{1} | 需要：{2}</value></data>
+  <data name="Shop_Help" xml:space="preserve"><value>在购物车中填写目标背包总数。购买只补足差额；0 表示取消该目标。</value></data>
+  <data name="Shop_NoCatalog" xml:space="preserve"><value>当前莫古力兑换物品不可用。</value></data>
+  <data name="Shop_NoFunds" xml:space="preserve"><value>货币不足；已停止购买。</value></data>
+  <data name="Shop_UncertainPurchase" xml:space="preserve"><value>购买结果不确定；已停止。重试前请检查背包和所有货币。</value></data>
+  <data name="Shop_Reviewed" xml:space="preserve"><value>已检查背包和货币；解除暂停</value></data>
+  <data name="Shop_NoTrader" xml:space="preserve"><value>所选城市的旅行莫古力不可用。</value></data>
+  <data name="Shop_Clear" xml:space="preserve">
+    <value>清空</value>
+  </data>
 </root>

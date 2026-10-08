@@ -13,6 +13,7 @@ public class Configuration
 {
     public int Version { get; set; } = 2;
     public BlundervilleSettings Blunderville { get; set; } = new();
+    public MoogleShopSettings MoogleShop { get; set; } = new();
     public Localization.UiLanguage? UiLanguage { get; set; }
     public uint UiAccentRgb { get; set; } = UiDesign.MogtomePresentation.ReferenceAccent;
     public bool UiCompact { get; set; }
