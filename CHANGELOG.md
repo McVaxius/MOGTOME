@@ -1,3 +1,7 @@
+2026-10-08 - GitHub Actions shared-library repair
+
+- Build against published AethertekUI main so current shared APIs are available. Retain repository-specific read-only SSH deploy keys, which do not expire, and disabled credential persistence. Publish library APIs before consumer changes.
+
 # Changelog
 
 ## Unreleased - Button sizing (I491)
