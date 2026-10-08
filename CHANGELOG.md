@@ -2,6 +2,45 @@
 
 - Build against published AethertekUI main so current shared APIs are available. Retain repository-specific read-only SSH deploy keys, which do not expire, and disabled credential persistence. Publish library APIs before consumer changes.
 
+2026-10-07 - Packaged image branding and operator guidance (I500/I497/I499)
+
+- Use the existing packaged icon in Main and Blunderville Mini branding/titlebars with aspect-ratio fitting and a stable reserved box. Preserve native titlebar controls, saved geometry, motion and complete-window opacity.
+- Refresh concise README guidance for appearance, focus fade, titlebar shortcuts and this plugin's existing setup/automation controls.
+- Probe the optional Hindi menu caption once per existing font generation at the original locked font sizes. Keep native indexed option identities while disabling unavailable Hindi with an ASCII caption; retain selected-catalog checks and explicit ASCII failure status with Use English saved through the active profile (I499).
+
+2026-10-07 - Blunderville farming and MGF targets (I501, development)
+
+- Show the complete MGF catalog in one scrollable grid, removing Add item. Use Item/cart/backpack/$/$$/? headers with localized tooltips, editable desired counts and a separate registration column. Zero disables that item without hiding its row; preserve saved targets and missing catalog entries. Add the backpack vector icon to AethertekUI and its existing showcase.
+- Show collectible ownership beside shop item names and in the picker using ADS loot's action categories and native registration check: green check for registered or carried items, yellow question mark for an outstanding selected purchase, red X for confirmed missing items, and a neutral question mark when truth is unavailable. Keep each item on one row and leave purchase targets unchanged.
+- Size the Blunderville header to its actual content and use the normal text/icon height for Open MOGTOME, removing the reserved vertical gap before the status and controls in both densities.
+- Hide reload scenario controls until `/blunderville debug` or `/bv debug` is used, and replace the obsolete farming-unavailable heading in all fifteen catalogs.
+- Implement separate account-owned Blunderville farming limits, actual solo/party/cross-world leadership, stationary member entry, idle elimination/spectator exit and independent session cycles. Either enabled run/wallet limit finishes; member wallet completion withdraws and leaves the party.
+- Add sheet-derived MGF purchase targets with carried-bag counts, live item/quantity/price validation, funds/capacity checks and inventory-plus-currency verification. Stop on uncertainty, retaining targets and a purchase hold across reloads.
+- Ignore empty game-sheet receive slots even when their default quantity is one, so valid MGF trader offers appear in the item/count controls. Preserve rejection of multiple real rewards or extra currencies.
+- Retain all NPC identities sharing a Blunderville name and interact with the closest loaded matching NPC, so a later resident row cannot hide the Gold Saucer attendant.
+- Replace the stacked catalog with a searchable item picker and selected-item rows showing editable desired/current inventory, MGF prices, outstanding quantities and removal without horizontal table scrolling. Preserve saved targets, including offers missing from the current catalog; new targets start at current inventory plus one.
+- Replace the stacked selected-item rows with an AethertekUI grid: one row per item, editable wanted count, on-hand count, per-item MGF and remaining MGF cost. Show the total needed below; satisfied targets cost zero. Widen the panel for the grid and retain original count-editor identities, item targets and removal actions.
+- Handle the owned Square entry confirmation using current client-sheet text, cancel it on Stop, and report the attendant's unlock denial instead of repeatedly interacting until timeout.
+- Log registration, entry and spectator-exit milestones once per transition through the existing diagnostics, alongside confirmed cycles and purchase results.
+- Keep registration submission separate from Commence acceptance, so registering a run does not suppress its later entry prompt.
+- Cancel an owned Blunderville queue through the current native queue API after validating its duty identity, and wait for withdrawal before completion shopping or party departure.
+- Allow an explicit Start inside Blunderville to resume idle elimination/exit in a new session after Stop or reload, while retaining the guards for shopping and unrelated duties.
+- Close the owned MGF trader window on early validation, inventory, funds or capacity failures; record a bounded native-offer diagnostic through existing logging when validation fails.
+- Select the requested exchange category through its registered native click and validate sorted visible rows against global native item indexes, including their exact quantities and MGF prices.
+- Wait for the owned trader addon and agent to finish opening before validating their populated rows; bound the readiness wait and report insufficient MGF through existing diagnostics.
+- Record owned purchase-confirmation mismatches through existing diagnostics before cancelling the dialog and retaining the purchase review hold.
+- Clean up a verified purchase's remaining identified confirmation once and wait for the trader to become ready before refreshing targets and submitting another purchase.
+- Submit validated purchase, cancellation and party-leave confirmations through their registered native buttons, so the native UI closes along with the accepted action.
+- Keep the existing purchase review hold and dialog pause if an owned purchase confirmation cannot be closed, including after receipt verification.
+- Re-fetch and close only an identified cancelled purchase popup if it outlives its shop; use the same GameGui addon lookup for Blunderville visibility, validation and callbacks.
+- Use Lifestream's existing local inn shortcut for ending travel, including inn entry, and confirm the chosen room before completion. Stop aborts the owned route; no repair action is requested.
+- Allow the inn entry transition to finish after Lifestream becomes idle, keeping the existing travel timeout and single submission.
+- Wait for vnavmesh readiness before the first NPC movement after travel, avoiding a move submitted while the new map is loading.
+- Add Buy, optional shopping after farming, seven separate inn ending destinations with stay-put default, shared `/bv` and `/blunderville` actions, and opt-in once-per-load scenarios. Preserve ordinary farming exclusivity, statistics, existing branding/titlebars, compact mode, account storage and release 2.0.0.2. Localize controls/statuses in all fifteen catalogs.
+- Recheck reload cancellation after cleanup, so a Stop or selection callback cannot dispatch an already-consumed action.
+- Keep saved reload scenarios on the ordinary Start/Buy paths after removing the temporary R: acceptance overrides.
+- Build, regression results, development-copy state and outstanding R: runtime acceptance are recorded in TODO.md. No live-pass claim is made from source or build results.
+
 # Changelog
 
 ## Unreleased - Button sizing (I491)

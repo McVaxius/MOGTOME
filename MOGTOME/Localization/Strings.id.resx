@@ -2205,7 +2205,7 @@ Hasil dicatat ke log Dalamud.</value>
     <value>BANTUAN</value>
   </data>
   <data name="Blunderville_FarmingHeading" xml:space="preserve">
-    <value>Farming tidak tersedia dalam build ini.</value>
+    <value>Farming</value>
   </data>
   <data name="Blunderville_FarmingDetail" xml:space="preserve">
     <value>Blunderville Failer saat ini tidak dapat dipakai untuk farming otomatis.</value>
@@ -2251,4 +2251,82 @@ Hasil dicatat ke log Dalamud.</value>
   <data name="Rotation_BossModSettingsUnconfirmed" xml:space="preserve"><value>Pengaturan BossMod tidak dapat dikonfirmasi. Periksa log plugin untuk pembacaan yang tidak tersedia atau penulisan yang ditolak.</value></data>
   <data name="Config_BossModCatalogUnavailable" xml:space="preserve"><value>Katalog preset tidak tersedia; pilihan tersimpan dipertahankan.</value></data>
   <data name="Config_BossModCatalogEmpty" xml:space="preserve"><value>Tidak ada preset yang dapat dipilih; pilihan tersimpan dipertahankan.</value></data>
+  <data name="BV_Idle" xml:space="preserve"><value>Siaga.</value></data>
+  <data name="BV_Farming" xml:space="preserve"><value>Menjalankan farm Blunderville.</value></data>
+  <data name="BV_Shopping" xml:space="preserve"><value>Membeli target yang belum terpenuhi.</value></data>
+  <data name="BV_ArenaIdle" xml:space="preserve"><value>Diam menunggu eliminasi.</value></data>
+  <data name="BV_Exiting" xml:space="preserve"><value>Keluar setelah eliminasi.</value></data>
+  <data name="BV_WaitEntry" xml:space="preserve"><value>Menunggu masuk Blunderville.</value></data>
+  <data name="BV_MemberWait" xml:space="preserve"><value>Anggota party: menunggu masuk di sini.</value></data>
+  <data name="BV_Registrar" xml:space="preserve"><value>Mendekati petugas pendaftaran.</value></data>
+  <data name="BV_TravelSquare" xml:space="preserve"><value>Menuju alun-alun Blunderville.</value></data>
+  <data name="BV_LeavingParty" xml:space="preserve"><value>Membatalkan masuk dan meninggalkan party.</value></data>
+  <data name="BV_EndingTravel" xml:space="preserve"><value>Menuju penginapan yang dipilih.</value></data>
+  <data name="BV_FarmDone" xml:space="preserve"><value>Farm selesai.</value></data>
+  <data name="BV_ShopDone" xml:space="preserve"><value>Pembelian selesai.</value></data>
+  <data name="BV_Stopped" xml:space="preserve"><value>Dihentikan.</value></data>
+  <data name="BV_Unavailable" xml:space="preserve"><value>Tindakan lain aktif atau klien belum siap.</value></data>
+  <data name="BV_BusyClient" xml:space="preserve"><value>Selesaikan duty, antrean, atau dialog saat ini terlebih dahulu.</value></data>
+  <data name="BV_NeedLimit" xml:space="preserve"><value>Aktifkan setidaknya satu batas farm yang valid.</value></data>
+  <data name="BV_NoWallet" xml:space="preserve"><value>Saldo MGF tidak tersedia; dihentikan.</value></data>
+  <data name="BV_NoRole" xml:space="preserve"><value>Pemimpin party tidak diketahui; dihentikan.</value></data>
+  <data name="BV_NoCatalog" xml:space="preserve"><value>Penawaran MGF saat ini tidak tersedia.</value></data>
+  <data name="BV_NoInventory" xml:space="preserve"><value>Isi inventaris tidak dapat dipastikan; pembelian dihentikan.</value></data>
+  <data name="BV_NoFunds" xml:space="preserve"><value>MGF tidak cukup; pembelian dihentikan.</value></data>
+  <data name="BV_NoCapacity" xml:space="preserve"><value>Kapasitas inventaris tidak cukup; pembelian dihentikan.</value></data>
+  <data name="BV_UiMismatch" xml:space="preserve"><value>UI game tidak sesuai; dihentikan.</value></data>
+  <data name="BV_UncertainPurchase" xml:space="preserve"><value>Hasil pembelian tidak pasti; dihentikan. Periksa inventaris dan MGF sebelum memuat ulang.</value></data>
+  <data name="BV_UnconfirmedExit" xml:space="preserve"><value>Eliminasi dan keluar belum terkonfirmasi; dihentikan.</value></data>
+  <data name="BV_QueueCancelFailed" xml:space="preserve"><value>Pembatalan antrean belum terkonfirmasi; dihentikan.</value></data>
+  <data name="BV_PartyLeaveFailed" xml:space="preserve"><value>Keluar dari party belum terkonfirmasi; dihentikan.</value></data>
+  <data name="BV_QuantityMismatch" xml:space="preserve"><value>Jumlah kekurangan tidak cocok dengan jumlah penawaran; dihentikan.</value></data>
+  <data name="BV_NpcUnavailable" xml:space="preserve"><value>NPC yang diperlukan tidak tersedia; dihentikan.</value></data>
+  <data name="BV_TravelUnavailable" xml:space="preserve"><value>Perjalanan tidak tersedia atau ditolak; dihentikan.</value></data>
+  <data name="BV_Timeout" xml:space="preserve"><value>Waktu tindakan habis; dihentikan.</value></data>
+  <data name="BV_SessionChanged" xml:space="preserve"><value>Karakter atau akun berubah; dihentikan.</value></data>
+  <data name="BV_ActionFailed" xml:space="preserve"><value>Tindakan gagal; periksa log plugin.</value></data>
+  <data name="BV_DialogControl" xml:space="preserve"><value>Tidak dapat menjeda persetujuan dialog otomatis; dihentikan.</value></data>
+  <data name="BV_Buy" xml:space="preserve"><value>Beli</value></data>
+  <data name="BV_RunLimit" xml:space="preserve"><value>Batas putaran</value></data>
+  <data name="BV_Runs" xml:space="preserve"><value>Putaran</value></data>
+  <data name="BV_WalletTarget" xml:space="preserve"><value>Target saldo MGF</value></data>
+  <data name="BV_TargetMgf" xml:space="preserve"><value>Target MGF</value></data>
+  <data name="BV_AutoShop" xml:space="preserve"><value>Belanja setelah farm selesai</value></data>
+  <data name="BV_EndingLocation" xml:space="preserve"><value>Tujuan setelah belanja</value></data>
+  <data name="BV_InnStay" xml:space="preserve"><value>Tidak pergi ke mana pun</value></data>
+  <data name="BV_Progress" xml:space="preserve"><value>Siklus sesi: {0} · MGF: {1}</value></data>
+  <data name="BV_ItemCost" xml:space="preserve"><value>{0} MGF / {1} · Kekurangan: {2}</value></data>
+  <data name="BV_PurchaseHelp" xml:space="preserve"><value>Jumlah yang diinginkan / saat ini dalam inventaris bawaan. Masukkan 0 untuk menghapus. Penyimpanan dan perabot terpasang tidak dihitung.</value></data>
+  <data name="BV_FarmHelp" xml:space="preserve"><value>Pemimpin mendaftar; anggota menunggu di sini. Semua diam hingga eliminasi. Salah satu batas aktif mengakhiri farm.</value></data>
+  <data name="BV_ReloadHelp" xml:space="preserve"><value>Skenario muat ulang: berjalan sekali setelah pemuatan berikutnya siap. Mengubah pilihan atau Berhenti membatalkan eksekusi tertunda.</value></data>
+  <data name="BV_ReloadNone" xml:space="preserve"><value>Tanpa skenario muat ulang</value></data>
+  <data name="BV_Remove" xml:space="preserve"><value>Hapus</value></data>
+  <data name="BV_InnUldah" xml:space="preserve"><value>Ul’dah</value></data>
+  <data name="BV_InnGridania" xml:space="preserve"><value>Gridania</value></data>
+  <data name="BV_InnLimsa" xml:space="preserve"><value>Limsa Lominsa</value></data>
+  <data name="BV_InnIshgard" xml:space="preserve"><value>Ishgard</value></data>
+  <data name="BV_InnCrystarium" xml:space="preserve"><value>Crystarium</value></data>
+  <data name="BV_InnSharlayan" xml:space="preserve"><value>Old Sharlayan</value></data>
+  <data name="BV_InnTuliyollal" xml:space="preserve"><value>Tuliyollal</value></data>
+  <data name="BV_ReviewedPurchase" xml:space="preserve"><value>Inventaris dan MGF sudah diperiksa; buka penahanan</value></data>
+  <data name="BV_CommandHelp" xml:space="preserve"><value>Buka Blunderville (/bv atau /blunderville). Tindakan: start, stop, buy, debug.</value></data>
+  <data name="BV_ShopTargets" xml:space="preserve"><value>Target belanja</value></data>
+  <data name="BV_AddItem" xml:space="preserve"><value>Tambah item…</value></data>
+  <data name="BV_SearchItems" xml:space="preserve"><value>Cari item…</value></data>
+  <data name="BV_NoMatchingItems" xml:space="preserve"><value>Tidak ada item belum dipilih yang cocok.</value></data>
+  <data name="BV_EmptyTargets" xml:space="preserve"><value>Belum ada item dipilih.</value></data>
+  <data name="BV_Item" xml:space="preserve"><value>Item</value></data>
+  <data name="BV_DesiredCurrent" xml:space="preserve"><value>Target / saat ini</value></data>
+  <data name="BV_Outstanding" xml:space="preserve"><value>Kurang</value></data>
+  <data name="BV_EntryLocked" xml:space="preserve"><value>Buka akses Blunderville Square melalui misi Just Crowning Around, dimulai dengan Lewena di Entrance Square; dihentikan.</value></data>
+  <data name="BV_Wanted" xml:space="preserve"><value>Jumlah yang diinginkan di inventaris. Hanya kekurangannya yang dibeli; 0 menonaktifkan pembelian.</value></data>
+  <data name="BV_OnHand" xml:space="preserve"><value>Jumlah dalam empat tas inventaris. Tidak termasuk retainer, saddlebag, penyimpanan rumah, dan furnitur terpasang.</value></data>
+  <data name="BV_UnitMgf" xml:space="preserve"><value>Harga MGF untuk satu item.</value></data>
+  <data name="BV_NeededMgf" xml:space="preserve"><value>MGF untuk kekurangan pada baris ini. Target terpenuhi atau dinonaktifkan berbiaya 0.</value></data>
+  <data name="BV_TotalMgf" xml:space="preserve"><value>Total MGF diperlukan: {0}</value></data>
+  <data name="BV_Registered" xml:space="preserve"><value>Terdaftar atau ada di inventaris</value></data>
+  <data name="BV_NotRegistered" xml:space="preserve"><value>Belum terdaftar dan tidak ada di inventaris</value></data>
+  <data name="BV_PlannedPurchase" xml:space="preserve"><value>Dijadwalkan untuk dibeli</value></data>
+  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Status pendaftaran atau inventaris tidak tersedia</value></data>
+  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Koleksi: centang hijau = terdaftar atau di inventaris; X merah = dipastikan belum ada; ? kuning = pembelian dijadwalkan; ? abu-abu = status tidak diketahui. Item lain kosong.</value></data>
 </root>

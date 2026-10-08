@@ -53,6 +53,16 @@ internal sealed class MogtomeFonts : IDisposable
     private void FontChanged(IFontHandle handle, ILockedImFont font) => System.Threading.Interlocked.Increment(ref generation);
     internal bool Ready => handles.All(handle => handle.Available && handle.LoadException is null);
     internal Exception? LoadException => handles.FirstOrDefault(handle => handle.LoadException is not null)?.LoadException;
+    internal unsafe bool TryCheckHindiGlyphs()
+    {
+        var available = true;
+        foreach (var handle in handles)
+        {
+            using var font = handle.Lock();
+            available &= ShapedText is { } renderer && renderer.TryCheckGlyphs(["हिन्दी"], font.ImFont.FontSize, out _);
+        }
+        return available;
+    }
     internal unsafe void CheckGlyphs(IEnumerable<string> strings)
     {
         for (var index = 0; index < handles.Length; index++)

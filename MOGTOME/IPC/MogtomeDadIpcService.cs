@@ -108,7 +108,7 @@ public sealed class MogtomeDadIpcService : IDisposable
                 ? status
                 : Reject($"MOGTOME already owns DAD run {status.DadRunId}."));
         }
-        if (plugin.Engine.IsRunning)
+        if (plugin.Engine.IsRunning || plugin.Blunderville?.IsRunning == true || plugin.IsBlundervilleActionQueued)
             return Serialize(Reject("MOGTOME is already running outside DAD ownership."));
 
         var isLeader = string.Equals(request.Role, "QueueLeader", StringComparison.OrdinalIgnoreCase);

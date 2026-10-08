@@ -238,10 +238,12 @@ internal static class UiLayout
             finally { height.Dispose(); }
         }
     }
-    internal static bool Combo(string label, ref int selected, string[] options, int count)
+    internal static bool Combo(string label, ref int selected, string[] options, int count,
+        int disabledIndex = -1, string? disabledDisplay = null)
     {
-        using var height = MaterialText.PushLineHeight(options.Take(count).ToArray());
-        if (!MaterialText.BeginCombo(label, selected>=0 && selected<count ? options[selected] : "")) return false;
+        var captions = options.Take(count).Select((option, index) => index == disabledIndex ? disabledDisplay ?? option : option).ToArray();
+        using var height = MaterialText.PushLineHeight(captions);
+        if (!MaterialText.BeginCombo(label, selected>=0 && selected<count ? captions[selected] : "")) return false;
         var changed = false;
         try
         {
@@ -252,7 +254,9 @@ internal static class UiLayout
                 ImGuiNative.PushID(index);
                 try
                 {
-                    if (MaterialText.Selectable(options[index],selected==index)) { selected=index; changed=true; }
+                    if (MaterialText.Selectable(options[index], selected == index,
+                        flags: index == disabledIndex ? ImGuiSelectableFlags.Disabled : ImGuiSelectableFlags.None,
+                        display: captions[index])) { selected=index; changed=true; }
                     if (selected==index) ImGui.SetItemDefaultFocus();
                 }
                 finally { ImGui.PopID(); }
@@ -295,7 +299,8 @@ internal static class UiLayout
         var left = style.FramePadding.X + (collapse && style.WindowMenuButtonPosition == ImGuiDir.Left ? fontSize + style.ItemInnerSpacing.X : 0);
         var right = fontSize + style.FramePadding.X * 2 + TitleButtonCount(owner) * (fontSize + style.ItemInnerSpacing.X)
             + (collapse && style.WindowMenuButtonPosition == ImGuiDir.Right ? fontSize + style.ItemInnerSpacing.X : 0);
-        return left + MaterialText.Measure(owner.WindowName.Split("##", 2)[0]).X + right + style.ItemInnerSpacing.X;
+        return left + fontSize + style.ItemInnerSpacing.X
+            + MaterialText.Measure(owner.WindowName.Split("##", 2)[0]).X + right + style.ItemInnerSpacing.X;
     }
     private static int TitleButtonCount(Window owner)
         => owner.TitleBarButtons.Count(button => !owner.IsClickthrough || button.AvailableClickthrough)

@@ -2070,7 +2070,7 @@ Résultats dans le journal Dalamud.</value>
   <data name="Main_ResetUtc" xml:space="preserve"><value>{0:HH:mm} UTC</value></data>
   <data name="Main_CurrentProfile" xml:space="preserve"><value>Profil actuel : {0}</value></data>
   <data name="Main_HelpTitle" xml:space="preserve"><value>AIDE</value></data>
-  <data name="Blunderville_FarmingHeading" xml:space="preserve"><value>Le farming est indisponible dans cette version.</value></data>
+  <data name="Blunderville_FarmingHeading" xml:space="preserve"><value>Farming</value></data>
   <data name="Blunderville_FarmingDetail" xml:space="preserve"><value>Blunderville Failer ne permet pas le farming automatique pour le moment.</value></data>
   <data name="Blunderville_PurchasesHeading" xml:space="preserve"><value>Les achats automatiques sont indisponibles.</value></data>
   <data name="Blunderville_PurchasesDetail" xml:space="preserve"><value>La fonction d’achat automatique est indisponible dans cette version.</value></data>
@@ -2095,4 +2095,82 @@ Résultats dans le journal Dalamud.</value>
   <data name="Rotation_BossModSettingsUnconfirmed" xml:space="preserve"><value>Les paramètres de BossMod n’ont pas pu être confirmés. Consultez le journal du plugin pour connaître la lecture indisponible ou l’écriture refusée.</value></data>
   <data name="Config_BossModCatalogUnavailable" xml:space="preserve"><value>Catalogue des préréglages indisponible ; le choix enregistré est conservé.</value></data>
   <data name="Config_BossModCatalogEmpty" xml:space="preserve"><value>Aucun préréglage sélectionnable n’est disponible ; le choix enregistré est conservé.</value></data>
+  <data name="BV_Idle" xml:space="preserve"><value>Inactif.</value></data>
+  <data name="BV_Farming" xml:space="preserve"><value>Farm de Blunderville.</value></data>
+  <data name="BV_Shopping" xml:space="preserve"><value>Achat des objectifs restants.</value></data>
+  <data name="BV_ArenaIdle" xml:space="preserve"><value>Attente immobile de l’élimination.</value></data>
+  <data name="BV_Exiting" xml:space="preserve"><value>Sortie après élimination.</value></data>
+  <data name="BV_WaitEntry" xml:space="preserve"><value>En attente de l’entrée à Blunderville.</value></data>
+  <data name="BV_MemberWait" xml:space="preserve"><value>Membre du groupe : attente de l’entrée ici.</value></data>
+  <data name="BV_Registrar" xml:space="preserve"><value>Approche du responsable des inscriptions.</value></data>
+  <data name="BV_TravelSquare" xml:space="preserve"><value>Trajet vers le Square Blunderville.</value></data>
+  <data name="BV_LeavingParty" xml:space="preserve"><value>Annulation de l’entrée et départ du groupe.</value></data>
+  <data name="BV_EndingTravel" xml:space="preserve"><value>Trajet vers l’auberge choisie.</value></data>
+  <data name="BV_FarmDone" xml:space="preserve"><value>Farm terminé.</value></data>
+  <data name="BV_ShopDone" xml:space="preserve"><value>Achats terminés.</value></data>
+  <data name="BV_Stopped" xml:space="preserve"><value>Arrêté.</value></data>
+  <data name="BV_Unavailable" xml:space="preserve"><value>Une autre action est active ou le client n’est pas prêt.</value></data>
+  <data name="BV_BusyClient" xml:space="preserve"><value>Terminez d’abord la mission, la file ou le dialogue en cours.</value></data>
+  <data name="BV_NeedLimit" xml:space="preserve"><value>Activez au moins une limite de farm valide.</value></data>
+  <data name="BV_NoWallet" xml:space="preserve"><value>Solde MGF indisponible ; arrêt.</value></data>
+  <data name="BV_NoRole" xml:space="preserve"><value>Chef de groupe indéterminé ; arrêt.</value></data>
+  <data name="BV_NoCatalog" xml:space="preserve"><value>Offre MGF actuelle indisponible.</value></data>
+  <data name="BV_NoInventory" xml:space="preserve"><value>Inventaire indéterminé ; achats arrêtés.</value></data>
+  <data name="BV_NoFunds" xml:space="preserve"><value>MGF insuffisants ; achats arrêtés.</value></data>
+  <data name="BV_NoCapacity" xml:space="preserve"><value>Place insuffisante dans l’inventaire ; achats arrêtés.</value></data>
+  <data name="BV_UiMismatch" xml:space="preserve"><value>Interface de jeu inattendue ; arrêt.</value></data>
+  <data name="BV_UncertainPurchase" xml:space="preserve"><value>Résultat de l’achat incertain ; arrêt. Vérifiez l’inventaire et les MGF avant de recharger.</value></data>
+  <data name="BV_UnconfirmedExit" xml:space="preserve"><value>Élimination et sortie non confirmées ; arrêt.</value></data>
+  <data name="BV_QueueCancelFailed" xml:space="preserve"><value>Annulation de la file non confirmée ; arrêt.</value></data>
+  <data name="BV_PartyLeaveFailed" xml:space="preserve"><value>Départ du groupe non confirmé ; arrêt.</value></data>
+  <data name="BV_QuantityMismatch" xml:space="preserve"><value>La quantité manquante ne correspond pas au lot ; arrêt.</value></data>
+  <data name="BV_NpcUnavailable" xml:space="preserve"><value>PNJ requis indisponible ; arrêt.</value></data>
+  <data name="BV_TravelUnavailable" xml:space="preserve"><value>Trajet indisponible ou refusé ; arrêt.</value></data>
+  <data name="BV_Timeout" xml:space="preserve"><value>Délai de l’action dépassé ; arrêt.</value></data>
+  <data name="BV_SessionChanged" xml:space="preserve"><value>Personnage ou compte changé ; arrêt.</value></data>
+  <data name="BV_ActionFailed" xml:space="preserve"><value>Échec de l’action ; consultez le journal du plugin.</value></data>
+  <data name="BV_DialogControl" xml:space="preserve"><value>Impossible de suspendre l’acceptation automatique des dialogues ; arrêt.</value></data>
+  <data name="BV_Buy" xml:space="preserve"><value>Acheter</value></data>
+  <data name="BV_RunLimit" xml:space="preserve"><value>Limite de parties</value></data>
+  <data name="BV_Runs" xml:space="preserve"><value>Parties</value></data>
+  <data name="BV_WalletTarget" xml:space="preserve"><value>Objectif de solde MGF</value></data>
+  <data name="BV_TargetMgf" xml:space="preserve"><value>MGF visés</value></data>
+  <data name="BV_AutoShop" xml:space="preserve"><value>Acheter à la fin du farm</value></data>
+  <data name="BV_EndingLocation" xml:space="preserve"><value>Destination après les achats</value></data>
+  <data name="BV_InnStay" xml:space="preserve"><value>Ne pas se déplacer</value></data>
+  <data name="BV_Progress" xml:space="preserve"><value>Cycles de session : {0} · MGF : {1}</value></data>
+  <data name="BV_ItemCost" xml:space="preserve"><value>{0} MGF / {1} · Restants : {2}</value></data>
+  <data name="BV_PurchaseHelp" xml:space="preserve"><value>Inventaire porté souhaité / actuel. Saisissez 0 pour retirer. Stockage et meubles placés exclus.</value></data>
+  <data name="BV_FarmHelp" xml:space="preserve"><value>Les chefs inscrivent ; les membres attendent ici. Tous restent immobiles jusqu’à l’élimination. Chaque limite activée peut terminer le farm.</value></data>
+  <data name="BV_ReloadHelp" xml:space="preserve"><value>Scénario de rechargement : une exécution lorsque le prochain chargement est prêt. Changer la sélection ou arrêter annule l’exécution en attente.</value></data>
+  <data name="BV_ReloadNone" xml:space="preserve"><value>Aucun scénario au rechargement</value></data>
+  <data name="BV_Remove" xml:space="preserve"><value>Retirer</value></data>
+  <data name="BV_InnUldah" xml:space="preserve"><value>Ul’dah</value></data>
+  <data name="BV_InnGridania" xml:space="preserve"><value>Gridania</value></data>
+  <data name="BV_InnLimsa" xml:space="preserve"><value>Limsa Lominsa</value></data>
+  <data name="BV_InnIshgard" xml:space="preserve"><value>Ishgard</value></data>
+  <data name="BV_InnCrystarium" xml:space="preserve"><value>Cristarium</value></data>
+  <data name="BV_InnSharlayan" xml:space="preserve"><value>Vieille Sharlayan</value></data>
+  <data name="BV_InnTuliyollal" xml:space="preserve"><value>Tuliyollal</value></data>
+  <data name="BV_ReviewedPurchase" xml:space="preserve"><value>Inventaire et MGF vérifiés ; lever le blocage</value></data>
+  <data name="BV_CommandHelp" xml:space="preserve"><value>Ouvrir Blunderville (/bv ou /blunderville). Actions : start, stop, buy, debug.</value></data>
+  <data name="BV_ShopTargets" xml:space="preserve"><value>Objectifs d’achat</value></data>
+  <data name="BV_AddItem" xml:space="preserve"><value>Ajouter un objet…</value></data>
+  <data name="BV_SearchItems" xml:space="preserve"><value>Rechercher des objets…</value></data>
+  <data name="BV_NoMatchingItems" xml:space="preserve"><value>Aucun objet correspondant non sélectionné.</value></data>
+  <data name="BV_EmptyTargets" xml:space="preserve"><value>Aucun objet sélectionné.</value></data>
+  <data name="BV_Item" xml:space="preserve"><value>Objet</value></data>
+  <data name="BV_DesiredCurrent" xml:space="preserve"><value>Souhaité / actuel</value></data>
+  <data name="BV_Outstanding" xml:space="preserve"><value>Manque</value></data>
+  <data name="BV_EntryLocked" xml:space="preserve"><value>Débloquez l’accès au square Blunderville via la quête « Just Crowning Around », auprès de Lewena au square de l’entrée ; arrêté.</value></data>
+  <data name="BV_Wanted" xml:space="preserve"><value>Quantité souhaitée en inventaire. Seule la quantité manquante est achetée ; 0 désactive les achats.</value></data>
+  <data name="BV_OnHand" xml:space="preserve"><value>Quantité dans les quatre sacs d’inventaire. Exclut servants, sacoches, réserve de logement et meubles placés.</value></data>
+  <data name="BV_UnitMgf" xml:space="preserve"><value>Prix en MGF d’un exemplaire.</value></data>
+  <data name="BV_NeededMgf" xml:space="preserve"><value>MGF nécessaires pour la quantité manquante de cette ligne. Un objectif atteint ou désactivé coûte 0.</value></data>
+  <data name="BV_TotalMgf" xml:space="preserve"><value>Total de MGF requis : {0}</value></data>
+  <data name="BV_Registered" xml:space="preserve"><value>Enregistré ou dans l’inventaire</value></data>
+  <data name="BV_NotRegistered" xml:space="preserve"><value>Non enregistré et absent de l’inventaire</value></data>
+  <data name="BV_PlannedPurchase" xml:space="preserve"><value>Achat prévu</value></data>
+  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Enregistrement ou inventaire indisponible</value></data>
+  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Objets à enregistrer : coche verte = enregistré ou en inventaire ; X rouge = absence confirmée ; ? jaune = achat prévu ; ? gris = état inconnu. Les autres restent vides.</value></data>
 </root>

@@ -2076,7 +2076,7 @@ Path: {0}
   <data name="Main_ResetUtc" xml:space="preserve"><value>{0:HH:mm} UTC</value></data>
   <data name="Main_CurrentProfile" xml:space="preserve"><value>Текущий профиль: {0}</value></data>
   <data name="Main_HelpTitle" xml:space="preserve"><value>ПОМОЩЬ</value></data>
-  <data name="Blunderville_FarmingHeading" xml:space="preserve"><value>Фарм недоступен в этой версии.</value></data>
+  <data name="Blunderville_FarmingHeading" xml:space="preserve"><value>Фарм</value></data>
   <data name="Blunderville_FarmingDetail" xml:space="preserve"><value>Сейчас Blunderville Failer нельзя использовать для автоматического фарма.</value></data>
   <data name="Blunderville_PurchasesHeading" xml:space="preserve"><value>Автоматические покупки недоступны.</value></data>
   <data name="Blunderville_PurchasesDetail" xml:space="preserve"><value>В этой версии функция автоматической покупки недоступна.</value></data>
@@ -2101,4 +2101,82 @@ Path: {0}
   <data name="Rotation_BossModSettingsUnconfirmed" xml:space="preserve"><value>Не удалось подтвердить настройки BossMod. Сведения о недоступном чтении или отклонённой записи есть в журнале плагина.</value></data>
   <data name="Config_BossModCatalogUnavailable" xml:space="preserve"><value>Каталог пресетов недоступен; сохранённый выбор оставлен без изменений.</value></data>
   <data name="Config_BossModCatalogEmpty" xml:space="preserve"><value>Нет доступных для выбора пресетов; сохранённый выбор оставлен без изменений.</value></data>
+  <data name="BV_Idle" xml:space="preserve"><value>Ожидание.</value></data>
+  <data name="BV_Farming" xml:space="preserve"><value>Фарм Blunderville.</value></data>
+  <data name="BV_Shopping" xml:space="preserve"><value>Покупка недостающих предметов.</value></data>
+  <data name="BV_ArenaIdle" xml:space="preserve"><value>Ожидание выбывания без движения.</value></data>
+  <data name="BV_Exiting" xml:space="preserve"><value>Выход после выбывания.</value></data>
+  <data name="BV_WaitEntry" xml:space="preserve"><value>Ожидание входа в Blunderville.</value></data>
+  <data name="BV_MemberWait" xml:space="preserve"><value>Участник группы: ожидание входа на месте.</value></data>
+  <data name="BV_Registrar" xml:space="preserve"><value>Подход к регистратору.</value></data>
+  <data name="BV_TravelSquare" xml:space="preserve"><value>Путешествие на площадь Blunderville.</value></data>
+  <data name="BV_LeavingParty" xml:space="preserve"><value>Отмена входа и выход из группы.</value></data>
+  <data name="BV_EndingTravel" xml:space="preserve"><value>Путешествие в выбранную гостиницу.</value></data>
+  <data name="BV_FarmDone" xml:space="preserve"><value>Фарм завершён.</value></data>
+  <data name="BV_ShopDone" xml:space="preserve"><value>Покупки завершены.</value></data>
+  <data name="BV_Stopped" xml:space="preserve"><value>Остановлено.</value></data>
+  <data name="BV_Unavailable" xml:space="preserve"><value>Другая операция активна или клиент не готов.</value></data>
+  <data name="BV_BusyClient" xml:space="preserve"><value>Сначала завершите текущее задание, очередь или диалог.</value></data>
+  <data name="BV_NeedLimit" xml:space="preserve"><value>Включите хотя бы один допустимый лимит фарма.</value></data>
+  <data name="BV_NoWallet" xml:space="preserve"><value>Баланс MGF недоступен; остановлено.</value></data>
+  <data name="BV_NoRole" xml:space="preserve"><value>Лидер группы неизвестен; остановлено.</value></data>
+  <data name="BV_NoCatalog" xml:space="preserve"><value>Текущее предложение за MGF недоступно.</value></data>
+  <data name="BV_NoInventory" xml:space="preserve"><value>Содержимое инвентаря неизвестно; покупки остановлены.</value></data>
+  <data name="BV_NoFunds" xml:space="preserve"><value>Недостаточно MGF; покупки остановлены.</value></data>
+  <data name="BV_NoCapacity" xml:space="preserve"><value>Недостаточно места в инвентаре; покупки остановлены.</value></data>
+  <data name="BV_UiMismatch" xml:space="preserve"><value>Неожиданный интерфейс игры; остановлено.</value></data>
+  <data name="BV_UncertainPurchase" xml:space="preserve"><value>Результат покупки неизвестен; остановлено. Перед перезагрузкой проверьте инвентарь и MGF.</value></data>
+  <data name="BV_UnconfirmedExit" xml:space="preserve"><value>Выбывание и выход не подтверждены; остановлено.</value></data>
+  <data name="BV_QueueCancelFailed" xml:space="preserve"><value>Отмена очереди не подтверждена; остановлено.</value></data>
+  <data name="BV_PartyLeaveFailed" xml:space="preserve"><value>Выход из группы не подтверждён; остановлено.</value></data>
+  <data name="BV_QuantityMismatch" xml:space="preserve"><value>Недостающее количество не соответствует размеру набора; остановлено.</value></data>
+  <data name="BV_NpcUnavailable" xml:space="preserve"><value>Нужный NPC недоступен; остановлено.</value></data>
+  <data name="BV_TravelUnavailable" xml:space="preserve"><value>Путешествие недоступно или отклонено; остановлено.</value></data>
+  <data name="BV_Timeout" xml:space="preserve"><value>Время операции истекло; остановлено.</value></data>
+  <data name="BV_SessionChanged" xml:space="preserve"><value>Персонаж или аккаунт изменён; остановлено.</value></data>
+  <data name="BV_ActionFailed" xml:space="preserve"><value>Операция не удалась; проверьте журнал плагина.</value></data>
+  <data name="BV_DialogControl" xml:space="preserve"><value>Не удалось приостановить автоматическое подтверждение диалогов; остановлено.</value></data>
+  <data name="BV_Buy" xml:space="preserve"><value>Купить</value></data>
+  <data name="BV_RunLimit" xml:space="preserve"><value>Лимит заходов</value></data>
+  <data name="BV_Runs" xml:space="preserve"><value>Заходы</value></data>
+  <data name="BV_WalletTarget" xml:space="preserve"><value>Целевой баланс MGF</value></data>
+  <data name="BV_TargetMgf" xml:space="preserve"><value>Цель MGF</value></data>
+  <data name="BV_AutoShop" xml:space="preserve"><value>Покупать после завершения фарма</value></data>
+  <data name="BV_EndingLocation" xml:space="preserve"><value>Место после покупок</value></data>
+  <data name="BV_InnStay" xml:space="preserve"><value>Никуда не идти</value></data>
+  <data name="BV_Progress" xml:space="preserve"><value>Циклы сеанса: {0} · MGF: {1}</value></data>
+  <data name="BV_ItemCost" xml:space="preserve"><value>{0} MGF / {1} · Не хватает: {2}</value></data>
+  <data name="BV_PurchaseHelp" xml:space="preserve"><value>Желаемое / текущее количество в переносимом инвентаре. 0 удаляет цель. Хранилища и установленная мебель не учитываются.</value></data>
+  <data name="BV_FarmHelp" xml:space="preserve"><value>Лидеры регистрируются, участники ждут на месте. Все стоят до выбывания. Любой включённый лимит завершает фарм.</value></data>
+  <data name="BV_ReloadHelp" xml:space="preserve"><value>Сценарий перезагрузки: один запуск после готовности следующей загрузки. Изменение выбора или остановка отменяет ожидающий запуск.</value></data>
+  <data name="BV_ReloadNone" xml:space="preserve"><value>Без сценария перезагрузки</value></data>
+  <data name="BV_Remove" xml:space="preserve"><value>Удалить</value></data>
+  <data name="BV_InnUldah" xml:space="preserve"><value>Ul’dah</value></data>
+  <data name="BV_InnGridania" xml:space="preserve"><value>Gridania</value></data>
+  <data name="BV_InnLimsa" xml:space="preserve"><value>Limsa Lominsa</value></data>
+  <data name="BV_InnIshgard" xml:space="preserve"><value>Ishgard</value></data>
+  <data name="BV_InnCrystarium" xml:space="preserve"><value>Crystarium</value></data>
+  <data name="BV_InnSharlayan" xml:space="preserve"><value>Old Sharlayan</value></data>
+  <data name="BV_InnTuliyollal" xml:space="preserve"><value>Tuliyollal</value></data>
+  <data name="BV_ReviewedPurchase" xml:space="preserve"><value>Инвентарь и MGF проверены; снять блокировку покупок</value></data>
+  <data name="BV_CommandHelp" xml:space="preserve"><value>Открыть Blunderville (/bv или /blunderville). Действия: start, stop, buy, debug.</value></data>
+  <data name="BV_ShopTargets" xml:space="preserve"><value>Цели покупок</value></data>
+  <data name="BV_AddItem" xml:space="preserve"><value>Добавить предмет…</value></data>
+  <data name="BV_SearchItems" xml:space="preserve"><value>Поиск предметов…</value></data>
+  <data name="BV_NoMatchingItems" xml:space="preserve"><value>Нет подходящих невыбранных предметов.</value></data>
+  <data name="BV_EmptyTargets" xml:space="preserve"><value>Предметы не выбраны.</value></data>
+  <data name="BV_Item" xml:space="preserve"><value>Предмет</value></data>
+  <data name="BV_DesiredCurrent" xml:space="preserve"><value>Цель / есть</value></data>
+  <data name="BV_Outstanding" xml:space="preserve"><value>Нужно</value></data>
+  <data name="BV_EntryLocked" xml:space="preserve"><value>Откройте вход в Blunderville Square через задание «Just Crowning Around» у Lewena в Entrance Square; остановлено.</value></data>
+  <data name="BV_Wanted" xml:space="preserve"><value>Желаемое количество в инвентаре. Покупается только недостающее; 0 отключает покупку.</value></data>
+  <data name="BV_OnHand" xml:space="preserve"><value>Количество в четырёх сумках инвентаря. Без слуг, седельных сумок, жилищного склада и размещённой мебели.</value></data>
+  <data name="BV_UnitMgf" xml:space="preserve"><value>Цена одной единицы в MGF.</value></data>
+  <data name="BV_NeededMgf" xml:space="preserve"><value>MGF для недостающего количества в этой строке. Выполненные или отключённые цели стоят 0.</value></data>
+  <data name="BV_TotalMgf" xml:space="preserve"><value>Всего требуется MGF: {0}</value></data>
+  <data name="BV_Registered" xml:space="preserve"><value>Зарегистрировано или есть в инвентаре</value></data>
+  <data name="BV_NotRegistered" xml:space="preserve"><value>Не зарегистрировано и отсутствует в инвентаре</value></data>
+  <data name="BV_PlannedPurchase" xml:space="preserve"><value>Запланировано к покупке</value></data>
+  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Регистрация или инвентарь недоступны</value></data>
+  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Коллекционные предметы: зелёная галочка = зарегистрирован или в инвентаре; красный X = подтверждённое отсутствие; жёлтый ? = покупка запланирована; серый ? = статус неизвестен. Остальные поля пустые.</value></data>
 </root>

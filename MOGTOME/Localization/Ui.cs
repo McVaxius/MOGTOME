@@ -40,7 +40,7 @@ public static class Ui
     internal static string Code => Languages.First(l => l.Value == Language).Code;
     internal static string[] RequiredText => Values(ResourcesFor(Language))
         .Concat(Values(ResourcesFor(UiLanguage.English)))
-        .Concat(Languages.Select(l => l.Name)).Append("♡⚫—…·+?✓☕").Distinct().ToArray();
+        .Concat(Languages.Where(l => l.Code != "hi").Select(l => l.Name)).Append("♡⚫—…·+?✓☕").Distinct().ToArray();
     private static System.Collections.Generic.IEnumerable<string> Values(ResourceSet resources)
         => resources.Cast<System.Collections.DictionaryEntry>().Select(entry => (string)entry.Value!);
     private static ResourceSet ResourcesFor(UiLanguage language) => Resources.GetResourceSet(

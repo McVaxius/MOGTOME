@@ -2070,7 +2070,7 @@ DictionaryPathsとPathSelectionsByPathを比較します。
   <data name="Main_ResetUtc" xml:space="preserve"><value>{0:HH:mm} UTC</value></data>
   <data name="Main_CurrentProfile" xml:space="preserve"><value>現在のプロフィール：{0}</value></data>
   <data name="Main_HelpTitle" xml:space="preserve"><value>ヘルプ</value></data>
-  <data name="Blunderville_FarmingHeading" xml:space="preserve"><value>このビルドでは周回できません。</value></data>
+  <data name="Blunderville_FarmingHeading" xml:space="preserve"><value>周回</value></data>
   <data name="Blunderville_FarmingDetail" xml:space="preserve"><value>現在、Blunderville Failerで自動周回はできません。</value></data>
   <data name="Blunderville_PurchasesHeading" xml:space="preserve"><value>自動購入は利用できません。</value></data>
   <data name="Blunderville_PurchasesDetail" xml:space="preserve"><value>このビルドでは自動購入機能を利用できません。</value></data>
@@ -2095,4 +2095,82 @@ DictionaryPathsとPathSelectionsByPathを比較します。
   <data name="Rotation_BossModSettingsUnconfirmed" xml:space="preserve"><value>BossMod の設定を確認できませんでした。読み取り不可または書き込み拒否の詳細はプラグインログを確認してください。</value></data>
   <data name="Config_BossModCatalogUnavailable" xml:space="preserve"><value>プリセット一覧を取得できません。保存済みの選択は維持されます。</value></data>
   <data name="Config_BossModCatalogEmpty" xml:space="preserve"><value>選択可能なプリセットがありません。保存済みの選択は維持されます。</value></data>
+  <data name="BV_Idle" xml:space="preserve"><value>待機中。</value></data>
+  <data name="BV_Farming" xml:space="preserve"><value>ブランダーヴィル周回中。</value></data>
+  <data name="BV_Shopping" xml:space="preserve"><value>不足分を購入中。</value></data>
+  <data name="BV_ArenaIdle" xml:space="preserve"><value>動かずに脱落を待機。</value></data>
+  <data name="BV_Exiting" xml:space="preserve"><value>脱落後に退出中。</value></data>
+  <data name="BV_WaitEntry" xml:space="preserve"><value>ブランダーヴィルへの入場待ち。</value></data>
+  <data name="BV_MemberWait" xml:space="preserve"><value>パーティメンバー：ここで入場を待機。</value></data>
+  <data name="BV_Registrar" xml:space="preserve"><value>参加受付に接近中。</value></data>
+  <data name="BV_TravelSquare" xml:space="preserve"><value>ブランダーヴィルスクウェアへ移動中。</value></data>
+  <data name="BV_LeavingParty" xml:space="preserve"><value>参加を取り消してパーティから離脱中。</value></data>
+  <data name="BV_EndingTravel" xml:space="preserve"><value>選択した宿屋へ移動中。</value></data>
+  <data name="BV_FarmDone" xml:space="preserve"><value>周回完了。</value></data>
+  <data name="BV_ShopDone" xml:space="preserve"><value>購入完了。</value></data>
+  <data name="BV_Stopped" xml:space="preserve"><value>停止しました。</value></data>
+  <data name="BV_Unavailable" xml:space="preserve"><value>別の操作が実行中、またはクライアントの準備ができていません。</value></data>
+  <data name="BV_BusyClient" xml:space="preserve"><value>現在のコンテンツ、申請、ダイアログを先に終了してください。</value></data>
+  <data name="BV_NeedLimit" xml:space="preserve"><value>有効な周回上限を少なくとも1つ設定してください。</value></data>
+  <data name="BV_NoWallet" xml:space="preserve"><value>MGF残高を取得できないため停止しました。</value></data>
+  <data name="BV_NoRole" xml:space="preserve"><value>パーティリーダーを確認できないため停止しました。</value></data>
+  <data name="BV_NoCatalog" xml:space="preserve"><value>現在のMGF交換品を取得できません。</value></data>
+  <data name="BV_NoInventory" xml:space="preserve"><value>所持品を確認できないため購入を停止しました。</value></data>
+  <data name="BV_NoFunds" xml:space="preserve"><value>MGF不足のため購入を停止しました。</value></data>
+  <data name="BV_NoCapacity" xml:space="preserve"><value>所持品の空き不足のため購入を停止しました。</value></data>
+  <data name="BV_UiMismatch" xml:space="preserve"><value>予期しないゲーム画面のため停止しました。</value></data>
+  <data name="BV_UncertainPurchase" xml:space="preserve"><value>購入結果が不明なため停止しました。再読み込み前に所持品とMGFを確認してください。</value></data>
+  <data name="BV_UnconfirmedExit" xml:space="preserve"><value>脱落と退出を確認できないため停止しました。</value></data>
+  <data name="BV_QueueCancelFailed" xml:space="preserve"><value>申請の取り消しを確認できないため停止しました。</value></data>
+  <data name="BV_PartyLeaveFailed" xml:space="preserve"><value>パーティからの離脱を確認できないため停止しました。</value></data>
+  <data name="BV_QuantityMismatch" xml:space="preserve"><value>不足数と交換単位が一致しないため停止しました。</value></data>
+  <data name="BV_NpcUnavailable" xml:space="preserve"><value>必要なNPCが見つからないため停止しました。</value></data>
+  <data name="BV_TravelUnavailable" xml:space="preserve"><value>移動を利用できない、または拒否されたため停止しました。</value></data>
+  <data name="BV_Timeout" xml:space="preserve"><value>時間切れのため停止しました。</value></data>
+  <data name="BV_SessionChanged" xml:space="preserve"><value>キャラクターまたはアカウントが変更されたため停止しました。</value></data>
+  <data name="BV_ActionFailed" xml:space="preserve"><value>操作に失敗しました。プラグインログを確認してください。</value></data>
+  <data name="BV_DialogControl" xml:space="preserve"><value>ダイアログの自動承認を一時停止できないため停止しました。</value></data>
+  <data name="BV_Buy" xml:space="preserve"><value>購入</value></data>
+  <data name="BV_RunLimit" xml:space="preserve"><value>周回上限</value></data>
+  <data name="BV_Runs" xml:space="preserve"><value>周回数</value></data>
+  <data name="BV_WalletTarget" xml:space="preserve"><value>MGF残高目標</value></data>
+  <data name="BV_TargetMgf" xml:space="preserve"><value>目標MGF</value></data>
+  <data name="BV_AutoShop" xml:space="preserve"><value>周回完了後に購入する</value></data>
+  <data name="BV_EndingLocation" xml:space="preserve"><value>購入後の移動先</value></data>
+  <data name="BV_InnStay" xml:space="preserve"><value>どこにも移動しない</value></data>
+  <data name="BV_Progress" xml:space="preserve"><value>セッション周回数：{0} · MGF：{1}</value></data>
+  <data name="BV_ItemCost" xml:space="preserve"><value>{0} MGF / {1} · 不足：{2}</value></data>
+  <data name="BV_PurchaseHelp" xml:space="preserve"><value>目標数 / 現在の所持品数。0で削除。保管品と設置済み家具は含みません。</value></data>
+  <data name="BV_FarmHelp" xml:space="preserve"><value>リーダーが参加申請し、メンバーはここで待機します。全員が動かず脱落を待ちます。有効な上限のいずれかに達すると終了します。</value></data>
+  <data name="BV_ReloadHelp" xml:space="preserve"><value>再読み込みシナリオ：次の読み込み後、準備完了時に1回実行します。選択変更または停止で保留中の実行を取り消します。</value></data>
+  <data name="BV_ReloadNone" xml:space="preserve"><value>再読み込みシナリオなし</value></data>
+  <data name="BV_Remove" xml:space="preserve"><value>削除</value></data>
+  <data name="BV_InnUldah" xml:space="preserve"><value>ウルダハ</value></data>
+  <data name="BV_InnGridania" xml:space="preserve"><value>グリダニア</value></data>
+  <data name="BV_InnLimsa" xml:space="preserve"><value>リムサ・ロミンサ</value></data>
+  <data name="BV_InnIshgard" xml:space="preserve"><value>イシュガルド</value></data>
+  <data name="BV_InnCrystarium" xml:space="preserve"><value>クリスタリウム</value></data>
+  <data name="BV_InnSharlayan" xml:space="preserve"><value>オールド・シャーレアン</value></data>
+  <data name="BV_InnTuliyollal" xml:space="preserve"><value>トライヨラ</value></data>
+  <data name="BV_ReviewedPurchase" xml:space="preserve"><value>所持品とMGFを確認済み：購入保留を解除</value></data>
+  <data name="BV_CommandHelp" xml:space="preserve"><value>ブランダーヴィルを開く（/bv または /blunderville）。操作：start、stop、buy、debug。</value></data>
+  <data name="BV_ShopTargets" xml:space="preserve"><value>購入目標</value></data>
+  <data name="BV_AddItem" xml:space="preserve"><value>アイテムを追加…</value></data>
+  <data name="BV_SearchItems" xml:space="preserve"><value>アイテムを検索…</value></data>
+  <data name="BV_NoMatchingItems" xml:space="preserve"><value>一致する未選択のアイテムはありません。</value></data>
+  <data name="BV_EmptyTargets" xml:space="preserve"><value>アイテムが選択されていません。</value></data>
+  <data name="BV_Item" xml:space="preserve"><value>アイテム</value></data>
+  <data name="BV_DesiredCurrent" xml:space="preserve"><value>目標 / 所持</value></data>
+  <data name="BV_Outstanding" xml:space="preserve"><value>不足</value></data>
+  <data name="BV_EntryLocked" xml:space="preserve"><value>Entrance SquareのLewenaから始まる「Just Crowning Around」を進め、Blunderville Squareへの入場を解放してください。停止しました。</value></data>
+  <data name="BV_Wanted" xml:space="preserve"><value>所持目標数。不足分だけ購入します。0で購入を無効にします。</value></data>
+  <data name="BV_OnHand" xml:space="preserve"><value>通常の所持品4バッグ内の数。リテイナー、チョコボかばん、ハウジング倉庫、設置済み家具は含みません。</value></data>
+  <data name="BV_UnitMgf" xml:space="preserve"><value>アイテム1個のMGF価格。</value></data>
+  <data name="BV_NeededMgf" xml:space="preserve"><value>この行の不足分に必要なMGF。達成済み・無効の目標は0です。</value></data>
+  <data name="BV_TotalMgf" xml:space="preserve"><value>必要MGF合計: {0}</value></data>
+  <data name="BV_Registered" xml:space="preserve"><value>登録済み、または所持品にあります</value></data>
+  <data name="BV_NotRegistered" xml:space="preserve"><value>未登録で所持品にもありません</value></data>
+  <data name="BV_PlannedPurchase" xml:space="preserve"><value>購入予定</value></data>
+  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>登録状況または所持品を確認できません</value></data>
+  <data name="BV_RegistrationHelp" xml:space="preserve"><value>登録可能品：緑のチェック＝登録済みまたは所持中、赤のX＝未登録・未所持を確認、黄色の?＝購入予定、灰色の?＝状態不明。その他は空欄です。</value></data>
 </root>

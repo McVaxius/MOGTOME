@@ -90,6 +90,9 @@ public sealed class Plugin : IDalamudPlugin
     public DeathTrackingService DeathTrackingService { get; private set; }
     public DutyAutomationService DutyAutomationService { get; private set; }
     public MogtomeEngine Engine { get; private set; }
+    public BlundervilleService Blunderville { get; private set; }
+    private int blundervilleActionGeneration;
+    public bool IsBlundervilleActionQueued { get; private set; }
 
     // Windows
     public readonly WindowSystem WindowSystem = new("MOGTOME");
@@ -170,6 +173,8 @@ public sealed class Plugin : IDalamudPlugin
         // Engine will be created in OnFrameworkUpdate after account selection
         Engine = null!;
 
+        Blunderville = new BlundervilleService(this);
+
         Appearance = new(this);
 
         // Windows
@@ -197,7 +202,7 @@ public sealed class Plugin : IDalamudPlugin
         };
         blundervilleCommandInfo = new CommandInfo(OnBlundervilleCommand)
         {
-            HelpMessage = Ui.GameT("Plugin_CommandBlundervilleHelp")
+            HelpMessage = Ui.GameT("BV_CommandHelp")
         };
         CommandManager.AddHandler(CommandName, mainCommandInfo);
         CommandManager.AddHandler(AliasCommandName, aliasCommandInfo);
@@ -222,6 +227,8 @@ public sealed class Plugin : IDalamudPlugin
 
     public void Dispose()
     {
+        ++blundervilleActionGeneration;
+        Blunderville.Dispose();
         CancelQueuedEngineStart();
         DutyStateService.DutyCompleted -= OnDutyCompleted;
         DutyStateService.DutyStarted -= OnDutyStarted;
@@ -283,7 +290,39 @@ public sealed class Plugin : IDalamudPlugin
 
     private void OnBlundervilleCommand(string command, string args)
     {
-        BlundervilleWindow.IsOpen = true;
+        switch (args.Trim().ToLowerInvariant())
+        {
+            case "start": RequestBlundervilleAction(buy: false); break;
+            case "buy": RequestBlundervilleAction(buy: true); break;
+            case "stop": StopBlunderville(); break;
+            case "debug":
+                BlundervilleWindow.DebugVisible = !BlundervilleWindow.DebugVisible;
+                BlundervilleWindow.IsOpen = true;
+                break;
+            default: BlundervilleWindow.IsOpen = true; break;
+        }
+    }
+
+    public void RequestBlundervilleAction(bool buy)
+    {
+        if (IsBlundervilleActionQueued || Blunderville.IsRunning || IsEngineStartQueued || Engine?.IsRunning == true) return;
+        var generation = ++blundervilleActionGeneration;
+        IsBlundervilleActionQueued = true;
+        GameHelpers.QueueFrameworkAction("Blunderville", buy ? "Buy" : "Start", TimeSpan.Zero, () =>
+        {
+            if (generation != blundervilleActionGeneration) return;
+            IsBlundervilleActionQueued = false;
+            if (buy) Blunderville.Buy(); else Blunderville.Start();
+        });
+    }
+
+    public void StopBlunderville()
+    {
+        ++blundervilleActionGeneration;
+        IsBlundervilleActionQueued = false;
+        if (Blunderville == null) return;
+        Blunderville.RequestStop();
+        GameHelpers.QueueFrameworkAction("Blunderville", "Stop", TimeSpan.Zero, Blunderville.Stop);
     }
 
     private UiLanguage? commandHelpLanguage;
@@ -299,7 +338,7 @@ public sealed class Plugin : IDalamudPlugin
         {
             mainCommandInfo.HelpMessage = Ui.GameT("Plugin_CommandMainHelp");
             aliasCommandInfo.HelpMessage = Ui.GameT("Plugin_CommandAliasHelp");
-            blundervilleCommandInfo.HelpMessage = Ui.GameT("Plugin_CommandBlundervilleHelp");
+            blundervilleCommandInfo.HelpMessage = Ui.GameT("BV_CommandHelp");
             commandHelpLanguage = Ui.Language;
         }
         Appearance.Draw(WindowSystem);
@@ -445,6 +484,11 @@ public sealed class Plugin : IDalamudPlugin
 
     public void QueueEngineStart(string source, bool notifyChat)
     {
+        if (Blunderville?.IsRunning == true || IsBlundervilleActionQueued)
+        {
+            if (notifyChat) ChatGui.Print(Ui.GameT("BV_Unavailable"));
+            return;
+        }
         if (Engine == null)
         {
             Log.Information("[Plugin] Start request from {Source} skipped because engine is still initializing", source);
@@ -492,8 +536,10 @@ public sealed class Plugin : IDalamudPlugin
 
     public bool StopEngine(string? reason = null)
     {
+        var stoppedBlunderville = Blunderville?.IsRunning == true || IsBlundervilleActionQueued;
+        StopBlunderville();
         UiText stopReason = reason == null ? Ui.M("Engine_ManualStop") : (UiText)reason;
-        var stopped = IsEngineStartQueued;
+        var stopped = IsEngineStartQueued || stoppedBlunderville;
         CancelQueuedEngineStart();
         if (Engine?.IsRunning == true)
         {
@@ -583,6 +629,7 @@ public sealed class Plugin : IDalamudPlugin
         RotationService.ObserveSessionDeparture();
         if (ClientState.IsLoggedIn && Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.LoggingOut])
         {
+            if (Blunderville.IsRunning) Blunderville.Stop();
             RotationService.EndSessionForLogout();
             return;
         }
@@ -679,12 +726,18 @@ public sealed class Plugin : IDalamudPlugin
             Engine.Update();
         }
         DadIpcService.Update();
+        Blunderville.Update();
     }
 
     private void TryConsumeQueuedEngineStart()
     {
         if (!pendingEngineStartRequest)
             return;
+        if (Blunderville?.IsRunning == true || IsBlundervilleActionQueued)
+        {
+            CancelQueuedEngineStart();
+            return;
+        }
 
         var source = pendingEngineStartSource;
         var notifyChat = pendingEngineStartNotifyChat;

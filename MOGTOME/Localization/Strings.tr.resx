@@ -2205,7 +2205,7 @@ Sonuçlar Dalamud günlüğüne yazılır.</value>
     <value>YARDIM</value>
   </data>
   <data name="Blunderville_FarmingHeading" xml:space="preserve">
-    <value>Bu derlemede toplama kullanılamıyor.</value>
+    <value>Farming</value>
   </data>
   <data name="Blunderville_FarmingDetail" xml:space="preserve">
     <value>Blunderville Failer şu anda otomatik toplama için kullanılamaz.</value>
@@ -2251,4 +2251,82 @@ Sonuçlar Dalamud günlüğüne yazılır.</value>
   <data name="Rotation_BossModSettingsUnconfirmed" xml:space="preserve"><value>BossMod ayarları doğrulanamadı. Kullanılamayan okuma veya reddedilen yazma işlemi için eklenti günlüğünü kontrol edin.</value></data>
   <data name="Config_BossModCatalogUnavailable" xml:space="preserve"><value>Ön ayar kataloğu kullanılamıyor; kaydedilen seçim korunuyor.</value></data>
   <data name="Config_BossModCatalogEmpty" xml:space="preserve"><value>Seçilebilir ön ayar yok; kaydedilen seçim korunuyor.</value></data>
+  <data name="BV_Idle" xml:space="preserve"><value>Boşta.</value></data>
+  <data name="BV_Farming" xml:space="preserve"><value>Blunderville farmı sürüyor.</value></data>
+  <data name="BV_Shopping" xml:space="preserve"><value>Eksik hedefler satın alınıyor.</value></data>
+  <data name="BV_ArenaIdle" xml:space="preserve"><value>Hareketsiz şekilde elenme bekleniyor.</value></data>
+  <data name="BV_Exiting" xml:space="preserve"><value>Elenme sonrası çıkılıyor.</value></data>
+  <data name="BV_WaitEntry" xml:space="preserve"><value>Blunderville girişi bekleniyor.</value></data>
+  <data name="BV_MemberWait" xml:space="preserve"><value>Parti üyesi: burada giriş bekleniyor.</value></data>
+  <data name="BV_Registrar" xml:space="preserve"><value>Kayıt görevlisine yaklaşılıyor.</value></data>
+  <data name="BV_TravelSquare" xml:space="preserve"><value>Blunderville meydanına gidiliyor.</value></data>
+  <data name="BV_LeavingParty" xml:space="preserve"><value>Giriş iptal ediliyor ve partiden ayrılınıyor.</value></data>
+  <data name="BV_EndingTravel" xml:space="preserve"><value>Seçilen hana gidiliyor.</value></data>
+  <data name="BV_FarmDone" xml:space="preserve"><value>Farm tamamlandı.</value></data>
+  <data name="BV_ShopDone" xml:space="preserve"><value>Alışveriş tamamlandı.</value></data>
+  <data name="BV_Stopped" xml:space="preserve"><value>Durduruldu.</value></data>
+  <data name="BV_Unavailable" xml:space="preserve"><value>Başka bir işlem etkin veya istemci hazır değil.</value></data>
+  <data name="BV_BusyClient" xml:space="preserve"><value>Önce mevcut görevi, kuyruğu veya iletişim kutusunu bitirin.</value></data>
+  <data name="BV_NeedLimit" xml:space="preserve"><value>En az bir geçerli farm sınırı etkinleştirin.</value></data>
+  <data name="BV_NoWallet" xml:space="preserve"><value>MGF bakiyesi okunamıyor; durduruldu.</value></data>
+  <data name="BV_NoRole" xml:space="preserve"><value>Parti lideri belirlenemiyor; durduruldu.</value></data>
+  <data name="BV_NoCatalog" xml:space="preserve"><value>Güncel MGF teklifi kullanılamıyor.</value></data>
+  <data name="BV_NoInventory" xml:space="preserve"><value>Envanter doğrulanamıyor; alışveriş durduruldu.</value></data>
+  <data name="BV_NoFunds" xml:space="preserve"><value>Yetersiz MGF; alışveriş durduruldu.</value></data>
+  <data name="BV_NoCapacity" xml:space="preserve"><value>Yetersiz envanter kapasitesi; alışveriş durduruldu.</value></data>
+  <data name="BV_UiMismatch" xml:space="preserve"><value>Beklenmeyen oyun arayüzü; durduruldu.</value></data>
+  <data name="BV_UncertainPurchase" xml:space="preserve"><value>Satın alma sonucu belirsiz; durduruldu. Yeniden yüklemeden önce envanteri ve MGF’yi kontrol edin.</value></data>
+  <data name="BV_UnconfirmedExit" xml:space="preserve"><value>Elenme ve çıkış doğrulanmadı; durduruldu.</value></data>
+  <data name="BV_QueueCancelFailed" xml:space="preserve"><value>Kuyruk iptali doğrulanmadı; durduruldu.</value></data>
+  <data name="BV_PartyLeaveFailed" xml:space="preserve"><value>Partiden ayrılma doğrulanmadı; durduruldu.</value></data>
+  <data name="BV_QuantityMismatch" xml:space="preserve"><value>Eksik miktar teklif miktarına uymuyor; durduruldu.</value></data>
+  <data name="BV_NpcUnavailable" xml:space="preserve"><value>Gerekli NPC kullanılamıyor; durduruldu.</value></data>
+  <data name="BV_TravelUnavailable" xml:space="preserve"><value>Seyahat kullanılamıyor veya reddedildi; durduruldu.</value></data>
+  <data name="BV_Timeout" xml:space="preserve"><value>İşlem zaman aşımına uğradı; durduruldu.</value></data>
+  <data name="BV_SessionChanged" xml:space="preserve"><value>Karakter veya hesap değişti; durduruldu.</value></data>
+  <data name="BV_ActionFailed" xml:space="preserve"><value>İşlem başarısız; eklenti günlüğünü kontrol edin.</value></data>
+  <data name="BV_DialogControl" xml:space="preserve"><value>Otomatik iletişim onayı duraklatılamadı; durduruldu.</value></data>
+  <data name="BV_Buy" xml:space="preserve"><value>Satın al</value></data>
+  <data name="BV_RunLimit" xml:space="preserve"><value>Tur sınırı</value></data>
+  <data name="BV_Runs" xml:space="preserve"><value>Turlar</value></data>
+  <data name="BV_WalletTarget" xml:space="preserve"><value>MGF bakiye hedefi</value></data>
+  <data name="BV_TargetMgf" xml:space="preserve"><value>Hedef MGF</value></data>
+  <data name="BV_AutoShop" xml:space="preserve"><value>Farm bittiğinde alışveriş yap</value></data>
+  <data name="BV_EndingLocation" xml:space="preserve"><value>Alışveriş sonrası konum</value></data>
+  <data name="BV_InnStay" xml:space="preserve"><value>Hiçbir yere gitme</value></data>
+  <data name="BV_Progress" xml:space="preserve"><value>Oturum döngüleri: {0} · MGF: {1}</value></data>
+  <data name="BV_ItemCost" xml:space="preserve"><value>{0} MGF / {1} · Eksik: {2}</value></data>
+  <data name="BV_PurchaseHelp" xml:space="preserve"><value>İstenen / mevcut taşınan envanter. Kaldırmak için 0 girin. Depolar ve yerleştirilmiş mobilyalar sayılmaz.</value></data>
+  <data name="BV_FarmHelp" xml:space="preserve"><value>Liderler kaydolur; üyeler burada bekler. Herkes elenene kadar hareketsiz kalır. Etkin sınırlardan biri farmı bitirir.</value></data>
+  <data name="BV_ReloadHelp" xml:space="preserve"><value>Yeniden yükleme senaryosu: sonraki yükleme hazır olduğunda bir kez çalışır. Seçimi değiştirmek veya Durdur bekleyen çalışmayı iptal eder.</value></data>
+  <data name="BV_ReloadNone" xml:space="preserve"><value>Yeniden yükleme senaryosu yok</value></data>
+  <data name="BV_Remove" xml:space="preserve"><value>Kaldır</value></data>
+  <data name="BV_InnUldah" xml:space="preserve"><value>Ul’dah</value></data>
+  <data name="BV_InnGridania" xml:space="preserve"><value>Gridania</value></data>
+  <data name="BV_InnLimsa" xml:space="preserve"><value>Limsa Lominsa</value></data>
+  <data name="BV_InnIshgard" xml:space="preserve"><value>Ishgard</value></data>
+  <data name="BV_InnCrystarium" xml:space="preserve"><value>Crystarium</value></data>
+  <data name="BV_InnSharlayan" xml:space="preserve"><value>Old Sharlayan</value></data>
+  <data name="BV_InnTuliyollal" xml:space="preserve"><value>Tuliyollal</value></data>
+  <data name="BV_ReviewedPurchase" xml:space="preserve"><value>Envanter ve MGF kontrol edildi; satın alma engelini kaldır</value></data>
+  <data name="BV_CommandHelp" xml:space="preserve"><value>Blunderville'i aç (/bv veya /blunderville). İşlemler: start, stop, buy, debug.</value></data>
+  <data name="BV_ShopTargets" xml:space="preserve"><value>Alışveriş hedefleri</value></data>
+  <data name="BV_AddItem" xml:space="preserve"><value>Eşya ekle…</value></data>
+  <data name="BV_SearchItems" xml:space="preserve"><value>Eşya ara…</value></data>
+  <data name="BV_NoMatchingItems" xml:space="preserve"><value>Eşleşen seçilmemiş eşya yok.</value></data>
+  <data name="BV_EmptyTargets" xml:space="preserve"><value>Eşya seçilmedi.</value></data>
+  <data name="BV_Item" xml:space="preserve"><value>Eşya</value></data>
+  <data name="BV_DesiredCurrent" xml:space="preserve"><value>Hedef / mevcut</value></data>
+  <data name="BV_Outstanding" xml:space="preserve"><value>Eksik</value></data>
+  <data name="BV_EntryLocked" xml:space="preserve"><value>Entrance Square’daki Lewena’dan başlayan Just Crowning Around görevinde ilerleyerek Blunderville Square girişini açın; durduruldu.</value></data>
+  <data name="BV_Wanted" xml:space="preserve"><value>Envanterde istenen miktar. Yalnızca eksik miktar alınır; 0 satın almayı kapatır.</value></data>
+  <data name="BV_OnHand" xml:space="preserve"><value>Dört envanter çantasındaki miktar. Retainer, heybe, konut deposu ve yerleştirilmiş mobilyalar hariçtir.</value></data>
+  <data name="BV_UnitMgf" xml:space="preserve"><value>Bir eşyanın MGF fiyatı.</value></data>
+  <data name="BV_NeededMgf" xml:space="preserve"><value>Bu satırdaki eksik miktar için gereken MGF. Tamamlanan veya kapatılan hedeflerin maliyeti 0’dır.</value></data>
+  <data name="BV_TotalMgf" xml:space="preserve"><value>Toplam gereken MGF: {0}</value></data>
+  <data name="BV_Registered" xml:space="preserve"><value>Kayıtlı veya envanterde</value></data>
+  <data name="BV_NotRegistered" xml:space="preserve"><value>Kayıtlı değil ve envanterde yok</value></data>
+  <data name="BV_PlannedPurchase" xml:space="preserve"><value>Satın alınması planlandı</value></data>
+  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Kayıt veya envanter bilgisi kullanılamıyor</value></data>
+  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Koleksiyonlar: yeşil onay = kayıtlı veya envanterde; kırmızı X = yokluğu doğrulandı; sarı ? = satın alma planlandı; gri ? = durum bilinmiyor. Diğer eşyalar boş gösterilir.</value></data>
 </root>

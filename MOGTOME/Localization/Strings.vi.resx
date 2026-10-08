@@ -2205,7 +2205,7 @@ Ghi kết quả vào log Dalamud.</value>
     <value>TRỢ GIÚP</value>
   </data>
   <data name="Blunderville_FarmingHeading" xml:space="preserve">
-    <value>Không có farm trong bản dựng này.</value>
+    <value>Cày</value>
   </data>
   <data name="Blunderville_FarmingDetail" xml:space="preserve">
     <value>Hiện chưa thể dùng Blunderville Failer để farm tự động.</value>
@@ -2251,4 +2251,82 @@ Ghi kết quả vào log Dalamud.</value>
   <data name="Rotation_BossModSettingsUnconfirmed" xml:space="preserve"><value>Không thể xác nhận cài đặt BossMod. Xem nhật ký plugin để biết thao tác đọc không khả dụng hoặc thao tác ghi bị từ chối.</value></data>
   <data name="Config_BossModCatalogUnavailable" xml:space="preserve"><value>Không thể đọc danh mục thiết lập sẵn; lựa chọn đã lưu được giữ nguyên.</value></data>
   <data name="Config_BossModCatalogEmpty" xml:space="preserve"><value>Không có thiết lập sẵn có thể chọn; lựa chọn đã lưu được giữ nguyên.</value></data>
+  <data name="BV_Idle" xml:space="preserve"><value>Đang nghỉ.</value></data>
+  <data name="BV_Farming" xml:space="preserve"><value>Đang farm Blunderville.</value></data>
+  <data name="BV_Shopping" xml:space="preserve"><value>Đang mua số lượng còn thiếu.</value></data>
+  <data name="BV_ArenaIdle" xml:space="preserve"><value>Đứng yên chờ bị loại.</value></data>
+  <data name="BV_Exiting" xml:space="preserve"><value>Đang rời sau khi bị loại.</value></data>
+  <data name="BV_WaitEntry" xml:space="preserve"><value>Đang chờ vào Blunderville.</value></data>
+  <data name="BV_MemberWait" xml:space="preserve"><value>Thành viên tổ đội: chờ vào tại đây.</value></data>
+  <data name="BV_Registrar" xml:space="preserve"><value>Đang đến nhân viên đăng ký.</value></data>
+  <data name="BV_TravelSquare" xml:space="preserve"><value>Đang đến quảng trường Blunderville.</value></data>
+  <data name="BV_LeavingParty" xml:space="preserve"><value>Đang hủy lượt vào và rời tổ đội.</value></data>
+  <data name="BV_EndingTravel" xml:space="preserve"><value>Đang đến quán trọ đã chọn.</value></data>
+  <data name="BV_FarmDone" xml:space="preserve"><value>Farm hoàn tất.</value></data>
+  <data name="BV_ShopDone" xml:space="preserve"><value>Mua sắm hoàn tất.</value></data>
+  <data name="BV_Stopped" xml:space="preserve"><value>Đã dừng.</value></data>
+  <data name="BV_Unavailable" xml:space="preserve"><value>Một thao tác khác đang chạy hoặc máy khách chưa sẵn sàng.</value></data>
+  <data name="BV_BusyClient" xml:space="preserve"><value>Hãy kết thúc nhiệm vụ, hàng chờ hoặc hộp thoại hiện tại trước.</value></data>
+  <data name="BV_NeedLimit" xml:space="preserve"><value>Bật ít nhất một giới hạn farm hợp lệ.</value></data>
+  <data name="BV_NoWallet" xml:space="preserve"><value>Không đọc được số dư MGF; đã dừng.</value></data>
+  <data name="BV_NoRole" xml:space="preserve"><value>Không xác định được trưởng đội; đã dừng.</value></data>
+  <data name="BV_NoCatalog" xml:space="preserve"><value>Mặt hàng MGF hiện tại không khả dụng.</value></data>
+  <data name="BV_NoInventory" xml:space="preserve"><value>Không xác minh được túi đồ; đã dừng mua.</value></data>
+  <data name="BV_NoFunds" xml:space="preserve"><value>Không đủ MGF; đã dừng mua.</value></data>
+  <data name="BV_NoCapacity" xml:space="preserve"><value>Không đủ chỗ trong túi đồ; đã dừng mua.</value></data>
+  <data name="BV_UiMismatch" xml:space="preserve"><value>Giao diện trò chơi không như dự kiến; đã dừng.</value></data>
+  <data name="BV_UncertainPurchase" xml:space="preserve"><value>Kết quả mua chưa rõ; đã dừng. Kiểm tra túi đồ và MGF trước khi tải lại.</value></data>
+  <data name="BV_UnconfirmedExit" xml:space="preserve"><value>Chưa xác nhận bị loại và rời; đã dừng.</value></data>
+  <data name="BV_QueueCancelFailed" xml:space="preserve"><value>Chưa xác nhận hủy hàng chờ; đã dừng.</value></data>
+  <data name="BV_PartyLeaveFailed" xml:space="preserve"><value>Chưa xác nhận rời tổ đội; đã dừng.</value></data>
+  <data name="BV_QuantityMismatch" xml:space="preserve"><value>Số lượng thiếu không khớp đơn vị trao đổi; đã dừng.</value></data>
+  <data name="BV_NpcUnavailable" xml:space="preserve"><value>NPC cần thiết không khả dụng; đã dừng.</value></data>
+  <data name="BV_TravelUnavailable" xml:space="preserve"><value>Di chuyển không khả dụng hoặc bị từ chối; đã dừng.</value></data>
+  <data name="BV_Timeout" xml:space="preserve"><value>Thao tác hết thời gian; đã dừng.</value></data>
+  <data name="BV_SessionChanged" xml:space="preserve"><value>Nhân vật hoặc tài khoản thay đổi; đã dừng.</value></data>
+  <data name="BV_ActionFailed" xml:space="preserve"><value>Thao tác thất bại; xem nhật ký plugin.</value></data>
+  <data name="BV_DialogControl" xml:space="preserve"><value>Không thể tạm dừng tự động xác nhận hộp thoại; đã dừng.</value></data>
+  <data name="BV_Buy" xml:space="preserve"><value>Mua</value></data>
+  <data name="BV_RunLimit" xml:space="preserve"><value>Giới hạn lượt</value></data>
+  <data name="BV_Runs" xml:space="preserve"><value>Số lượt</value></data>
+  <data name="BV_WalletTarget" xml:space="preserve"><value>Mục tiêu số dư MGF</value></data>
+  <data name="BV_TargetMgf" xml:space="preserve"><value>MGF mục tiêu</value></data>
+  <data name="BV_AutoShop" xml:space="preserve"><value>Mua khi farm kết thúc</value></data>
+  <data name="BV_EndingLocation" xml:space="preserve"><value>Điểm đến sau khi mua</value></data>
+  <data name="BV_InnStay" xml:space="preserve"><value>Không đi đâu</value></data>
+  <data name="BV_Progress" xml:space="preserve"><value>Chu kỳ phiên: {0} · MGF: {1}</value></data>
+  <data name="BV_ItemCost" xml:space="preserve"><value>{0} MGF / {1} · Còn thiếu: {2}</value></data>
+  <data name="BV_PurchaseHelp" xml:space="preserve"><value>Số lượng mong muốn / hiện có trong túi đồ mang theo. Nhập 0 để xóa. Không tính kho và đồ nội thất đã đặt.</value></data>
+  <data name="BV_FarmHelp" xml:space="preserve"><value>Trưởng đội đăng ký; thành viên chờ tại đây. Mọi người đứng yên đến khi bị loại. Đạt một giới hạn đã bật sẽ kết thúc farm.</value></data>
+  <data name="BV_ReloadHelp" xml:space="preserve"><value>Kịch bản tải lại: chạy một lần khi lần tải tiếp theo sẵn sàng. Đổi lựa chọn hoặc Dừng sẽ hủy lượt chạy đang chờ.</value></data>
+  <data name="BV_ReloadNone" xml:space="preserve"><value>Không có kịch bản tải lại</value></data>
+  <data name="BV_Remove" xml:space="preserve"><value>Xóa</value></data>
+  <data name="BV_InnUldah" xml:space="preserve"><value>Ul’dah</value></data>
+  <data name="BV_InnGridania" xml:space="preserve"><value>Gridania</value></data>
+  <data name="BV_InnLimsa" xml:space="preserve"><value>Limsa Lominsa</value></data>
+  <data name="BV_InnIshgard" xml:space="preserve"><value>Ishgard</value></data>
+  <data name="BV_InnCrystarium" xml:space="preserve"><value>Crystarium</value></data>
+  <data name="BV_InnSharlayan" xml:space="preserve"><value>Old Sharlayan</value></data>
+  <data name="BV_InnTuliyollal" xml:space="preserve"><value>Tuliyollal</value></data>
+  <data name="BV_ReviewedPurchase" xml:space="preserve"><value>Đã kiểm tra túi đồ và MGF; bỏ chặn mua</value></data>
+  <data name="BV_CommandHelp" xml:space="preserve"><value>Mở Blunderville (/bv hoặc /blunderville). Thao tác: start, stop, buy, debug.</value></data>
+  <data name="BV_ShopTargets" xml:space="preserve"><value>Mục tiêu mua sắm</value></data>
+  <data name="BV_AddItem" xml:space="preserve"><value>Thêm vật phẩm…</value></data>
+  <data name="BV_SearchItems" xml:space="preserve"><value>Tìm vật phẩm…</value></data>
+  <data name="BV_NoMatchingItems" xml:space="preserve"><value>Không có vật phẩm chưa chọn phù hợp.</value></data>
+  <data name="BV_EmptyTargets" xml:space="preserve"><value>Chưa chọn vật phẩm.</value></data>
+  <data name="BV_Item" xml:space="preserve"><value>Vật phẩm</value></data>
+  <data name="BV_DesiredCurrent" xml:space="preserve"><value>Mục tiêu / hiện có</value></data>
+  <data name="BV_Outstanding" xml:space="preserve"><value>Còn thiếu</value></data>
+  <data name="BV_EntryLocked" xml:space="preserve"><value>Mở khóa lối vào Blunderville Square qua nhiệm vụ Just Crowning Around, bắt đầu với Lewena tại Entrance Square; đã dừng.</value></data>
+  <data name="BV_Wanted" xml:space="preserve"><value>Số lượng mong muốn trong túi. Chỉ mua phần còn thiếu; 0 tắt mua vật phẩm.</value></data>
+  <data name="BV_OnHand" xml:space="preserve"><value>Số lượng trong bốn túi đồ thường. Không gồm retainer, túi yên, kho nhà và đồ nội thất đã đặt.</value></data>
+  <data name="BV_UnitMgf" xml:space="preserve"><value>Giá MGF cho một vật phẩm.</value></data>
+  <data name="BV_NeededMgf" xml:space="preserve"><value>MGF cần cho số lượng còn thiếu ở dòng này. Mục tiêu đã đủ hoặc đã tắt có giá 0.</value></data>
+  <data name="BV_TotalMgf" xml:space="preserve"><value>Tổng MGF cần: {0}</value></data>
+  <data name="BV_Registered" xml:space="preserve"><value>Đã đăng ký hoặc có trong túi đồ</value></data>
+  <data name="BV_NotRegistered" xml:space="preserve"><value>Chưa đăng ký và không có trong túi đồ</value></data>
+  <data name="BV_PlannedPurchase" xml:space="preserve"><value>Đã lên kế hoạch mua</value></data>
+  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Không có thông tin đăng ký hoặc túi đồ</value></data>
+  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Vật phẩm đăng ký: dấu kiểm xanh = đã đăng ký hoặc có trong túi; X đỏ = xác nhận chưa có; ? vàng = dự định mua; ? xám = chưa rõ trạng thái. Vật phẩm khác để trống.</value></data>
 </root>

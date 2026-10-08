@@ -105,7 +105,7 @@ public class MainWindow : Window, IDisposable
     }
 
     public override void PostDraw()
-        { windowMotion.Restore(this); plugin.Appearance.PaintWindowTitleWithButtons(this); }
+        { windowMotion.Restore(this); plugin.Appearance.PaintBrandTitle(this); }
 
     private void StartFromMain()
     {
