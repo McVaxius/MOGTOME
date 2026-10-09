@@ -300,13 +300,8 @@ public class RotationService : IDisposable
             configManager.GetActiveConfig().CombatProvider != CombatProvider.Rsr)
             return;
 
-        if (!EnableRsr())
-        {
-            log.Warning("[MOGTOME][Rotation] RSR Auto reactivation after internal map transition failed");
-            return;
-        }
+        ReassertRsrCombat("internal map transition");
         rsrRecoveryCommandSuppressedUntilUtc = DateTime.UtcNow + RsrRecoveryCommandSuppression;
-        log.Information("[MOGTOME][Rotation] Reissued RSR Auto after internal map transition");
     }
 
     public bool DisableRotationForDutyEnd(string reason)
@@ -347,28 +342,8 @@ public class RotationService : IDisposable
 
         lastRsrHealthProbeUtc = now;
 
-        if (!bossModIPC.TryGetRsrOperatingMode(out var mode, out var detail))
-        {
-            LogRsrReflectionFailure(detail, now, reason);
-            return;
-        }
-
-        if (mode != RsrOperatingMode.Off)
-        {
-            return;
-        }
-
-        if (now < rsrRecoveryCommandSuppressedUntilUtc)
-            return;
-
-        if (!EnableRsr())
-        {
-            Fail(Ui.M("Rotation_RSRHealthRecoveryFailed", reason));
-            rsrRecoveryCommandSuppressedUntilUtc = now + RsrRecoveryCommandSuppression;
-            return;
-        }
+        ReassertRsrCombat("periodic duty recovery");
         rsrRecoveryCommandSuppressedUntilUtc = now + RsrRecoveryCommandSuppression;
-        log.Warning($"[MOGTOME][Rotation] RSR health check recovered confirmed Off state: {detail} ({reason})");
     }
 
     private bool DisableEnabledComponents()
@@ -491,6 +466,30 @@ public class RotationService : IDisposable
         appliedPresetSettings = CurrentPresetSettings(config);
         settingsPending = false;
         return !rotationDisableSentForDuty;
+    }
+
+    private void ReassertRsrCombat(string reason)
+    {
+        // RSR and the owned BossMod AI are independent setters. A failed ON request
+        // must never stop the other component or tear down the prepared preset.
+        if (rotationDisableSentForDuty || sessionEnded ||
+            configManager.GetActiveConfig().CombatProvider != CombatProvider.Rsr ||
+            preparedConfig is null || !MatchesPreparedSession(configManager.GetActiveConfig()))
+            return;
+
+        var rsrEnabled = EnableRsr();
+        var command = preparedBossMod switch
+        {
+            CombatProvider.Bmr => "/bmrai on",
+            CombatProvider.Vbm => "/vbmai on",
+            _ => null,
+        };
+        var aiEnabled = command is not null && bossModIPC.IsOwnedProviderCurrent &&
+            bossModIPC.SendCommand(command, $"reassert BossMod AI ({reason})");
+        if (!rsrEnabled || !aiEnabled)
+            log.Warning($"[MOGTOME][Rotation] Combat reassertion incomplete ({reason}): RSR={rsrEnabled}, BossModAI={aiEnabled}");
+        else
+            log.Information($"[MOGTOME][Rotation] Reissued RSR Auto and BossMod AI on ({reason})");
     }
 
     private bool EnableRsr()
