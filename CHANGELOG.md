@@ -1,3 +1,7 @@
+2026-10-08 - Dedicated Window appearance settings (I505)
+
+- Move colour, language, compact mode and transparency controls into their own settings tab or sidebar page. Retain the existing controls, native IDs, saved preferences and actions; keep normal settings visible without an appearance block above them. Versions and client configuration are unchanged. Local build checks and game visual acceptance are recorded separately in the selected task checkpoint.
+
 2026-10-08 - Shopping list CLEAR and Moogle menu fix
 
 - Add CLEAR to the Moogle and Blunderville lists. Reset only desired quantities for the active account, retain every catalog row and ownership indicator, and disable clearing during queued or active automation.

@@ -152,20 +152,14 @@ public class ConfigWindow : Window, IDisposable
 
         DrawCombatRotationSelector("ConfigHeader");
         ImGui.Separator();
-        AethertekUI.MaterialText.Text(Ui.T("Window appearance"));
-        ImGui.Separator();
-        plugin.Appearance.DrawSelector("settingsAppearance");
-        plugin.Appearance.DrawCompact(Ui.L("Ui_CompactMode"));
-        plugin.Appearance.DrawWindowSettings();
-        ImGui.Separator();
-
         bool BeginTab(string key, ImGuiTabItemFlags flags = ImGuiTabItemFlags.None)
         {
             ImGui.SetNextItemWidth(MathF.Ceiling(AethertekUI.MaterialText.Measure(Ui.T(key)).X + ImGui.GetStyle().FramePadding.X * 2 + 2 * ImGuiHelpers.GlobalScale));
             return UiLayout.BeginTabItem(Ui.L(key), flags);
         }
 
-        if (UiLayout.BeginTabBar("ConfigTabs", new[] { "Config_SetupWizard", "Config_DependencyCheck", "Config_Party", "Config_Duty", "Config_FoodPots", "Config_Repair", "Config_Advanced" }.Select(key=>Ui.T(key)).ToArray(), ImGuiTabBarFlags.FittingPolicyScroll))
+        var appearanceRoot = ImGui.GetID("");
+        if (UiLayout.BeginTabBar("ConfigTabs", new[] { "Config_SetupWizard", "Config_DependencyCheck", "Config_Party", "Config_Duty", "Config_FoodPots", "Config_Repair", "Window appearance", "Config_Advanced" }.Select(key=>Ui.T(key)).ToArray(), ImGuiTabBarFlags.FittingPolicyScroll))
         {
             var currentAccountId = plugin.ConfigManager.CurrentAccountId;
             if (!string.Equals(setupWizardAccountId, currentAccountId, StringComparison.Ordinal))
@@ -228,6 +222,17 @@ public class ConfigWindow : Window, IDisposable
                 ImGui.EndTabItem();
             }
 
+            if (BeginTab("Window appearance", ImGuiTabItemFlags.NoPushId))
+            {
+                ImGuiP.PushOverrideID(appearanceRoot);
+                try
+                {
+                    plugin.Appearance.DrawSelector("settingsAppearance");
+                    plugin.Appearance.DrawCompact(Ui.L("Ui_CompactMode"));
+                    plugin.Appearance.DrawWindowSettings();
+                }
+                finally { ImGui.PopID(); ImGui.EndTabItem(); }
+            }
             ImGui.EndTabBar();
         }
 
