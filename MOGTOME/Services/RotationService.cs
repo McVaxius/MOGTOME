@@ -224,6 +224,7 @@ public class RotationService : IDisposable
         rotationEnableSentForDuty = false;
         rotationDisableSentForDuty = false;
         ResetRsrHealthState();
+        rsrMapTransitionPending = false;
         log.Debug($"[MOGTOME][Rotation] Reset duty rotation lifecycle state ({reason})");
     }
 
@@ -274,6 +275,38 @@ public class RotationService : IDisposable
         Failure = string.Empty;
         log.Information($"[MOGTOME][Rotation] enabled selected combat provider once per duty: {provider} ({reason})");
         return true;
+    }
+
+    private bool rsrMapTransitionPending;
+    private uint rsrMapTransitionTerritory;
+
+    internal void ObserveRsrMapTransition(bool betweenAreas, bool inDuty, bool playerAlive, uint territoryId)
+    {
+        if (betweenAreas)
+        {
+            if (!rsrMapTransitionPending && rotationEnableSentForDuty && !rotationDisableSentForDuty &&
+                !sessionEnded && inDuty && configManager.GetActiveConfig().CombatProvider == CombatProvider.Rsr)
+            {
+                rsrMapTransitionPending = true;
+                rsrMapTransitionTerritory = territoryId;
+            }
+            return;
+        }
+
+        if (!rsrMapTransitionPending) return;
+        rsrMapTransitionPending = false;
+        if (!inDuty || !playerAlive || territoryId != rsrMapTransitionTerritory ||
+            !rotationEnableSentForDuty || rotationDisableSentForDuty || sessionEnded ||
+            configManager.GetActiveConfig().CombatProvider != CombatProvider.Rsr)
+            return;
+
+        if (!EnableRsr())
+        {
+            log.Warning("[MOGTOME][Rotation] RSR Auto reactivation after internal map transition failed");
+            return;
+        }
+        rsrRecoveryCommandSuppressedUntilUtc = DateTime.UtcNow + RsrRecoveryCommandSuppression;
+        log.Information("[MOGTOME][Rotation] Reissued RSR Auto after internal map transition");
     }
 
     public bool DisableRotationForDutyEnd(string reason)

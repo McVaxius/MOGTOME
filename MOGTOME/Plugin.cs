@@ -773,6 +773,12 @@ public sealed class Plugin : IDalamudPlugin
         {
             Engine.Update();
         }
+        RotationService.ObserveRsrMapTransition(
+            Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas] ||
+            Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas51],
+            Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BoundByDuty] && Engine?.IsRunning == true,
+            !Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.Unconscious],
+            ClientState.TerritoryType);
         DadIpcService.Update();
         MoogleShop.Update();
         Blunderville.Update();
