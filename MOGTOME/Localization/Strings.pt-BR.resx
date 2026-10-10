@@ -2373,6 +2373,6 @@ Use /ads mini para ativar ou desativar AutoDuty manualmente.</value></data>
   <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>Não é possível verificar a disponibilidade da oferta. Atualize o catálogo antes de comprar.</value></data>
   <data name="Transparency visible on main window" xml:space="preserve"><value>Mostrar transparência na janela principal</value></data>
   <data name="Shop_SelectMissing" xml:space="preserve"><value>Selecionar faltantes</value></data>
-  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Seleciona colecionáveis que o jogo confirma não registrados, sem cópias carregadas ou conhecidas no armazenamento. Mantém metas maiores; não compra nem viaja. Ignora registro ou disponibilidade desconhecidos. Equipamentos exigem ausência verificada e origem PvP; os demais, incluindo saques de masmorras, são selecionados manualmente.</value></data>
+  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Seleciona colecionáveis confirmados não registrados, sem cópias carregadas ou conhecidas no armazenamento. Mantém metas maiores; não compra nem viaja. Ignora registro ou disponibilidade desconhecidos. Equipamentos exigem ausência verificada e origem PvP, loja ou evento confirmada. Saques de masmorras são excluídos; equipamentos de origem desconhecida são selecionados manualmente.</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>Adicionados: {0}. Ignorados por dados desconhecidos: posse {1}, origem do equipamento {2}, disponibilidade {3}.</value></data>
 </root>

@@ -1,3 +1,11 @@
+2026-10-10 - Recheck duty selection after queue interruptions
+
+- Read the current checked regular-duty entry before deciding whether to re-select Praetorium or Decumana. An earlier queue confirmation no longer skips re-selection after Stop/Start or the repair recovery wait clears a checkbox. Preserve the final registration guards and cancellation behavior.
+
+2026-10-10 - Verified current shop gear sources
+
+- Classify the current event's five shop/event garments for Select Missing and exclude its three dungeon coats using verified acquisition records. Preserve native PvP-source detection, larger targets and strict equipment-absence checks. Future gear without verified sources remains skipped; selection does not buy or travel.
+
 2026-10-10 - Fix unregistered collectible selection
 
 - Fix Select Missing adding nothing when the game confirms an unregistered collectible but XADB cannot certify complete storage absence. Both shops now use the native registration result for manual collectible selection; known inventory/storage copies still take precedence. Unavailable native registration and unproven equipment absence remain skipped. Selection does not buy or travel.

@@ -2223,6 +2223,6 @@ Use /ads mini to enable or disable AutoDuty manually.</value></data>
   <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>Offer eligibility is unavailable. Refresh the catalog before buying.</value></data>
   <data name="Transparency visible on main window" xml:space="preserve"><value>Transparency visible on main window</value></data>
   <data name="Shop_SelectMissing" xml:space="preserve"><value>Select Missing</value></data>
-  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Selects collectibles the game confirms unregistered when no carried or known stored copy exists. Keeps larger targets; never buys or travels. Skips unavailable registration or eligibility. Equipment needs verified absence and a PvP source; other gear, including dungeon drops, stays manual.</value></data>
+  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Selects collectibles confirmed unregistered, with no carried or known stored copy. Keeps larger targets; never buys or travels. Skips unknown registration or eligibility. Equipment requires verified absence and a verified PvP, shop or event source. Dungeon drops are excluded; unknown gear sources stay manual.</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>Added {0}. Skipped unknowns: ownership {1}, gear source {2}, eligibility {3}.</value></data>
 </root>

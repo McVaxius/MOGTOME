@@ -2373,6 +2373,6 @@ AutoDuty'yi elle etkinleştirmek veya devre dışı bırakmak için /ads mini ku
   <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>Teklifin kullanılabilirliği doğrulanamıyor. Satın almadan önce kataloğu yenileyin.</value></data>
   <data name="Transparency visible on main window" xml:space="preserve"><value>Ana pencerede saydamlığı göster</value></data>
   <data name="Shop_SelectMissing" xml:space="preserve"><value>Eksikleri seç</value></data>
-  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Oyunun kayıtsız olduğunu doğruladığı, taşınan veya depoda bilinen kopyası olmayan koleksiyon öğelerini seçer. Daha büyük hedefleri korur; satın alma veya seyahat başlatmaz. Kayıt veya satın alma koşulları bilinmeyen öğeleri atlar. Ekipman için doğrulanmış yokluk ve PvP kaynağı gerekir; zindan ganimetleri dahil diğerleri elle seçilir.</value></data>
+  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Kayıtsız olduğu doğrulanan, taşınan veya depoda bilinen kopyası olmayan koleksiyon öğelerini seçer. Daha büyük hedefleri korur; satın alma veya seyahat başlatmaz. Kayıt veya satın alma koşulları bilinmeyen öğeleri atlar. Ekipman için doğrulanmış yokluk ve doğrulanmış PvP, mağaza veya etkinlik kaynağı gerekir. Zindan ganimetleri hariçtir; kaynağı bilinmeyen ekipman elle seçilir.</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>Eklendi: {0}. Bilinmeyen veriler nedeniyle atlandı: sahiplik {1}, ekipman kaynağı {2}, satın alma koşulları {3}.</value></data>
 </root>

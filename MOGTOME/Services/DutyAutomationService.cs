@@ -880,20 +880,24 @@ public sealed class DutyAutomationService
                 return;
             }
 
-            var selectionRequired = IsDutySelectionRequired(targetDuty);
-            log.Information($"[MOGTOME][DutyQueue] Operation {operationId}: ContentsFinder stable-visible for {dutyName}; running {GetSequenceLabel(targetDuty, selectionRequired)}");
             await Task.Delay(AdsInitialSettleDelayMs).ConfigureAwait(false);
 
             if (!IsCurrentAdsQueueOperation(operationId))
                 return;
 
+            var selectionRequired = await GameHelpers.RunOnFrameworkThreadAsync(() =>
+                IsCurrentAdsQueueOperation(operationId) && IsDutySelectionRequired(targetDuty, ReadSelectedRegularDutyId())).ConfigureAwait(false);
+            if (!IsCurrentAdsQueueOperation(operationId))
+                return;
+
+            log.Information($"[MOGTOME][DutyQueue] Operation {operationId}: ContentsFinder stable-visible for {dutyName}; running {GetSequenceLabel(targetDuty, selectionRequired)}");
             var selectionDebugText = selectionRequired
                 ? $", targetCfc={GetContentFinderConditionId(targetDuty == SelectedMogtomeDuty.Praetorium)}"
-                : ", selected duty already confirmed";
+                : ", current native selection confirmed";
 
             if (selectionRequired)
             {
-                log.Information($"[MOGTOME][DutyQueue] Operation {operationId}: target duty changed; selecting {GetShortDutyName(targetDuty)} before direct registration");
+                log.Information($"[MOGTOME][DutyQueue] Operation {operationId}: current selection needs {GetShortDutyName(targetDuty)} before direct registration");
                 if (!await RunAdsDutySelectionSequenceAsync(operationId, targetDuty, dutyName).ConfigureAwait(false))
                 {
                     log.Warning($"[MOGTOME][DutyQueue] Operation {operationId}: {dutyName} selection sequence aborted; queue watchdog will retry");
@@ -1292,13 +1296,18 @@ public sealed class DutyAutomationService
             Interlocked.Increment(ref adsQueueOperationId);
     }
 
-    private bool IsDutySelectionRequired(SelectedMogtomeDuty targetDuty)
+    private static unsafe uint? ReadSelectedRegularDutyId()
     {
-        lock (adsQueueStateLock)
-        {
-            return lastConfirmedSelectedDuty != targetDuty;
-        }
+        var agent = AgentContentsFinder.Instance();
+        if (agent == null || agent->SelectedContent.Count != 1 || agent->SelectedContent.First == null)
+            return null;
+
+        var selected = agent->SelectedContent[0];
+        return selected.ContentType == ContentsType.Regular ? selected.Id : null;
     }
+
+    private bool IsDutySelectionRequired(SelectedMogtomeDuty targetDuty, uint? selectedDutyId)
+        => selectedDutyId != GetContentFinderConditionId(targetDuty == SelectedMogtomeDuty.Praetorium);
 
     private SelectedMogtomeDuty GetLastConfirmedSelectedDuty()
     {

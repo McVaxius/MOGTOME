@@ -5,7 +5,7 @@ using System.Linq;
 namespace MOGTOME.Models;
 
 public enum MoogleShopCity { Limsa, Uldah, Gridania }
-internal enum ShopMissingKind { None, Collectible, PvpEquipment, UnknownEquipment }
+internal enum ShopMissingKind { None, Collectible, PvpEquipment, UnknownEquipment, ShopEquipment }
 
 public sealed class MoogleShopSettings
 {

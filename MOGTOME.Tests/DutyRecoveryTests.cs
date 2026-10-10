@@ -146,6 +146,39 @@ public sealed class DutyRecoveryTests
         => Assert.Equal(allowed, DutyAutomationService.IsIntendedSelection(expected, count, regular, selected));
 
     [Fact]
+    public void UncheckedDutyIsReselectedAfterStopAndRepairRecoveryDespiteCachedConfirmation()
+    {
+        using var run = new Run();
+        var targetType = typeof(DutyAutomationService).GetNestedType("SelectedMogtomeDuty", BindingFlags.NonPublic)!;
+        var praetorium = Enum.Parse(targetType, "Praetorium");
+        var decumana = Enum.Parse(targetType, "Decumana");
+        bool NeedsSelection(object target, uint? current)
+            => (bool)Invoke(run.Automation, "IsDutySelectionRequired", target, current!)!;
+
+        for (var attempt = 0; attempt < 3; attempt++)
+        {
+            run.Automation.ConfirmQueueRegistration(true);
+            run.Engine.Stop();
+            // The checkbox can be cleared while stopped; the earlier confirmation survives.
+            Assert.True(NeedsSelection(praetorium, null));
+            Assert.False(NeedsSelection(praetorium, 16));
+            Assert.True(NeedsSelection(praetorium, 830));
+
+            run.Automation.ConfirmQueueRegistration(true);
+            Invoke(run.Engine, "BeginQueueRecovery", "test cancelled registration");
+            Assert.True(NeedsSelection(praetorium, null));
+            Assert.False(NeedsSelection(praetorium, 16));
+        }
+
+        // Current checked entries also take precedence over a different cached target.
+        run.Automation.ConfirmQueueRegistration(false);
+        Assert.False(NeedsSelection(praetorium, 16));
+        Assert.True(NeedsSelection(decumana, 16));
+        Assert.False(NeedsSelection(decumana, 830));
+        Assert.True(NeedsSelection(decumana, null));
+    }
+
+    [Fact]
     public void StopContinuesCleanupAfterBackendExceptionAndInvalidatesLeaveCallbacks()
     {
         using var run = new Run();

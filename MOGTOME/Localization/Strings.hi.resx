@@ -2389,6 +2389,6 @@ AutoDuty को मैन्युअल रूप से चालू या �
   <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>प्रस्ताव की उपलब्धता की पुष्टि नहीं हो सकी। खरीदने से पहले सूची रीफ़्रेश करें।</value></data>
   <data name="Transparency visible on main window" xml:space="preserve"><value>मुख्य विंडो में पारदर्शिता दिखाएँ</value></data>
   <data name="Shop_SelectMissing" xml:space="preserve"><value>गुम वस्तुएँ चुनें</value></data>
-  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>खेल द्वारा अपंजीकृत पुष्ट संग्रहणीय वस्तुएँ चुनता है, जब साथ रखी या भंडार में ज्ञात प्रति न हो। बड़े लक्ष्य बने रहते हैं; खरीद या यात्रा शुरू नहीं होती। अज्ञात पंजीकरण या खरीद की शर्तों को छोड़ता है। उपकरण के लिए पुष्ट अनुपस्थिति और PvP स्रोत चाहिए; डंजन की लूट सहित अन्य उपकरण हाथ से चुने जाते हैं।</value></data>
+  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>अपंजीकृत पुष्ट संग्रहणीय वस्तुएँ चुनता है, जब साथ रखी या भंडार में ज्ञात प्रति न हो। बड़े लक्ष्य बने रहते हैं; खरीद या यात्रा शुरू नहीं होती। अज्ञात पंजीकरण या खरीद की शर्तें छोड़ता है। उपकरण के लिए पुष्ट अनुपस्थिति और सत्यापित PvP, दुकान या इवेंट स्रोत चाहिए। डंजन की लूट शामिल नहीं होती; अज्ञात स्रोत वाले उपकरण हाथ से चुने जाते हैं।</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>जोड़े: {0}। अज्ञात जानकारी के कारण छोड़े: स्वामित्व {1}, उपकरण का स्रोत {2}, खरीद की शर्तें {3}.</value></data>
 </root>
