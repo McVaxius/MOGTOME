@@ -2222,4 +2222,7 @@ Path: {0}
   <data name="Shop_Locked" xml:space="preserve"><value>所选商品受任务、成就、副本或活动条件限制。</value></data>
   <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>无法确认商品的购买条件。购买前请刷新目录。</value></data>
   <data name="Transparency visible on main window" xml:space="preserve"><value>在主窗口显示透明度</value></data>
+  <data name="Shop_SelectMissing" xml:space="preserve"><value>选择缺失物品</value></data>
+  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>将已确认缺失的收藏品和已核实的PvP装备的目标数量设为至少1。保留更大的目标，不会开始购买或移动。跳过持有情况或购买条件未知的物品，以及来源未核实的装备（包括副本掉落）。</value></data>
+  <data name="Shop_SelectMissingResult" xml:space="preserve"><value>已添加 {0}。因信息未知跳过：持有 {1}，装备来源 {2}，购买条件 {3}。</value></data>
 </root>

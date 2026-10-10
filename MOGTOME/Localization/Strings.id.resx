@@ -2372,4 +2372,7 @@ Gunakan /ads mini untuk mengaktifkan atau menonaktifkan AutoDuty secara manual.<
   <data name="Shop_Locked" xml:space="preserve"><value>Penawaran yang dipilih terkunci oleh syarat misi, pencapaian, konten, atau acara.</value></data>
   <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>Ketersediaan penawaran belum dapat dipastikan. Segarkan katalog sebelum membeli.</value></data>
   <data name="Transparency visible on main window" xml:space="preserve"><value>Tampilkan transparansi di jendela utama</value></data>
+  <data name="Shop_SelectMissing" xml:space="preserve"><value>Pilih yang belum dimiliki</value></data>
+  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Menetapkan target minimal satu untuk koleksi yang belum dimiliki dan perlengkapan PvP terverifikasi. Target lebih besar tetap dipertahankan; tidak membeli atau bepergian. Melewati kepemilikan atau syarat pembelian yang tidak diketahui serta perlengkapan tanpa sumber terverifikasi, termasuk hasil dungeon.</value></data>
+  <data name="Shop_SelectMissingResult" xml:space="preserve"><value>Ditambahkan: {0}. Dilewati karena belum diketahui: kepemilikan {1}, sumber perlengkapan {2}, syarat pembelian {3}.</value></data>
 </root>

@@ -2372,4 +2372,7 @@ AutoDuty'yi elle etkinleştirmek veya devre dışı bırakmak için /ads mini ku
   <data name="Shop_Locked" xml:space="preserve"><value>Seçili bir teklif görev, başarım, içerik veya etkinlik koşulu nedeniyle kilitli.</value></data>
   <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>Teklifin kullanılabilirliği doğrulanamıyor. Satın almadan önce kataloğu yenileyin.</value></data>
   <data name="Transparency visible on main window" xml:space="preserve"><value>Ana pencerede saydamlığı göster</value></data>
+  <data name="Shop_SelectMissing" xml:space="preserve"><value>Eksikleri seç</value></data>
+  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Eksik koleksiyon öğeleri ve doğrulanmış PvP ekipmanı için hedefi en az bir yapar. Daha büyük hedefleri korur; satın alma veya seyahat başlatmaz. Sahiplik veya satın alma koşulları bilinmeyen öğeleri ve zindan ganimetleri dahil kaynağı doğrulanmamış ekipmanı atlar.</value></data>
+  <data name="Shop_SelectMissingResult" xml:space="preserve"><value>Eklendi: {0}. Bilinmeyen veriler nedeniyle atlandı: sahiplik {1}, ekipman kaynağı {2}, satın alma koşulları {3}.</value></data>
 </root>

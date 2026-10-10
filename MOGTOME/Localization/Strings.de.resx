@@ -2216,4 +2216,7 @@ Mit /ads mini kannst du AutoDuty manuell aktivieren oder deaktivieren.</value></
   <data name="Shop_Locked" xml:space="preserve"><value>Ein ausgewähltes Angebot ist durch eine Quest-, Errungenschafts-, Inhalts- oder Eventvoraussetzung gesperrt.</value></data>
   <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>Die Verfügbarkeit des Angebots ist unbekannt. Aktualisiere den Katalog vor dem Kauf.</value></data>
   <data name="Transparency visible on main window" xml:space="preserve"><value>Transparenz im Hauptfenster anzeigen</value></data>
+  <data name="Shop_SelectMissing" xml:space="preserve"><value>Fehlende auswählen</value></data>
+  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Setzt fehlende Sammlerstücke und bestätigte PvP-Ausrüstung auf mindestens eins. Höhere Ziele bleiben erhalten; kein Kauf und keine Reise. Unbekannter Besitz, unbekannte Verfügbarkeit und Ausrüstung ohne bestätigte Quelle, einschließlich Dungeon-Beute, werden übersprungen.</value></data>
+  <data name="Shop_SelectMissingResult" xml:space="preserve"><value>Hinzugefügt: {0}. Unbekannt übersprungen: Besitz {1}, Ausrüstungsquelle {2}, Verfügbarkeit {3}.</value></data>
 </root>

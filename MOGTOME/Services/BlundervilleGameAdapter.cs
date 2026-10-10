@@ -5,6 +5,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
+using AethertekUI.Dalamud;
 using Dalamud.Game;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.Types;
@@ -26,6 +27,7 @@ namespace MOGTOME.Services;
 internal sealed record BlundervilleOffer(uint ShopId, uint ItemId, uint ReceiveCount, uint Price, string ShopName)
 {
     internal ShopOfferGate Gate { get; init; } = new();
+    internal ShopMissingKind MissingKind { get; init; }
 }
 internal enum BlundervilleRegistration { None, Owned, Missing, Unknown }
 
@@ -81,7 +83,9 @@ internal sealed unsafe class BlundervilleGameAdapter
                 }
             }
         }
-        Catalog = offers.Where(o => linkedShops.Contains(o.ShopId)).Distinct().ToArray();
+        var pvpItems = ShopMissingSelection.ReadPvpItems();
+        Catalog = offers.Where(o => linkedShops.Contains(o.ShopId)).Distinct()
+            .Select(o => o with { MissingKind = ShopMissingSelection.ReadKind(o.ItemId, pvpItems) }).ToArray();
         Plugin.Log.Information("[MOGTOME][BV] catalog offers={Offers}, MGF candidates={Candidates}, trader shops={Shops}, npc names={Names}, npc identities={Npcs}",
             Catalog.Count, offers.Count, linkedShops.Count, npcIds.Count, npcIds.Values.Sum(ids => ids.Count));
         var registrationStates = new List<BlundervilleRegistration>();
@@ -155,16 +159,25 @@ internal sealed unsafe class BlundervilleGameAdapter
         return inventoryCount.HasValue && unlockStatus == 2 ? BlundervilleRegistration.Missing : BlundervilleRegistration.Unknown;
     }
 
-    internal static BlundervilleRegistration Ownership(uint itemId, int? inventoryCount, ISet<uint> storedOwned)
+    internal static BlundervilleRegistration Ownership(uint itemId, int? inventoryCount, XaItemOwnershipState stored)
     {
         if (!Plugin.DataManager.GetExcelSheet<Item>().TryGetRow(itemId, out var item)) return BlundervilleRegistration.None;
         var registration = Registration(itemId, inventoryCount);
         var collectible = registration != BlundervilleRegistration.None || item.EquipSlotCategory.RowId != 0;
+        return ReadOwnership(collectible, inventoryCount, registration, stored);
+    }
+
+    internal static BlundervilleRegistration ReadOwnership(bool collectible, int? inventoryCount,
+        BlundervilleRegistration registration, XaItemOwnershipState stored)
+    {
         if (!collectible) return BlundervilleRegistration.None;
-        if (inventoryCount > 0 || registration == BlundervilleRegistration.Owned || storedOwned.Contains(itemId))
-            return BlundervilleRegistration.Owned;
-        // Native registration absence alone does not rule out an unregistered copy in storage.
-        return BlundervilleRegistration.Unknown;
+        var absenceKnown = inventoryCount == 0 && registration is BlundervilleRegistration.None or BlundervilleRegistration.Missing;
+        return XaItemOwnership.Resolve(inventoryCount > 0 || registration == BlundervilleRegistration.Owned, absenceKnown, stored) switch
+        {
+            XaItemOwnershipState.Owned => BlundervilleRegistration.Owned,
+            XaItemOwnershipState.Missing => BlundervilleRegistration.Missing,
+            _ => BlundervilleRegistration.Unknown,
+        };
     }
 
 

@@ -5,6 +5,7 @@ using System.Linq;
 namespace MOGTOME.Models;
 
 public enum MoogleShopCity { Limsa, Uldah, Gridania }
+internal enum ShopMissingKind { None, Collectible, PvpEquipment, UnknownEquipment }
 
 public sealed class MoogleShopSettings
 {
@@ -19,6 +20,7 @@ internal sealed record MoogleShopOffer(uint ShopId, string ShopName, uint ItemId
     uint TomestoneId, MoogleShopCost[] Costs)
 {
     internal ShopOfferGate Gate { get; init; } = new();
+    internal ShopMissingKind MissingKind { get; init; }
 }
 
 internal sealed record TomestoneStack(int Bag, ushort Slot, uint ItemId, uint Quantity, bool Mergeable = true);

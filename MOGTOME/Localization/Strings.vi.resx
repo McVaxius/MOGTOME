@@ -2372,4 +2372,7 @@ Dùng /ads mini để bật hoặc tắt AutoDuty thủ công.</value></data>
   <data name="Shop_Locked" xml:space="preserve"><value>Một ưu đãi đã chọn bị khóa bởi yêu cầu nhiệm vụ, thành tựu, nội dung hoặc sự kiện.</value></data>
   <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>Chưa xác minh được điều kiện mua. Hãy làm mới danh mục trước khi mua.</value></data>
   <data name="Transparency visible on main window" xml:space="preserve"><value>Hiện độ trong suốt trên cửa sổ chính</value></data>
+  <data name="Shop_SelectMissing" xml:space="preserve"><value>Chọn món còn thiếu</value></data>
+  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Đặt mục tiêu ít nhất một cho vật phẩm sưu tầm còn thiếu và trang bị PvP đã xác minh. Giữ mục tiêu lớn hơn; không mua hay di chuyển. Bỏ qua sở hữu hoặc điều kiện mua chưa rõ và trang bị chưa xác minh nguồn, gồm đồ rơi trong phó bản.</value></data>
+  <data name="Shop_SelectMissingResult" xml:space="preserve"><value>Đã thêm {0}. Bỏ qua do chưa rõ: sở hữu {1}, nguồn trang bị {2}, điều kiện mua {3}.</value></data>
 </root>

@@ -2388,4 +2388,7 @@ AutoDuty को मैन्युअल रूप से चालू या �
   <data name="Shop_Locked" xml:space="preserve"><value>चुना हुआ प्रस्ताव खोज, उपलब्धि, ड्यूटी या इवेंट की शर्त के कारण बंद है।</value></data>
   <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>प्रस्ताव की उपलब्धता की पुष्टि नहीं हो सकी। खरीदने से पहले सूची रीफ़्रेश करें।</value></data>
   <data name="Transparency visible on main window" xml:space="preserve"><value>मुख्य विंडो में पारदर्शिता दिखाएँ</value></data>
+  <data name="Shop_SelectMissing" xml:space="preserve"><value>गुम वस्तुएँ चुनें</value></data>
+  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>पुष्ट रूप से अनुपस्थित संग्रहणीय वस्तुओं और सत्यापित PvP उपकरण का लक्ष्य कम से कम एक करता है। बड़े लक्ष्य बने रहते हैं; खरीद या यात्रा शुरू नहीं होती। अज्ञात स्वामित्व या खरीद की शर्तों और अपुष्ट स्रोत वाले उपकरणों को छोड़ता है, जिनमें डंजन की लूट भी शामिल है।</value></data>
+  <data name="Shop_SelectMissingResult" xml:space="preserve"><value>जोड़े: {0}। अज्ञात जानकारी के कारण छोड़े: स्वामित्व {1}, उपकरण का स्रोत {2}, खरीद की शर्तें {3}.</value></data>
 </root>

@@ -17,7 +17,7 @@ internal sealed class XaDatabaseIPC
         storage = pluginInterface.GetIpcSubscriber<string, string>("XA.Database.SearchCharacterStorageItemsJson");
     }
 
-    internal HashSet<uint> ReadOwned(IEnumerable<uint> itemIds)
-        => XaItemOwnership.Query(items.InvokeFunc, storage.InvokeFunc, itemIds,
+    internal Dictionary<uint, XaItemOwnershipState> ReadOwnership(IEnumerable<uint> itemIds)
+        => XaItemOwnership.QueryStates(items.InvokeFunc, storage.InvokeFunc, itemIds,
             Plugin.ClientState.IsLoggedIn && Plugin.PlayerState.IsLoaded ? Plugin.PlayerState.ContentId : 0, DateTimeOffset.UtcNow);
 }

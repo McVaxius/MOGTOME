@@ -2216,4 +2216,7 @@ DictionaryPathsとPathSelectionsByPathを比較します。
   <data name="Shop_Locked" xml:space="preserve"><value>選択した商品はクエスト、アチーブメント、コンテンツ、イベントの条件で制限されています。</value></data>
   <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>商品の購入条件を確認できません。購入前にカタログを更新してください。</value></data>
   <data name="Transparency visible on main window" xml:space="preserve"><value>メインウィンドウに透明度を表示</value></data>
+  <data name="Shop_SelectMissing" xml:space="preserve"><value>未所持を選択</value></data>
+  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>未所持が確認された収集品とPvP装備の目標数を最低1にします。より大きい目標数は維持し、購入や移動は開始しません。所持や購入条件が不明な品、入手元が未確認の装備（ダンジョン報酬を含む）は除外します。</value></data>
+  <data name="Shop_SelectMissingResult" xml:space="preserve"><value>追加 {0}。不明のため除外：所持 {1}、装備の入手元 {2}、購入条件 {3}。</value></data>
 </root>

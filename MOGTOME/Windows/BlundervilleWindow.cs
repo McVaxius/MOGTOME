@@ -17,6 +17,7 @@ public sealed class BlundervilleWindow : Window, IDisposable
 {
     private readonly AethertekUI.Dalamud.MaterialWindowMotion windowMotion = new();
     private readonly Plugin plugin;
+    private ShopMissingResult? missingResult;
     public bool DebugVisible { get; set; }
 
     public BlundervilleWindow(Plugin plugin)
@@ -168,7 +169,7 @@ public sealed class BlundervilleWindow : Window, IDisposable
         UiLayout.SameLineIfFits(UiLayout.IconButtonWidth(Ui.T("Shop_Clear")));
         ImGui.BeginDisabled(plugin.IsEngineStartQueued || plugin.Engine?.IsRunning == true ||
             plugin.MoogleShop.IsRunning || plugin.IsMoogleShopActionQueued || settings.PurchaseTargets.Count == 0);
-        if (UiLayout.Button(Ui.L("Shop_Clear"))) { settings.PurchaseTargets.Clear(); changed = true; }
+        if (UiLayout.Button(Ui.L("Shop_Clear"))) { settings.PurchaseTargets.Clear(); missingResult = null; changed = true; }
         ImGui.EndDisabled();
         UiLayout.SameLineIfFits(MaterialText.Measure(Ui.T("Shop_HideOwned")).X + ImGui.GetFrameHeight() + ImGui.GetStyle().ItemSpacing.X);
         var hideOwned = settings.HideOwned;
@@ -176,12 +177,26 @@ public sealed class BlundervilleWindow : Window, IDisposable
         var allRows = offers.Keys.Concat(settings.PurchaseTargets.Keys).Distinct()
             .Select(id => (Id: id, Name: Ui.Item(id).Render()))
             .OrderBy(row => row.Name, StringComparer.Create(Ui.Culture, true)).ToArray();
-        var storedOwned = plugin.XaDatabase.ReadOwned(allRows.Select(row => row.Id));
+        var storedOwnership = plugin.XaDatabase.ReadOwnership(allRows.Select(row => row.Id));
         var inventory = allRows.ToDictionary(row => row.Id, row =>
             BlundervilleGameAdapter.TryInventory(row.Id, out var count, out _) ? (int?)count : null);
-        var ownership = allRows.ToDictionary(row => row.Id, row => BlundervilleGameAdapter.Ownership(row.Id, inventory[row.Id], storedOwned));
+        var ownership = allRows.ToDictionary(row => row.Id, row => BlundervilleGameAdapter.Ownership(row.Id, inventory[row.Id], storedOwnership.GetValueOrDefault(row.Id)));
         var eligibility = allRows.ToDictionary(row => row.Id, row => offers.TryGetValue(row.Id, out var offer)
             ? ShopOfferEligibility.Read(offer.Gate) : ShopOfferAvailability.Unknown);
+        UiLayout.SameLineIfFits(UiLayout.IconButtonWidth(Ui.T("Shop_SelectMissing")));
+        ImGui.BeginDisabled(!plugin.Blunderville.Ready || plugin.IsEngineStartQueued || plugin.Engine?.IsRunning == true ||
+            plugin.MoogleShop.IsRunning || plugin.IsMoogleShopActionQueued);
+        if (UiLayout.Button(Ui.L("Shop_SelectMissing")))
+        {
+            missingResult = ShopMissingSelection.Apply(settings.PurchaseTargets,
+                catalog.GroupBy(o => o.ItemId).Where(g => g.Count() == 1).Select(g => g.Single())
+                    .Select(o => (o.ItemId, o.MissingKind, ownership[o.ItemId], eligibility[o.ItemId])));
+            changed |= missingResult.Value.Added > 0;
+        }
+        if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) UiLayout.SetTooltip(Ui.T("Shop_SelectMissingHelp"));
+        ImGui.EndDisabled();
+        if (missingResult is { } result) UiLayout.Wrapped(Ui.T("Shop_SelectMissingResult",
+            result.Added, result.UnknownOwnership, result.UnknownAcquisition, result.UnknownEligibility));
         var rows = allRows.Where(row => eligibility[row.Id] != ShopOfferAvailability.Locked &&
             (!settings.HideOwned || ownership[row.Id] != BlundervilleRegistration.Owned)).ToArray();
         if (allRows.Length == 0)

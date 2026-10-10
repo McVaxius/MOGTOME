@@ -1,3 +1,9 @@
+2026-10-10 - Manual missing-item selection (I518/I519)
+
+- Add Select Missing to both shop lists. Preserve larger desired quantities and unrelated entries; selection never starts buying or travel. Show skipped unknown ownership, source and eligibility counts.
+- Identify PvP equipment from literal Wolf Mark/Trophy Crystal game-sheet offers. Exclude equipment whose acquisition source cannot be verified, covering dungeon drops; keep those rows available for manual selection.
+- Share explicit Owned/Missing/Unknown decisions with ADS. Supported XADB responses still establish positive ownership only; no empty or partial response authorizes automatic missing-item selection.
+
 2026-10-10 - Compact defaults (I521)
 
 - Start in Compact mode and hide the main Compact/Transparency controls once per account. Appearance settings can restore those controls and change density; later loads preserve those choices and unknown saved settings.

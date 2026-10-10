@@ -2222,4 +2222,7 @@ Path: {0}
   <data name="Shop_Locked" xml:space="preserve"><value>Выбранное предложение заблокировано условием задания, достижения, контента или события.</value></data>
   <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>Доступность предложения неизвестна. Обновите каталог перед покупкой.</value></data>
   <data name="Transparency visible on main window" xml:space="preserve"><value>Показывать прозрачность в главном окне</value></data>
+  <data name="Shop_SelectMissing" xml:space="preserve"><value>Выбрать недостающие</value></data>
+  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Задаёт минимум одну штуку для недостающих коллекционных предметов и подтверждённого PvP-снаряжения. Большие цели сохраняются; покупка и перемещение не запускаются. Пропускает неизвестное владение, доступность и снаряжение без подтверждённого источника, включая добычу из подземелий.</value></data>
+  <data name="Shop_SelectMissingResult" xml:space="preserve"><value>Добавлено: {0}. Пропущено из-за неизвестных данных: владение {1}, источник снаряжения {2}, доступность {3}.</value></data>
 </root>
