@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using AethertekUI;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Windowing;
 using MOGTOME.Localization;
@@ -41,7 +42,8 @@ public sealed class MoogleShopWindow : Window
         using (plugin.Appearance.Font(MogtomeFontRole.CompactHeading)) UiLayout.SingleLine(Ui.T("Shop_Title"));
         UiLayout.Wrapped(shop.Status.Render());
         ImGui.BeginDisabled(!shop.Ready || shop.IsRunning || plugin.IsMoogleShopActionQueued || plugin.IsEngineStartQueued ||
-            plugin.Engine?.IsRunning == true || plugin.Blunderville.IsRunning || plugin.IsBlundervilleActionQueued);
+            plugin.Engine?.IsRunning == true || plugin.Blunderville.IsRunning || plugin.IsBlundervilleActionQueued ||
+            Plugin.Condition[ConditionFlag.BoundByDuty] || Plugin.Condition[ConditionFlag.InDutyQueue] || Plugin.Condition[ConditionFlag.InCombat]);
         if (UiLayout.IconButton(Ui.L("BV_Buy"), MaterialIcon.Cart)) plugin.RequestMoogleShopBuy();
         ImGui.EndDisabled();
         UiLayout.SameLineIfFits(UiLayout.IconButtonWidth(Ui.T("Main_Stop")));
@@ -52,8 +54,7 @@ public sealed class MoogleShopWindow : Window
         ImGui.EndDisabled();
         UiLayout.SameLineIfFits(UiLayout.IconButtonWidth(Ui.T("Shop_Clear")));
         ImGui.BeginDisabled(!plugin.CanSelectUiLanguage || shop.IsRunning || plugin.IsMoogleShopActionQueued ||
-            plugin.IsEngineStartQueued || plugin.Engine?.IsRunning == true || plugin.Blunderville.IsRunning ||
-            plugin.IsBlundervilleActionQueued || settings.PurchaseTargets.Count == 0);
+            settings.PurchaseTargets.Count == 0);
         if (UiLayout.Button(Ui.L("Shop_Clear"))) { settings.PurchaseTargets.Clear(); missingResult = null; changed = true; }
         ImGui.EndDisabled();
         ImGui.Separator();
@@ -103,8 +104,6 @@ public sealed class MoogleShopWindow : Window
             (!settings.HideOwned || ownership[row.Id] != BlundervilleRegistration.Owned)).ToArray();
         var changed = false;
         UiLayout.SameLineIfFits(UiLayout.IconButtonWidth(Ui.T("Shop_SelectMissing")));
-        ImGui.BeginDisabled(!plugin.MoogleShop.Ready || plugin.IsEngineStartQueued || plugin.Engine?.IsRunning == true ||
-            plugin.Blunderville.IsRunning || plugin.IsBlundervilleActionQueued);
         if (UiLayout.Button(Ui.L("Shop_SelectMissing")))
         {
             missingResult = ShopMissingSelection.Apply(settings.PurchaseTargets,
@@ -114,7 +113,6 @@ public sealed class MoogleShopWindow : Window
             changed = missingResult.Value.Added > 0;
         }
         if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) UiLayout.SetTooltip(Ui.T("Shop_SelectMissingHelp"));
-        ImGui.EndDisabled();
         if (missingResult is { } result) UiLayout.Wrapped(Ui.T("Shop_SelectMissingResult",
             result.Added, result.UnknownOwnership, result.UnknownAcquisition, result.UnknownEligibility));
         var captions = new[] { Ui.T("BV_Item"), "###Cart", "###Bag", "###Price", "###Total", "###Registration" };

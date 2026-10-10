@@ -1,3 +1,8 @@
+2026-10-10 - Configure shopping lists during duties
+
+- Keep both shop lists editable during duties and farming, including desired quantities, Hide Owned, CLEAR and Select Missing. Buy remains disabled during duties and conflicting automation; an active purchase still protects its own settings.
+- An unvisited armoire does not disable Select Missing. Preserve native collectible registration evidence and skip unknown equipment/storage absence.
+
 2026-10-10 - Recheck duty selection after queue interruptions
 
 - Read the current checked regular-duty entry before deciding whether to re-select Praetorium or Decumana. An earlier queue confirmation no longer skips re-selection after Stop/Start or the repair recovery wait clears a checkbox. Preserve the final registration guards and cancellation behavior.

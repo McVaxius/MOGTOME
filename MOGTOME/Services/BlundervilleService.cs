@@ -11,7 +11,7 @@ namespace MOGTOME.Services;
 
 public sealed class BlundervilleService : IDisposable
 {
-    public const string BuildMarker = "devhub-queue-selection-20261010-03";
+    public const string BuildMarker = "devhub-duty-shop-config-20261010-04";
     private enum Stage { Idle, Farming, Finishing, LeavingParty, Shopping, Ending }
     private readonly Plugin plugin;
     private readonly BlundervilleGameAdapter game;
@@ -58,6 +58,7 @@ public sealed class BlundervilleService : IDisposable
     private readonly string loadMarker = $"{BuildMarker}/pid={Environment.ProcessId}/utc={DateTimeOffset.UtcNow:O}";
     internal IReadOnlyList<BlundervilleOffer> Catalog => game.Catalog;
     public bool IsRunning => stage != Stage.Idle;
+    public bool IsShopping => stage is Stage.Shopping or Stage.Ending;
     public int SessionCycles => progress.Cycles;
     public UiText Status { get; private set; } = Ui.M("BV_Idle");
     public bool Ready => !disposed && plugin.CanSelectUiLanguage && plugin.Engine != null &&
