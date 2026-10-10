@@ -17,6 +17,7 @@ public sealed class ActionWarningWindow : Window, IDisposable
     private UiText dismissLabel = Ui.M("Warning_Dismiss");
     private UiText? acknowledgeLabel;
     private Action? primaryAction;
+    private Func<bool>? primaryAvailability;
     private Action? dismissAction;
     private Action? acknowledgementAction;
     private bool requireExplicitChoice;
@@ -48,12 +49,14 @@ public sealed class ActionWarningWindow : Window, IDisposable
         Action? onDismiss = null,
         UiText? acknowledgeButtonLabel = null,
         Action? onAcknowledged = null,
-        bool explicitChoiceRequired = false)
+        bool explicitChoiceRequired = false,
+        Func<bool>? primaryAvailable = null)
     {
         warningTitle = title;
         warningMessage = message;
         primaryLabel = primaryButtonLabel;
         primaryAction = onPrimary;
+        primaryAvailability = primaryAvailable;
         dismissLabel = dismissButtonLabel ?? Ui.M("Warning_Dismiss");
         dismissAction = onDismiss;
         acknowledgeLabel = acknowledgeButtonLabel;
@@ -93,7 +96,7 @@ public sealed class ActionWarningWindow : Window, IDisposable
         AethertekUI.MaterialText.TextWrapped(warningMessage.Render());
         ImGui.Spacing();
 
-        if (primaryLabel != null && primaryAction != null)
+        if (primaryLabel != null && primaryAction != null && primaryAvailability?.Invoke() != false)
         {
             if (UiLayout.Button(primaryLabel.Render() + "###primaryLabel", new Vector2(170f * scale, 0)))
                 primaryAction();

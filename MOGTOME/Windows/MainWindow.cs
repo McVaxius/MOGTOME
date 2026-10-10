@@ -441,6 +441,16 @@ public class MainWindow : Window, IDisposable
         rows.Style(ImGuiStyleVar.ItemSpacing, new Vector2(ImGui.GetStyle().ItemSpacing.X, (MogtomePresentation.Compact ? 6 : 6.5f) * ImGuiHelpers.GlobalScale));
         Heading("Main_PartySummary");
         CardSeparator();
+        var isLeader = config.IsPartyLeader;
+        if (UiLayout.Checkbox(Ui.L("Main_TeamLeader"), ref isLeader))
+        {
+            config.IsPartyLeader = isLeader;
+            state.IsPartyLeader = isLeader;
+            plugin.Engine?.ApplyConfiguredPartyLeaderState(reason: "main window party role changed");
+            plugin.ConfigManager.SaveCurrentAccount();
+        }
+        if (ImGui.IsItemHovered())
+            UiLayout.SetTooltip(Ui.T("Config_RuntimeRoleFollowsThisSavedSettingUse"));
         if (Plugin.PartyList.Length == 0) UiLayout.Wrapped(Ui.T("Main_NoParty"));
         var memberIndex = 0;
         foreach (var member in Plugin.PartyList)

@@ -750,15 +750,18 @@ public sealed class Plugin : IDalamudPlugin
         {
             var isTwistWarning = conflictPopupMessage.English.Contains("Twist of Fayte", StringComparison.OrdinalIgnoreCase);
             var isAutoDutyWarning = conflictPopupMessage.English.Contains("AutoDuty", StringComparison.OrdinalIgnoreCase);
+            var canDisableAutoDuty = isAutoDutyWarning && ConflictPluginService.GetAutoDutyStatus().IsLoaded;
             ActionWarningWindow.ShowWarning(
-                isTwistWarning ? Ui.M("Warning_TwistOfFayteConflict") : isAutoDutyWarning ? Ui.M("Warning_AutoDutyConflict") : Ui.M("Warning_PluginConflict"),
-                conflictPopupMessage,
-                isTwistWarning ? Ui.M("Warning_DisableTwistOfFayte") : isAutoDutyWarning ? Ui.M("Warning_DisableAutoDuty") : null,
+                isTwistWarning ? Ui.M("Warning_TwistOfFayteConflict") : isAutoDutyWarning
+                    ? Ui.M(canDisableAutoDuty ? "Warning_AutoDutyConflict" : "Warning_AutoDutyDisabled") : Ui.M("Warning_PluginConflict"),
+                isAutoDutyWarning ? Ui.M("Warning_AutoDutyMiniGuidance", conflictPopupMessage) : conflictPopupMessage,
+                isTwistWarning ? Ui.M("Warning_DisableTwistOfFayte") : canDisableAutoDuty ? Ui.M("Warning_DisableAutoDuty") : null,
                 isTwistWarning
                     ? () => _ = ConflictPluginService.EnsureTwistOfFayteDisabledAsync("Warning window", showPopup: false)
-                    : isAutoDutyWarning
+                    : canDisableAutoDuty
                         ? () => _ = ConflictPluginService.EnsureAutoDutyDisabledAsync("Warning window", showPopup: false)
-                        : null);
+                        : null,
+                primaryAvailable: isAutoDutyWarning ? () => ConflictPluginService.GetAutoDutyStatus().IsLoaded : null);
         }
 
         TryConsumeQueuedEngineStart();
@@ -908,7 +911,15 @@ public sealed class Plugin : IDalamudPlugin
     }
 
     private void OnChatMessage(IChatMessage message)
-        => HandleChatMessage(message.Message);
+    {
+        try
+        {
+            if (message.LogKind == XivChatType.ErrorMessage)
+                Blunderville?.HandleRegistrationChatMessage(message.OriginalMessage.ToString());
+        }
+        catch (Exception ex) { Log.Error(ex, "[Plugin] Blunderville registration message failed"); }
+        HandleChatMessage(message.Message);
+    }
 
     private void HandleChatMessage(SeString message)
     {

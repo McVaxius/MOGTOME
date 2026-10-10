@@ -1,3 +1,24 @@
+2026-10-09 - Tight compact list grids (I503/I509)
+
+- Use adjacent compact rows in both shopping grids while retaining desired counts, costs, ownership indicators and CLEAR.
+
+2026-10-09 - Bounded Blunderville registration recovery (I513)
+
+- Retry a submitted Blunderville registration only after the complete current client-language party-area-change rejection is confirmed through the game's LogMessage evaluator. Retain the original 90-second deadline, recheck leadership and limits before submitting, and preserve Stop and accepted-entry guards. Other rejection messages do not trigger retries.
+
+2026-10-09 - Separate XA Slave log-tools shortcut (I512)
+
+- Add Open XA Slave log tools beside the existing manual support exporter when XA Slave is loaded. The new action opens Utility > XA Mods only; preserve the Copy / ZIP button, its handler and cap warning. No automatic cleanup, provider loading or settings changes.
+
+2026-10-09 - AutoDuty notice and main leader shortcut (I511/I514)
+
+- Show successful AutoDuty disabling as a dismissible status notice, with guidance to the manual Enable/Disable controls in /ads mini. Show the Disable action only while AutoDuty remains loaded; preserve the existing startup policy.
+- Add Team Leader to Main's party card using the existing account setting and runtime role handler. Blunderville continues to determine leadership from the actual party.
+
+2026-10-09 - Manual support log export (I506)
+
+- Add Copy / ZIP Dalamud log to Advanced settings. Show the 100 MiB cap warning before export, keep other controls usable, and open the ZIP folder after completion. Sharing and cleanup stay manual.
+
 2026-10-08 - Dedicated Window appearance settings (I505)
 
 - Move colour, language, compact mode and transparency controls into their own settings tab or sidebar page. Retain the existing controls, native IDs, saved preferences and actions; keep normal settings visible without an appearance block above them. Versions and client configuration are unchanged. Local build checks and game visual acceptance are recorded separately in the selected task checkpoint.

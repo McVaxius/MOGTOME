@@ -184,6 +184,7 @@ public sealed class BlundervilleWindow : Window, IDisposable
         var tips = new[] { Ui.T("BV_Item"), Ui.T("BV_Wanted"), Ui.T("BV_OnHand"), Ui.T("BV_UnitMgf"), Ui.T("BV_NeededMgf"), Ui.T("BV_RegistrationHelp") };
         var controlRoot = ImGui.GetID(""); // Retain the count editor's original window/row identity inside the table.
         using var tableControls = MaterialTable.PushControls();
+        using var tightRows = MogtomePresentation.Compact ? MaterialTable.PushTightRows() : default;
         var padding = ImGui.GetStyle().CellPadding;
         var widths = new[]
         {

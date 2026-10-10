@@ -28,17 +28,35 @@ internal sealed class BlundervilleProgress
     public bool InArena { get; private set; }
     public bool RegistrationSubmitted { get; private set; }
     public bool CommenceSubmitted { get; private set; }
+    public DateTime? RegistrationStartedAt { get; private set; }
     private bool eliminated;
     private bool exitSubmitted;
 
-    public void SubmitRegistration() => RegistrationSubmitted = true;
+    public void SubmitRegistration() => SubmitRegistration(DateTime.UtcNow);
+    internal void SubmitRegistration(DateTime now)
+    {
+        RegistrationStartedAt ??= now;
+        RegistrationSubmitted = true;
+    }
+    internal bool RegistrationTimedOut(DateTime now)
+        => RegistrationStartedAt is { } started && now - started > TimeSpan.FromSeconds(90);
+    internal bool ObserveAreaChangeRejection(bool queuedOrEntryVisible, DateTime now)
+    {
+        if (!RegistrationSubmitted || CommenceSubmitted || InArena || queuedOrEntryVisible || RegistrationTimedOut(now)) return false;
+        RegistrationSubmitted = false;
+        return true; // Retain the first submission's deadline across confirmed rejections.
+    }
     public bool TrySubmitCommence()
     {
         if (CommenceSubmitted) return false;
         CommenceSubmitted = true;
         return true;
     }
-    public void ResetEntry() => RegistrationSubmitted = CommenceSubmitted = false;
+    public void ResetEntry()
+    {
+        RegistrationSubmitted = CommenceSubmitted = false;
+        RegistrationStartedAt = null;
+    }
     public void Enter() { InArena = true; ResetEntry(); }
     public void ObserveElimination() { if (InArena) eliminated = true; }
     public void SubmitExit() { if (InArena && eliminated) exitSubmitted = true; }

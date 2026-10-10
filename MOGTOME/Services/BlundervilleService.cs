@@ -11,7 +11,7 @@ namespace MOGTOME.Services;
 
 public sealed class BlundervilleService : IDisposable
 {
-    public const string BuildMarker = "I501-bv-0032";
+    public const string BuildMarker = "devhub-I503-I511-I512-I513-I514-20261009-04";
     private enum Stage { Idle, Farming, Finishing, LeavingParty, Shopping, Ending }
     private readonly Plugin plugin;
     private readonly BlundervilleGameAdapter game;
@@ -196,6 +196,21 @@ public sealed class BlundervilleService : IDisposable
         }
     }
 
+    internal void HandleRegistrationChatMessage(string message)
+    {
+        if (disposed || stage != Stage.Farming || Volatile.Read(ref stopRequested) != 0 ||
+            !progress.RegistrationSubmitted || progress.InArena || !Ready ||
+            Plugin.ClientState.TerritoryType == BlundervilleGameAdapter.Arena ||
+            Plugin.PlayerState.ContentId != character || !ReferenceEquals(Settings, sessionSettings)) return;
+        if (!GameText.MatchesLogMessage(message, 7461)) return;
+        if (progress.ObserveAreaChangeRejection(Plugin.Condition[ConditionFlag.InDutyQueue] ||
+            BlundervilleGameAdapter.Visible("ContentsFinderConfirm"), DateTime.UtcNow))
+        {
+            Status = Ui.M("BV_RegistrationRetry");
+            Plugin.Log.Information("[MOGTOME][BV] confirmed LogMessage7461; retry within original entry deadline; marker={Marker}", loadMarker);
+        }
+    }
+
     private void UpdateFarming(uint wallet)
     {
         var territory = Plugin.ClientState.TerritoryType;
@@ -256,6 +271,11 @@ public sealed class BlundervilleService : IDisposable
             Status = Ui.M("BV_WaitEntry");
             return;
         }
+        if (!Plugin.Condition[ConditionFlag.InDutyQueue] && progress.RegistrationTimedOut(DateTime.UtcNow))
+        {
+            Fail("BV_Timeout");
+            return;
+        }
         if (role == BlundervilleRole.Member)
         {
             CancelMovementAndTravel();
@@ -271,7 +291,6 @@ public sealed class BlundervilleService : IDisposable
         if (Plugin.Condition[ConditionFlag.InDutyQueue] || progress.RegistrationSubmitted || progress.CommenceSubmitted)
         {
             Status = Ui.M("BV_WaitEntry");
-            if (!Plugin.Condition[ConditionFlag.InDutyQueue] && DateTime.UtcNow - stepStarted > TimeSpan.FromSeconds(90)) Fail("BV_Timeout");
             return;
         }
         if (!EnsureSquare()) return;
@@ -280,7 +299,7 @@ public sealed class BlundervilleService : IDisposable
             if (interactionNpc == 0 || Plugin.TargetManager.Target?.GameObjectId != interactionNpc) { Fail("BV_UiMismatch"); return; }
             // Leadership and targets were freshly checked above before registration.
             progress.SubmitRegistration();
-            stepStarted = DateTime.UtcNow;
+            stepStarted = progress.RegistrationStartedAt!.Value;
             Plugin.Log.Information("[MOGTOME][BV] registering Blunderville; role={Role}; wallet={Wallet}; marker={Marker}", role, wallet, loadMarker);
             if (!BlundervilleGameAdapter.Callback("FGSEnterDialog", 0)) Fail("BV_UiMismatch");
             return;
@@ -647,6 +666,7 @@ public sealed class BlundervilleService : IDisposable
     {
         if (pendingPurchase != null) uncertainPurchase = true;
         stage = Stage.Idle; // Stop future callbacks even when individual cleanup actions fail.
+        progress.ResetEntry();
         foreach (var cleanup in new System.Action[] { CancelQueueParticipation, CancelMovementAndTravel, CloseShop })
             try { cleanup(); } catch (Exception ex) { Plugin.Log.Warning(ex, "[MOGTOME][BV] cleanup failed"); }
         if ((pendingPurchase != null || settlingPurchase != null) && ReferenceEquals(Settings, sessionSettings) &&

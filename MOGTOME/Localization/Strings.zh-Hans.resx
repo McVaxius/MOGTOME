@@ -2201,4 +2201,20 @@ Path: {0}
   <data name="Shop_Clear" xml:space="preserve">
     <value>清空</value>
   </data>
+  <data name="Copy / ZIP Dalamud log" xml:space="preserve"><value>复制 / 压缩 Dalamud 日志</value></data>
+  <data name="Export capped log anyway" xml:space="preserve"><value>仍然导出已满日志</value></data>
+  <data name="Exporting log..." xml:space="preserve"><value>正在导出日志...</value></data>
+  <data name="Log export failed." xml:space="preserve"><value>日志导出失败。</value></data>
+  <data name="Log ZIP ready. Share it manually; remove old exports when you no longer need them." xml:space="preserve"><value>日志 ZIP 已就绪。请手动分享，并删除不再需要的旧导出文件。</value></data>
+  <data name="This log has reached Dalamud&apos;s 100 MiB limit. Logging may have stopped, so recent activity may be missing and this log may not help troubleshoot your current issue." xml:space="preserve"><value>此日志已达到 Dalamud 的 100 MiB 上限。日志记录可能已停止，最近的活动可能缺失，因此可能无法帮助诊断当前问题。</value></data>
+  <data name="Open Export Folder" xml:space="preserve"><value>打开导出文件夹</value></data>
+  <data name="Main_TeamLeader" xml:space="preserve"><value>队长</value></data>
+  <data name="Warning_AutoDutyDisabled" xml:space="preserve"><value>AutoDuty 已禁用</value></data>
+  <data name="Warning_AutoDutyMiniGuidance" xml:space="preserve"><value>{0}
+
+使用 /ads mini 可手动启用或禁用 AutoDuty。</value></data>
+  <data name="Open XA Slave log tools" xml:space="preserve"><value>打开XA Slave日志工具</value></data>
+  <data name="Opens XA Slave's Utility &gt; XA Mods panel, which contains Dalamud Log Cleaner." xml:space="preserve"><value>打开XA Slave的Utility &gt; XA Mods面板，其中包含Dalamud Log Cleaner。</value></data>
+  <data name="XA Slave log tools could not be opened." xml:space="preserve"><value>无法打开XA Slave日志工具。</value></data>
+  <data name="BV_RegistrationRetry" xml:space="preserve"><value>一名小队成员正在切换区域。将在最初的时限内重试报名。</value></data>
 </root>

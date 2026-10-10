@@ -2351,4 +2351,20 @@ Hasil dicatat ke log Dalamud.</value>
   <data name="Shop_Clear" xml:space="preserve">
     <value>KOSONGKAN</value>
   </data>
+  <data name="Copy / ZIP Dalamud log" xml:space="preserve"><value>Salin / ZIP log Dalamud</value></data>
+  <data name="Export capped log anyway" xml:space="preserve"><value>Tetap ekspor log yang penuh</value></data>
+  <data name="Exporting log..." xml:space="preserve"><value>Mengekspor log...</value></data>
+  <data name="Log export failed." xml:space="preserve"><value>Ekspor log gagal.</value></data>
+  <data name="Log ZIP ready. Share it manually; remove old exports when you no longer need them." xml:space="preserve"><value>ZIP log siap. Bagikan secara manual dan hapus ekspor lama yang tidak dibutuhkan.</value></data>
+  <data name="This log has reached Dalamud&apos;s 100 MiB limit. Logging may have stopped, so recent activity may be missing and this log may not help troubleshoot your current issue." xml:space="preserve"><value>Log ini mencapai batas 100 MiB Dalamud. Pencatatan mungkin berhenti; aktivitas terbaru mungkin tidak tercatat sehingga log mungkin tidak membantu mendiagnosis masalah saat ini.</value></data>
+  <data name="Open Export Folder" xml:space="preserve"><value>Buka Folder Ekspor</value></data>
+  <data name="Main_TeamLeader" xml:space="preserve"><value>Pemimpin party</value></data>
+  <data name="Warning_AutoDutyDisabled" xml:space="preserve"><value>AutoDuty dinonaktifkan</value></data>
+  <data name="Warning_AutoDutyMiniGuidance" xml:space="preserve"><value>{0}
+
+Gunakan /ads mini untuk mengaktifkan atau menonaktifkan AutoDuty secara manual.</value></data>
+  <data name="Open XA Slave log tools" xml:space="preserve"><value>Buka alat log XA Slave</value></data>
+  <data name="Opens XA Slave's Utility &gt; XA Mods panel, which contains Dalamud Log Cleaner." xml:space="preserve"><value>Membuka panel Utility &gt; XA Mods XA Slave yang berisi Dalamud Log Cleaner.</value></data>
+  <data name="XA Slave log tools could not be opened." xml:space="preserve"><value>Alat log XA Slave tidak dapat dibuka.</value></data>
+  <data name="BV_RegistrationRetry" xml:space="preserve"><value>Anggota party sedang berpindah area. Pendaftaran dicoba lagi dalam batas waktu semula.</value></data>
 </root>

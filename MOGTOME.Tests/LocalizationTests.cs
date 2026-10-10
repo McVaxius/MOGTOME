@@ -82,6 +82,37 @@ public sealed class LocalizationTests : IDisposable
     }
 
     [Theory]
+    [InlineData(ClientLanguage.English, "Unable to register. Test Member is changing areas.")]
+    [InlineData(ClientLanguage.French, "Enregistrement impossible. Test Member est en train de changer de zone.")]
+    [InlineData(ClientLanguage.German, "Teilnahme nicht möglich. Test Member wechselt gerade das Areal.")]
+    [InlineData(ClientLanguage.Japanese, "Test Memberがエリアチェンジ中などの理由により、参加申請できませんでした。")]
+    public void PartyAreaChangeRequiresCompleteEvaluatedActorMessage(ClientLanguage client, string rendered)
+    {
+        // LogMessage7461 wording/global actor binding: XIVAPI row, 2026-10-09;
+        // PlayerParameter/ObjectParameter are Lumina's GlobalNumber/GlobalString.
+        // This tests the evaluator boundary, not the native globals' live lifetime.
+        var evaluator = new SheetEvaluator(client) { AreaChangeText = rendered };
+        SetService("ClientState", Fake<IClientState>((method, _) =>
+            method.Name == "get_ClientLanguage" ? client : Default(method.ReturnType)));
+        SetService("SeStringEvaluator", evaluator);
+        foreach (var ui in Enum.GetValues<UiLanguage>())
+        {
+            Ui.SetLanguage(ui);
+            Assert.True(GameText.MatchesLogMessage(rendered, 7461));
+            Assert.False(GameText.MatchesLogMessage(rendered.Replace("Test Member", "Another Member"), 7461));
+            Assert.False(GameText.MatchesLogMessage("Unrelated " + rendered, 7461));
+            Assert.False(GameText.MatchesLogMessage(rendered, 7460));
+            Assert.False(GameText.MatchesLogMessage(rendered, 7462));
+        }
+        evaluator.AreaChangeText = "<string(gstr3)>";
+        Assert.False(GameText.MatchesLogMessage(rendered, 7461));
+        evaluator.AreaChangeText = "";
+        Assert.False(GameText.MatchesLogMessage("", 7461));
+        evaluator.Throw = true;
+        Assert.False(GameText.MatchesLogMessage(rendered, 7461));
+    }
+
+    [Theory]
     [MemberData(nameof(Languages))]
     public void MissingAndUnknownPromptParametersFailClosed(ClientLanguage client, UiLanguage ui)
     {
@@ -434,6 +465,7 @@ public sealed class LocalizationTests : IDisposable
         internal bool DropBoundValue;
         internal bool Throw;
         internal int Evaluations;
+        internal string? AreaChangeText;
         private string Macro(uint row, string raiser = Raiser)
             => Templates[client.ToString()][row]
                 .Replace("<string(lstr1)>", DropBoundValue ? "" : raiser)
@@ -463,7 +495,10 @@ public sealed class LocalizationTests : IDisposable
             return Result(Macro(row), language);
         }
         public ReadOnlySeString EvaluateFromLogMessage(uint row, Span<SeStringParameter> localParameters = default, ClientLanguage? language = null)
-            => Result(Macro(row), language);
+        {
+            Assert.Empty(localParameters.ToArray());
+            return Result(row == 7461 ? AreaChangeText! : Macro(row), language);
+        }
         public ReadOnlySeString EvaluateMacroString(string macroString, Span<SeStringParameter> localParameters = default, ClientLanguage? language = null)
         {
             Assert.Equal("<string(gstr56)>", macroString);

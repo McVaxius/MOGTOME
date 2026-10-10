@@ -129,9 +129,12 @@ internal static class GameText
 
     internal static bool MatchesLogMessage(string actual, uint row)
     {
-        if (row is not (877 or 880)) return false;
+        if (row is not (877 or 880 or 7461)) return false;
         try
         {
+            // 7461 resolves the actor through gnum8 / ObjStr or gstr3, not a local
+            // name argument. Evaluate while handling the chat event and require
+            // the complete resolved client-language message, including its actor.
             return MatchesEvaluated(actual, PlainResolved(Plugin.SeStringEvaluator.EvaluateFromLogMessage(row, language: Plugin.ClientState.ClientLanguage)));
         }
         catch (Exception) { return false; }

@@ -18,6 +18,7 @@ public class ConfigWindow : Window, IDisposable
 {
     private readonly AethertekUI.Dalamud.MaterialWindowMotion windowMotion = new();
     private readonly Plugin plugin;
+    private readonly AethertekUI.Dalamud.MaterialSupportLog supportLog = new();
     private readonly IPluginLog Log;
     private Vector2? pendingWindowPosition;
     private bool pendingPositionConditionReset;
@@ -1328,6 +1329,10 @@ public class ConfigWindow : Window, IDisposable
 
     private bool DrawAdvancedTab(Configuration config)
     {
+        supportLog.Draw(Plugin.PluginInterface, text => Ui.T(text),
+            path => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(path) { UseShellExecute = true }),
+            ex => Plugin.Log.Error(ex, "Dalamud support log export failed."), Plugin.CommandManager);
+        ImGui.Separator();
         var changed = false;
 
         var obstacleMapsOn = config.ObstacleMapsOn;

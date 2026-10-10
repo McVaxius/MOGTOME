@@ -2201,4 +2201,20 @@ Los resultados se escriben en el registro de Dalamud.</value>
   <data name="Shop_Clear" xml:space="preserve">
     <value>BORRAR</value>
   </data>
+  <data name="Copy / ZIP Dalamud log" xml:space="preserve"><value>Copiar / comprimir registro de Dalamud</value></data>
+  <data name="Export capped log anyway" xml:space="preserve"><value>Exportar el registro lleno de todos modos</value></data>
+  <data name="Exporting log..." xml:space="preserve"><value>Exportando registro...</value></data>
+  <data name="Log export failed." xml:space="preserve"><value>Error al exportar el registro.</value></data>
+  <data name="Log ZIP ready. Share it manually; remove old exports when you no longer need them." xml:space="preserve"><value>ZIP del registro listo. Compártelo manualmente y elimina las exportaciones que ya no necesites.</value></data>
+  <data name="This log has reached Dalamud&apos;s 100 MiB limit. Logging may have stopped, so recent activity may be missing and this log may not help troubleshoot your current issue." xml:space="preserve"><value>Este registro ha alcanzado el límite de 100 MiB de Dalamud. Puede haber dejado de registrar; puede faltar actividad reciente y no servir para diagnosticar el problema actual.</value></data>
+  <data name="Open Export Folder" xml:space="preserve"><value>Abrir carpeta de exportación</value></data>
+  <data name="Main_TeamLeader" xml:space="preserve"><value>Líder del grupo</value></data>
+  <data name="Warning_AutoDutyDisabled" xml:space="preserve"><value>AutoDuty desactivado</value></data>
+  <data name="Warning_AutoDutyMiniGuidance" xml:space="preserve"><value>{0}
+
+Usa /ads mini para activar o desactivar AutoDuty manualmente.</value></data>
+  <data name="Open XA Slave log tools" xml:space="preserve"><value>Abrir herramientas de registro de XA Slave</value></data>
+  <data name="Opens XA Slave's Utility &gt; XA Mods panel, which contains Dalamud Log Cleaner." xml:space="preserve"><value>Abre el panel Utility &gt; XA Mods de XA Slave, que contiene Dalamud Log Cleaner.</value></data>
+  <data name="XA Slave log tools could not be opened." xml:space="preserve"><value>No se pudieron abrir las herramientas de registro de XA Slave.</value></data>
+  <data name="BV_RegistrationRetry" xml:space="preserve"><value>Un miembro del grupo está cambiando de zona. Se reintentará el registro dentro del plazo original.</value></data>
 </root>

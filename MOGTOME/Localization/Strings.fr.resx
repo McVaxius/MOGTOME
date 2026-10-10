@@ -2195,4 +2195,20 @@ Résultats dans le journal Dalamud.</value>
   <data name="Shop_Clear" xml:space="preserve">
     <value>VIDER</value>
   </data>
+  <data name="Copy / ZIP Dalamud log" xml:space="preserve"><value>Copier / ZIP du journal Dalamud</value></data>
+  <data name="Export capped log anyway" xml:space="preserve"><value>Exporter quand même le journal saturé</value></data>
+  <data name="Exporting log..." xml:space="preserve"><value>Export du journal...</value></data>
+  <data name="Log export failed." xml:space="preserve"><value>Échec de l’export du journal.</value></data>
+  <data name="Log ZIP ready. Share it manually; remove old exports when you no longer need them." xml:space="preserve"><value>ZIP du journal prêt. Partagez-le manuellement ; supprimez les anciens exports devenus inutiles.</value></data>
+  <data name="This log has reached Dalamud&apos;s 100 MiB limit. Logging may have stopped, so recent activity may be missing and this log may not help troubleshoot your current issue." xml:space="preserve"><value>Ce journal a atteint la limite de 100 Mio de Dalamud. L’enregistrement a pu s’arrêter ; l’activité récente peut manquer et ce journal peut être inutile pour diagnostiquer le problème actuel.</value></data>
+  <data name="Open Export Folder" xml:space="preserve"><value>Ouvrir le dossier d&apos;exportation</value></data>
+  <data name="Main_TeamLeader" xml:space="preserve"><value>Chef d'équipe</value></data>
+  <data name="Warning_AutoDutyDisabled" xml:space="preserve"><value>AutoDuty désactivé</value></data>
+  <data name="Warning_AutoDutyMiniGuidance" xml:space="preserve"><value>{0}
+
+Utilisez /ads mini pour activer ou désactiver AutoDuty manuellement.</value></data>
+  <data name="Open XA Slave log tools" xml:space="preserve"><value>Ouvrir les outils de journaux XA Slave</value></data>
+  <data name="Opens XA Slave's Utility &gt; XA Mods panel, which contains Dalamud Log Cleaner." xml:space="preserve"><value>Ouvre le panneau Utility &gt; XA Mods de XA Slave, qui contient Dalamud Log Cleaner.</value></data>
+  <data name="XA Slave log tools could not be opened." xml:space="preserve"><value>Impossible d'ouvrir les outils de journaux XA Slave.</value></data>
+  <data name="BV_RegistrationRetry" xml:space="preserve"><value>Un équipier change de zone. Nouvelle tentative d'inscription dans le délai initial.</value></data>
 </root>

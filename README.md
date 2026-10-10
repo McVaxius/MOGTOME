@@ -24,6 +24,12 @@ A Dalamud plugin for automated duty farming and tome acquisition in FFXIV.
 
 MOGTOME automates farming of The Praetorium (99 runs) and The Porta Decumana (until daily reset) for efficient tome acquisition. Converted from the G.O.O.N. SND script to a native Dalamud plugin.
 
+Main's **Team Leader** checkbox changes the same active-account role setting as
+Config > Party. Blunderville determines its role from the actual party independently.
+In ADS mode, a successful AutoDuty disable notice is informational and dismissible;
+use the manual **Enable AutoDuty** and **Disable AutoDuty** buttons in `/ads mini`
+to change its loaded state afterward. A Disable retry appears only while it remains loaded.
+
 ### Features
 
 - ✅ **Automated Duty Queueing**: Automatically queues for Praetorium (1-99) and Decumana (100+)
@@ -121,13 +127,15 @@ Open `/bv` or `/blunderville`. Their `start`, `stop`, and `buy` actions share th
 
 Enable a run limit, an MGF wallet target, or both. Either enabled limit finishes farming. Defaults are one run and no wallet target. Leadership comes from the current party, including cross-world parties; solo characters lead. Leaders travel through the Gold Saucer to the Square and register; members wait where they are and accept entry. Everyone waits without moving until elimination and uses the spectator exit. Start inside Blunderville resumes this idle/exit flow in a new session, including after Stop or reload; other duties remain unavailable. Only confirmed elimination-and-return cycles count. A member meeting its wallet target withdraws and leaves the party before shopping; a run limit preserves party membership. Each client keeps its own targets and progress.
 
+If registration is rejected because a party member is changing areas, farming retries only after confirming the complete game message. Retries share the first registration's 90-second deadline and recheck leadership, limits and queue state. Stop cancels pending recovery; other errors do not trigger retries.
+
 The grid shows every current MGF-trader offer, one item per row. Its headers are **Item | cart | backpack | $ | $$ | ?**: item name, editable desired inventory count, on-hand count, unit MGF price, remaining row cost and registration status. Hover a header for details. Set the cart quantity to 0 to disable purchasing that item; its row stays visible. **CLEAR** resets all Blunderville desired quantities without changing farming limits, automatic shopping, ending location or a purchase hold. The total needed appears below; already-satisfied targets contribute zero. Collectible items show a green check when registered or carried in inventory, a yellow `?` for an outstanding purchase, or a red X when confirmed missing; unavailable truth shows a neutral `?`, and nonregistrable items leave the status blank. These indicators do not change your quantities. Counts use the four ordinary inventory bags, excluding retainers, saddlebags, housing storage, and placed furniture. **Buy** purchases only outstanding quantities while idle. Each transaction validates the live offer, MGF and bag capacity, then checks both acquisition and spending. Unavailable inventory, unexpected UI, insufficient funds/capacity, or uncertain results stops shopping and preserves targets. An uncertain transaction retains a purchase hold across reloads: inspect inventory and MGF before using its acknowledgement control.
 
 Square entry requires progressing through **Just Crowning Around**, starting with Lewena at Entrance Square. The attendant's unlock denial stops visibly; automation does not undertake that quest. Square travel confirms only the owned prompt matching the client's current game sheet.
 
 **Shop when farming finishes** defaults off. **Ending location after shopping** defaults to **Don't go anywhere**, with the seven named inn destinations available separately. Ending travel follows successful shopping, including an already-satisfied list, and does not request repairs. Stop cancels owned farming, shopping, pending reload actions and ending travel; it never starts shopping.
 
-Use `/blunderville debug` (or `/bv debug`) to toggle the hidden reload scenario controls. They start hidden on each plugin load. The optional reload scenario defaults to none. It runs once after account/client readiness on the next plugin load. Changing its selection or stopping cancels pending dispatch; changing the selection does not run it immediately. Development attempts log a distinct compiled marker without changing release version `2.0.0.2`; the expected marker and runtime results are tracked in [TODO.md](TODO.md).
+Use `/blunderville debug` (or `/bv debug`) to toggle the hidden reload scenario controls. They start hidden on each plugin load. The optional reload scenario defaults to none. It runs once after account/client readiness on the next plugin load. Changing its selection or stopping cancels pending dispatch; changing the selection does not run it immediately. Development attempts log a distinct compiled marker without changing the release version; the expected marker and runtime results are tracked in [TODO.md](TODO.md).
 
 R: development bundle: `R:\XIVLauncher\devPlugins\MOGTOME-Blunderville\MOGTOME.dll`. Register the client-local path `A:\ff14\XIVLauncher\devPlugins\MOGTOME-Blunderville\MOGTOME.dll` through Dalamud's development UI and disable other MOGTOME load locations. Runtime verification and remaining party/visual acceptance checks are tracked in [TODO.md](TODO.md).
 
@@ -256,6 +264,10 @@ For issues, bugs, or feature requests:
 3. Check Dalamud log: `/xllog`
 4. Report issues with full error logs
 
+Settings > Advanced includes **Copy / ZIP Dalamud log**. It creates one manual snapshot and opens the export folder. At or above 100 MiB, it warns before export because logging may have stopped and recent activity may be missing. Share the ZIP manually and remove exports when finished with them.
+
 ---
 
 **Happy tome farming!** 🎮
+
+When XA Slave is loaded, **Open XA Slave log tools** opens its **Utility > XA Mods** panel, which contains Dalamud Log Cleaner. The existing **Copy / ZIP Dalamud log** action remains separate. Opening the panel does not run cleanup or change XA Slave settings.

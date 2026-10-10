@@ -96,6 +96,7 @@ public sealed class MoogleShopWindow : Window
         var captions = new[] { Ui.T("BV_Item"), "###Cart", "###Bag", "###Price", "###Total", "###Registration" };
         var tips = new[] { Ui.T("BV_Item"), Ui.T("BV_Wanted"), Ui.T("BV_OnHand"), Ui.T("Shop_UnitPrice"), Ui.T("Shop_RowPrice"), Ui.T("BV_RegistrationHelp") };
         using var controls = MaterialTable.PushControls();
+        using var tightRows = MogtomePresentation.Compact ? MaterialTable.PushTightRows() : default;
         var pad = ImGui.GetStyle().CellPadding;
         var widths = new[] { Math.Max(120 * scale, rows.Select(r => MaterialText.Measure(r.Name).X).DefaultIfEmpty().Max()),
             64 * scale, 58 * scale, 88 * scale, 100 * scale, 26 * scale };

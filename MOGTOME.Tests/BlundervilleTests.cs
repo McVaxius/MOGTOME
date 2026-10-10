@@ -56,6 +56,37 @@ public sealed class BlundervilleTests
     }
 
     [Fact]
+    public void ConfirmedRegistrationRejectionPreservesDeadlineAndDoesNotRearmAcceptedEntry()
+    {
+        var started = new DateTime(2026, 10, 9, 12, 0, 0, DateTimeKind.Utc);
+        var progress = new BlundervilleProgress();
+        Assert.False(progress.ObserveAreaChangeRejection(false, started));
+        progress.SubmitRegistration(started);
+        Assert.False(progress.ObserveAreaChangeRejection(true, started.AddSeconds(1)));
+        Assert.True(progress.RegistrationSubmitted);
+        Assert.True(progress.ObserveAreaChangeRejection(false, started.AddSeconds(1)));
+        Assert.False(progress.RegistrationSubmitted);
+        Assert.False(progress.ObserveAreaChangeRejection(false, started.AddSeconds(2)));
+        progress.SubmitRegistration(started.AddSeconds(3));
+        Assert.Equal(started, progress.RegistrationStartedAt);
+        Assert.True(progress.ObserveAreaChangeRejection(false, started.AddSeconds(89)));
+        Assert.False(progress.RegistrationTimedOut(started.AddSeconds(90)));
+        Assert.True(progress.RegistrationTimedOut(started.AddSeconds(90.001)));
+        progress.SubmitRegistration(started.AddSeconds(91));
+        Assert.False(progress.ObserveAreaChangeRejection(false, started.AddSeconds(91)));
+        progress.ResetEntry(); // Stop/next cycle must discard the old registration ownership.
+        Assert.Null(progress.RegistrationStartedAt);
+        Assert.False(progress.ObserveAreaChangeRejection(false, started.AddSeconds(92)));
+        progress.SubmitRegistration(started.AddSeconds(93));
+        Assert.False(progress.RegistrationTimedOut(started.AddSeconds(94)));
+        Assert.True(progress.TrySubmitCommence());
+        Assert.False(progress.ObserveAreaChangeRejection(false, started.AddSeconds(94)));
+        progress.Enter();
+        Assert.False(progress.ObserveAreaChangeRejection(false, started.AddSeconds(95)));
+        Assert.Equal(0, progress.Cycles);
+    }
+
+    [Fact]
     public void NpcIdentityCatalogRetainsEveryMatchingSpawnInsteadOfOnlyTheLastResident()
     {
         var identities = BlundervilleGameAdapter.ReadNpcIdentities([
