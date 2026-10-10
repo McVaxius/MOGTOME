@@ -2223,6 +2223,6 @@ DictionaryPaths와 PathSelectionsByPath를 비교합니다.
   <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>상품의 구매 조건을 확인할 수 없습니다. 구매 전에 목록을 새로 고침하세요.</value></data>
   <data name="Transparency visible on main window" xml:space="preserve"><value>메인 창에 투명도 표시</value></data>
   <data name="Shop_SelectMissing" xml:space="preserve"><value>미보유 선택</value></data>
-  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>미보유가 확인된 수집품과 검증된 PvP 장비의 목표 수량을 최소 1로 설정합니다. 더 큰 목표는 유지하며 구매나 이동을 시작하지 않습니다. 보유 또는 구매 조건이 불명확한 품목과 출처가 확인되지 않은 장비(던전 보상 포함)는 제외합니다.</value></data>
+  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>게임에서 미등록이 확인되고 소지품이나 확인된 보관소에 사본이 없는 수집품을 선택합니다. 더 큰 목표는 유지하며 구매나 이동을 시작하지 않습니다. 등록 상태나 구매 조건이 불명확한 품목은 제외합니다. 장비는 미보유와 PvP 출처 확인이 필요하며, 던전 보상 등 다른 장비는 수동으로 선택합니다.</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>추가: {0}. 정보 부족으로 제외: 보유 {1}, 장비 출처 {2}, 구매 조건 {3}.</value></data>
 </root>

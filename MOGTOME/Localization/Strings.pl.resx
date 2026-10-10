@@ -2373,6 +2373,6 @@ Użyj /ads mini, aby ręcznie włączyć lub wyłączyć AutoDuty.</value></data
   <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>Nie można potwierdzić dostępności oferty. Odśwież katalog przed zakupem.</value></data>
   <data name="Transparency visible on main window" xml:space="preserve"><value>Pokaż przezroczystość w głównym oknie</value></data>
   <data name="Shop_SelectMissing" xml:space="preserve"><value>Wybierz brakujące</value></data>
-  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Ustawia co najmniej jedną sztukę brakujących przedmiotów kolekcjonerskich i potwierdzonego wyposażenia PvP. Zachowuje większe cele; nie kupuje ani nie podróżuje. Pomija nieznane posiadanie, dostępność i wyposażenie bez potwierdzonego źródła, w tym łupy z lochów.</value></data>
+  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Wybiera przedmioty kolekcjonerskie potwierdzone przez grę jako niezarejestrowane, bez kopii w torbie ani znanych kopii w magazynie. Zachowuje większe cele; nie kupuje ani nie podróżuje. Pomija nieznaną rejestrację lub dostępność. Wyposażenie wymaga potwierdzonego braku i źródła PvP; pozostałe, w tym łupy z lochów, wybiera się ręcznie.</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>Dodano: {0}. Pominięto nieznane dane: posiadanie {1}, źródło wyposażenia {2}, dostępność {3}.</value></data>
 </root>

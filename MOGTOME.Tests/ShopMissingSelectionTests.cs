@@ -7,6 +7,38 @@ namespace MOGTOME.Tests;
 public sealed class ShopMissingSelectionTests
 {
     [Fact]
+    public void NativeUnregisteredCollectiblesAreSelectableWithoutStorageAbsenceEvidence()
+    {
+        foreach (var action in new uint[] { 1322, 853, 20086, 37312, 25183, 2633, 1013, 3357 })
+        {
+            var native = BlundervilleGameAdapter.ReadRegistration(action, 0, 2);
+            var ownership = BlundervilleGameAdapter.ReadOwnership(true, 0, native, XaItemOwnershipState.Unknown);
+            Assert.Equal(BlundervilleRegistration.Unknown, ownership);
+            var selection = BlundervilleGameAdapter.ReadSelectionState(ownership, native);
+            var targets = new Dictionary<uint, int>();
+            var result = ShopMissingSelection.Apply(targets,
+                [(100u, ShopMissingKind.Collectible, selection, ShopOfferAvailability.Available)]);
+            Assert.Equal(1, result.Added);
+            Assert.Equal(1, targets[100]);
+            Assert.Equal(0, result.UnknownOwnership);
+        }
+    }
+
+    [Fact]
+    public void InvalidCarriedCountCannotConfirmMissingRegistration()
+        => Assert.Equal(BlundervilleRegistration.Unknown, BlundervilleGameAdapter.ReadRegistration(1322, -1, 2));
+
+    [Theory]
+    [InlineData((int)BlundervilleRegistration.Owned, (int)BlundervilleRegistration.Missing, (int)BlundervilleRegistration.Owned)]
+    [InlineData((int)BlundervilleRegistration.Unknown, (int)BlundervilleRegistration.Owned, (int)BlundervilleRegistration.Owned)]
+    [InlineData((int)BlundervilleRegistration.Unknown, (int)BlundervilleRegistration.Unknown, (int)BlundervilleRegistration.Unknown)]
+    [InlineData((int)BlundervilleRegistration.Unknown, (int)BlundervilleRegistration.None, (int)BlundervilleRegistration.Unknown)]
+    [InlineData((int)BlundervilleRegistration.None, (int)BlundervilleRegistration.None, (int)BlundervilleRegistration.None)]
+    public void ManualSelectionHonorsOwnedCopiesAndUnknownNativeRegistration(int ownership, int registration, int expected)
+        => Assert.Equal((BlundervilleRegistration)expected, BlundervilleGameAdapter.ReadSelectionState(
+            (BlundervilleRegistration)ownership, (BlundervilleRegistration)registration));
+
+    [Fact]
     public void SelectionPreservesLargerAndUnrelatedTargetsAndIsIdempotent()
     {
         var targets = new Dictionary<uint, int> { [100] = 7, [999] = 4 };

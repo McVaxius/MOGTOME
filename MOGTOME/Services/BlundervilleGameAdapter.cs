@@ -156,7 +156,7 @@ internal sealed unsafe class BlundervilleGameAdapter
     {
         if (actionId is not (1322 or 853 or 20086 or 37312 or 25183 or 2633 or 1013 or 3357)) return BlundervilleRegistration.None;
         if (inventoryCount > 0 || unlockStatus == 1) return BlundervilleRegistration.Owned;
-        return inventoryCount.HasValue && unlockStatus == 2 ? BlundervilleRegistration.Missing : BlundervilleRegistration.Unknown;
+        return inventoryCount == 0 && unlockStatus == 2 ? BlundervilleRegistration.Missing : BlundervilleRegistration.Unknown;
     }
 
     internal static BlundervilleRegistration Ownership(uint itemId, int? inventoryCount, XaItemOwnershipState stored)
@@ -178,6 +178,18 @@ internal sealed unsafe class BlundervilleGameAdapter
             XaItemOwnershipState.Missing => BlundervilleRegistration.Missing,
             _ => BlundervilleRegistration.Unknown,
         };
+    }
+
+    internal static BlundervilleRegistration SelectionState(uint itemId, int? inventoryCount, BlundervilleRegistration ownership)
+        => ReadSelectionState(ownership, Registration(itemId, inventoryCount));
+
+    internal static BlundervilleRegistration ReadSelectionState(BlundervilleRegistration ownership, BlundervilleRegistration registration)
+    {
+        if (ownership == BlundervilleRegistration.Owned || registration == BlundervilleRegistration.Owned)
+            return BlundervilleRegistration.Owned;
+        // This manual action targets unregistered collectibles. It is not a claim
+        // that every storage source has been observed empty (required for gear).
+        return registration == BlundervilleRegistration.Missing ? registration : ownership;
     }
 
 

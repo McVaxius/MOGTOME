@@ -190,7 +190,8 @@ public sealed class BlundervilleWindow : Window, IDisposable
         {
             missingResult = ShopMissingSelection.Apply(settings.PurchaseTargets,
                 catalog.GroupBy(o => o.ItemId).Where(g => g.Count() == 1).Select(g => g.Single())
-                    .Select(o => (o.ItemId, o.MissingKind, ownership[o.ItemId], eligibility[o.ItemId])));
+                    .Select(o => (o.ItemId, o.MissingKind,
+                        BlundervilleGameAdapter.SelectionState(o.ItemId, inventory[o.ItemId], ownership[o.ItemId]), eligibility[o.ItemId])));
             changed |= missingResult.Value.Added > 0;
         }
         if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) UiLayout.SetTooltip(Ui.T("Shop_SelectMissingHelp"));

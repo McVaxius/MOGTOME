@@ -1,3 +1,7 @@
+2026-10-10 - Fix unregistered collectible selection
+
+- Fix Select Missing adding nothing when the game confirms an unregistered collectible but XADB cannot certify complete storage absence. Both shops now use the native registration result for manual collectible selection; known inventory/storage copies still take precedence. Unavailable native registration and unproven equipment absence remain skipped. Selection does not buy or travel.
+
 2026-10-10 - Manual missing-item selection (I518/I519)
 
 - Add Select Missing to both shop lists. Preserve larger desired quantities and unrelated entries; selection never starts buying or travel. Show skipped unknown ownership, source and eligibility counts.

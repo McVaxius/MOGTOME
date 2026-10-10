@@ -11,7 +11,7 @@ namespace MOGTOME.Services;
 
 public sealed class BlundervilleService : IDisposable
 {
-    public const string BuildMarker = "devhub-I503-I511-I512-I513-I514-20261009-04";
+    public const string BuildMarker = "devhub-I518-select-missing-20261010-01";
     private enum Stage { Idle, Farming, Finishing, LeavingParty, Shopping, Ending }
     private readonly Plugin plugin;
     private readonly BlundervilleGameAdapter game;

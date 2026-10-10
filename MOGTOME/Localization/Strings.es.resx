@@ -2223,6 +2223,6 @@ Usa /ads mini para activar o desactivar AutoDuty manualmente.</value></data>
   <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>No se puede verificar la disponibilidad de la oferta. Actualiza el catálogo antes de comprar.</value></data>
   <data name="Transparency visible on main window" xml:space="preserve"><value>Mostrar transparencia en la ventana principal</value></data>
   <data name="Shop_SelectMissing" xml:space="preserve"><value>Seleccionar faltantes</value></data>
-  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Establece en al menos uno los coleccionables faltantes y el equipo JcJ verificado. Conserva objetivos mayores; no compra ni viaja. Omite propiedad o disponibilidad desconocidas y equipo de origen sin verificar, incluido el botín de mazmorras.</value></data>
+  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Selecciona coleccionables que el juego confirma sin registrar, sin copias llevadas ni almacenadas conocidas. Conserva objetivos mayores; no compra ni viaja. Omite registro o disponibilidad desconocidos. El equipo necesita ausencia verificada y origen JcJ; el resto, incluido el botín de mazmorras, se selecciona manualmente.</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>Añadidos: {0}. Omitidos por datos desconocidos: propiedad {1}, origen del equipo {2}, disponibilidad {3}.</value></data>
 </root>

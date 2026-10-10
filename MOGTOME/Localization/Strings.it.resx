@@ -2223,6 +2223,6 @@ Usa /ads mini per attivare o disattivare AutoDuty manualmente.</value></data>
   <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>La disponibilità dell&apos;offerta non è verificabile. Aggiorna il catalogo prima di acquistare.</value></data>
   <data name="Transparency visible on main window" xml:space="preserve"><value>Mostra trasparenza nella finestra principale</value></data>
   <data name="Shop_SelectMissing" xml:space="preserve"><value>Seleziona mancanti</value></data>
-  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Imposta ad almeno uno i collezionabili mancanti e l’equipaggiamento PvP verificato. Mantiene obiettivi maggiori; non acquista né viaggia. Salta possesso o disponibilità sconosciuti e l’equipaggiamento di origine non verificata, incluso il bottino dei dungeon.</value></data>
+  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Seleziona collezionabili che il gioco conferma non registrati, senza copie trasportate o note in deposito. Mantiene obiettivi maggiori; non acquista né viaggia. Salta registrazione o disponibilità sconosciute. L’equipaggiamento richiede assenza verificata e origine PvP; gli altri oggetti, incluso il bottino dei dungeon, restano manuali.</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>Aggiunti: {0}. Dati sconosciuti saltati: possesso {1}, origine equipaggiamento {2}, disponibilità {3}.</value></data>
 </root>

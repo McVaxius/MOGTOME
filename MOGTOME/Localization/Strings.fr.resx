@@ -2217,6 +2217,6 @@ Utilisez /ads mini pour activer ou désactiver AutoDuty manuellement.</value></d
   <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>La disponibilité de l&apos;offre est inconnue. Actualisez le catalogue avant d&apos;acheter.</value></data>
   <data name="Transparency visible on main window" xml:space="preserve"><value>Afficher la transparence dans la fenêtre principale</value></data>
   <data name="Shop_SelectMissing" xml:space="preserve"><value>Sélectionner les manquants</value></data>
-  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Fixe les objets de collection manquants et l’équipement JcJ confirmé à au moins un. Conserve les objectifs supérieurs ; aucun achat ni déplacement. Ignore la possession ou la disponibilité inconnue et l’équipement sans source vérifiée, dont les butins de donjon.</value></data>
+  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Sélectionne les objets de collection confirmés non enregistrés par le jeu, sans exemplaire porté ni stocké connu. Conserve les objectifs supérieurs ; aucun achat ni déplacement. Ignore l’enregistrement ou la disponibilité inconnus. L’équipement exige une absence confirmée et une source JcJ ; les autres équipements, dont les butins de donjon, restent manuels.</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>Ajoutés : {0}. Inconnus ignorés : possession {1}, source d’équipement {2}, disponibilité {3}.</value></data>
 </root>
