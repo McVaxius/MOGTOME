@@ -2340,11 +2340,11 @@ DictionaryPaths और PathSelectionsByPath की तुलना करता 
   <data name="BV_UnitMgf" xml:space="preserve"><value>एक वस्तु की MGF कीमत।</value></data>
   <data name="BV_NeededMgf" xml:space="preserve"><value>इस पंक्ति की कमी के लिए आवश्यक MGF। पूरे या बंद लक्ष्य की लागत 0 है।</value></data>
   <data name="BV_TotalMgf" xml:space="preserve"><value>कुल आवश्यक MGF: {0}</value></data>
-  <data name="BV_Registered" xml:space="preserve"><value>पंजीकृत या इन्वेंट्री में मौजूद</value></data>
-  <data name="BV_NotRegistered" xml:space="preserve"><value>पंजीकृत नहीं और इन्वेंट्री में नहीं</value></data>
+  <data name="BV_Registered" xml:space="preserve"><value>उपलब्ध या पंजीकृत (इन्वेंटरी, रिटेनर, आर्मोयर या ग्लैमर ड्रेसर)</value></data>
+  <data name="BV_NotRegistered" xml:space="preserve"><value>पंजीकरण और पात्र के भंडार में अनुपस्थिति की पुष्टि हुई</value></data>
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>खरीदने के लिए निर्धारित</value></data>
-  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>पंजीकरण या इन्वेंट्री उपलब्ध नहीं</value></data>
-  <data name="BV_RegistrationHelp" xml:space="preserve"><value>संग्रहणीय वस्तुएँ: हरा चेक = पंजीकृत या इन्वेंटरी में; लाल X = अभाव की पुष्टि; पीला ? = खरीद तय; धूसर ? = स्थिति अज्ञात। अन्य वस्तुओं में खाली।</value></data>
+  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>स्वामित्व अज्ञात; पात्र के भंडार का डेटा अधूरा या अनुपलब्ध है</value></data>
+  <data name="BV_RegistrationHelp" xml:space="preserve"><value>संग्रहणीय वस्तुएँ और उपकरण: हरा निशान = उपलब्ध या पंजीकृत; लाल X = अनुपस्थिति की पुष्टि; पीला ? = खरीद की योजना; धूसर ? = स्वामित्व अज्ञात। अन्य वस्तुएँ खाली हैं।</value></data>
   <data name="Shop_Title" xml:space="preserve"><value>MOGTOME दुकान</value></data>
   <data name="Shop_Button" xml:space="preserve"><value>दुकान</value></data>
   <data name="Shop_Refresh" xml:space="preserve"><value>ताज़ा करें</value></data>
@@ -2383,4 +2383,9 @@ AutoDuty को मैन्युअल रूप से चालू या �
   <data name="Opens XA Slave's Utility &gt; XA Mods panel, which contains Dalamud Log Cleaner." xml:space="preserve"><value>XA Slave का Utility &gt; XA Mods पैनल खोलता है, जिसमें Dalamud Log Cleaner है।</value></data>
   <data name="XA Slave log tools could not be opened." xml:space="preserve"><value>XA Slave के लॉग उपकरण नहीं खोले जा सके।</value></data>
   <data name="BV_RegistrationRetry" xml:space="preserve"><value>पार्टी का एक सदस्य क्षेत्र बदल रहा है। मूल समय सीमा के भीतर पंजीकरण फिर से करेंगे।</value></data>
+  <data name="Shop_HideOwned" xml:space="preserve"><value>मौजूद वस्तुएँ छिपाएँ</value></data>
+  <data name="Shop_EmptyView" xml:space="preserve"><value>फ़िल्टर से मेल खाने वाला कोई प्रस्ताव नहीं है। छिपे हुए लक्ष्य भी कुल लागत में शामिल हैं।</value></data>
+  <data name="Shop_Locked" xml:space="preserve"><value>चुना हुआ प्रस्ताव खोज, उपलब्धि, ड्यूटी या इवेंट की शर्त के कारण बंद है।</value></data>
+  <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>प्रस्ताव की उपलब्धता की पुष्टि नहीं हो सकी। खरीदने से पहले सूची रीफ़्रेश करें।</value></data>
+  <data name="Transparency visible on main window" xml:space="preserve"><value>मुख्य विंडो में पारदर्शिता दिखाएँ</value></data>
 </root>

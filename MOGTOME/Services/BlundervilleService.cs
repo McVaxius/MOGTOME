@@ -140,7 +140,7 @@ public sealed class BlundervilleService : IDisposable
     private void LoadCatalog()
     {
         catalogLoaded = true;
-        try { game.LoadCatalog(); }
+        try { game.LoadCatalog(); ShopOfferEligibility.RefreshAchievements(Catalog.Select(offer => offer.Gate)); }
         catch (Exception ex) { Plugin.Log.Warning(ex, "[MOGTOME][BV] catalog unavailable"); Status = Ui.M("BV_NoCatalog"); }
     }
 
@@ -504,6 +504,7 @@ public sealed class BlundervilleService : IDisposable
             else SetStage(Stage.Ending, "BV_EndingTravel");
             return;
         }
+        if (!CheckEligibility(next)) return;
         if (!EnsureSquare()) return;
         if (Plugin.Condition[ConditionFlag.InDutyQueue]) { Fail("BV_BusyClient"); return; }
         if (!BlundervilleGameAdapter.Visible("ShopExchangeCurrency") && !BlundervilleGameAdapter.Visible("ShopExchangeItem"))
@@ -568,6 +569,7 @@ public sealed class BlundervilleService : IDisposable
         }
         var item = Plugin.DataManager.GetExcelSheet<Item>().GetRow(next.ItemId);
         if (available < next.ReceiveCount || (item.IsUnique && beforeCount > 0)) { Fail("BV_NoCapacity"); return; }
+        if (!CheckEligibility(next)) return;
         Settings.PurchaseReviewRequired = true;
         plugin.ConfigManager.SaveCurrentAccount(); // Retain the hold across unload/reload until verified or explicitly reviewed.
         pendingPurchase = next; // Record ownership BEFORE submission, including rejected/uncertain callback results.
@@ -579,6 +581,14 @@ public sealed class BlundervilleService : IDisposable
             ? BlundervilleGameAdapter.Callback(addon, 0, row, 1, 0)
             : BlundervilleGameAdapter.Callback(addon, 0, row, 1);
         if (!accepted) Fail("BV_UncertainPurchase");
+    }
+
+    private bool CheckEligibility(BlundervilleOffer offer)
+    {
+        var availability = ShopOfferEligibility.Read(offer.Gate);
+        if (availability == ShopOfferAvailability.Available) return true;
+        Fail(availability == ShopOfferAvailability.Locked ? "Shop_Locked" : "Shop_EligibilityUnknown");
+        return false;
     }
 
     private static bool IsTravelBusy() => Plugin.PluginInterface.GetIpcSubscriber<bool>("Lifestream.IsBusy").InvokeFunc();

@@ -86,7 +86,7 @@ internal sealed unsafe class MoogleShopGameAdapter
                 var offer = MoogleShopMath.ReadOffer(shop.RowId, shop.Name.ToString(),
                     row.ReceiveItems.Select(r => (r.Item.RowId, r.ReceiveCount, r.ReceiveHq)),
                     row.ItemCosts.Select(c => (c.ItemCost.RowId, c.CurrencyCost, (uint)c.CollectabilityCost, c.CostType)), tomestones);
-                if (offer != null) offers.Add(offer);
+                if (offer != null) offers.Add(offer with { Gate = ShopOfferEligibility.ReadGate(shop, row) });
             }
         }
         Catalog = offers.ToArray();

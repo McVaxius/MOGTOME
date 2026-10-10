@@ -17,6 +17,7 @@ public sealed class BlundervilleSettings
     public BlundervilleEndingLocation EndingLocation { get; set; }
     public BlundervilleReloadScenario ReloadScenario { get; set; }
     public bool PurchaseReviewRequired { get; set; }
+    public bool HideOwned { get; set; }
 }
 
 internal enum BlundervilleRole { Unknown, Solo, Leader, Member }
@@ -85,6 +86,25 @@ internal sealed class BlundervilleProgress
     internal bool Finished(BlundervilleSettings settings, uint wallet)
         => (settings.RunLimitEnabled && settings.RunLimit > 0 && Cycles >= settings.RunLimit) || WalletMet(settings, wallet);
     internal static int Deficit(int desired, int current) => Math.Max(0, desired - current);
+    internal static ulong TotalMgf(IReadOnlyDictionary<uint, int> targets,
+        IReadOnlyDictionary<uint, Services.BlundervilleOffer> offers, Func<uint, int?> inventory, out bool known)
+    {
+        ulong total = 0;
+        known = true;
+        foreach (var target in targets)
+        {
+            if (target.Value <= 0) continue;
+            var count = inventory(target.Key);
+            if (!count.HasValue || count.Value < 0) { known = false; continue; }
+            var deficit = Deficit(target.Value, count.Value);
+            if (deficit == 0) continue;
+            if (!offers.TryGetValue(target.Key, out var offer) || offer.ReceiveCount == 0 || deficit % offer.ReceiveCount != 0)
+            { known = false; continue; }
+            try { total = checked(total + (ulong)deficit / offer.ReceiveCount * offer.Price); }
+            catch (OverflowException) { known = false; }
+        }
+        return total;
+    }
     internal static bool PurchaseVerified(int beforeCount, uint beforeWallet, uint received, uint price, int count, uint wallet)
         => (long)count == (long)beforeCount + received && (long)wallet + price == beforeWallet;
 }

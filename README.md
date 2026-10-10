@@ -24,11 +24,17 @@ A Dalamud plugin for automated duty farming and tome acquisition in FFXIV.
 
 MOGTOME automates farming of The Praetorium (99 runs) and The Porta Decumana (until daily reset) for efficient tome acquisition. Converted from the G.O.O.N. SND script to a native Dalamud plugin.
 
-Main's **Team Leader** checkbox changes the same active-account role setting as
+Main's **Team Leader** checkbox directly beneath the header changes the same active-account role setting as
 Config > Party. Blunderville determines its role from the actual party independently.
 In ADS mode, a successful AutoDuty disable notice is informational and dismissible;
 use the manual **Enable AutoDuty** and **Disable AutoDuty** buttons in `/ads mini`
 to change its loaded state afterward. A Disable retry appears only while it remains loaded.
+
+Both shopping grids show ownership for collectibles and equippable gear using
+native inventory/registration and valid current-character XA Database storage.
+Retainer, armoire and glamour-dresser ownership does not increase the carried
+inventory count or change a manually configured purchase deficit. Refresh XADB
+after recording storage; empty or incomplete storage data leaves ownership unknown.
 
 ### Features
 
@@ -95,7 +101,7 @@ See [Configuration](#configuration) for the per-account Setup Wizard.
 
 ### Interface language
 
-**Transparency** applies to the complete plugin window, including its titlebar and popups. Settings provides normal opacity, automatic focus fade, faded opacity and delay; defaults are 100%, fading to 50% after 10 seconds without focus and restoring on focus. Compact and language controls can be hidden independently on Main while remaining available in Settings.
+**Transparency** applies to the complete plugin window, including its titlebar and popups. Settings provides normal opacity, automatic focus fade, faded opacity and delay; defaults are 100%, fading to 50% after 10 seconds without focus and restoring on focus. The first load of this update applies Compact mode once per account and hides Main's Compact and Transparency controls. Settings retains density, transparency and independent Compact/Transparency/Language visibility choices; subsequent loads preserve your changes.
 
 Main's titlebar opens Settings or Statistics and provides Start, Stop and Stop after the next successful run, with current readiness checks. Main and Blunderville Mini use the existing packaged icon in branding/titlebars, including when collapsed. Blunderville provides readiness-gated Start, Buy and Stop actions; starting also requires a configured session limit.
 
@@ -116,6 +122,8 @@ Hindi uses the consumer-owned Windows text renderer for natural Devanagari shapi
 Open **SHOP** on Main, `/mog shop`, or `/mogtome shop`. Opening the window or reloading never travels or spends. Choose the Itinerant Moogle's city (Limsa Lominsa, Ul'dah, or Gridania) and the displayed tomestone type. The current game-sheet exchange is filtered by active festival requirements; archived previous/past catalogs are excluded. City and desired item counts belong to the active account, separately from Blunderville. The tomestone view selection lasts for the current plugin load.
 
 Every offer uses one row: **Item | cart | backpack | $ | $$ | ?**. Cart is the desired total in your four ordinary bags; 0 disables that target. Prices show all required currencies, joined with `+` when necessary; hover a price for their names and the exchange bundle size. Row totals buy the deficit, rounded up to whole bundles. Balances and total outstanding costs appear separately for each currency. Collectible indicators use the same registration/inventory rules as Blunderville. Retainers, saddlebags, housing storage and placed furniture are excluded.
+
+**Hide Owned** defaults off in each shop independently. It hides confirmed owned collectible/equipment rows; confirmed quest, achievement, duty and event restrictions are hidden regardless of that checkbox. Unknown eligibility stays visible with an explanatory tooltip. Filters preserve every desired quantity and its outstanding cost, including hidden targets. Buy stops visibly when a needed offer is locked or its eligibility cannot be verified.
 
 **CLEAR** resets the entire shopping list to zero desired quantities while keeping catalog rows and ownership indicators visible. It preserves the city and any purchase review hold, and is disabled during queued or active automation.
 

@@ -2174,11 +2174,11 @@ Results logged to Dalamud log.</value>
   <data name="BV_UnitMgf" xml:space="preserve"><value>MGF price for one item.</value></data>
   <data name="BV_NeededMgf" xml:space="preserve"><value>MGF needed for this row&apos;s missing quantity. Satisfied or disabled targets cost 0.</value></data>
   <data name="BV_TotalMgf" xml:space="preserve"><value>Total MGF needed: {0}</value></data>
-  <data name="BV_Registered" xml:space="preserve"><value>Registered or in inventory</value></data>
-  <data name="BV_NotRegistered" xml:space="preserve"><value>Not registered and not in inventory</value></data>
+  <data name="BV_Registered" xml:space="preserve"><value>Owned or registered (inventory, retainers, armoire or glamour dresser)</value></data>
+  <data name="BV_NotRegistered" xml:space="preserve"><value>Confirmed missing from registration and character storage</value></data>
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>Scheduled to be purchased</value></data>
-  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Registration or inventory unavailable</value></data>
-  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Collectibles: green check = registered or in inventory; red X = confirmed missing; yellow ? = scheduled purchase; grey ? = unavailable truth. Other items are blank.</value></data>
+  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Ownership unknown; character storage is incomplete or unavailable</value></data>
+  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Collectibles and gear: green check = owned or registered; red X = confirmed missing; yellow ? = scheduled purchase; grey ? = unknown ownership. Other items are blank.</value></data>
   <data name="Shop_Title" xml:space="preserve"><value>MOGTOME Shop</value></data>
   <data name="Shop_Button" xml:space="preserve"><value>SHOP</value></data>
   <data name="Shop_Refresh" xml:space="preserve"><value>Refresh</value></data>
@@ -2217,4 +2217,9 @@ Use /ads mini to enable or disable AutoDuty manually.</value></data>
   <data name="Opens XA Slave's Utility &gt; XA Mods panel, which contains Dalamud Log Cleaner." xml:space="preserve"><value>Opens XA Slave's Utility &gt; XA Mods panel, which contains Dalamud Log Cleaner.</value></data>
   <data name="XA Slave log tools could not be opened." xml:space="preserve"><value>XA Slave log tools could not be opened.</value></data>
   <data name="BV_RegistrationRetry" xml:space="preserve"><value>A party member is changing areas. Retrying registration within the original deadline.</value></data>
+  <data name="Shop_HideOwned" xml:space="preserve"><value>Hide Owned</value></data>
+  <data name="Shop_EmptyView" xml:space="preserve"><value>No offers match the current filters. Hidden targets still count toward the total.</value></data>
+  <data name="Shop_Locked" xml:space="preserve"><value>A selected offer is locked by a quest, achievement, duty or event requirement.</value></data>
+  <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>Offer eligibility is unavailable. Refresh the catalog before buying.</value></data>
+  <data name="Transparency visible on main window" xml:space="preserve"><value>Transparency visible on main window</value></data>
 </root>

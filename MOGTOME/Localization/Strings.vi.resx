@@ -2324,11 +2324,11 @@ Ghi kết quả vào log Dalamud.</value>
   <data name="BV_UnitMgf" xml:space="preserve"><value>Giá MGF cho một vật phẩm.</value></data>
   <data name="BV_NeededMgf" xml:space="preserve"><value>MGF cần cho số lượng còn thiếu ở dòng này. Mục tiêu đã đủ hoặc đã tắt có giá 0.</value></data>
   <data name="BV_TotalMgf" xml:space="preserve"><value>Tổng MGF cần: {0}</value></data>
-  <data name="BV_Registered" xml:space="preserve"><value>Đã đăng ký hoặc có trong túi đồ</value></data>
-  <data name="BV_NotRegistered" xml:space="preserve"><value>Chưa đăng ký và không có trong túi đồ</value></data>
+  <data name="BV_Registered" xml:space="preserve"><value>Đã có hoặc đăng ký (hành trang, người hầu, tủ đồ hoặc tủ glamour)</value></data>
+  <data name="BV_NotRegistered" xml:space="preserve"><value>Đã xác nhận thiếu trong đăng ký và kho nhân vật</value></data>
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>Đã lên kế hoạch mua</value></data>
-  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Không có thông tin đăng ký hoặc túi đồ</value></data>
-  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Vật phẩm đăng ký: dấu kiểm xanh = đã đăng ký hoặc có trong túi; X đỏ = xác nhận chưa có; ? vàng = dự định mua; ? xám = chưa rõ trạng thái. Vật phẩm khác để trống.</value></data>
+  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Chưa rõ sở hữu; dữ liệu kho nhân vật thiếu hoặc không khả dụng</value></data>
+  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Đồ sưu tầm và trang bị: dấu xanh = đã có hoặc đăng ký; X đỏ = xác nhận thiếu; ? vàng = dự định mua; ? xám = chưa rõ sở hữu. Đồ khác để trống.</value></data>
   <data name="Shop_Title" xml:space="preserve"><value>Cửa hàng MOGTOME</value></data>
   <data name="Shop_Button" xml:space="preserve"><value>CỬA HÀNG</value></data>
   <data name="Shop_Refresh" xml:space="preserve"><value>Làm mới</value></data>
@@ -2367,4 +2367,9 @@ Dùng /ads mini để bật hoặc tắt AutoDuty thủ công.</value></data>
   <data name="Opens XA Slave's Utility &gt; XA Mods panel, which contains Dalamud Log Cleaner." xml:space="preserve"><value>Mở bảng Utility &gt; XA Mods của XA Slave, chứa Dalamud Log Cleaner.</value></data>
   <data name="XA Slave log tools could not be opened." xml:space="preserve"><value>Không thể mở công cụ nhật ký XA Slave.</value></data>
   <data name="BV_RegistrationRetry" xml:space="preserve"><value>Một thành viên tổ đội đang chuyển khu vực. Thử đăng ký lại trong thời hạn ban đầu.</value></data>
+  <data name="Shop_HideOwned" xml:space="preserve"><value>Ẩn vật phẩm đã có</value></data>
+  <data name="Shop_EmptyView" xml:space="preserve"><value>Không có ưu đãi phù hợp bộ lọc. Mục tiêu bị ẩn vẫn được tính vào tổng chi phí.</value></data>
+  <data name="Shop_Locked" xml:space="preserve"><value>Một ưu đãi đã chọn bị khóa bởi yêu cầu nhiệm vụ, thành tựu, nội dung hoặc sự kiện.</value></data>
+  <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>Chưa xác minh được điều kiện mua. Hãy làm mới danh mục trước khi mua.</value></data>
+  <data name="Transparency visible on main window" xml:space="preserve"><value>Hiện độ trong suốt trên cửa sổ chính</value></data>
 </root>

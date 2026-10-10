@@ -23,7 +23,10 @@ using MOGTOME.Models;
 
 namespace MOGTOME.Services;
 
-internal sealed record BlundervilleOffer(uint ShopId, uint ItemId, uint ReceiveCount, uint Price, string ShopName);
+internal sealed record BlundervilleOffer(uint ShopId, uint ItemId, uint ReceiveCount, uint Price, string ShopName)
+{
+    internal ShopOfferGate Gate { get; init; } = new();
+}
 internal enum BlundervilleRegistration { None, Owned, Missing, Unknown }
 
 internal sealed unsafe class BlundervilleGameAdapter
@@ -46,7 +49,7 @@ internal sealed unsafe class BlundervilleGameAdapter
             var offer = ReadOffer(shop.RowId, shop.Name.ToString(),
                 row.ReceiveItems.Select(r => (r.Item.RowId, r.ReceiveCount, r.ReceiveHq)),
                 row.ItemCosts.Select(c => (c.ItemCost.RowId, c.CurrencyCost, (uint)c.CollectabilityCost, c.CostType)));
-            if (offer != null) offers.Add(offer);
+            if (offer != null) offers.Add(offer with { Gate = ShopOfferEligibility.ReadGate(shop, row) });
         }
         // Resolve identities in English once; object interactions and UI checks use IDs/client language.
         npcIds = ReadNpcIdentities(Plugin.DataManager.GetExcelSheet<ENpcResident>(ClientLanguage.English)
@@ -150,6 +153,18 @@ internal sealed unsafe class BlundervilleGameAdapter
         if (actionId is not (1322 or 853 or 20086 or 37312 or 25183 or 2633 or 1013 or 3357)) return BlundervilleRegistration.None;
         if (inventoryCount > 0 || unlockStatus == 1) return BlundervilleRegistration.Owned;
         return inventoryCount.HasValue && unlockStatus == 2 ? BlundervilleRegistration.Missing : BlundervilleRegistration.Unknown;
+    }
+
+    internal static BlundervilleRegistration Ownership(uint itemId, int? inventoryCount, ISet<uint> storedOwned)
+    {
+        if (!Plugin.DataManager.GetExcelSheet<Item>().TryGetRow(itemId, out var item)) return BlundervilleRegistration.None;
+        var registration = Registration(itemId, inventoryCount);
+        var collectible = registration != BlundervilleRegistration.None || item.EquipSlotCategory.RowId != 0;
+        if (!collectible) return BlundervilleRegistration.None;
+        if (inventoryCount > 0 || registration == BlundervilleRegistration.Owned || storedOwned.Contains(itemId))
+            return BlundervilleRegistration.Owned;
+        // Native registration absence alone does not rule out an unregistered copy in storage.
+        return BlundervilleRegistration.Unknown;
     }
 
 

@@ -79,19 +79,27 @@ public sealed class MoogleShopWindow : Window
             if (UiLayout.Combo("###MoogleShopCurrency", ref selected, currencies.Select(id => Ui.Item(id).Render()).ToArray(), currencies.Length))
                 shop.CurrencyId = currencies[selected];
         }
-        changed |= DrawGrid(settings, shop.SelectedCatalog);
+        var hideOwned = settings.HideOwned;
+        if (UiLayout.Checkbox(Ui.L("Shop_HideOwned"), ref hideOwned)) { settings.HideOwned = hideOwned; changed = true; }
+        changed |= DrawGrid(settings, shop.SelectedCatalog, shop.Catalog);
         ImGui.EndDisabled();
         if (changed) plugin.ConfigManager.SaveCurrentAccount();
     }
 
-    private bool DrawGrid(MoogleShopSettings settings, IReadOnlyList<MoogleShopOffer> catalog)
+    private bool DrawGrid(MoogleShopSettings settings, IReadOnlyList<MoogleShopOffer> catalog, IReadOnlyList<MoogleShopOffer> completeCatalog)
     {
         var scale = ImGuiHelpers.GlobalScale;
-        var offers = catalog.GroupBy(o => o.ItemId).Where(g => g.Count() == 1).ToDictionary(g => g.Key, g => g.Single());
-        var rows = catalog.Select(o => o.ItemId).Concat(settings.PurchaseTargets.Keys).Distinct()
+        var offers = completeCatalog.GroupBy(o => o.ItemId).Where(g => g.Count() == 1).ToDictionary(g => g.Key, g => g.Single());
+        var allRows = catalog.Select(o => o.ItemId).Concat(settings.PurchaseTargets.Keys).Distinct()
             .Select(id => (Id: id, Name: Ui.Item(id).Render())).OrderBy(r => r.Name, StringComparer.Create(Ui.Culture, true)).ToArray();
-        var costs = new Dictionary<uint, ulong>();
-        var totalsKnown = true;
+        var storedOwned = plugin.XaDatabase.ReadOwned(allRows.Select(row => row.Id));
+        var inventory = allRows.ToDictionary(row => row.Id, row =>
+            BlundervilleGameAdapter.TryInventory(row.Id, out var count, out _) ? (int?)count : null);
+        var ownership = allRows.ToDictionary(row => row.Id, row => BlundervilleGameAdapter.Ownership(row.Id, inventory[row.Id], storedOwned));
+        var eligibility = allRows.ToDictionary(row => row.Id, row => offers.TryGetValue(row.Id, out var offer)
+            ? ShopOfferEligibility.Read(offer.Gate) : ShopOfferAvailability.Unknown);
+        var rows = allRows.Where(row => eligibility[row.Id] != ShopOfferAvailability.Locked &&
+            (!settings.HideOwned || ownership[row.Id] != BlundervilleRegistration.Owned)).ToArray();
         var changed = false;
         var captions = new[] { Ui.T("BV_Item"), "###Cart", "###Bag", "###Price", "###Total", "###Registration" };
         var tips = new[] { Ui.T("BV_Item"), Ui.T("BV_Wanted"), Ui.T("BV_OnHand"), Ui.T("Shop_UnitPrice"), Ui.T("Shop_RowPrice"), Ui.T("BV_RegistrationHelp") };
@@ -103,14 +111,14 @@ public sealed class MoogleShopWindow : Window
         var inner = widths.Sum() + pad.X * 12 + 2;
         var scroll = inner > UiLayout.AvailableWidth;
         var rowHeight = Math.Max(ImGui.GetFrameHeight(), ImGui.GetTextLineHeight()) + pad.Y * 2;
-        var footerLines = catalog.SelectMany(o => o.Costs).Select(c => c.ItemId).Distinct().Count();
+        var footerLines = completeCatalog.SelectMany(o => o.Costs).Select(c => c.ItemId).Distinct().Count();
         var footerHeight = (Math.Max(1, footerLines) + 1) * (ImGui.GetTextLineHeightWithSpacing() * 2);
         var height = Math.Max(rowHeight * 2, Math.Min(rowHeight * (rows.Length + 1) + (scroll ? ImGui.GetStyle().ScrollbarSize : 0) + pad.Y * 2,
             ImGui.GetContentRegionAvail().Y - footerHeight));
         var flags = ImGuiTableFlags.RowBg | ImGuiTableFlags.BordersInnerH | ImGuiTableFlags.BordersOuter |
             ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.NoSavedSettings | ImGuiTableFlags.ScrollY;
         if (scroll) flags |= ImGuiTableFlags.ScrollX;
-        if (rows.Length == 0) UiLayout.Wrapped(Ui.T("Shop_NoCatalog"));
+        if (rows.Length == 0) UiLayout.Wrapped(Ui.T(allRows.Length == 0 ? "Shop_NoCatalog" : "Shop_EmptyView"));
         else if (ImGui.BeginTable("###MoogleShopGrid", 6, flags, new Vector2(UiLayout.AvailableWidth, height), scroll ? inner : 0))
         {
             try
@@ -154,10 +162,12 @@ public sealed class MoogleShopWindow : Window
                     try
                     {
                         var desired = settings.PurchaseTargets.GetValueOrDefault(id);
-                        var known = BlundervilleGameAdapter.TryInventory(id, out var count, out _);
+                        var known = inventory[id].HasValue;
+                        var count = inventory[id].GetValueOrDefault();
                         offers.TryGetValue(id, out var offer);
                         ImGui.TableSetColumnIndex(0); ImGui.AlignTextToFramePadding(); UiLayout.SingleLine(name);
-                        if (ImGui.IsItemHovered()) UiLayout.SetTooltip(name);
+                        if (ImGui.IsItemHovered()) UiLayout.SetTooltip(name + (eligibility[id] == ShopOfferAvailability.Unknown
+                            ? "\n" + Ui.T("Shop_EligibilityUnknown") : string.Empty));
                         ImGui.TableSetColumnIndex(1); ImGui.SetNextItemWidth(-1);
                         if (ImGui.InputInt("###Desired", ref desired, 0, 0))
                         {
@@ -168,9 +178,6 @@ public sealed class MoogleShopWindow : Window
                         ImGui.TableSetColumnIndex(2); ImGui.AlignTextToFramePadding(); UiLayout.SingleLine(known ? count.ToString(Ui.Culture) : "?");
                         var transactions = offer != null && known ? MoogleShopMath.Transactions(desired, count, offer.ReceiveCount) : 0;
                         var costKnown = desired == 0 || known && (count >= desired || offer != null);
-                        totalsKnown &= costKnown;
-                        if (costKnown && transactions > 0 && offer != null)
-                            foreach (var cost in offer.Costs) costs[cost.ItemId] = costs.GetValueOrDefault(cost.ItemId) + checked((ulong)transactions * cost.Count);
                         ImGui.TableSetColumnIndex(3); ImGui.AlignTextToFramePadding();
                         UiLayout.SingleLine(offer == null ? "?" : string.Join(" + ", offer.Costs.Select(c => ((decimal)c.Count / offer.ReceiveCount).ToString("0.##", Ui.Culture))));
                         if (offer != null && ImGui.IsItemHovered()) UiLayout.SetTooltip(CostTooltip(offer, 1) + "\n" + Ui.T("Shop_Bundle", offer.ReceiveCount));
@@ -179,15 +186,15 @@ public sealed class MoogleShopWindow : Window
                             string.Join(" + ", offer.Costs.Select(c => ((ulong)transactions * c.Count).ToString(Ui.Culture))));
                         if (offer != null && ImGui.IsItemHovered()) UiLayout.SetTooltip(CostTooltip(offer, (ulong)transactions));
                         ImGui.TableSetColumnIndex(5); ImGui.AlignTextToFramePadding();
-                        BlundervilleWindow.DrawRegistration(BlundervilleGameAdapter.Registration(id, known ? count : null), desired > (known ? count : 0));
+                        BlundervilleWindow.DrawRegistration(ownership[id], desired > (known ? count : 0));
                     }
                     finally { ImGui.PopID(); }
                 }
             }
             finally { ImGui.EndTable(); }
         }
-        else totalsKnown = false;
-        foreach (var id in catalog.SelectMany(o => o.Costs).Select(c => c.ItemId).Distinct())
+        var costs = MoogleShopMath.TotalCosts(settings.PurchaseTargets, offers, id => inventory.GetValueOrDefault(id), out var totalsKnown);
+        foreach (var id in completeCatalog.SelectMany(o => o.Costs).Select(c => c.ItemId).Distinct())
         {
             var known = BlundervilleGameAdapter.TryInventory(id, out var balance, out _);
             var total = costs.GetValueOrDefault(id);

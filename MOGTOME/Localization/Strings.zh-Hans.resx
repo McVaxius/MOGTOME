@@ -2174,11 +2174,11 @@ Path: {0}
   <data name="BV_UnitMgf" xml:space="preserve"><value>每个物品的MGF价格。</value></data>
   <data name="BV_NeededMgf" xml:space="preserve"><value>本行不足数量所需的MGF。已满足或禁用的目标费用为0。</value></data>
   <data name="BV_TotalMgf" xml:space="preserve"><value>所需MGF总计：{0}</value></data>
-  <data name="BV_Registered" xml:space="preserve"><value>已登记或在背包中</value></data>
-  <data name="BV_NotRegistered" xml:space="preserve"><value>未登记且背包中没有</value></data>
+  <data name="BV_Registered" xml:space="preserve"><value>已拥有或已登记（背包、雇员、收藏柜或投影台）</value></data>
+  <data name="BV_NotRegistered" xml:space="preserve"><value>已确认未登记且角色储物空间中没有</value></data>
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>计划购买</value></data>
-  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>无法获取登记状态或背包信息</value></data>
-  <data name="BV_RegistrationHelp" xml:space="preserve"><value>可登记物品：绿色勾表示已登记或背包内持有；红色X表示确认未拥有；黄色?表示计划购买；灰色?表示状态未知。其他物品留空。</value></data>
+  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>拥有状态未知：角色储物数据不完整或不可用</value></data>
+  <data name="BV_RegistrationHelp" xml:space="preserve"><value>收藏品与装备：绿色勾＝已拥有或已登记；红色X＝确认缺少；黄色?＝计划购买；灰色?＝拥有状态未知。其他物品为空白。</value></data>
   <data name="Shop_Title" xml:space="preserve"><value>MOGTOME 商店</value></data>
   <data name="Shop_Button" xml:space="preserve"><value>商店</value></data>
   <data name="Shop_Refresh" xml:space="preserve"><value>刷新</value></data>
@@ -2217,4 +2217,9 @@ Path: {0}
   <data name="Opens XA Slave's Utility &gt; XA Mods panel, which contains Dalamud Log Cleaner." xml:space="preserve"><value>打开XA Slave的Utility &gt; XA Mods面板，其中包含Dalamud Log Cleaner。</value></data>
   <data name="XA Slave log tools could not be opened." xml:space="preserve"><value>无法打开XA Slave日志工具。</value></data>
   <data name="BV_RegistrationRetry" xml:space="preserve"><value>一名小队成员正在切换区域。将在最初的时限内重试报名。</value></data>
+  <data name="Shop_HideOwned" xml:space="preserve"><value>隐藏已拥有物品</value></data>
+  <data name="Shop_EmptyView" xml:space="preserve"><value>没有符合筛选条件的商品。隐藏的购买目标仍计入总费用。</value></data>
+  <data name="Shop_Locked" xml:space="preserve"><value>所选商品受任务、成就、副本或活动条件限制。</value></data>
+  <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>无法确认商品的购买条件。购买前请刷新目录。</value></data>
+  <data name="Transparency visible on main window" xml:space="preserve"><value>在主窗口显示透明度</value></data>
 </root>

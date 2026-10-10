@@ -1,3 +1,20 @@
+2026-10-10 - Compact defaults (I521)
+
+- Start in Compact mode and hide the main Compact/Transparency controls once per account. Appearance settings can restore those controls and change density; later loads preserve those choices and unknown saved settings.
+
+2026-10-10 - Shop ownership and unlock filters (I520)
+
+- Add independent Hide Owned controls to both shops, defaulting off. Hide confirmed quest, achievement, duty and event restrictions while keeping unknown eligibility visible.
+- Preserve hidden purchase quantities and their outstanding costs. Validate eligibility before travel and purchase submission; unavailable eligibility stops visibly without spending.
+
+2026-10-10 - Shop storage ownership (I519)
+
+- Show owned collectible and equipment indicators from native registration/inventory and valid current-character XADB storage data. Keep carried counts and purchasing deficits separate; incomplete storage remains unknown.
+
+2026-10-10 - Main Team Leader position (I516)
+
+- Move the existing Team Leader checkbox directly beneath the main header, preserving its saved account setting and runtime role update.
+
 2026-10-09 - Tight compact list grids (I503/I509)
 
 

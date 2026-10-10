@@ -52,6 +52,7 @@ public sealed class MoogleShopService : IDisposable
         try
         {
             game.LoadCatalog();
+            ShopOfferEligibility.RefreshAchievements(Catalog.Select(offer => offer.Gate));
             catalogAvailable = true;
             if (!Catalog.Any(o => o.TomestoneId == CurrencyId)) CurrencyId = Catalog.FirstOrDefault()?.TomestoneId ?? 0;
             foreach (var id in Catalog.SelectMany(o => o.Costs).Select(c => c.ItemId).Distinct())
@@ -84,7 +85,14 @@ public sealed class MoogleShopService : IDisposable
         {
             if (!BlundervilleGameAdapter.TryInventory(target.Key, out var count, out _)) return Reject("BV_NoInventory");
             if (count < target.Value && sessionCatalog.Count(o => o.ItemId == target.Key) != 1) return Reject("Shop_NoCatalog");
-            if (count < target.Value) firstOffer ??= sessionCatalog.Single(o => o.ItemId == target.Key);
+            if (count < target.Value)
+            {
+                var offer = sessionCatalog.Single(o => o.ItemId == target.Key);
+                var availability = ShopOfferEligibility.Read(offer.Gate);
+                if (availability != ShopOfferAvailability.Available)
+                    return Reject(availability == ShopOfferAvailability.Locked ? "Shop_Locked" : "Shop_EligibilityUnknown");
+                firstOffer ??= offer;
+            }
         }
         var menuOpen = BlundervilleGameAdapter.Visible("SelectString") || BlundervilleGameAdapter.Visible("SelectIconString");
         var existingTrader = menuOpen ? game.FindTrader() : null;
@@ -165,6 +173,7 @@ public sealed class MoogleShopService : IDisposable
             if (next.Costs.Any(c => beforeBalances[c.ItemId] < c.Count)) { Fail("Shop_NoFunds"); return; }
             var item = Plugin.DataManager.GetExcelSheet<Item>().GetRow(next.ItemId);
             if (capacity < next.ReceiveCount || (item.IsUnique && (beforeItem > 0 || next.ReceiveCount > 1))) { Fail("BV_NoCapacity"); return; }
+            if (!CheckEligibility(next)) return;
             SetHold(true);
             pending = next; submitted = DateTime.UtcNow; confirmationSubmitted = false;
             Plugin.Log.Information("[MOGTOME][Shop] purchase submitted item={Item}; before={Before}; receive={Receive}; row={Row}; costs={Costs}; balances={Balances}; marker={Marker}",
@@ -183,9 +192,18 @@ public sealed class MoogleShopService : IDisposable
             if (count >= target.Value) continue;
             var matches = sessionCatalog.Where(o => o.ItemId == target.Key).ToArray();
             if (matches.Length != 1) { Fail("Shop_NoCatalog"); return null; }
+            if (!CheckEligibility(matches[0])) return null;
             return matches[0];
         }
         return null;
+    }
+
+    private bool CheckEligibility(MoogleShopOffer offer)
+    {
+        var availability = ShopOfferEligibility.Read(offer.Gate);
+        if (availability == ShopOfferAvailability.Available) return true;
+        Fail(availability == ShopOfferAvailability.Locked ? "Shop_Locked" : "Shop_EligibilityUnknown");
+        return false;
     }
 
     private static bool ReadBalances(MoogleShopOffer offer, out Dictionary<uint, int> balances)

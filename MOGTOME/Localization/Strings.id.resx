@@ -2324,11 +2324,11 @@ Hasil dicatat ke log Dalamud.</value>
   <data name="BV_UnitMgf" xml:space="preserve"><value>Harga MGF untuk satu item.</value></data>
   <data name="BV_NeededMgf" xml:space="preserve"><value>MGF untuk kekurangan pada baris ini. Target terpenuhi atau dinonaktifkan berbiaya 0.</value></data>
   <data name="BV_TotalMgf" xml:space="preserve"><value>Total MGF diperlukan: {0}</value></data>
-  <data name="BV_Registered" xml:space="preserve"><value>Terdaftar atau ada di inventaris</value></data>
-  <data name="BV_NotRegistered" xml:space="preserve"><value>Belum terdaftar dan tidak ada di inventaris</value></data>
+  <data name="BV_Registered" xml:space="preserve"><value>Dimiliki atau terdaftar (inventaris, retainer, armoire atau lemari glamour)</value></data>
+  <data name="BV_NotRegistered" xml:space="preserve"><value>Dipastikan tidak terdaftar dan tidak ada di penyimpanan karakter</value></data>
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>Dijadwalkan untuk dibeli</value></data>
-  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Status pendaftaran atau inventaris tidak tersedia</value></data>
-  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Koleksi: centang hijau = terdaftar atau di inventaris; X merah = dipastikan belum ada; ? kuning = pembelian dijadwalkan; ? abu-abu = status tidak diketahui. Item lain kosong.</value></data>
+  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Kepemilikan tidak diketahui; data penyimpanan karakter tidak lengkap atau tidak tersedia</value></data>
+  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Koleksi dan perlengkapan: centang hijau = dimiliki atau terdaftar; X merah = dipastikan belum dimiliki; ? kuning = rencana pembelian; ? abu-abu = kepemilikan tidak diketahui. Item lainnya kosong.</value></data>
   <data name="Shop_Title" xml:space="preserve"><value>Toko MOGTOME</value></data>
   <data name="Shop_Button" xml:space="preserve"><value>TOKO</value></data>
   <data name="Shop_Refresh" xml:space="preserve"><value>Segarkan</value></data>
@@ -2367,4 +2367,9 @@ Gunakan /ads mini untuk mengaktifkan atau menonaktifkan AutoDuty secara manual.<
   <data name="Opens XA Slave's Utility &gt; XA Mods panel, which contains Dalamud Log Cleaner." xml:space="preserve"><value>Membuka panel Utility &gt; XA Mods XA Slave yang berisi Dalamud Log Cleaner.</value></data>
   <data name="XA Slave log tools could not be opened." xml:space="preserve"><value>Alat log XA Slave tidak dapat dibuka.</value></data>
   <data name="BV_RegistrationRetry" xml:space="preserve"><value>Anggota party sedang berpindah area. Pendaftaran dicoba lagi dalam batas waktu semula.</value></data>
+  <data name="Shop_HideOwned" xml:space="preserve"><value>Sembunyikan yang dimiliki</value></data>
+  <data name="Shop_EmptyView" xml:space="preserve"><value>Tidak ada penawaran yang cocok dengan filter. Target tersembunyi tetap dihitung dalam total.</value></data>
+  <data name="Shop_Locked" xml:space="preserve"><value>Penawaran yang dipilih terkunci oleh syarat misi, pencapaian, konten, atau acara.</value></data>
+  <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>Ketersediaan penawaran belum dapat dipastikan. Segarkan katalog sebelum membeli.</value></data>
+  <data name="Transparency visible on main window" xml:space="preserve"><value>Tampilkan transparansi di jendela utama</value></data>
 </root>

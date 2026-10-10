@@ -2324,11 +2324,11 @@ Sonuçlar Dalamud günlüğüne yazılır.</value>
   <data name="BV_UnitMgf" xml:space="preserve"><value>Bir eşyanın MGF fiyatı.</value></data>
   <data name="BV_NeededMgf" xml:space="preserve"><value>Bu satırdaki eksik miktar için gereken MGF. Tamamlanan veya kapatılan hedeflerin maliyeti 0’dır.</value></data>
   <data name="BV_TotalMgf" xml:space="preserve"><value>Toplam gereken MGF: {0}</value></data>
-  <data name="BV_Registered" xml:space="preserve"><value>Kayıtlı veya envanterde</value></data>
-  <data name="BV_NotRegistered" xml:space="preserve"><value>Kayıtlı değil ve envanterde yok</value></data>
+  <data name="BV_Registered" xml:space="preserve"><value>Sahip olunan veya kayıtlı (envanter, yardımcılar, armoire veya glamour dolabı)</value></data>
+  <data name="BV_NotRegistered" xml:space="preserve"><value>Kayıtta ve karakter depolarında bulunmadığı doğrulandı</value></data>
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>Satın alınması planlandı</value></data>
-  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Kayıt veya envanter bilgisi kullanılamıyor</value></data>
-  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Koleksiyonlar: yeşil onay = kayıtlı veya envanterde; kırmızı X = yokluğu doğrulandı; sarı ? = satın alma planlandı; gri ? = durum bilinmiyor. Diğer eşyalar boş gösterilir.</value></data>
+  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Sahiplik bilinmiyor; karakter depo verileri eksik veya kullanılamıyor</value></data>
+  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Koleksiyon ve ekipman: yeşil onay = sahip olunan veya kayıtlı; kırmızı X = eksikliği doğrulandı; sarı ? = satın alma planlandı; gri ? = sahiplik bilinmiyor. Diğer öğeler boş.</value></data>
   <data name="Shop_Title" xml:space="preserve"><value>MOGTOME Mağazası</value></data>
   <data name="Shop_Button" xml:space="preserve"><value>MAĞAZA</value></data>
   <data name="Shop_Refresh" xml:space="preserve"><value>Yenile</value></data>
@@ -2367,4 +2367,9 @@ AutoDuty'yi elle etkinleştirmek veya devre dışı bırakmak için /ads mini ku
   <data name="Opens XA Slave's Utility &gt; XA Mods panel, which contains Dalamud Log Cleaner." xml:space="preserve"><value>Dalamud Log Cleaner'ı içeren XA Slave Utility &gt; XA Mods panelini açar.</value></data>
   <data name="XA Slave log tools could not be opened." xml:space="preserve"><value>XA Slave günlük araçları açılamadı.</value></data>
   <data name="BV_RegistrationRetry" xml:space="preserve"><value>Bir parti üyesi bölge değiştiriyor. Kayıt, ilk süre sınırı içinde yeniden denenecek.</value></data>
+  <data name="Shop_HideOwned" xml:space="preserve"><value>Sahip olunanları gizle</value></data>
+  <data name="Shop_EmptyView" xml:space="preserve"><value>Filtrelere uyan teklif yok. Gizlenen hedefler toplam maliyete dahil olmaya devam eder.</value></data>
+  <data name="Shop_Locked" xml:space="preserve"><value>Seçili bir teklif görev, başarım, içerik veya etkinlik koşulu nedeniyle kilitli.</value></data>
+  <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>Teklifin kullanılabilirliği doğrulanamıyor. Satın almadan önce kataloğu yenileyin.</value></data>
+  <data name="Transparency visible on main window" xml:space="preserve"><value>Ana pencerede saydamlığı göster</value></data>
 </root>

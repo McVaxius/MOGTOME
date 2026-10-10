@@ -2168,11 +2168,11 @@ DictionaryPathsとPathSelectionsByPathを比較します。
   <data name="BV_UnitMgf" xml:space="preserve"><value>アイテム1個のMGF価格。</value></data>
   <data name="BV_NeededMgf" xml:space="preserve"><value>この行の不足分に必要なMGF。達成済み・無効の目標は0です。</value></data>
   <data name="BV_TotalMgf" xml:space="preserve"><value>必要MGF合計: {0}</value></data>
-  <data name="BV_Registered" xml:space="preserve"><value>登録済み、または所持品にあります</value></data>
-  <data name="BV_NotRegistered" xml:space="preserve"><value>未登録で所持品にもありません</value></data>
+  <data name="BV_Registered" xml:space="preserve"><value>所持または登録済み（所持品、リテイナー、愛蔵品キャビネット、ミラージュドレッサー）</value></data>
+  <data name="BV_NotRegistered" xml:space="preserve"><value>登録およびキャラクターの保管先にないことを確認済み</value></data>
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>購入予定</value></data>
-  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>登録状況または所持品を確認できません</value></data>
-  <data name="BV_RegistrationHelp" xml:space="preserve"><value>登録可能品：緑のチェック＝登録済みまたは所持中、赤のX＝未登録・未所持を確認、黄色の?＝購入予定、灰色の?＝状態不明。その他は空欄です。</value></data>
+  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>所持状況不明：保管データが不完全または利用できません</value></data>
+  <data name="BV_RegistrationHelp" xml:space="preserve"><value>収集品と装備：緑のチェック＝所持または登録済み、赤のX＝未所持を確認済み、黄色の?＝購入予定、灰色の?＝所持状況不明。その他のアイテムは空欄です。</value></data>
   <data name="Shop_Title" xml:space="preserve"><value>MOGTOME ショップ</value></data>
   <data name="Shop_Button" xml:space="preserve"><value>ショップ</value></data>
   <data name="Shop_Refresh" xml:space="preserve"><value>更新</value></data>
@@ -2211,4 +2211,9 @@ DictionaryPathsとPathSelectionsByPathを比較します。
   <data name="Opens XA Slave's Utility &gt; XA Mods panel, which contains Dalamud Log Cleaner." xml:space="preserve"><value>Dalamud Log Cleanerを含むXA SlaveのUtility &gt; XA Modsパネルを開きます。</value></data>
   <data name="XA Slave log tools could not be opened." xml:space="preserve"><value>XA Slaveのログツールを開けませんでした。</value></data>
   <data name="BV_RegistrationRetry" xml:space="preserve"><value>パーティメンバーがエリア移動中です。最初の制限時間内に参加申請を再試行します。</value></data>
+  <data name="Shop_HideOwned" xml:space="preserve"><value>所持済みを非表示</value></data>
+  <data name="Shop_EmptyView" xml:space="preserve"><value>フィルターに一致する商品はありません。非表示の購入目標も合計に含まれます。</value></data>
+  <data name="Shop_Locked" xml:space="preserve"><value>選択した商品はクエスト、アチーブメント、コンテンツ、イベントの条件で制限されています。</value></data>
+  <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>商品の購入条件を確認できません。購入前にカタログを更新してください。</value></data>
+  <data name="Transparency visible on main window" xml:space="preserve"><value>メインウィンドウに透明度を表示</value></data>
 </root>

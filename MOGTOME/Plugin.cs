@@ -72,6 +72,7 @@ public sealed class Plugin : IDalamudPlugin
     public AutoDutyIPC AutoDutyIPC { get; init; }
     public BossModIPC BossModIPC { get; init; }
     public MogtomeDadIpcService DadIpcService { get; init; }
+    internal XaDatabaseIPC XaDatabase { get; }
 
     // Services
     public DatabaseService DatabaseService { get; private set; }
@@ -147,6 +148,7 @@ public sealed class Plugin : IDalamudPlugin
         RotationService = new RotationService(Log, ConfigManager, BossModIPC);
         AutoDutyIPC = new AutoDutyIPC(Log, CommandManager, RunHistoryService);
         DadIpcService = new MogtomeDadIpcService(PluginInterface, this);
+        XaDatabase = new XaDatabaseIPC(PluginInterface);
 
         // Initialize Services (needs RotationService)
         DutyTrackerService = new DutyTrackerService(Log, Configuration, State, ConfigManager, RunHistoryService);

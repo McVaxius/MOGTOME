@@ -11,11 +11,15 @@ public sealed class MoogleShopSettings
     public MoogleShopCity City { get; set; }
     public Dictionary<uint, int> PurchaseTargets { get; set; } = [];
     public bool PurchaseReviewRequired { get; set; }
+    public bool HideOwned { get; set; }
 }
 
 internal sealed record MoogleShopCost(uint ItemId, uint Count);
 internal sealed record MoogleShopOffer(uint ShopId, string ShopName, uint ItemId, uint ReceiveCount,
-    uint TomestoneId, MoogleShopCost[] Costs);
+    uint TomestoneId, MoogleShopCost[] Costs)
+{
+    internal ShopOfferGate Gate { get; init; } = new();
+}
 
 internal sealed record TomestoneStack(int Bag, ushort Slot, uint ItemId, uint Quantity, bool Mergeable = true);
 internal sealed record TomestoneMove(TomestoneStack Source, TomestoneStack Destination, uint Transfer, long Total);
@@ -24,6 +28,28 @@ internal static class MoogleShopMath
 {
     internal static long Transactions(int desired, int current, uint receive)
         => receive == 0 ? 0 : (Math.Max(0L, (long)desired - current) + receive - 1) / receive;
+
+    internal static Dictionary<uint, ulong> TotalCosts(IReadOnlyDictionary<uint, int> targets,
+        IReadOnlyDictionary<uint, MoogleShopOffer> offers, Func<uint, int?> inventory, out bool known)
+    {
+        var costs = new Dictionary<uint, ulong>();
+        known = true;
+        foreach (var target in targets.Where(target => target.Value > 0))
+        {
+            var count = inventory(target.Key);
+            if (!count.HasValue || count.Value < 0) { known = false; continue; }
+            if (count.Value >= target.Value) continue;
+            if (!offers.TryGetValue(target.Key, out var offer) || offer.ReceiveCount == 0) { known = false; continue; }
+            var transactions = Transactions(target.Value, count.Value, offer.ReceiveCount);
+            try
+            {
+                foreach (var cost in offer.Costs)
+                    costs[cost.ItemId] = checked(costs.GetValueOrDefault(cost.ItemId) + (ulong)transactions * cost.Count);
+            }
+            catch (OverflowException) { known = false; }
+        }
+        return costs;
+    }
 
     internal static bool FestivalEligible(uint required, uint phase, IEnumerable<(uint Id, uint Phase)> active)
         => required == 0 || active.Any(f => f.Id == required && (phase == 0 || f.Phase == phase));

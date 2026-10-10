@@ -127,6 +127,7 @@ public class MainWindow : Window, IDisposable
         var scale = ImGuiHelpers.GlobalScale;
         plugin.ConsumableInventoryService.Refresh();
         DrawHeader();
+        DrawTeamLeader();
         UiLayout.Panel(() =>
         {
             var origin = ImGui.GetCursorScreenPos();
@@ -238,7 +239,8 @@ public class MainWindow : Window, IDisposable
         var koFi = Ui.T("Main_KoFi").Trim('♡', ' ');
         var linkWidth = UiLayout.IconButtonWidth(koFi) + UiLayout.IconButtonWidth("Discord") + spacing;
         var compactWidth = ImGui.GetFrameHeight() + ImGui.GetStyle().ItemInnerSpacing.X + AethertekUI.MaterialText.Measure("C").X;
-        var transparencyWidth = ImGui.GetFrameHeight() + ImGui.GetStyle().ItemInnerSpacing.X + AethertekUI.MaterialText.Measure(Ui.T("Transparency")).X;
+        var transparencyWidth = plugin.Configuration.UiTransparencyVisibleOnMainWindow
+            ? ImGui.GetFrameHeight() + ImGui.GetStyle().ItemInnerSpacing.X + AethertekUI.MaterialText.Measure(Ui.T("Transparency")).X : 0;
         var controlsWidth = (plugin.Configuration.UiCompactVisibleOnMainWindow ? compactWidth : 0) + transparencyWidth + linkWidth
             + (plugin.Configuration.UiLanguageVisibleOnMainWindow ? plugin.Appearance.LanguageWidth : 0) + spacing * 3;
         MogtomeAppearance.DrawHeaderArt(origin, imageSize);
@@ -262,10 +264,14 @@ public class MainWindow : Window, IDisposable
         if (plugin.Configuration.UiCompactVisibleOnMainWindow)
         {
             plugin.Appearance.DrawCompact();
-            UiLayout.SameLineIfFits(transparencyWidth);
         }
-        plugin.Appearance.DrawTransparencyToggle();
-        UiLayout.SameLineIfFits(linkWidth);
+        if (plugin.Configuration.UiTransparencyVisibleOnMainWindow)
+        {
+            if (plugin.Configuration.UiCompactVisibleOnMainWindow) UiLayout.SameLineIfFits(transparencyWidth);
+            plugin.Appearance.DrawTransparencyToggle();
+        }
+        if (plugin.Configuration.UiCompactVisibleOnMainWindow || plugin.Configuration.UiTransparencyVisibleOnMainWindow)
+            UiLayout.SameLineIfFits(linkWidth);
         if (UiLayout.IconButton(Ui.L("Main_KoFi"), MaterialIcon.Heart, new Vector2(0, (MogtomePresentation.Compact ? 36 : 42) * scale), koFi)) Process.Start(new ProcessStartInfo { FileName = "https://ko-fi.com/mcvaxius", UseShellExecute = true });
         if (ImGui.IsItemHovered()) UiLayout.SetTooltip(Ui.T("Main_SupportDevelopmentOnKoFi"));
         UiLayout.SameLineIfFits(UiLayout.IconButtonWidth("Discord"));
@@ -433,14 +439,10 @@ public class MainWindow : Window, IDisposable
         }
     }
 
-    private void DrawParty()
+    private void DrawTeamLeader()
     {
         var config = plugin.Configuration;
         var state = plugin.State;
-        using var rows = new MaterialStyleScope();
-        rows.Style(ImGuiStyleVar.ItemSpacing, new Vector2(ImGui.GetStyle().ItemSpacing.X, (MogtomePresentation.Compact ? 6 : 6.5f) * ImGuiHelpers.GlobalScale));
-        Heading("Main_PartySummary");
-        CardSeparator();
         var isLeader = config.IsPartyLeader;
         if (UiLayout.Checkbox(Ui.L("Main_TeamLeader"), ref isLeader))
         {
@@ -451,6 +453,16 @@ public class MainWindow : Window, IDisposable
         }
         if (ImGui.IsItemHovered())
             UiLayout.SetTooltip(Ui.T("Config_RuntimeRoleFollowsThisSavedSettingUse"));
+    }
+
+    private void DrawParty()
+    {
+        var config = plugin.Configuration;
+        var state = plugin.State;
+        using var rows = new MaterialStyleScope();
+        rows.Style(ImGuiStyleVar.ItemSpacing, new Vector2(ImGui.GetStyle().ItemSpacing.X, (MogtomePresentation.Compact ? 6 : 6.5f) * ImGuiHelpers.GlobalScale));
+        Heading("Main_PartySummary");
+        CardSeparator();
         if (Plugin.PartyList.Length == 0) UiLayout.Wrapped(Ui.T("Main_NoParty"));
         var memberIndex = 0;
         foreach (var member in Plugin.PartyList)

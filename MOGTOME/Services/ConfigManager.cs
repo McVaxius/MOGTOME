@@ -94,7 +94,7 @@ public class ConfigManager
                 AccountId = "temporary",
                 CreatedAt = DateTime.UtcNow,
                 LastUsed = DateTime.UtcNow,
-                Settings = new Configuration()
+                Settings = new Configuration { UiCompactDefaultsApplied = true }
             };
         }
         
@@ -239,7 +239,7 @@ public class ConfigManager
         catch (Exception ex)
         {
             log.Error($"[MOGTOME][ConfigManager] Failed to load account {accountId}: {ex.Message}");
-            return new Configuration();
+            return new Configuration { UiCompactDefaultsApplied = true };
         }
     }
 

@@ -429,6 +429,44 @@ public sealed class LocalizationTests : IDisposable
         }
     }
 
+    [Fact]
+    public void CompactMigrationUsesTheAccountFileOnceAndPreservesLaterChoicesAndUnknownSettings()
+    {
+        SetService("Log", Fake<IPluginLog>());
+        var directory = Path.Combine(Path.GetTempPath(), "MogtomeAppearanceTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        try
+        {
+            var path = Path.Combine(directory, "profile.json");
+            File.WriteAllText(path, """{"Version":2,"UiCompact":false,"UiCompactVisibleOnMainWindow":true,"UiTransparencyVisibleOnMainWindow":true,"UiWindowOpacityPercent":73,"MaxRuns":66,"Blunderville":{"PurchaseTargets":{"41491":2},"PurchaseReviewRequired":true},"FutureSetting":{"value":[1,"unchanged"]}}""");
+            var config = Configuration.LoadFromFile(path);
+            Assert.True(config.UiCompact);
+            Assert.True(config.UiCompactDefaultsApplied);
+            Assert.False(config.UiCompactVisibleOnMainWindow);
+            Assert.False(config.UiTransparencyVisibleOnMainWindow);
+            var saved = File.ReadAllText(path);
+            Configuration.LoadFromFile(path);
+            Assert.Equal(saved, File.ReadAllText(path));
+            config.UiCompact = false;
+            config.UiCompactVisibleOnMainWindow = config.UiTransparencyVisibleOnMainWindow = true;
+            config.SaveToFile(path);
+            for (var reload = 0; reload < 2; reload++)
+            {
+                config = Configuration.LoadFromFile(path);
+                Assert.False(config.UiCompact);
+                Assert.True(config.UiCompactVisibleOnMainWindow);
+                Assert.True(config.UiTransparencyVisibleOnMainWindow);
+                Assert.Equal(73, config.UiWindowOpacityPercent);
+                Assert.Equal(66, config.MaxRuns);
+                Assert.Equal(2, config.Blunderville.PurchaseTargets[41491]);
+                Assert.True(config.Blunderville.PurchaseReviewRequired);
+                using var json = JsonDocument.Parse(File.ReadAllText(path));
+                Assert.Equal("unchanged", json.RootElement.GetProperty("FutureSetting").GetProperty("value")[1].GetString());
+            }
+        }
+        finally { Directory.Delete(directory, recursive: true); }
+    }
+
     private void SetService(string name, object value)
     {
         var property = typeof(Plugin).GetProperty(name, BindingFlags.Static | BindingFlags.NonPublic)!;

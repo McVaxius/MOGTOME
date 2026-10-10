@@ -2174,11 +2174,11 @@ Path: {0}
   <data name="BV_UnitMgf" xml:space="preserve"><value>Цена одной единицы в MGF.</value></data>
   <data name="BV_NeededMgf" xml:space="preserve"><value>MGF для недостающего количества в этой строке. Выполненные или отключённые цели стоят 0.</value></data>
   <data name="BV_TotalMgf" xml:space="preserve"><value>Всего требуется MGF: {0}</value></data>
-  <data name="BV_Registered" xml:space="preserve"><value>Зарегистрировано или есть в инвентаре</value></data>
-  <data name="BV_NotRegistered" xml:space="preserve"><value>Не зарегистрировано и отсутствует в инвентаре</value></data>
+  <data name="BV_Registered" xml:space="preserve"><value>Есть или зарегистрировано (инвентарь, ретейнеры, армуар или гламурный комод)</value></data>
+  <data name="BV_NotRegistered" xml:space="preserve"><value>Отсутствие подтверждено в регистрации и хранилищах персонажа</value></data>
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>Запланировано к покупке</value></data>
-  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Регистрация или инвентарь недоступны</value></data>
-  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Коллекционные предметы: зелёная галочка = зарегистрирован или в инвентаре; красный X = подтверждённое отсутствие; жёлтый ? = покупка запланирована; серый ? = статус неизвестен. Остальные поля пустые.</value></data>
+  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Владение неизвестно: данные хранилищ неполные или недоступны</value></data>
+  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Коллекционные предметы и снаряжение: зелёная галочка — есть или зарегистрировано; красный X — отсутствие подтверждено; жёлтый ? — покупка запланирована; серый ? — владение неизвестно. Остальные предметы без отметки.</value></data>
   <data name="Shop_Title" xml:space="preserve"><value>Магазин MOGTOME</value></data>
   <data name="Shop_Button" xml:space="preserve"><value>МАГАЗИН</value></data>
   <data name="Shop_Refresh" xml:space="preserve"><value>Обновить</value></data>
@@ -2217,4 +2217,9 @@ Path: {0}
   <data name="Opens XA Slave's Utility &gt; XA Mods panel, which contains Dalamud Log Cleaner." xml:space="preserve"><value>Открывает панель Utility &gt; XA Mods в XA Slave, содержащую Dalamud Log Cleaner.</value></data>
   <data name="XA Slave log tools could not be opened." xml:space="preserve"><value>Не удалось открыть инструменты журналов XA Slave.</value></data>
   <data name="BV_RegistrationRetry" xml:space="preserve"><value>Участник группы меняет зону. Повторная регистрация в пределах исходного срока.</value></data>
+  <data name="Shop_HideOwned" xml:space="preserve"><value>Скрыть имеющееся</value></data>
+  <data name="Shop_EmptyView" xml:space="preserve"><value>Нет предложений по выбранным фильтрам. Скрытые цели по-прежнему учитываются в общей стоимости.</value></data>
+  <data name="Shop_Locked" xml:space="preserve"><value>Выбранное предложение заблокировано условием задания, достижения, контента или события.</value></data>
+  <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>Доступность предложения неизвестна. Обновите каталог перед покупкой.</value></data>
+  <data name="Transparency visible on main window" xml:space="preserve"><value>Показывать прозрачность в главном окне</value></data>
 </root>

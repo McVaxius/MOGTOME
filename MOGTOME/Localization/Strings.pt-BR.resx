@@ -2324,11 +2324,11 @@ Resultados registrados no log Dalamud.</value>
   <data name="BV_UnitMgf" xml:space="preserve"><value>Preço em MGF de uma unidade.</value></data>
   <data name="BV_NeededMgf" xml:space="preserve"><value>MGF necessários para a quantidade que falta nesta linha. Metas cumpridas ou desativadas custam 0.</value></data>
   <data name="BV_TotalMgf" xml:space="preserve"><value>Total de MGF necessários: {0}</value></data>
-  <data name="BV_Registered" xml:space="preserve"><value>Registrado ou no inventário</value></data>
-  <data name="BV_NotRegistered" xml:space="preserve"><value>Não registrado e ausente do inventário</value></data>
+  <data name="BV_Registered" xml:space="preserve"><value>Possuído ou registrado (inventário, retentores, armário ou cômoda de glamour)</value></data>
+  <data name="BV_NotRegistered" xml:space="preserve"><value>Ausência confirmada nos registros e depósitos do personagem</value></data>
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>Compra programada</value></data>
-  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Registro ou inventário indisponível</value></data>
-  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Colecionáveis: marca verde = registrado ou no inventário; X vermelho = ausência confirmada; ? amarelo = compra prevista; ? cinza = estado desconhecido. Os demais ficam em branco.</value></data>
+  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Posse desconhecida; depósitos do personagem incompletos ou indisponíveis</value></data>
+  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Colecionáveis e equipamentos: marca verde = possuído ou registrado; X vermelho = ausência confirmada; ? amarelo = compra prevista; ? cinza = posse desconhecida. Outros itens ficam em branco.</value></data>
   <data name="Shop_Title" xml:space="preserve"><value>Loja MOGTOME</value></data>
   <data name="Shop_Button" xml:space="preserve"><value>LOJA</value></data>
   <data name="Shop_Refresh" xml:space="preserve"><value>Atualizar</value></data>
@@ -2367,4 +2367,9 @@ Use /ads mini para ativar ou desativar AutoDuty manualmente.</value></data>
   <data name="Opens XA Slave's Utility &gt; XA Mods panel, which contains Dalamud Log Cleaner." xml:space="preserve"><value>Abre o painel Utility &gt; XA Mods do XA Slave, que contém o Dalamud Log Cleaner.</value></data>
   <data name="XA Slave log tools could not be opened." xml:space="preserve"><value>Não foi possível abrir as ferramentas de log do XA Slave.</value></data>
   <data name="BV_RegistrationRetry" xml:space="preserve"><value>Um membro do grupo está mudando de área. Nova tentativa de registro dentro do prazo original.</value></data>
+  <data name="Shop_HideOwned" xml:space="preserve"><value>Ocultar itens possuídos</value></data>
+  <data name="Shop_EmptyView" xml:space="preserve"><value>Nenhuma oferta corresponde aos filtros. As metas ocultas continuam incluídas no total.</value></data>
+  <data name="Shop_Locked" xml:space="preserve"><value>Uma oferta selecionada está bloqueada por um requisito de missão, conquista, conteúdo ou evento.</value></data>
+  <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>Não é possível verificar a disponibilidade da oferta. Atualize o catálogo antes de comprar.</value></data>
+  <data name="Transparency visible on main window" xml:space="preserve"><value>Mostrar transparência na janela principal</value></data>
 </root>

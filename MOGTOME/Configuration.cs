@@ -16,9 +16,22 @@ public class Configuration
     public MoogleShopSettings MoogleShop { get; set; } = new();
     public Localization.UiLanguage? UiLanguage { get; set; }
     public uint UiAccentRgb { get; set; } = UiDesign.MogtomePresentation.ReferenceAccent;
-    public bool UiCompact { get; set; }
-    public bool UiCompactVisibleOnMainWindow { get; set; } = true;
+    public bool UiCompact { get; set; } = true;
+    public bool UiCompactVisibleOnMainWindow { get; set; }
+    public bool UiTransparencyVisibleOnMainWindow { get; set; }
+    public bool UiCompactDefaultsApplied { get; set; }
     public bool UiLanguageVisibleOnMainWindow { get; set; } = true;
+    [System.Text.Json.Serialization.JsonExtensionData]
+    public Dictionary<string, JsonElement> AdditionalSettings { get; set; } = [];
+
+    internal bool ApplyCompactDefaults()
+    {
+        if (UiCompactDefaultsApplied) return false;
+        UiCompact = true;
+        UiCompactVisibleOnMainWindow = UiTransparencyVisibleOnMainWindow = false;
+        UiCompactDefaultsApplied = true;
+        return true;
+    }
     public bool UiTransparencyEnabled { get; set; } = true;
     private int uiWindowOpacityPercent = 100;
     public int UiWindowOpacityPercent { get => uiWindowOpacityPercent; set => uiWindowOpacityPercent = Math.Clamp(value, 10, 100); }
@@ -177,7 +190,7 @@ public class Configuration
             if (!File.Exists(filePath))
             {
                 Plugin.Log.Debug($"[MOGTOME][Configuration] File not found, creating new: {filePath}");
-                return new Configuration();
+                return new Configuration { UiCompactDefaultsApplied = true };
             }
 
             var json = File.ReadAllText(filePath);
@@ -187,24 +200,26 @@ public class Configuration
             if (config == null)
             {
                 Plugin.Log.Warning($"[MOGTOME][Configuration] Failed to deserialize config from {filePath}, creating new");
-                return new Configuration();
+                return new Configuration { UiCompactDefaultsApplied = true };
             }
 
             Plugin.Log.Debug($"[MOGTOME][Configuration] Loaded from file: {filePath}");
             if (!document.RootElement.EnumerateObject().Any(property => property.Name.Equals("Version", StringComparison.OrdinalIgnoreCase)))
                 config.Version = 1;
+            var changed = config.ApplyCompactDefaults();
             if (config.Version < 2)
             {
                 config.AdsRepairMode = config.UseAdsSelfRepair ? AdsRepairMode.Self : AdsRepairMode.NpcYesInn;
                 config.Version = 2;
-                config.SaveToFile(filePath);
+                changed = true;
             }
+            if (changed) config.SaveToFile(filePath);
             return config;
         }
         catch (Exception ex)
         {
             Plugin.Log.Error($"[MOGTOME][Configuration] Failed to load from file {filePath}: {ex.Message}");
-            return new Configuration();
+            return new Configuration { UiCompactDefaultsApplied = true };
         }
     }
 
