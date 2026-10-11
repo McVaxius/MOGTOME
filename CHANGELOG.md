@@ -1,3 +1,8 @@
+2026-10-11 - Select missing Blunderville kits and gear
+
+- Include every equippable reward offered by the MGF trader in Select Missing, including Gentlebean garments and crowns. Preserve the Moogle shop's existing equipment-source restrictions and saved quantities.
+- Include framer's kits as collectibles and read their dedicated game unlock state. Registered kits and copies in the included inventory/storage count as owned.
+
 2026-10-11 - Count all owned storage in shop targets
 
 - Include inventory, equipped gear, Armoury Chest, both normal and premium saddlebag sides, retainers, armoire and glamour dresser in both shop counts and purchase deficits. Replace recorded readable-container counts with live counts so copies are not counted twice; retain recorded inaccessible storage.

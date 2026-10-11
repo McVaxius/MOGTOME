@@ -86,7 +86,7 @@ internal sealed unsafe class BlundervilleGameAdapter
         }
         var pvpItems = ShopMissingSelection.ReadPvpItems();
         Catalog = offers.Where(o => linkedShops.Contains(o.ShopId)).Distinct()
-            .Select(o => o with { MissingKind = ShopMissingSelection.ReadKind(o.ItemId, pvpItems) }).ToArray();
+            .Select(o => o with { MissingKind = ShopMissingSelection.ReadKind(o.ItemId, pvpItems, verifiedShopEquipment: true) }).ToArray();
         Plugin.Log.Information("[MOGTOME][BV] catalog offers={Offers}, MGF candidates={Candidates}, trader shops={Shops}, npc names={Names}, npc identities={Npcs}",
             Catalog.Count, offers.Count, linkedShops.Count, npcIds.Count, npcIds.Values.Sum(ids => ids.Count));
         var registrationStates = new List<BlundervilleRegistration>();
@@ -146,6 +146,14 @@ internal sealed unsafe class BlundervilleGameAdapter
         var actionId = item.ItemAction.ValueNullable?.Action.RowId ?? 0;
         var state = ReadRegistration(actionId, inventoryCount, null);
         if (state != BlundervilleRegistration.Unknown || !Plugin.ClientState.IsLoggedIn || Plugin.ObjectTable.LocalPlayer == null) return state;
+        if (actionId == 29459)
+        {
+            // Framer's kits use their AdditionalData ID in the dedicated player unlock bitmap.
+            var playerState = PlayerState.Instance();
+            var kitId = item.AdditionalData.RowId;
+            return !Plugin.PlayerState.IsLoaded || playerState == null || kitId == 0 ? state
+                : ReadRegistration(actionId, inventoryCount, playerState->IsFramersKitUnlocked(kitId) ? 1 : 2);
+        }
         // Same action categories and native unlock query as ADS's loot registrable check.
         var uiState = UIState.Instance();
         var exdItem = ExdModule.GetItemRowById(itemId);
@@ -155,7 +163,7 @@ internal sealed unsafe class BlundervilleGameAdapter
 
     internal static BlundervilleRegistration ReadRegistration(uint actionId, int? inventoryCount, int? unlockStatus)
     {
-        if (actionId is not (1322 or 853 or 20086 or 37312 or 25183 or 2633 or 1013 or 3357)) return BlundervilleRegistration.None;
+        if (actionId is not (1322 or 853 or 20086 or 37312 or 25183 or 2633 or 1013 or 3357 or 29459)) return BlundervilleRegistration.None;
         if (inventoryCount > 0 || unlockStatus == 1) return BlundervilleRegistration.Owned;
         return inventoryCount == 0 && unlockStatus == 2 ? BlundervilleRegistration.Missing : BlundervilleRegistration.Unknown;
     }

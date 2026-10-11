@@ -27,16 +27,17 @@ internal static class ShopMissingSelection
         return new(added, unknownOwnership, unknownAcquisition, unknownEligibility);
     }
 
-    internal static ShopMissingKind ReadKind(uint itemId, IReadOnlySet<uint> pvpItems)
+    internal static ShopMissingKind ReadKind(uint itemId, IReadOnlySet<uint> pvpItems, bool verifiedShopEquipment = false)
     {
         if (!Plugin.DataManager.GetExcelSheet<Item>().TryGetRow(itemId, out var item)) return ShopMissingKind.None;
         var action = item.ItemAction.ValueNullable?.Action.RowId ?? 0;
-        return Classify(action, item.EquipSlotCategory.RowId != 0, pvpItems.Contains(itemId), itemId);
+        return Classify(action, item.EquipSlotCategory.RowId != 0, pvpItems.Contains(itemId), itemId, verifiedShopEquipment);
     }
 
-    internal static ShopMissingKind Classify(uint action, bool equippable, bool pvp, uint itemId = 0)
-        => action is 1322 or 853 or 20086 or 37312 or 25183 or 2633 or 1013 or 3357 ? ShopMissingKind.Collectible
-            : !equippable ? ShopMissingKind.None : pvp ? ShopMissingKind.PvpEquipment : itemId switch
+    internal static ShopMissingKind Classify(uint action, bool equippable, bool pvp, uint itemId = 0, bool verifiedShopEquipment = false)
+        => action is 1322 or 853 or 20086 or 37312 or 25183 or 2633 or 1013 or 3357 or 29459 ? ShopMissingKind.Collectible
+            : !equippable ? ShopMissingKind.None : pvp ? ShopMissingKind.PvpEquipment
+            : verifiedShopEquipment ? ShopMissingKind.ShopEquipment : itemId switch
             {
                 // Current rewards verified 2026-10-10 against Garland Tools item acquisition records.
                 // Mameshiba event reward; Skybuilders' Scrip garments; Archaeotania's Horn garments.

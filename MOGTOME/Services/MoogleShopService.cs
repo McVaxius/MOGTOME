@@ -11,7 +11,7 @@ namespace MOGTOME.Services;
 
 public sealed class MoogleShopService : IDisposable
 {
-    public const string BuildMarker = "mog-shop-0009";
+    public const string BuildMarker = "mog-shop-0010";
     private readonly Plugin plugin;
     private readonly MoogleShopGameAdapter game;
     private readonly string marker = $"{BuildMarker}/pid={Environment.ProcessId}/utc={DateTimeOffset.UtcNow:O}";

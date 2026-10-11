@@ -10,7 +10,7 @@ public sealed class BlundervilleTests
     [Fact]
     public void CollectibleOwnershipUsesInventoryOrRegistrationAndDoesNotGuessMissingTruth()
     {
-        foreach (var action in new uint[] { 1322, 853, 20086, 37312, 25183, 2633, 1013, 3357 })
+        foreach (var action in new uint[] { 1322, 853, 20086, 37312, 25183, 2633, 1013, 3357, 29459 })
         {
             Assert.Equal(BlundervilleRegistration.Owned, BlundervilleGameAdapter.ReadRegistration(action, 1, 3));
             Assert.Equal(BlundervilleRegistration.Owned, BlundervilleGameAdapter.ReadRegistration(action, null, 1));

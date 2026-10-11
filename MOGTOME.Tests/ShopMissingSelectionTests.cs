@@ -7,9 +7,33 @@ namespace MOGTOME.Tests;
 public sealed class ShopMissingSelectionTests
 {
     [Fact]
+    public void BlundervilleKitsAndEveryTraderEquipmentSelectMissingWithoutChangingOwnedOrLargerTargets()
+    {
+        uint[] kits = [41377, 41378]; // Blunderful and Blunderous; AdditionalData kit IDs 119 and 120.
+        uint[] garments = [41560, 41561, 41562, 41563]; // Knit cap, parka, bottoms and shoes.
+        var targets = new Dictionary<uint, int> { [41561] = 4, [999] = 2 };
+        var entries = kits.Select(id => (id, ShopMissingSelection.Classify(29459, false, false, id),
+                BlundervilleGameAdapter.ReadRegistration(29459, 0, 2), ShopOfferAvailability.Available))
+            .Concat(garments.Select(id => (id, ShopMissingSelection.Classify(0, true, false, id, verifiedShopEquipment: true),
+                BlundervilleRegistration.Missing, ShopOfferAvailability.Available)))
+            .Append((900000u, ShopMissingSelection.Classify(0, true, false, 900000, verifiedShopEquipment: true),
+                BlundervilleRegistration.Owned, ShopOfferAvailability.Available)).ToArray();
+        Assert.Equal(new ShopMissingResult(5, 0, 0, 0), ShopMissingSelection.Apply(targets, entries));
+        Assert.All(kits, id => Assert.Equal(1, targets[id]));
+        Assert.All(garments.Where(id => id != 41561), id => Assert.Equal(1, targets[id]));
+        Assert.Equal(4, targets[41561]); Assert.Equal(2, targets[999]);
+        Assert.False(targets.ContainsKey(900000));
+        Assert.Equal(0, ShopMissingSelection.Apply(targets, entries).Added);
+        Assert.Equal(ShopMissingKind.UnknownEquipment, ShopMissingSelection.Classify(0, true, false, 41560));
+        Assert.Equal(BlundervilleRegistration.Owned, BlundervilleGameAdapter.ReadRegistration(29459, 0, 1));
+        Assert.Equal(BlundervilleRegistration.Owned, BlundervilleGameAdapter.ReadRegistration(29459, 1, 2));
+        Assert.Equal(BlundervilleRegistration.Unknown, BlundervilleGameAdapter.ReadRegistration(29459, null, null));
+    }
+
+    [Fact]
     public void NativeUnregisteredCollectiblesAreSelectableWithoutStorageAbsenceEvidence()
     {
-        foreach (var action in new uint[] { 1322, 853, 20086, 37312, 25183, 2633, 1013, 3357 })
+        foreach (var action in new uint[] { 1322, 853, 20086, 37312, 25183, 2633, 1013, 3357, 29459 })
         {
             var native = BlundervilleGameAdapter.ReadRegistration(action, 0, 2);
             var ownership = BlundervilleGameAdapter.ReadOwnership(true, 0, native, XaItemOwnershipState.Unknown);
