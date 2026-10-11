@@ -44,7 +44,7 @@ public sealed class BlundervilleWindow : Window, IDisposable
     }
 
     public override void PostDraw()
-        { windowMotion.Restore(this); plugin.Appearance.PaintBrandTitle(this); }
+        { windowMotion.Restore(this); }
 
     public override void Draw()
     {
@@ -57,6 +57,7 @@ public sealed class BlundervilleWindow : Window, IDisposable
         ImGui.SameLine();
         using (plugin.Appearance.Font(MogtomePresentation.Compact ? MogtomeFontRole.CompactHeading : MogtomeFontRole.Heading))
             UiLayout.Wrapped(Ui.T("Window_BlundervilleFailer"));
+        plugin.Appearance.DrawShopStorageNotice();
         ImGui.Separator();
         DrawSection(() =>
         {
@@ -97,8 +98,10 @@ public sealed class BlundervilleWindow : Window, IDisposable
         UiLayout.Wrapped(service.Status.Render());
         var hasWallet = BlundervilleGameAdapter.TryWallet(out var wallet);
         UiLayout.Wrapped(Ui.T("BV_Progress", service.SessionCycles, hasWallet ? wallet.ToString(Ui.Culture) : "?"));
+        var missingPlugins = GameHelpers.MissingXaDependencies();
+        if (missingPlugins.Length > 0) UiLayout.Wrapped(Ui.T("Plugin_RequiredXaPlugins", missingPlugins));
         var unavailable = !service.Ready || service.IsRunning || plugin.IsBlundervilleActionQueued ||
-            plugin.IsEngineStartQueued || plugin.Engine?.IsRunning == true || plugin.MoogleShop.IsRunning || plugin.IsMoogleShopActionQueued;
+            plugin.IsEngineStartQueued || plugin.Engine?.IsRunning == true || plugin.MoogleShop.IsRunning || plugin.IsMoogleShopActionQueued || missingPlugins.Length > 0;
         ImGui.BeginDisabled(unavailable);
         if (UiLayout.Button(Ui.L("Main_Start"))) plugin.RequestBlundervilleAction(buy: false);
         UiLayout.SameLineIfFits(UiLayout.IconButtonWidth(Ui.T("BV_Buy")));

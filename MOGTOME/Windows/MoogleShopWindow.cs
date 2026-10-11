@@ -31,7 +31,7 @@ public sealed class MoogleShopWindow : Window
         WindowName = Ui.T("Shop_Title") + "###MogtomeShop";
         motion.Prepare(this, reducedMotion: false, roundedCorners: true);
     }
-    public override void PostDraw() { motion.Restore(this); plugin.Appearance.PaintBrandTitle(this); }
+    public override void PostDraw() { motion.Restore(this); }
     public override void Draw()
     {
         motion.DrawChrome();
@@ -40,10 +40,13 @@ public sealed class MoogleShopWindow : Window
         var scale = ImGuiHelpers.GlobalScale;
         var changed = false;
         using (plugin.Appearance.Font(MogtomeFontRole.CompactHeading)) UiLayout.SingleLine(Ui.T("Shop_Title"));
+        plugin.Appearance.DrawShopStorageNotice();
         UiLayout.Wrapped(shop.Status.Render());
+        var missingPlugins = GameHelpers.MissingXaDependencies();
+        if (missingPlugins.Length > 0) UiLayout.Wrapped(Ui.T("Plugin_RequiredXaPlugins", missingPlugins));
         ImGui.BeginDisabled(!shop.Ready || shop.IsRunning || plugin.IsMoogleShopActionQueued || plugin.IsEngineStartQueued ||
             plugin.Engine?.IsRunning == true || plugin.Blunderville.IsRunning || plugin.IsBlundervilleActionQueued ||
-            Plugin.Condition[ConditionFlag.BoundByDuty] || Plugin.Condition[ConditionFlag.InDutyQueue] || Plugin.Condition[ConditionFlag.InCombat]);
+            missingPlugins.Length > 0 || Plugin.Condition[ConditionFlag.BoundByDuty] || Plugin.Condition[ConditionFlag.InDutyQueue] || Plugin.Condition[ConditionFlag.InCombat]);
         if (UiLayout.IconButton(Ui.L("BV_Buy"), MaterialIcon.Cart)) plugin.RequestMoogleShopBuy();
         ImGui.EndDisabled();
         UiLayout.SameLineIfFits(UiLayout.IconButtonWidth(Ui.T("Main_Stop")));

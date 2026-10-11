@@ -30,8 +30,6 @@ internal sealed class BlundervilleProgress
     public bool RegistrationSubmitted { get; private set; }
     public bool CommenceSubmitted { get; private set; }
     public DateTime? RegistrationStartedAt { get; private set; }
-    private bool eliminated;
-    private bool exitSubmitted;
 
     public void SubmitRegistration() => SubmitRegistration(DateTime.UtcNow);
     internal void SubmitRegistration(DateTime now)
@@ -59,16 +57,13 @@ internal sealed class BlundervilleProgress
         RegistrationStartedAt = null;
     }
     public void Enter() { InArena = true; ResetEntry(); }
-    public void ObserveElimination() { if (InArena) eliminated = true; }
-    public void SubmitExit() { if (InArena && eliminated) exitSubmitted = true; }
-    public bool Return()
+    public bool Return(bool boundByDuty = false)
     {
-        if (!InArena) return false;
-        var completed = eliminated && exitSubmitted;
-        InArena = eliminated = exitSubmitted = false;
+        if (!InArena || boundByDuty) return false;
+        InArena = false;
         ResetEntry();
-        if (completed) Cycles++;
-        return completed;
+        Cycles++;
+        return true;
     }
 
     internal static BlundervilleRole Role(bool crossWorld, bool crossLeader, int count, ulong self, ulong leader)

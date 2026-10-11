@@ -2220,4 +2220,17 @@ Mit /ads mini kannst du AutoDuty manuell aktivieren oder deaktivieren.</value></
   <data name="Shop_SelectMissing" xml:space="preserve"><value>Fehlende auswählen</value></data>
   <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Wählt nicht registrierte Sammlerstücke und verfügbare Ausrüstung ohne mitgeführte oder in XA Database erfasste Kopie. Höhere Ziele bleiben erhalten; kein Kauf und keine Reise. Nicht verfügbare Charakter-/Spielregistrierungsdaten, unbekannte Verfügbarkeit und unbekannte Ausrüstungsquellen werden übersprungen. Ausrüstbare Dungeon-Beute ist ausgeschlossen; geprüfte PvP-, Laden- und Eventausrüstung ist enthalten. Speicher-IPC ist optional; Einträge aus Inventar, Arsenal, Satteltaschen, Gehilfen, Kostümtruhe und Projektionskommode selbst aktualisieren.</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>Hinzugefügt: {0}. Unbekannt übersprungen: Besitz {1}, Ausrüstungsquelle {2}, Verfügbarkeit {3}.</value></data>
+  <data name="Plugin_RequiredXaPlugins" xml:space="preserve"><value>Lade vor dem Starten oder Kaufen die erforderlichen Plugins: {0}.</value></data>
+  <data name="Config_LoadXADB" xml:space="preserve"><value>Lade XA Database für Inventar- und Lagerdaten.</value></data>
+  <data name="Shop_StorageNotice" xml:space="preserve"><value>Für genaue Mengen öffne deine Projektionskommode, Kostümtruhe, Gehilfen sowie verfügbare normale und Premium-Satteltaschen, damit XA Database ihren Inhalt erfasst.</value></data>
+  <data name="Shop_HideStorageNotice" xml:space="preserve"><value>Hinweis ausblenden</value></data>
+  <data name="Shop_ShowStorageNotice" xml:space="preserve"><value>Lagerhinweis anzeigen</value></data>
+  <data name="Ui_ShowTitlebarStatus" xml:space="preserve"><value>Status in der Titelleiste anzeigen</value></data>
+  <data name="Ui_DetailedTitlebarStatus" xml:space="preserve"><value>Ausführlicher Titelleistenstatus</value></data>
+  <data name="Ui_TitlebarItemsLeft" xml:space="preserve"><value>{0} übrig</value></data>
+  <data name="Ui_TitlebarCost" xml:space="preserve"><value>Kosten: {0} MGF</value></data>
+  <data name="Ui_TitlebarRuns" xml:space="preserve"><value>{0}/{1} Läufe · {2} übrig</value></data>
+  <data name="Ui_TitlebarBuying" xml:space="preserve"><value>Kaufen</value></data>
+  <data name="Ui_TitlebarFarming" xml:space="preserve"><value>Farmen</value></data>
+  <data name="Ui_TitlebarBlocked" xml:space="preserve"><value>Blockiert</value></data>
 </root>

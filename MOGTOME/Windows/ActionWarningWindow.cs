@@ -75,7 +75,7 @@ public sealed class ActionWarningWindow : Window, IDisposable
     }
 
     public override void PostDraw()
-        { windowMotion.Restore(this); plugin?.Appearance.PaintWindowTitle(WindowName); }
+        { windowMotion.Restore(this); }
 
     public override void Draw()
     {

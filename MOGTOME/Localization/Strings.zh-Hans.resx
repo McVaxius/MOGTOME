@@ -2226,4 +2226,17 @@ Path: {0}
   <data name="Shop_SelectMissing" xml:space="preserve"><value>选择缺失物品</value></data>
   <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>选择未登记的收藏品和符合购买条件的装备，且随身物品与XA Database记录中均无该物品。保留更大的目标，不会开始购买或移动。跳过角色／游戏内登记数据不可用、购买条件未知及来源未知的装备。排除副本掉落的可装备物品；包含已核实来源的PvP、商店及活动装备。储物IPC可选；请自行更新背包、兵装库、陆行鸟鞍囊、雇员、收藏柜及投影台记录。</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>已添加 {0}。因信息未知跳过：持有 {1}，装备来源 {2}，购买条件 {3}。</value></data>
+  <data name="Plugin_RequiredXaPlugins" xml:space="preserve"><value>开始或购买前请加载必需的插件：{0}。</value></data>
+  <data name="Config_LoadXADB" xml:space="preserve"><value>请加载 XA Database，以记录物品栏和存储数据。</value></data>
+  <data name="Shop_StorageNotice" xml:space="preserve"><value>为准确统计数量，请打开投影台、收藏柜、雇员及可用的普通／高级陆行鸟鞍囊，让 XA Database 记录其中的物品。</value></data>
+  <data name="Shop_HideStorageNotice" xml:space="preserve"><value>隐藏提示</value></data>
+  <data name="Shop_ShowStorageNotice" xml:space="preserve"><value>显示存储提示</value></data>
+  <data name="Ui_ShowTitlebarStatus" xml:space="preserve"><value>显示标题栏状态</value></data>
+  <data name="Ui_DetailedTitlebarStatus" xml:space="preserve"><value>详细标题栏状态</value></data>
+  <data name="Ui_TitlebarItemsLeft" xml:space="preserve"><value>剩余 {0}</value></data>
+  <data name="Ui_TitlebarCost" xml:space="preserve"><value>费用 {0} MGF</value></data>
+  <data name="Ui_TitlebarRuns" xml:space="preserve"><value>{0}/{1} 次 · 剩余 {2} 次</value></data>
+  <data name="Ui_TitlebarBuying" xml:space="preserve"><value>购买中</value></data>
+  <data name="Ui_TitlebarFarming" xml:space="preserve"><value>刷取中</value></data>
+  <data name="Ui_TitlebarBlocked" xml:space="preserve"><value>受阻</value></data>
 </root>

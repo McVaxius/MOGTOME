@@ -2226,4 +2226,17 @@ Use /ads mini to enable or disable AutoDuty manually.</value></data>
   <data name="Shop_SelectMissing" xml:space="preserve"><value>Select Missing</value></data>
   <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Selects unregistered collectibles and eligible gear with no carried or XA Database recorded copy. Keeps larger targets; never buys or travels. Skips unavailable current-character/native registration data, unknown eligibility and unknown gear sources. Equippable dungeon drops are excluded; verified PvP, shop and event gear are included. Storage IPC is optional; refresh inventory, armoury, saddlebags, retainer, armoire and glamour dresser records yourself.</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>Added {0}. Skipped unknowns: ownership {1}, gear source {2}, eligibility {3}.</value></data>
+  <data name="Plugin_RequiredXaPlugins" xml:space="preserve"><value>Load the required plugins before starting or buying: {0}.</value></data>
+  <data name="Config_LoadXADB" xml:space="preserve"><value>Load XA Database for inventory and storage records.</value></data>
+  <data name="Shop_StorageNotice" xml:space="preserve"><value>For accurate counts, visit your glamour dresser, armoire, retainers and available normal/premium saddlebags so XA Database records their contents.</value></data>
+  <data name="Shop_HideStorageNotice" xml:space="preserve"><value>Hide notice</value></data>
+  <data name="Shop_ShowStorageNotice" xml:space="preserve"><value>Show storage notice</value></data>
+  <data name="Ui_ShowTitlebarStatus" xml:space="preserve"><value>Show titlebar status</value></data>
+  <data name="Ui_DetailedTitlebarStatus" xml:space="preserve"><value>Detailed titlebar status</value></data>
+  <data name="Ui_TitlebarItemsLeft" xml:space="preserve"><value>{0} left</value></data>
+  <data name="Ui_TitlebarCost" xml:space="preserve"><value>cost {0} MGF</value></data>
+  <data name="Ui_TitlebarRuns" xml:space="preserve"><value>{0}/{1} runs · {2} left</value></data>
+  <data name="Ui_TitlebarBuying" xml:space="preserve"><value>Buying</value></data>
+  <data name="Ui_TitlebarFarming" xml:space="preserve"><value>Farming</value></data>
+  <data name="Ui_TitlebarBlocked" xml:space="preserve"><value>Blocked</value></data>
 </root>

@@ -35,6 +35,12 @@ In ADS mode, a successful AutoDuty disable notice is informational and dismissib
 use the manual **Enable AutoDuty** and **Disable AutoDuty** buttons in `/ads mini`
 to change its loaded state afterward. A Disable retry appears only while it remains loaded.
 
+**XA Database and XA Slave must both be loaded before farming or buying.**
+Shopping-list editing, CLEAR and Select Missing remain available during duties
+and when these requirements are missing. The notice at the top of either shop
+reminds you to visit recorded storage; **Hide notice** saves for the active
+account in both shops. The small information button beside the heading restores it.
+
 Both shopping grids show ownership for collectibles and equippable gear using
 native inventory/registration and valid current-character XA Database storage.
 Inventory, equipped gear, Armoury Chest, both sides of normal and premium
@@ -146,7 +152,7 @@ Both shopping lists remain configurable during duties and farming: edit desired 
 
 Open `/bv` or `/blunderville`. Their `start`, `stop`, and `buy` actions share the window controls. Blunderville travel requires Lifestream; NPC approach uses vnavmesh. Blunderville and ordinary duty farming cannot run together. Settings belong to the active account in a separate Blunderville section; ordinary party preferences and duty statistics are unchanged.
 
-Enable a run limit, an MGF wallet target, or both. Either enabled limit finishes farming. Defaults are one run and no wallet target. Leadership comes from the current party, including cross-world parties; solo characters lead. Leaders travel through the Gold Saucer to the Square and register; members wait where they are and accept entry. Everyone waits without moving until elimination and uses the spectator exit. Start inside Blunderville resumes this idle/exit flow in a new session, including after Stop or reload; other duties remain unavailable. Only confirmed elimination-and-return cycles count. A member meeting its wallet target withdraws and leaves the party before shopping; a run limit preserves party membership. Each client keeps its own targets and progress.
+Enable a run limit, an MGF wallet target, or both. Either enabled limit finishes farming. Defaults are one run and no wallet target. Leadership comes from the current party, including cross-world parties; solo characters lead. Leaders travel through the Gold Saucer to the Square and register; members wait where they are and accept entry. Everyone waits without moving until elimination and uses the spectator exit. Start inside Blunderville resumes this idle/exit flow in a new session, including after Stop or reload; other duties remain unavailable. Each entered run counts once after returning to a settled area with condition 34 (BoundByDuty) cleared, even if the exit dialogs were missed or another exit path was used. A member meeting its wallet target withdraws and leaves the party before shopping; a run limit preserves party membership. Each client keeps its own targets and progress.
 
 If registration is rejected because a party member is changing areas, farming retries only after confirming the complete game message. Retries share the first registration's 90-second deadline and recheck leadership, limits and queue state. Stop cancels pending recovery; other errors do not trigger retries.
 

@@ -2376,4 +2376,17 @@ Użyj /ads mini, aby ręcznie włączyć lub wyłączyć AutoDuty.</value></data
   <data name="Shop_SelectMissing" xml:space="preserve"><value>Wybierz brakujące</value></data>
   <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Wybiera niezarejestrowane przedmioty kolekcjonerskie i dostępne wyposażenie bez noszonej kopii ani kopii zapisanej w XA Database. Zachowuje większe cele; nie kupuje ani nie podróżuje. Pomija niedostępne dane postaci/rejestracji w grze, nieznaną dostępność i nieznane źródła wyposażenia. Wyklucza wyposażenie z lochów; uwzględnia sprawdzone wyposażenie z PvP, sklepów i wydarzeń. IPC magazynów jest opcjonalne; samodzielnie odświeżaj dane ekwipunku, zbrojowni, sakw, retainerów, armoire i glamour dresser.</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>Dodano: {0}. Pominięto nieznane dane: posiadanie {1}, źródło wyposażenia {2}, dostępność {3}.</value></data>
+  <data name="Plugin_RequiredXaPlugins" xml:space="preserve"><value>Przed rozpoczęciem lub zakupem załaduj wymagane wtyczki: {0}.</value></data>
+  <data name="Config_LoadXADB" xml:space="preserve"><value>Załaduj XA Database, aby odczytać dane ekwipunku i magazynów.</value></data>
+  <data name="Shop_StorageNotice" xml:space="preserve"><value>Aby liczby były dokładne, otwórz komodę glamour, szafę, ekwipunki sług oraz dostępne zwykłe i premium sakwy chocobo, żeby XA Database zapisał ich zawartość.</value></data>
+  <data name="Shop_HideStorageNotice" xml:space="preserve"><value>Ukryj informację</value></data>
+  <data name="Shop_ShowStorageNotice" xml:space="preserve"><value>Pokaż informację o magazynach</value></data>
+  <data name="Ui_ShowTitlebarStatus" xml:space="preserve"><value>Pokaż stan na pasku tytułu</value></data>
+  <data name="Ui_DetailedTitlebarStatus" xml:space="preserve"><value>Szczegółowy stan na pasku tytułu</value></data>
+  <data name="Ui_TitlebarItemsLeft" xml:space="preserve"><value>pozostało {0}</value></data>
+  <data name="Ui_TitlebarCost" xml:space="preserve"><value>koszt {0} MGF</value></data>
+  <data name="Ui_TitlebarRuns" xml:space="preserve"><value>{0}/{1} rund · pozostało {2}</value></data>
+  <data name="Ui_TitlebarBuying" xml:space="preserve"><value>Kupowanie</value></data>
+  <data name="Ui_TitlebarFarming" xml:space="preserve"><value>Farmienie</value></data>
+  <data name="Ui_TitlebarBlocked" xml:space="preserve"><value>Zablokowane</value></data>
 </root>

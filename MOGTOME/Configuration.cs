@@ -14,9 +14,12 @@ public class Configuration
     public int Version { get; set; } = 2;
     public BlundervilleSettings Blunderville { get; set; } = new();
     public MoogleShopSettings MoogleShop { get; set; } = new();
+    public bool ShopStorageNoticeHidden { get; set; }
     public Localization.UiLanguage? UiLanguage { get; set; }
     public uint UiAccentRgb { get; set; } = UiDesign.MogtomePresentation.ReferenceAccent;
     public bool UiCompact { get; set; } = true;
+    public bool UiShowTitlebarStatus { get; set; } = true;
+    public bool UiDetailedTitlebarStatus { get; set; } = true;
     public bool UiCompactVisibleOnMainWindow { get; set; }
     public bool UiTransparencyVisibleOnMainWindow { get; set; }
     public bool UiCompactDefaultsApplied { get; set; }

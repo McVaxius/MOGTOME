@@ -1,3 +1,18 @@
+2026-10-11 - Titlebar status
+
+- Show current farming/shopping state, observed currency balances and progress in native titlebars, including settings. Add separate saved Appearance switches for status visibility and detailed wording, both enabled by default, and retain full details on hover.
+- Keep Blunderville's session run count visible when farming toward an MGF target without a run limit.
+- Use the packaged plugin icon in settings and auxiliary titlebars while preserving window identities and existing title actions.
+
+2026-10-11 - Blunderville settled return
+
+- Continue farming after an entered run returns to a settled area with the duty condition cleared. Count each return once even when the spectator/exit dialogs were missed, then check the current wallet and run limits.
+
+2026-10-11 - Shop requirements and storage reminder
+
+- Require loaded XA Database and XA Slave before farming or buying, using the same current loaded-plugin checks in setup, normal startup and both shops. Keep shopping-list editing available in duties and when dependencies are missing.
+- Add a friendly storage-recording reminder to both shops, with an account-saved Hide notice control and a small information button to show it again. Include normal and premium saddlebags alongside retainers, armoire and glamour dresser.
+
 2026-10-11 - Appearance shortcuts and configuration tabs
 
 - Move Language, Compact, Transparency and Colour shortcuts to native window titlebars, retaining existing appearance preferences, account saves and Settings controls.

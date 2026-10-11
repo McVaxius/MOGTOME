@@ -2226,4 +2226,17 @@ Path: {0}
   <data name="Shop_SelectMissing" xml:space="preserve"><value>Выбрать недостающие</value></data>
   <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Выбирает незарегистрированные коллекционные предметы и доступное снаряжение без копий при себе или в записях XA Database. Сохраняет большие цели; не покупает и не перемещается. Пропускает недоступные данные персонажа/регистрации в игре, неизвестную доступность и неизвестные источники снаряжения. Снаряжение из подземелий исключено; снаряжение из проверенных PvP-, магазинных и событийных источников включено. IPC хранилищ необязателен; обновляйте записи об инвентаре, арсенале, седельных сумках, слугах, шкафе и комоде для проекций самостоятельно.</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>Добавлено: {0}. Пропущено из-за неизвестных данных: владение {1}, источник снаряжения {2}, доступность {3}.</value></data>
+  <data name="Plugin_RequiredXaPlugins" xml:space="preserve"><value>Перед запуском или покупкой загрузите необходимые плагины: {0}.</value></data>
+  <data name="Config_LoadXADB" xml:space="preserve"><value>Загрузите XA Database для данных инвентаря и хранилищ.</value></data>
+  <data name="Shop_StorageNotice" xml:space="preserve"><value>Для точного подсчёта откройте комод проекций, шкаф, инвентари слуг и доступные обычные и премиальные сумки чокобо, чтобы XA Database записал их содержимое.</value></data>
+  <data name="Shop_HideStorageNotice" xml:space="preserve"><value>Скрыть подсказку</value></data>
+  <data name="Shop_ShowStorageNotice" xml:space="preserve"><value>Показать подсказку о хранилищах</value></data>
+  <data name="Ui_ShowTitlebarStatus" xml:space="preserve"><value>Показывать статус в заголовке</value></data>
+  <data name="Ui_DetailedTitlebarStatus" xml:space="preserve"><value>Подробный статус в заголовке</value></data>
+  <data name="Ui_TitlebarItemsLeft" xml:space="preserve"><value>осталось {0}</value></data>
+  <data name="Ui_TitlebarCost" xml:space="preserve"><value>стоимость {0} MGF</value></data>
+  <data name="Ui_TitlebarRuns" xml:space="preserve"><value>{0}/{1} заходов · осталось {2}</value></data>
+  <data name="Ui_TitlebarBuying" xml:space="preserve"><value>Покупка</value></data>
+  <data name="Ui_TitlebarFarming" xml:space="preserve"><value>Фарм</value></data>
+  <data name="Ui_TitlebarBlocked" xml:space="preserve"><value>Заблокировано</value></data>
 </root>

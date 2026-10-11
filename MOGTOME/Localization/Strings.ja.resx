@@ -2220,4 +2220,17 @@ DictionaryPathsとPathSelectionsByPathを比較します。
   <data name="Shop_SelectMissing" xml:space="preserve"><value>未所持を選択</value></data>
   <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>未登録の収集品と購入条件を満たす装備のうち、手持ちにもXA Databaseの記録にもない品を選択します。より大きい目標数は維持し、購入や移動は開始しません。キャラクター／ゲーム内登録データを取得できない品、購入条件が不明な品、入手元が不明な装備は除外します。ダンジョンでドロップする装備は除外し、入手元が確認できたPvP・ショップ・イベントの装備を含めます。保管IPCは必須ではありません。所持品・アーマリーチェスト・チョコボかばん・リテイナー・愛蔵品キャビネット・ミラージュドレッサーの記録は自分で更新してください。</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>追加 {0}。不明のため除外：所持 {1}、装備の入手元 {2}、購入条件 {3}。</value></data>
+  <data name="Plugin_RequiredXaPlugins" xml:space="preserve"><value>開始または購入する前に、必要なプラグインを読み込んでください：{0}。</value></data>
+  <data name="Config_LoadXADB" xml:space="preserve"><value>所持品と保管先の記録用に XA Database を読み込んでください。</value></data>
+  <data name="Shop_StorageNotice" xml:space="preserve"><value>個数を正しく数えるため、ミラージュドレッサー、愛蔵品キャビネット、リテイナー、利用可能なチョコボかばんとプレミアムチョコボかばんを開き、XA Database に内容を記録させてください。</value></data>
+  <data name="Shop_HideStorageNotice" xml:space="preserve"><value>案内を非表示</value></data>
+  <data name="Shop_ShowStorageNotice" xml:space="preserve"><value>保管先の案内を表示</value></data>
+  <data name="Ui_ShowTitlebarStatus" xml:space="preserve"><value>タイトルバーに状態を表示</value></data>
+  <data name="Ui_DetailedTitlebarStatus" xml:space="preserve"><value>タイトルバーに詳細な状態を表示</value></data>
+  <data name="Ui_TitlebarItemsLeft" xml:space="preserve"><value>残り {0}</value></data>
+  <data name="Ui_TitlebarCost" xml:space="preserve"><value>必要 MGF：{0}</value></data>
+  <data name="Ui_TitlebarRuns" xml:space="preserve"><value>{0}/{1} 回 · 残り {2} 回</value></data>
+  <data name="Ui_TitlebarBuying" xml:space="preserve"><value>購入中</value></data>
+  <data name="Ui_TitlebarFarming" xml:space="preserve"><value>周回中</value></data>
+  <data name="Ui_TitlebarBlocked" xml:space="preserve"><value>進行不可</value></data>
 </root>

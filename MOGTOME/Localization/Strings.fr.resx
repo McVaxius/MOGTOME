@@ -2220,4 +2220,17 @@ Utilisez /ads mini pour activer ou désactiver AutoDuty manuellement.</value></d
   <data name="Shop_SelectMissing" xml:space="preserve"><value>Sélectionner les manquants</value></data>
   <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Sélectionne les objets de collection non enregistrés et l’équipement disponible sans exemplaire porté ni consigné dans XA Database. Conserve les objectifs supérieurs ; aucun achat ni déplacement. Ignore les données du personnage/d’enregistrement en jeu indisponibles, la disponibilité inconnue et les sources d’équipement inconnues. Exclut l’équipement de donjon ; inclut l’équipement JcJ, de boutique et d’événement dont la source est vérifiée. L’IPC de stockage est facultatif ; actualisez vous-même l’inventaire, l’arsenal, la sacoche chocobo, les servants, le bahut et la commode mirage.</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>Ajoutés : {0}. Inconnus ignorés : possession {1}, source d’équipement {2}, disponibilité {3}.</value></data>
+  <data name="Plugin_RequiredXaPlugins" xml:space="preserve"><value>Chargez les plugins requis avant de démarrer ou d’acheter : {0}.</value></data>
+  <data name="Config_LoadXADB" xml:space="preserve"><value>Chargez XA Database pour les données d’inventaire et de stockage.</value></data>
+  <data name="Shop_StorageNotice" xml:space="preserve"><value>Pour des quantités exactes, consultez la coiffeuse mirage, le bahut, les servants et les sacoches normales/premium disponibles afin que XA Database enregistre leur contenu.</value></data>
+  <data name="Shop_HideStorageNotice" xml:space="preserve"><value>Masquer l’avis</value></data>
+  <data name="Shop_ShowStorageNotice" xml:space="preserve"><value>Afficher l’avis de stockage</value></data>
+  <data name="Ui_ShowTitlebarStatus" xml:space="preserve"><value>Afficher l’état dans la barre de titre</value></data>
+  <data name="Ui_DetailedTitlebarStatus" xml:space="preserve"><value>État détaillé dans la barre de titre</value></data>
+  <data name="Ui_TitlebarItemsLeft" xml:space="preserve"><value>{0} restants</value></data>
+  <data name="Ui_TitlebarCost" xml:space="preserve"><value>coût : {0} MGF</value></data>
+  <data name="Ui_TitlebarRuns" xml:space="preserve"><value>{0}/{1} parties · {2} restantes</value></data>
+  <data name="Ui_TitlebarBuying" xml:space="preserve"><value>Achats</value></data>
+  <data name="Ui_TitlebarFarming" xml:space="preserve"><value>Farm</value></data>
+  <data name="Ui_TitlebarBlocked" xml:space="preserve"><value>Bloqué</value></data>
 </root>

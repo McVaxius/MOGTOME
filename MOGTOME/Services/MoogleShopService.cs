@@ -69,6 +69,8 @@ public sealed class MoogleShopService : IDisposable
     {
         if (Volatile.Read(ref stopRequested) != 0 || !Ready || running || plugin.IsEngineStartQueued || plugin.Engine.IsRunning ||
             plugin.Blunderville.IsRunning || plugin.IsBlundervilleActionQueued) return Reject("BV_Unavailable");
+        var missingPlugins = GameHelpers.MissingXaDependencies();
+        if (missingPlugins.Length > 0) return Reject("Plugin_RequiredXaPlugins", missingPlugins);
         if (Settings.PurchaseReviewRequired || plugin.Configuration.Blunderville.PurchaseReviewRequired) return Reject("Shop_ReviewRequired");
         if (!Enum.IsDefined(Settings.City) || Plugin.Condition[ConditionFlag.BoundByDuty] || Plugin.Condition[ConditionFlag.InDutyQueue] ||
             Plugin.Condition[ConditionFlag.InCombat] || BlundervilleGameAdapter.Visible("ContentsFinderConfirm") ||
@@ -384,7 +386,7 @@ public sealed class MoogleShopService : IDisposable
             !plugin.Configuration.Blunderville.PurchaseReviewRequired) plugin.YesAlreadyIPC.Unpause();
         pending = settling = null; pendingMove = null; npc = 0;
     }
-    private bool Reject(string key) { Status = Ui.M(key); Plugin.Log.Warning("[MOGTOME][Shop] rejected: {Reason}", Status.English); return false; }
+    private bool Reject(string key, params object?[] arguments) { Status = Ui.M(key, arguments); Plugin.Log.Warning("[MOGTOME][Shop] rejected: {Reason}", Status.English); return false; }
     private void Fail(string key, params object?[] arguments) { Cleanup(); Status = Ui.M(key, arguments); Plugin.Log.Warning("[MOGTOME][Shop] stopped: {Reason}; marker={Marker}", Status.English, marker); }
     private void Complete()
     {

@@ -46,8 +46,6 @@ public sealed class BlundervilleTests
         Assert.True(progress.TrySubmitCommence());
         Assert.False(progress.TrySubmitCommence());
         progress.Enter();
-        progress.ObserveElimination();
-        progress.SubmitExit();
         Assert.True(progress.Return());
         progress.SubmitRegistration();
         Assert.True(progress.TrySubmitCommence());
@@ -157,31 +155,22 @@ public sealed class BlundervilleTests
     }
 
     [Fact]
-    public void OnlyConfirmedEliminationAndReturnCountsOnce()
+    public void SettledNonDutyReturnCountsEachEnteredCycleOnceWithoutExitDialogs()
     {
         var progress = new BlundervilleProgress();
-        progress.ObserveElimination();
-        progress.SubmitExit();
         Assert.False(progress.Return());
         progress.Enter();
-        Assert.False(progress.Return()); // Entering then leaving alone is not elimination evidence.
-        progress.Enter();
-        progress.ObserveElimination();
-        Assert.False(progress.Return()); // Exit still must be confirmed.
-        progress.Enter();
-        progress.Enter();
-        progress.ObserveElimination();
-        progress.ObserveElimination();
-        progress.SubmitExit();
-        progress.SubmitExit();
+        Assert.False(progress.Return(boundByDuty: true));
+        Assert.True(progress.InArena); // A territory change before condition 34 clears is still pending.
+        Assert.Equal(0, progress.Cycles);
+        progress.Enter(); // Repeated arena observations retain one active cycle.
         Assert.True(progress.Return());
         Assert.False(progress.Return());
         Assert.Equal(1, progress.Cycles);
         progress.Enter();
-        progress.SubmitExit(); // Early exit submission is not elimination evidence.
-        progress.ObserveElimination();
+        Assert.True(progress.Return()); // The exit path and reward amount do not affect counting.
         Assert.False(progress.Return());
-        Assert.Equal(1, progress.Cycles);
+        Assert.Equal(2, progress.Cycles);
     }
 
     [Fact]
@@ -199,7 +188,7 @@ public sealed class BlundervilleTests
         Assert.False(progress.Finished(settings, 99));
         settings.RunLimitEnabled = true;
         Assert.True(progress.Finished(settings, 101));
-        progress.Enter(); progress.ObserveElimination(); progress.SubmitExit(); progress.Return();
+        progress.Enter(); progress.Return();
         Assert.True(progress.Finished(settings, 0));
         settings.WalletTargetEnabled = false;
         Assert.True(progress.Finished(settings, 0));

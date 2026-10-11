@@ -11,6 +11,7 @@ using Dalamud.Plugin.Services;
 using Lumina.Excel.Sheets;
 using MOGTOME.Models;
 using MOGTOME.IPC;
+using MOGTOME.Services;
 
 namespace MOGTOME.Windows;
 
@@ -33,7 +34,7 @@ public class ConfigWindow : Window, IDisposable
 
     // Dependency check cache
     private DateTime lastDepCheck = DateTime.MinValue;
-    private bool depRsr, depBmr, depVbm, depWrath, depVnav, depYesAlready, depTextAdv, depXaSlave, depAutoDuty, depAds, depLifestream;
+    private bool depRsr, depBmr, depVbm, depWrath, depVnav, depYesAlready, depTextAdv, depXaSlave, depXaDatabase, depAutoDuty, depAds, depLifestream;
     private bool depCustomRes, depChillframes, depKrangler, depDps, depTtsl;
     private bool depTwistOfFayteInstalled, depTwistOfFayteEnabled;
     private bool allDepsGreen = false;
@@ -52,6 +53,7 @@ public class ConfigWindow : Window, IDisposable
         { "Lifestream", "https://raw.githubusercontent.com/NightmareXIV/MyDalamudPlugins/main/pluginmaster.json" },
         { "TextAdvance", "https://raw.githubusercontent.com/NightmareXIV/MyDalamudPlugins/main/pluginmaster.json" },
         { "XASlave", "https://aethertek.io/x.json" },
+        { "XADatabase", "https://aethertek.io/x.json" },
         { "AutoDuty", "https://puni.sh/api/repository/erdelf" },
         { "ADS", "https://aethertek.io/x.json" },
         { "CustomResolution", "https://raw.githubusercontent.com/0x0ade/CustomResolution/main/pluginmaster.json" },
@@ -139,7 +141,7 @@ public class ConfigWindow : Window, IDisposable
     }
 
     public override void PostDraw()
-        { windowMotion.Restore(this); plugin.Appearance.PaintWindowTitleWithButtons(this); }
+        { windowMotion.Restore(this); }
 
     public override void Draw()
     {
@@ -264,7 +266,7 @@ public class ConfigWindow : Window, IDisposable
             depVnav = false;
             depYesAlready = false;
             depTextAdv = false;
-            depXaSlave = false;
+            (depXaDatabase, depXaSlave) = GameHelpers.LoadedXaDependencies();
             depAutoDuty = false;
             depAds = false;
             depLifestream = false;
@@ -309,12 +311,6 @@ public class ConfigWindow : Window, IDisposable
                     depWrath = true;
                 }
 
-                if (!depXaSlave &&
-                    (IsXaSlavePlugin(p.InternalName) || IsXaSlavePlugin(p.Name)))
-                {
-                    depXaSlave = true;
-                }
-
                 if (!depLifestream &&
                     (p.Name.Contains("Lifestream", StringComparison.OrdinalIgnoreCase) ||
                      p.InternalName.Contains("Lifestream", StringComparison.OrdinalIgnoreCase)))
@@ -339,7 +335,7 @@ public class ConfigWindow : Window, IDisposable
                 CombatProvider.Wrath => depWrath,
                 _ => false,
             };
-            allDepsGreen = providerReady && depVnav && depYesAlready && depXaSlave && backendReady;
+            allDepsGreen = providerReady && depVnav && depYesAlready && depXaSlave && depXaDatabase && backendReady;
         }
         catch (Exception ex)
         {
@@ -540,6 +536,8 @@ public class ConfigWindow : Window, IDisposable
         // XA Slave
         DrawDepLine("XA Slave", depXaSlave, depXaSlave ? Ui.T("Config_Installed") : Ui.T("Config_NOTFOUND"), "XASlave");
         UiLayout.TextDisabled(Ui.T("Config_MOGTOMERunsXaSkipcutscenesOnBeforeEvery"));
+        DrawDepLine("XA Database", depXaDatabase, depXaDatabase ? Ui.T("Config_Installed") : Ui.T("Config_NOTFOUND"), "XADatabase");
+        UiLayout.TextDisabled(Ui.T("Config_LoadXADB"));
 
         DrawDepLine("YesAlready", depYesAlready, depYesAlready ? Ui.T("Config_Installed") : Ui.T("Config_NOTFOUND"), null);
 
@@ -643,17 +641,6 @@ public class ConfigWindow : Window, IDisposable
         AethertekUI.MaterialText.TextColored(color, string.Create(Ui.Culture, $"[!!] {name}"));
         ImGui.SameLine();
         AethertekUI.MaterialText.TextColored(color, string.Create(Ui.Culture, $"- {detail}"));
-    }
-
-    private static bool IsXaSlavePlugin(string? name)
-        => string.Equals(NormalizePluginName(name), "XASlave", StringComparison.OrdinalIgnoreCase);
-
-    private static string NormalizePluginName(string? name)
-    {
-        if (string.IsNullOrWhiteSpace(name))
-            return string.Empty;
-
-        return new string(name.Where(char.IsLetterOrDigit).ToArray());
     }
 
     private static void DrawDepLineOptional(string name, bool exists, string? missingDetail = null, string? installedWarning = null)
@@ -837,6 +824,7 @@ public class ConfigWindow : Window, IDisposable
         DrawWizardRequirement(Ui.T("Config_SelectedCombatProvider"), IsCombatProviderReady(config), Ui.T("Config_LoadTheProviderSelectedInStepRSR"), null);
         DrawWizardRequirement("vnavmesh", depVnav, Ui.T("Config_LoadVnavmesh"), "vnavmesh");
         DrawWizardRequirement("XA Slave", depXaSlave, Ui.T("Config_LoadXASlaveForXaSkipcutscenesOn"), "XASlave");
+        DrawWizardRequirement("XA Database", depXaDatabase, Ui.T("Config_LoadXADB"), "XADatabase");
         DrawWizardRequirement("YesAlready", depYesAlready, Ui.T("Config_LoadYesAlreadyForDialogs"), null);
 
         if (!config.UseAdsExperimental)
@@ -857,7 +845,7 @@ public class ConfigWindow : Window, IDisposable
 
         AethertekUI.MaterialText.Text(Ui.T("Config_Backend2", (config.UseAdsExperimental ? Ui.T("Config_ADSPrimary") : Ui.T("Config_AutoDutyAlternative"))));
         AethertekUI.MaterialText.Text(Ui.T("Config_CombatProvider2", Ui.EnumLabel(config.CombatProvider)));
-        AethertekUI.MaterialText.Text(Ui.T("Config_RequiredChecks", (backendReady && IsCombatProviderReady(config) && depVnav && depXaSlave && depYesAlready ? Ui.T("Config_Ready") : Ui.T("Config_Incomplete"))));
+        AethertekUI.MaterialText.Text(Ui.T("Config_RequiredChecks", (backendReady && IsCombatProviderReady(config) && depVnav && depXaSlave && depXaDatabase && depYesAlready ? Ui.T("Config_Ready") : Ui.T("Config_Incomplete"))));
         AethertekUI.MaterialText.Text(Ui.T("Config_PartyRole", (config.IsPartyLeader ? Ui.T("Config_Leader") : Ui.T("Config_Participant"))));
         AethertekUI.MaterialText.Text(Ui.T("Config_OptionalFood", (config.FoodItemId > 0 ? Ui.Item((uint)config.FoodItemId).Render() : Ui.T("Config_NotConfigured"))));
         AethertekUI.MaterialText.Text(Ui.T("Config_OptionalRepairThreshold", config.RepairThreshold));

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Ipc;
+using MOGTOME.Services;
 
 namespace MOGTOME.IPC;
 
@@ -33,7 +34,7 @@ public sealed class MogtomeDadIpcService : IDisposable
     public MogtomeDadIpcService(IDalamudPluginInterface pluginInterface, Plugin plugin)
     {
         this.plugin = plugin;
-        Register(pluginInterface.GetIpcProvider<bool>(IsReadyName), () => plugin.Engine != null);
+        Register(pluginInterface.GetIpcProvider<bool>(IsReadyName), () => plugin.Engine != null && GameHelpers.MissingXaDependencies().Length == 0);
         Register(pluginInterface.GetIpcProvider<string, string>(StartRunName), StartRun);
         Register(pluginInterface.GetIpcProvider<string>(GetRunStatusName), GetRunStatus);
         Register(pluginInterface.GetIpcProvider<string, string>(StopRunName), StopRun);
@@ -112,6 +113,9 @@ public sealed class MogtomeDadIpcService : IDisposable
             return Serialize(Reject("MOGTOME is already running outside DAD ownership."));
 
         var isLeader = string.Equals(request.Role, "QueueLeader", StringComparison.OrdinalIgnoreCase);
+        var missingPlugins = GameHelpers.MissingXaDependencies();
+        if (missingPlugins.Length > 0)
+            return Serialize(Reject(Localization.Ui.M("Plugin_RequiredXaPlugins", missingPlugins).English));
         plugin.Configuration.IsPartyLeader = isLeader;
         plugin.State.IsPartyLeader = isLeader;
         plugin.ConfigManager.SaveCurrentAccount();
@@ -190,7 +194,7 @@ public sealed class MogtomeDadIpcService : IDisposable
     private MogtomeDadRunStatus Reject(string reason)
         => new()
         {
-            Ready = plugin.Engine != null,
+            Ready = plugin.Engine != null && GameHelpers.MissingXaDependencies().Length == 0,
             Accepted = false,
             Summary = reason,
             FailureReason = reason,

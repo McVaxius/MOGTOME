@@ -2376,4 +2376,17 @@ Use /ads mini para ativar ou desativar AutoDuty manualmente.</value></data>
   <data name="Shop_SelectMissing" xml:space="preserve"><value>Selecionar faltantes</value></data>
   <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Seleciona colecionáveis não registrados e equipamentos disponíveis sem cópias carregadas ou registradas na XA Database. Mantém metas maiores; não compra nem viaja. Ignora dados indisponíveis do personagem/registro no jogo, disponibilidade desconhecida e equipamentos de origem desconhecida. Exclui equipamentos de masmorras; inclui equipamentos de PvP, lojas e eventos com origem verificada. O IPC de armazenamento é opcional; atualize você os registros do inventário, arsenal, alforjes, retainers, armoire e glamour dresser.</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>Adicionados: {0}. Ignorados por dados desconhecidos: posse {1}, origem do equipamento {2}, disponibilidade {3}.</value></data>
+  <data name="Plugin_RequiredXaPlugins" xml:space="preserve"><value>Carregue os plugins necessários antes de iniciar ou comprar: {0}.</value></data>
+  <data name="Config_LoadXADB" xml:space="preserve"><value>Carregue o XA Database para os registros de inventário e armazenamento.</value></data>
+  <data name="Shop_StorageNotice" xml:space="preserve"><value>Para contagens precisas, abra a cômoda de glamour, o armário, os inventários dos lacaios e os alforjes normais/premium disponíveis para que o XA Database registre o conteúdo.</value></data>
+  <data name="Shop_HideStorageNotice" xml:space="preserve"><value>Ocultar aviso</value></data>
+  <data name="Shop_ShowStorageNotice" xml:space="preserve"><value>Mostrar aviso de armazenamento</value></data>
+  <data name="Ui_ShowTitlebarStatus" xml:space="preserve"><value>Mostrar status na barra de título</value></data>
+  <data name="Ui_DetailedTitlebarStatus" xml:space="preserve"><value>Status detalhado na barra de título</value></data>
+  <data name="Ui_TitlebarItemsLeft" xml:space="preserve"><value>{0} restantes</value></data>
+  <data name="Ui_TitlebarCost" xml:space="preserve"><value>custo {0} MGF</value></data>
+  <data name="Ui_TitlebarRuns" xml:space="preserve"><value>{0}/{1} partidas · {2} restantes</value></data>
+  <data name="Ui_TitlebarBuying" xml:space="preserve"><value>Comprando</value></data>
+  <data name="Ui_TitlebarFarming" xml:space="preserve"><value>Farmando</value></data>
+  <data name="Ui_TitlebarBlocked" xml:space="preserve"><value>Bloqueado</value></data>
 </root>

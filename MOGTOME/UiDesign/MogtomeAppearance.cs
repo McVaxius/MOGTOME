@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using AethertekUI;
@@ -8,6 +9,9 @@ using Dalamud.Interface.Utility;
 using Dalamud.Interface.Windowing;
 using Dalamud.Interface.Textures.TextureWraps;
 using MOGTOME.Localization;
+using MOGTOME.Models;
+using MOGTOME.Services;
+using MOGTOME.Windows;
 
 namespace MOGTOME.UiDesign;
 
@@ -45,9 +49,50 @@ internal sealed class MogtomeAppearance : IDisposable
         MaterialCanvas.DrawImage(ImGui.GetWindowDrawList(), icon.Handle, icon.Size, origin, origin + size);
     }
     internal IDisposable Font(MogtomeFontRole role) => fonts!.Push(role);
+    internal void DrawShopStorageNotice()
+    {
+        var config = plugin.Configuration;
+        ImGui.BeginDisabled(!plugin.CanSelectUiLanguage);
+        try
+        {
+            if (config.ShopStorageNoticeHidden)
+            {
+                UiLayout.SameLineIfFits(UiLayout.IconButtonWidth(string.Empty));
+                if (UiLayout.IconButton("###ShopStorageNoticeInfo", MaterialIcon.Info))
+                {
+                    config.ShopStorageNoticeHidden = false;
+                    plugin.ConfigManager.SaveCurrentAccount();
+                }
+                if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
+                    UiLayout.SetTooltip(Ui.T("Shop_ShowStorageNotice"));
+                return;
+            }
+            if (!ImGui.BeginTable("ShopStorageNotice", 2, ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.NoSavedSettings)) return;
+            try
+            {
+                ImGui.TableSetupColumn("###Notice", ImGuiTableColumnFlags.WidthStretch);
+                ImGui.TableSetupColumn("###Hide", ImGuiTableColumnFlags.WidthFixed,
+                    MaterialText.Measure(Ui.T("Shop_HideStorageNotice")).X + ImGui.GetStyle().FramePadding.X * 2);
+                ImGui.TableNextRow();
+                ImGui.TableSetColumnIndex(0);
+                UiLayout.Wrapped(Ui.T("Shop_StorageNotice"));
+                ImGui.TableSetColumnIndex(1);
+                if (UiLayout.Button(Ui.L("Shop_HideStorageNotice")))
+                {
+                    config.ShopStorageNoticeHidden = true;
+                    plugin.ConfigManager.SaveCurrentAccount();
+                }
+            }
+            finally { ImGui.EndTable(); }
+        }
+        finally { ImGui.EndDisabled(); }
+    }
     internal void PaintWindowTitle(string name) => UiLayout.PaintWindowTitle(name,shapedText.Renderer);
     internal void PaintWindowTitleWithButtons(Window owner) => UiLayout.PaintWindowTitleWithButtons(owner,shapedText.Renderer);
-    internal unsafe void PaintBrandTitle(Window owner)
+    internal void PaintBrandTitle(Window owner)
+        => PaintBrandTitleWithStatus(owner, plugin.Configuration.UiShowTitlebarStatus ? TitlebarStatus(owner) : null);
+
+    private unsafe void PaintBrandTitleWithStatus(Window owner, MaterialTitlebarStatus? status)
     {
         var window = ImGuiP.FindWindowByName(owner.WindowName);
         if (window.Handle == null) return;
@@ -56,7 +101,90 @@ internal sealed class MogtomeAppearance : IDisposable
         var extraRight = count * (ImGuiP.CalcFontSize(window) + ImGui.GetStyle().ItemInnerSpacing.X);
         var icon = OriginalIcon;
         using var font = Font(MogtomeFontRole.Body);
-        MaterialWindowHeader.PaintTitle(window, owner.WindowName.Split("##", 2)[0], icon.Handle, icon.Size, extraRight, owner.ShowCloseButton);
+        if (status is { } summary)
+            MaterialWindowHeader.PaintTitleWithStatus(window, owner.WindowName.Split("##", 2)[0], icon.Handle, icon.Size,
+                summary, extraRight, owner.ShowCloseButton);
+        else MaterialWindowHeader.PaintTitle(window, owner.WindowName.Split("##", 2)[0], icon.Handle, icon.Size, extraRight, owner.ShowCloseButton);
+    }
+
+    private MaterialTitlebarStatus TitlebarStatus(Window owner)
+    {
+        var config = plugin.Configuration;
+        var fields = new System.Collections.Generic.List<string>();
+        string state, detail;
+        bool active, blocked = false;
+        if (owner is MoogleShopWindow || owner is not BlundervilleWindow && plugin.MoogleShop.IsRunning)
+        {
+            var shop = plugin.MoogleShop;
+            active = shop.IsRunning;
+            blocked = !active && shop.Status.Key is not ("BV_Idle" or "BV_ShopDone" or "BV_Stopped");
+            state = Ui.T(active ? "Ui_TitlebarBuying" : blocked ? "Ui_TitlebarBlocked"
+                : shop.Status.Key == "BV_Stopped" ? "Main_Stopped" : "BV_Idle");
+            detail = shop.Status.Render();
+            var targets = config.MoogleShop.PurchaseTargets;
+            var stocks = plugin.XaDatabase.ReadStocks(targets.Keys);
+            var counts = targets.Keys.ToDictionary(id => id,
+                id => plugin.XaDatabase.TryCount(id, stocks.GetValueOrDefault(id), out var count) ? (int?)count : null);
+            var offers = shop.SelectedCatalog.GroupBy(offer => offer.ItemId).Where(group => group.Count() == 1)
+                .ToDictionary(group => group.Key, group => group.Single());
+            var costs = MoogleShopMath.TotalCosts(targets, offers, id => counts.GetValueOrDefault(id), out var known);
+            fields.Add(Ui.T("Ui_TitlebarItemsLeft", counts.Values.Any(count => !count.HasValue) ? "—"
+                : targets.Sum(target => Math.Max(0L, (long)target.Value - counts.GetValueOrDefault(target.Key).GetValueOrDefault())).ToString(Ui.Culture)));
+            foreach (var id in shop.SelectedCatalog.SelectMany(offer => offer.Costs).Select(cost => cost.ItemId).Distinct())
+            {
+                var balanceKnown = BlundervilleGameAdapter.TryBagInventory(id, out var balance, out _);
+                fields.Add(Ui.T("Shop_Balance", Ui.Item(id), balanceKnown ? balance.ToString(Ui.Culture) : "—",
+                    known ? costs.GetValueOrDefault(id).ToString(Ui.Culture) : "—"));
+            }
+        }
+        else if (owner is BlundervilleWindow || plugin.Blunderville.IsRunning)
+        {
+            var service = plugin.Blunderville;
+            var settings = config.Blunderville;
+            active = service.IsRunning;
+            blocked = !active && service.Status.Key is not ("BV_Idle" or "BV_FarmDone" or "BV_ShopDone" or "BV_Stopped");
+            state = Ui.T(active ? service.IsShopping ? "Ui_TitlebarBuying" : "Ui_TitlebarFarming"
+                : blocked ? "Ui_TitlebarBlocked" : service.Status.Key == "BV_Stopped" ? "Main_Stopped" : "BV_Idle");
+            detail = service.Status.Render();
+            var walletKnown = BlundervilleGameAdapter.TryWallet(out var wallet);
+            fields.Add(settings.WalletTargetEnabled
+                ? $"MGF {(walletKnown ? wallet.ToString(Ui.Culture) : "—")}/{settings.WalletTarget.ToString(Ui.Culture)}"
+                : $"MGF {(walletKnown ? wallet.ToString(Ui.Culture) : "—")}");
+            if (settings.RunLimitEnabled)
+                fields.Add(Ui.T("Ui_TitlebarRuns", service.SessionCycles, settings.RunLimit, Math.Max(0, settings.RunLimit - service.SessionCycles)));
+            else
+                fields.Add(Ui.T("BV_Runs") + ": " + service.SessionCycles.ToString(Ui.Culture));
+            var stocks = plugin.XaDatabase.ReadStocks(settings.PurchaseTargets.Keys);
+            var counts = settings.PurchaseTargets.Keys.ToDictionary(id => id,
+                id => plugin.XaDatabase.TryCount(id, stocks.GetValueOrDefault(id), out var count) ? (int?)count : null);
+            var offers = service.Catalog.GroupBy(offer => offer.ItemId).Where(group => group.Count() == 1)
+                .ToDictionary(group => group.Key, group => group.Single());
+            var cost = BlundervilleProgress.TotalMgf(settings.PurchaseTargets, offers, id => counts.GetValueOrDefault(id), out var known);
+            fields.Add(Ui.T("Ui_TitlebarItemsLeft", counts.Values.Any(count => !count.HasValue) ? "—"
+                : settings.PurchaseTargets.Sum(target => Math.Max(0L, (long)target.Value - counts.GetValueOrDefault(target.Key).GetValueOrDefault())).ToString(Ui.Culture)));
+            fields.Add(Ui.T("Ui_TitlebarCost", known ? cost.ToString(Ui.Culture) : "—"));
+        }
+        else
+        {
+            var engine = plugin.Engine;
+            active = engine?.IsRunning == true;
+            state = engine == null ? Ui.T("Main_StateInitializing") : Ui.EnumLabel(engine.CurrentState);
+            detail = engine?.Status.Render() ?? Ui.T("Main_StatusWaitingForAccountAndEngineInitialization");
+            var currency = plugin.MoogleShop.CurrencyId;
+            if (currency != 0)
+            {
+                var known = BlundervilleGameAdapter.TryBagInventory(currency, out var balance, out _);
+                fields.Add($"{Ui.Item(currency).Render()}: {(known ? balance.ToString(Ui.Culture) : "—")}");
+            }
+            fields.Add($"P{plugin.State.DutyCounter.ToString(Ui.Culture)} D{plugin.State.DecumanaCounter.ToString(Ui.Culture)}");
+            detail = Ui.T("Main_CounterPraeDailyPraetoriumLimit", plugin.State.DutyCounter, config.PraetoriumThreshold, config.MaxRuns)
+                + "\n" + Ui.T("Main_DailyDecuHeading") + ": " + plugin.State.DecumanaCounter.ToString(Ui.Culture) + "\n" + detail;
+        }
+        var concise = string.Join(" · ", new[] { state }.Concat(fields));
+        var tooltip = concise + (string.IsNullOrWhiteSpace(detail) ? string.Empty : "\n" + detail);
+        return new(config.UiDetailedTitlebarStatus && !string.IsNullOrWhiteSpace(detail) ? concise + " · " + detail : concise,
+            concise, tooltip, blocked ? MaterialTheme.Current.Colors.Error
+                : active ? MaterialTheme.Current.Colors.Primary : MaterialTheme.Current.Colors.OnSurfaceVariant);
     }
     internal void Draw(WindowSystem windows)
     {
@@ -174,8 +302,19 @@ internal sealed class MogtomeAppearance : IDisposable
         }
         windows.Draw();
         foreach (var titleBar in titleBars.Values) titleBar.DrawPopups();
+        MaterialTitlebarStatus? mainStatus = null, moogleStatus = null, blundervilleStatus = null;
         foreach (var window in windows.Windows)
         {
+            if (window.IsOpen && window is Window owner)
+            {
+                MaterialTitlebarStatus? status = null;
+                if (config.UiShowTitlebarStatus)
+                    status = owner is MoogleShopWindow || owner is not BlundervilleWindow && plugin.MoogleShop.IsRunning
+                        ? moogleStatus ??= TitlebarStatus(owner)
+                        : owner is BlundervilleWindow || plugin.Blunderville.IsRunning
+                            ? blundervilleStatus ??= TitlebarStatus(owner) : mainStatus ??= TitlebarStatus(owner);
+                PaintBrandTitleWithStatus(owner, status);
+            }
             if (!windowOpacities.TryGetValue(window, out var opacity))
                 windowOpacities.Add(window, opacity = new());
             ApplyWindowOpacity(opacity, window.WindowName);
@@ -292,6 +431,12 @@ internal sealed class MogtomeAppearance : IDisposable
         ImGui.BeginDisabled(!plugin.CanSelectUiLanguage);
         if (includeVisibility)
         {
+            var showStatus = config.UiShowTitlebarStatus;
+            if (UiLayout.Checkbox(Ui.T("Ui_ShowTitlebarStatus") + "###window-titlebar-status", ref showStatus))
+            { config.UiShowTitlebarStatus = showStatus; changed = true; }
+            var detailedStatus = config.UiDetailedTitlebarStatus;
+            if (UiLayout.Checkbox(Ui.T("Ui_DetailedTitlebarStatus") + "###window-titlebar-detail", ref detailedStatus))
+            { config.UiDetailedTitlebarStatus = detailedStatus; changed = true; }
             var compactVisible = config.UiCompactVisibleOnMainWindow;
             if (UiLayout.Checkbox(Ui.T("Compact visible on main window") + "###window-compact-visible", ref compactVisible))
             { config.UiCompactVisibleOnMainWindow = compactVisible; changed = true; }

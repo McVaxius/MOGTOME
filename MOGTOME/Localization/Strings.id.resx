@@ -2376,4 +2376,17 @@ Gunakan /ads mini untuk mengaktifkan atau menonaktifkan AutoDuty secara manual.<
   <data name="Shop_SelectMissing" xml:space="preserve"><value>Pilih yang belum dimiliki</value></data>
   <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Memilih koleksi yang belum terdaftar dan perlengkapan yang tersedia tanpa salinan yang dibawa atau tercatat di XA Database. Target lebih besar tetap dipertahankan; tidak membeli atau bepergian. Melewati data karakter/pendaftaran dalam game yang tidak tersedia, syarat pembelian yang tidak diketahui dan sumber perlengkapan yang tidak diketahui. Perlengkapan hasil dungeon dikecualikan; perlengkapan PvP, toko dan acara dengan sumber terverifikasi disertakan. IPC penyimpanan opsional; perbarui sendiri catatan inventaris, armoury, saddlebag, retainer, armoire dan glamour dresser.</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>Ditambahkan: {0}. Dilewati karena belum diketahui: kepemilikan {1}, sumber perlengkapan {2}, syarat pembelian {3}.</value></data>
+  <data name="Plugin_RequiredXaPlugins" xml:space="preserve"><value>Muat plugin yang diperlukan sebelum memulai atau membeli: {0}.</value></data>
+  <data name="Config_LoadXADB" xml:space="preserve"><value>Muat XA Database untuk catatan inventaris dan penyimpanan.</value></data>
+  <data name="Shop_StorageNotice" xml:space="preserve"><value>Agar jumlahnya akurat, buka lemari glamour, armoire, inventaris retainer, serta tas pelana biasa/premium yang tersedia agar XA Database mencatat isinya.</value></data>
+  <data name="Shop_HideStorageNotice" xml:space="preserve"><value>Sembunyikan pemberitahuan</value></data>
+  <data name="Shop_ShowStorageNotice" xml:space="preserve"><value>Tampilkan pemberitahuan penyimpanan</value></data>
+  <data name="Ui_ShowTitlebarStatus" xml:space="preserve"><value>Tampilkan status bilah judul</value></data>
+  <data name="Ui_DetailedTitlebarStatus" xml:space="preserve"><value>Status bilah judul terperinci</value></data>
+  <data name="Ui_TitlebarItemsLeft" xml:space="preserve"><value>{0} tersisa</value></data>
+  <data name="Ui_TitlebarCost" xml:space="preserve"><value>biaya {0} MGF</value></data>
+  <data name="Ui_TitlebarRuns" xml:space="preserve"><value>{0}/{1} putaran · {2} tersisa</value></data>
+  <data name="Ui_TitlebarBuying" xml:space="preserve"><value>Membeli</value></data>
+  <data name="Ui_TitlebarFarming" xml:space="preserve"><value>Farming</value></data>
+  <data name="Ui_TitlebarBlocked" xml:space="preserve"><value>Terhambat</value></data>
 </root>

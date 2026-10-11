@@ -11,7 +11,7 @@ namespace MOGTOME.Services;
 
 public sealed class BlundervilleService : IDisposable
 {
-    public const string BuildMarker = "devhub-bv-kits-gear-20261011-03";
+    public const string BuildMarker = "devhub-bv-return-20261011-04";
     private enum Stage { Idle, Farming, Finishing, LeavingParty, Shopping, Ending }
     private readonly Plugin plugin;
     private readonly BlundervilleGameAdapter game;
@@ -89,6 +89,8 @@ public sealed class BlundervilleService : IDisposable
         if (Volatile.Read(ref stopRequested) != 0) return Reject("BV_Stopped");
         if (!Ready || IsRunning || plugin.Engine.IsRunning || plugin.IsEngineStartQueued || plugin.MoogleShop?.IsRunning == true || plugin.IsMoogleShopActionQueued)
             return Reject("BV_Unavailable");
+        var missingPlugins = GameHelpers.MissingXaDependencies();
+        if (missingPlugins.Length > 0) return Reject("Plugin_RequiredXaPlugins", missingPlugins);
         var inArena = Plugin.ClientState.TerritoryType == BlundervilleGameAdapter.Arena;
         if ((inArena && requested != Stage.Farming) ||
             (Plugin.Condition[ConditionFlag.BoundByDuty] && !inArena) || Plugin.Condition[ConditionFlag.InDutyQueue] ||
@@ -128,7 +130,7 @@ public sealed class BlundervilleService : IDisposable
         return true;
     }
 
-    private bool Reject(string key) { Status = Ui.M(key); Plugin.Log.Warning("[MOGTOME][BV] rejected: {Reason}", Status.English); return false; }
+    private bool Reject(string key, params object?[] arguments) { Status = Ui.M(key, arguments); Plugin.Log.Warning("[MOGTOME][BV] rejected: {Reason}", Status.English); return false; }
     private void SetStage(Stage value, string key)
     {
         stage = value;
@@ -224,7 +226,6 @@ public sealed class BlundervilleService : IDisposable
             Status = Ui.M("BV_ArenaIdle");
             if (BlundervilleGameAdapter.Visible("FGSSpectatorMenu"))
             {
-                progress.ObserveElimination();
                 Status = Ui.M("BV_Exiting");
                 if (!spectatorSubmitted)
                 {
@@ -238,14 +239,13 @@ public sealed class BlundervilleService : IDisposable
                 exitSubmitted = true;
                 Plugin.Log.Information("[MOGTOME][BV] confirming eliminated arena exit; marker={Marker}", loadMarker);
                 if (!BlundervilleGameAdapter.Callback("FGSExitDialog", 0)) { Fail("BV_UiMismatch"); return; }
-                progress.SubmitExit();
             }
             return; // Even a met wallet target waits for elimination and normal exit.
         }
         if (progress.InArena)
         {
-            if (!progress.Return()) { Fail("BV_UnconfirmedExit"); return; }
-            Plugin.Log.Information("[MOGTOME][BV] confirmed elimination/return; cycles={Cycles}; wallet={Wallet}; marker={Marker}", progress.Cycles, wallet, loadMarker);
+            if (!progress.Return(Plugin.Condition[ConditionFlag.BoundByDuty])) return;
+            Plugin.Log.Information("[MOGTOME][BV] returned outside duty; cycles={Cycles}; wallet={Wallet}; marker={Marker}", progress.Cycles, wallet, loadMarker);
             spectatorSubmitted = exitSubmitted = false;
             stepStarted = DateTime.UtcNow;
             interactionNpc = 0;
@@ -428,7 +428,12 @@ public sealed class BlundervilleService : IDisposable
     {
         Plugin.Log.Information("[MOGTOME][BV] farming completed; cycles={Cycles}; shop={Shop}; marker={Marker}", progress.Cycles, Settings.ShopWhenFinished, loadMarker);
         if (Settings.ShopWhenFinished && (uncertainPurchase || Settings.PurchaseReviewRequired)) Fail("BV_UncertainPurchase");
-        else if (Settings.ShopWhenFinished) SetStage(Stage.Shopping, "BV_Shopping");
+        else if (Settings.ShopWhenFinished)
+        {
+            var missingPlugins = GameHelpers.MissingXaDependencies();
+            if (missingPlugins.Length > 0) Fail("Plugin_RequiredXaPlugins", missingPlugins);
+            else SetStage(Stage.Shopping, "BV_Shopping");
+        }
         else Complete("BV_FarmDone");
     }
 
@@ -697,10 +702,10 @@ public sealed class BlundervilleService : IDisposable
         if (manual) Status = Ui.M(queueCancelRejected ? "BV_QueueCancelFailed" : "BV_Stopped");
         Plugin.Log.Information("[MOGTOME][BV] stopped; manual={Manual}; uncertainPurchase={Uncertain}; marker={Marker}", manual, uncertainPurchase, loadMarker);
     }
-    private void Fail(string key)
+    private void Fail(string key, params object?[] arguments)
     {
         StopCore(false);
-        Status = Ui.M(key);
+        Status = Ui.M(key, arguments);
         Plugin.Log.Warning("[MOGTOME][BV] failed: {Status}; marker={Marker}", Status.English, loadMarker);
         Plugin.ChatGui.Print(Status.RenderGame());
     }

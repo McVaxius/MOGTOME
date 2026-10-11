@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Dalamud.Game.ClientState.Objects.Types;
@@ -23,6 +24,41 @@ namespace MOGTOME.Services;
 /// </summary>
 public static class GameHelpers
 {
+    internal static (bool Database, bool Slave) ReadXaDependencies(
+        IEnumerable<(string? InternalName, string? Name, bool Loaded)> plugins)
+    {
+        var database = false;
+        var slave = false;
+        foreach (var plugin in plugins)
+        {
+            if (!plugin.Loaded) continue;
+            foreach (var name in new[] { plugin.InternalName, plugin.Name })
+            {
+                var normalized = new string((name ?? string.Empty).Where(char.IsLetterOrDigit).ToArray());
+                database |= normalized.Equals("XADatabase", StringComparison.OrdinalIgnoreCase)
+                    || normalized.Equals("XADB", StringComparison.OrdinalIgnoreCase);
+                slave |= normalized.Equals("XASlave", StringComparison.OrdinalIgnoreCase);
+            }
+        }
+        return (database, slave);
+    }
+
+    internal static (bool Database, bool Slave) LoadedXaDependencies()
+    {
+        try
+        {
+            return ReadXaDependencies(Plugin.PluginInterface.InstalledPlugins
+                .Select(plugin => ((string?)plugin.InternalName, (string?)plugin.Name, plugin.IsLoaded)));
+        }
+        catch { return default; }
+    }
+
+    internal static string MissingXaDependencies()
+    {
+        var (database, slave) = LoadedXaDependencies();
+        return database ? slave ? string.Empty : "XA Slave" : slave ? "XA Database" : "XA Database, XA Slave";
+    }
+
     /// <summary>
     /// Run work on the framework thread immediately or on a future tick after a delay.
     /// </summary>

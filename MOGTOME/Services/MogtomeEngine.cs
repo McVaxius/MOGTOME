@@ -304,6 +304,14 @@ public class MogtomeEngine
             return;
         }
 
+        var missingPlugins = GameHelpers.MissingXaDependencies();
+        if (missingPlugins.Length > 0)
+        {
+            RecordStopReason(Ui.M("Plugin_RequiredXaPlugins", missingPlugins));
+            log.Warning("[MOGTOME][Engine] Start rejected: {Reason}", Status.English);
+            return;
+        }
+
         log.Information("[MOGTOME][Engine] Starting MOGTOME engine");
         var currentSession = ++sessionId;
         dutyStartup.ResetSession(DutyStartupService.IsInDuty());

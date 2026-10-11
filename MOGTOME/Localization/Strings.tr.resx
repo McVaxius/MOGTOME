@@ -2376,4 +2376,17 @@ AutoDuty'yi elle etkinleştirmek veya devre dışı bırakmak için /ads mini ku
   <data name="Shop_SelectMissing" xml:space="preserve"><value>Eksikleri seç</value></data>
   <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Taşınan veya XA Database’de kaydedilmiş kopyası olmayan kayıtsız koleksiyon öğelerini ve satın alınabilir ekipmanı seçer. Daha büyük hedefleri korur; satın alma veya seyahat başlatmaz. Kullanılamayan karakter/oyun içi kayıt verilerini, bilinmeyen satın alma koşullarını ve bilinmeyen ekipman kaynaklarını atlar. Zindandan düşen giyilebilir ekipman hariçtir; doğrulanmış PvP, mağaza ve etkinlik ekipmanı dahildir. Depo IPC’si isteğe bağlıdır; envanter, cephanelik, heybe, retainer, armoire ve glamour dresser kayıtlarını kendiniz yenileyin.</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>Eklendi: {0}. Bilinmeyen veriler nedeniyle atlandı: sahiplik {1}, ekipman kaynağı {2}, satın alma koşulları {3}.</value></data>
+  <data name="Plugin_RequiredXaPlugins" xml:space="preserve"><value>Başlatmadan veya satın almadan önce gerekli eklentileri yükleyin: {0}.</value></data>
+  <data name="Config_LoadXADB" xml:space="preserve"><value>Envanter ve depolama kayıtları için XA Database'i yükleyin.</value></data>
+  <data name="Shop_StorageNotice" xml:space="preserve"><value>Doğru sayım için glamour dolabını, armoire'ı, retainer envanterlerini ve mevcut normal/premium chocobo çantalarını açarak XA Database'in içeriklerini kaydetmesini sağlayın.</value></data>
+  <data name="Shop_HideStorageNotice" xml:space="preserve"><value>Bildirimi gizle</value></data>
+  <data name="Shop_ShowStorageNotice" xml:space="preserve"><value>Depolama bildirimini göster</value></data>
+  <data name="Ui_ShowTitlebarStatus" xml:space="preserve"><value>Başlık çubuğunda durumu göster</value></data>
+  <data name="Ui_DetailedTitlebarStatus" xml:space="preserve"><value>Ayrıntılı başlık çubuğu durumu</value></data>
+  <data name="Ui_TitlebarItemsLeft" xml:space="preserve"><value>{0} kaldı</value></data>
+  <data name="Ui_TitlebarCost" xml:space="preserve"><value>maliyet {0} MGF</value></data>
+  <data name="Ui_TitlebarRuns" xml:space="preserve"><value>{0}/{1} tur · {2} kaldı</value></data>
+  <data name="Ui_TitlebarBuying" xml:space="preserve"><value>Satın alınıyor</value></data>
+  <data name="Ui_TitlebarFarming" xml:space="preserve"><value>Farm yapılıyor</value></data>
+  <data name="Ui_TitlebarBlocked" xml:space="preserve"><value>Engellendi</value></data>
 </root>

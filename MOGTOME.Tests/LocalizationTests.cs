@@ -441,6 +441,8 @@ public sealed class LocalizationTests : IDisposable
             File.WriteAllText(path, """{"Version":2,"UiCompact":false,"UiCompactVisibleOnMainWindow":true,"UiTransparencyVisibleOnMainWindow":true,"UiWindowOpacityPercent":73,"MaxRuns":66,"Blunderville":{"PurchaseTargets":{"41491":2},"PurchaseReviewRequired":true},"FutureSetting":{"value":[1,"unchanged"]}}""");
             var config = Configuration.LoadFromFile(path);
             Assert.True(config.UiCompact);
+            Assert.True(config.UiShowTitlebarStatus);
+            Assert.True(config.UiDetailedTitlebarStatus);
             Assert.True(config.UiCompactDefaultsApplied);
             Assert.False(config.UiCompactVisibleOnMainWindow);
             Assert.False(config.UiTransparencyVisibleOnMainWindow);
@@ -448,12 +450,15 @@ public sealed class LocalizationTests : IDisposable
             Configuration.LoadFromFile(path);
             Assert.Equal(saved, File.ReadAllText(path));
             config.UiCompact = false;
+            config.UiShowTitlebarStatus = config.UiDetailedTitlebarStatus = false;
             config.UiCompactVisibleOnMainWindow = config.UiTransparencyVisibleOnMainWindow = true;
             config.SaveToFile(path);
             for (var reload = 0; reload < 2; reload++)
             {
                 config = Configuration.LoadFromFile(path);
                 Assert.False(config.UiCompact);
+                Assert.False(config.UiShowTitlebarStatus);
+                Assert.False(config.UiDetailedTitlebarStatus);
                 Assert.True(config.UiCompactVisibleOnMainWindow);
                 Assert.True(config.UiTransparencyVisibleOnMainWindow);
                 Assert.Equal(73, config.UiWindowOpacityPercent);
@@ -465,6 +470,141 @@ public sealed class LocalizationTests : IDisposable
             }
         }
         finally { Directory.Delete(directory, recursive: true); }
+    }
+
+    [Theory]
+    [InlineData("XADatabase", "XA Database", true, true, false)]
+    [InlineData("XA-Database", "Other", true, true, false)]
+    [InlineData("Other", "XA Slave", true, false, true)]
+    [InlineData("xaslave", "Other", true, false, true)]
+    [InlineData("XADatabase", "XA Database", false, false, false)]
+    [InlineData("XASlave", "XA Slave", false, false, false)]
+    [InlineData("XADatabaseHelper", "XA Slave Helper", true, false, false)]
+    [InlineData(null, null, true, false, false)]
+    public void RequiredXaPluginsUseExactNamesAndCurrentLoadedState(string? internalName, string? name, bool loaded, bool database, bool slave)
+        => Assert.Equal((database, slave), GameHelpers.ReadXaDependencies([(internalName, name, loaded)]));
+
+    [Theory]
+    [InlineData(false, false, "XA Database, XA Slave")]
+    [InlineData(false, true, "XA Database")]
+    [InlineData(true, false, "XA Slave")]
+    [InlineData(true, true, "")]
+    public void RequiredXaPluginsRecheckBeforeDirectAndQueuedStartup(bool database, bool slave, string expected)
+    {
+        var log = Fake<IPluginLog>();
+        SetService("Log", log);
+        var db = Fake<IExposedPlugin>((method, _) => method.Name switch
+        {
+            "get_InternalName" => "XADatabase", "get_Name" => "XA Database", "get_IsLoaded" => database,
+            _ => Default(method.ReturnType),
+        });
+        var xa = Fake<IExposedPlugin>((method, _) => method.Name switch
+        {
+            "get_InternalName" => "XASlave", "get_Name" => "XA Slave", "get_IsLoaded" => slave,
+            _ => Default(method.ReturnType),
+        });
+        SetService("PluginInterface", Fake<IDalamudPluginInterface>((method, _) =>
+            method.Name == "get_InstalledPlugins" ? new[] { db, xa } : Default(method.ReturnType)));
+        Assert.Equal(expected, GameHelpers.MissingXaDependencies());
+        Assert.Equal((database, slave), GameHelpers.LoadedXaDependencies());
+        if (expected.Length == 0) return; // Do not enter game-owned startup in an offline test.
+
+        var engine = (MogtomeEngine)RuntimeHelpers.GetUninitializedObject(typeof(MogtomeEngine));
+        SetField(engine, "log", log);
+        engine.Start();
+        Assert.Equal(EngineState.Idle, engine.CurrentState);
+        Assert.Null(GetField(engine, "startupTask"));
+        Assert.Equal("Plugin_RequiredXaPlugins", engine.Status.Key);
+        Assert.Equal(expected, engine.Status.Arguments[0]);
+
+        var plugin = (Plugin)RuntimeHelpers.GetUninitializedObject(typeof(Plugin));
+        SetField(plugin, "<Engine>k__BackingField", engine);
+        plugin.QueueEngineStart("offline requirements regression", notifyChat: false);
+        Assert.False(plugin.IsEngineStartQueued);
+
+        // Reproduce unloading a dependency after a request has already been queued.
+        SetField(plugin, "pendingEngineStartRequest", true);
+        SetField(plugin, "pendingEngineStartSource", "offline queued requirements regression");
+        typeof(Plugin).GetMethod("TryConsumeQueuedEngineStart", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(plugin, null);
+        Assert.False(plugin.IsEngineStartQueued);
+        Assert.Equal(EngineState.Idle, engine.CurrentState);
+        Assert.Null(GetField(engine, "startupTask"));
+        Assert.Equal(expected, engine.Status.Arguments[0]);
+
+        database = slave = true;
+        Assert.Equal(string.Empty, GameHelpers.MissingXaDependencies());
+        database = false;
+        Assert.Equal("XA Database", GameHelpers.MissingXaDependencies());
+    }
+
+    [Fact]
+    public void UnavailablePluginListDoesNotCertifyDependencies()
+    {
+        SetService("PluginInterface", Fake<IDalamudPluginInterface>((method, _) =>
+            method.Name == "get_InstalledPlugins" ? throw new InvalidOperationException("Unavailable test list") : Default(method.ReturnType)));
+        Assert.Equal((false, false), GameHelpers.LoadedXaDependencies());
+        Assert.Equal("XA Database, XA Slave", GameHelpers.MissingXaDependencies());
+    }
+
+    [Fact]
+    public void StorageNoticeUsesTheActualAccountSaveRouteWithoutChangingShopTargets()
+    {
+        var log = Fake<IPluginLog>();
+        SetService("Log", log);
+        var directory = Path.Combine(Path.GetTempPath(), "MogtomeShopNoticeTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(Path.Combine(directory, "MOGTOME"));
+        try
+        {
+            var a = JsonSerializer.Deserialize<Configuration>("""{"Version":2,"UiCompactDefaultsApplied":true,"MaxRuns":66,"Blunderville":{"PurchaseTargets":{"41491":2}},"MoogleShop":{"PurchaseTargets":{"50440":1},"PurchaseReviewRequired":true},"FutureSetting":{"value":"unchanged"}}""")!;
+            var b = new Configuration { UiCompactDefaultsApplied = true };
+            Assert.False(a.ShopStorageNoticeHidden);
+            Assert.False(b.ShopStorageNoticeHidden);
+            var manager = (ConfigManager)RuntimeHelpers.GetUninitializedObject(typeof(ConfigManager));
+            SetField(manager, "log", log);
+            SetField(manager, "pluginInterface", Fake<IDalamudPluginInterface>((method, _) =>
+                method.Name == "get_ConfigDirectory" ? new DirectoryInfo(directory) : Default(method.ReturnType)));
+            SetField(manager, "accounts", new Dictionary<string, AccountConfig>
+            {
+                ["test-a"] = new() { AccountId = "test-a", Settings = a },
+                ["test-b"] = new() { AccountId = "test-b", Settings = b },
+            });
+            SetField(manager, "currentAccountId", "test-a");
+            manager.GetActiveConfig().ShopStorageNoticeHidden = true;
+            manager.SaveCurrentAccount();
+            var pathA = Path.Combine(directory, "MOGTOME", "test-a_MOGTOME.json");
+            var savedA = Configuration.LoadFromFile(pathA);
+            Assert.True(savedA.ShopStorageNoticeHidden);
+            Assert.Equal(66, savedA.MaxRuns);
+            Assert.Equal(2, savedA.Blunderville.PurchaseTargets[41491]);
+            Assert.Equal(1, savedA.MoogleShop.PurchaseTargets[50440]);
+            Assert.True(savedA.MoogleShop.PurchaseReviewRequired);
+            Assert.Equal("unchanged", savedA.AdditionalSettings["FutureSetting"].GetProperty("value").GetString());
+
+            SetField(manager, "currentAccountId", "test-b");
+            Assert.False(manager.GetActiveConfig().ShopStorageNoticeHidden);
+            manager.SaveCurrentAccount();
+            Assert.False(Configuration.LoadFromFile(Path.Combine(directory, "MOGTOME", "test-b_MOGTOME.json")).ShopStorageNoticeHidden);
+            Assert.True(Configuration.LoadFromFile(pathA).ShopStorageNoticeHidden);
+            SetField(manager, "currentAccountId", "test-a");
+            manager.GetActiveConfig().ShopStorageNoticeHidden = false;
+            manager.SaveCurrentAccount();
+            Assert.False(Configuration.LoadFromFile(pathA).ShopStorageNoticeHidden);
+        }
+        finally { Directory.Delete(directory, recursive: true); }
+    }
+
+    [Fact]
+    public void ShopNoticeAndRequiredPluginTextExistInEveryExactCatalog()
+    {
+        foreach (var language in Enum.GetValues<UiLanguage>())
+        {
+            var resources = Ui.Resources.GetResourceSet(language == UiLanguage.English
+                ? CultureInfo.InvariantCulture : Ui.CultureFor(language), true, false)!;
+            foreach (var key in new[] { "Plugin_RequiredXaPlugins", "Config_LoadXADB", "Shop_StorageNotice", "Shop_HideStorageNotice", "Shop_ShowStorageNotice" })
+                Assert.False(string.IsNullOrWhiteSpace(resources.GetString(key)));
+            Assert.Contains("{0}", resources.GetString("Plugin_RequiredXaPlugins"));
+            Assert.DoesNotContain("{1}", resources.GetString("Plugin_RequiredXaPlugins"));
+        }
     }
 
     private void SetService(string name, object value)

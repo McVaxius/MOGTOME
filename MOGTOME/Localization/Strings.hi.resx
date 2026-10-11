@@ -2392,4 +2392,17 @@ AutoDuty को मैन्युअल रूप से चालू या �
   <data name="Shop_SelectMissing" xml:space="preserve"><value>गुम वस्तुएँ चुनें</value></data>
   <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>अपंजीकृत संग्रहणीय वस्तुएँ और उपलब्ध उपकरण चुनता है, जब साथ रखी या XA Database में दर्ज प्रति न हो। बड़े लक्ष्य बने रहते हैं; खरीद या यात्रा शुरू नहीं होती। अनुपलब्ध पात्र/गेम पंजीकरण डेटा, अज्ञात खरीद की शर्तें और अज्ञात उपकरण स्रोत छोड़ता है। डंजन से मिलने वाले पहनने योग्य उपकरण शामिल नहीं होते; सत्यापित PvP, दुकान और इवेंट के उपकरण शामिल होते हैं। भंडार IPC वैकल्पिक है; इन्वेंट्री, आर्मरी, सैडलबैग, रिटेनर, आर्मोयर और ग्लैमर ड्रेसर रिकॉर्ड स्वयं अपडेट करें।</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>जोड़े: {0}। अज्ञात जानकारी के कारण छोड़े: स्वामित्व {1}, उपकरण का स्रोत {2}, खरीद की शर्तें {3}.</value></data>
+  <data name="Plugin_RequiredXaPlugins" xml:space="preserve"><value>शुरू करने या खरीदने से पहले आवश्यक प्लगइन लोड करें: {0}।</value></data>
+  <data name="Config_LoadXADB" xml:space="preserve"><value>इन्वेंटरी और भंडारण के रिकॉर्ड के लिए XA Database लोड करें।</value></data>
+  <data name="Shop_StorageNotice" xml:space="preserve"><value>सही गिनती के लिए ग्लैमर ड्रेसर, आर्मोयर, रिटेनर और उपलब्ध सामान्य/प्रीमियम चोकोबो सैडलबैग खोलें, ताकि XA Database उनकी सामग्री दर्ज कर सके।</value></data>
+  <data name="Shop_HideStorageNotice" xml:space="preserve"><value>सूचना छिपाएँ</value></data>
+  <data name="Shop_ShowStorageNotice" xml:space="preserve"><value>भंडारण सूचना दिखाएँ</value></data>
+  <data name="Ui_ShowTitlebarStatus" xml:space="preserve"><value>शीर्षक पट्टी में स्थिति दिखाएँ</value></data>
+  <data name="Ui_DetailedTitlebarStatus" xml:space="preserve"><value>शीर्षक पट्टी में विस्तृत स्थिति</value></data>
+  <data name="Ui_TitlebarItemsLeft" xml:space="preserve"><value>{0} शेष</value></data>
+  <data name="Ui_TitlebarCost" xml:space="preserve"><value>लागत {0} MGF</value></data>
+  <data name="Ui_TitlebarRuns" xml:space="preserve"><value>{0}/{1} दौर · {2} शेष</value></data>
+  <data name="Ui_TitlebarBuying" xml:space="preserve"><value>खरीद जारी</value></data>
+  <data name="Ui_TitlebarFarming" xml:space="preserve"><value>फ़ार्मिंग</value></data>
+  <data name="Ui_TitlebarBlocked" xml:space="preserve"><value>अवरुद्ध</value></data>
 </root>

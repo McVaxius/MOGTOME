@@ -128,6 +128,7 @@ public sealed class Plugin : IDalamudPlugin
 
     public Plugin()
     {
+        Log.Information("[MOGTOME] XA requirements build {Marker}", "devhub-I534-shop-requirements-20261011-01");
         AcquireConfigDirectoryLock();
 
         // Initialize ConfigManager first
@@ -552,6 +553,8 @@ public sealed class Plugin : IDalamudPlugin
             return;
         }
 
+        if (!CheckXaDependenciesForStart(source, notifyChat)) return;
+
         if (sharedConfigPathDetected && !sharedConfigWarningAcknowledged)
         {
             deferredSharedConfigStartRequest = true;
@@ -822,9 +825,21 @@ public sealed class Plugin : IDalamudPlugin
             return;
         }
 
+        if (!CheckXaDependenciesForStart(source, notifyChat)) return;
         TryEnableXaSlaveSkipCutscenes(source);
         Log.Information("[Plugin] Framework-thread startup begins for queued request from {Source}", source);
         Engine.Start();
+    }
+
+    private bool CheckXaDependenciesForStart(string source, bool notifyChat)
+    {
+        var missingPlugins = GameHelpers.MissingXaDependencies();
+        if (missingPlugins.Length == 0) return true;
+        var reason = Ui.M("Plugin_RequiredXaPlugins", missingPlugins);
+        Engine?.RecordStopReason(reason);
+        Log.Warning("[Plugin] Start request from {Source} rejected: {Reason}", source, reason.English);
+        if (notifyChat) ChatGui.Print(reason.RenderGame());
+        return false;
     }
 
     private bool TryEnableXaSlaveSkipCutscenes(string source)
