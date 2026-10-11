@@ -11,7 +11,7 @@ namespace MOGTOME.Services;
 
 public sealed class MoogleShopService : IDisposable
 {
-    public const string BuildMarker = "mog-shop-0007";
+    public const string BuildMarker = "mog-shop-0009";
     private readonly Plugin plugin;
     private readonly MoogleShopGameAdapter game;
     private readonly string marker = $"{BuildMarker}/pid={Environment.ProcessId}/utc={DateTimeOffset.UtcNow:O}";
@@ -57,7 +57,7 @@ public sealed class MoogleShopService : IDisposable
             if (!Catalog.Any(o => o.TomestoneId == CurrencyId)) CurrencyId = Catalog.FirstOrDefault()?.TomestoneId ?? 0;
             foreach (var id in Catalog.SelectMany(o => o.Costs).Select(c => c.ItemId).Distinct())
             {
-                var known = BlundervilleGameAdapter.TryInventory(id, out var balance, out _);
+                var known = BlundervilleGameAdapter.TryBagInventory(id, out var balance, out _);
                 Plugin.Log.Information("[MOGTOME][Shop] bag balance currency={Currency}; balance={Balance}; marker={Marker}",
                     id, known ? balance.ToString(System.Globalization.CultureInfo.InvariantCulture) : "?", marker);
             }
@@ -81,9 +81,10 @@ public sealed class MoogleShopService : IDisposable
         sessionCatalog = SelectedCatalog;
         targets = new(Settings.PurchaseTargets ?? []);
         MoogleShopOffer? firstOffer = null;
+        var storedStocks = plugin.XaDatabase.ReadStocks(targets.Keys);
         foreach (var target in targets.Where(t => t.Value > 0))
         {
-            if (!BlundervilleGameAdapter.TryInventory(target.Key, out var count, out _)) return Reject("BV_NoInventory");
+            if (!plugin.XaDatabase.TryCount(target.Key, storedStocks.GetValueOrDefault(target.Key), out var count)) return Reject("BV_NoInventory");
             if (count < target.Value && sessionCatalog.Count(o => o.ItemId == target.Key) != 1) return Reject("Shop_NoCatalog");
             if (count < target.Value)
             {
@@ -169,9 +170,21 @@ public sealed class MoogleShopService : IDisposable
             }
             if (!BlundervilleGameAdapter.TryInventory(next.ItemId, out beforeItem, out var capacity) || !ReadBalances(next, out beforeBalances))
             { Fail("BV_NoInventory"); return; }
-            if (beforeItem >= targets[next.ItemId]) return;
-            if (next.Costs.Any(c => beforeBalances[c.ItemId] < c.Count)) { Fail("Shop_NoFunds"); return; }
+            if (!plugin.XaDatabase.TryCount(next.ItemId, out var ownedCount)) { Fail("BV_NoInventory"); return; }
+            if (ownedCount >= targets[next.ItemId]) return;
             var item = Plugin.DataManager.GetExcelSheet<Item>().GetRow(next.ItemId);
+            var shortage = next.Costs.FirstOrDefault(c => beforeBalances[c.ItemId] < c.Count);
+            if (shortage != null)
+            {
+                Plugin.Log.Warning("[MOGTOME][Shop] insufficient currency item={Item}; currency={Currency}; required={Required}; available={Available}; costs={Costs}; balances={Balances}; marker={Marker}",
+                    next.ItemId, shortage.ItemId, shortage.Count, beforeBalances[shortage.ItemId],
+                    string.Join(',', next.Costs.Select(c => $"{c.ItemId}:{c.Count}")),
+                    string.Join(',', beforeBalances.Select(c => $"{c.Key}:{c.Value}")), marker);
+                Fail("Shop_NoFundsItem", item.Name.ToString(),
+                    Plugin.DataManager.GetExcelSheet<Item>().GetRow(shortage.ItemId).Name.ToString(),
+                    shortage.Count, beforeBalances[shortage.ItemId]);
+                return;
+            }
             if (capacity < next.ReceiveCount || (item.IsUnique && (beforeItem > 0 || next.ReceiveCount > 1))) { Fail("BV_NoCapacity"); return; }
             if (!CheckEligibility(next)) return;
             SetHold(true);
@@ -186,9 +199,10 @@ public sealed class MoogleShopService : IDisposable
 
     private MoogleShopOffer? NextOffer()
     {
+        var storedStocks = plugin.XaDatabase.ReadStocks(targets.Keys);
         foreach (var target in targets.Where(t => t.Value > 0))
         {
-            if (!BlundervilleGameAdapter.TryInventory(target.Key, out var count, out _)) { Fail("BV_NoInventory"); return null; }
+            if (!plugin.XaDatabase.TryCount(target.Key, storedStocks.GetValueOrDefault(target.Key), out var count)) { Fail("BV_NoInventory"); return null; }
             if (count >= target.Value) continue;
             var matches = sessionCatalog.Where(o => o.ItemId == target.Key).ToArray();
             if (matches.Length != 1) { Fail("Shop_NoCatalog"); return null; }
@@ -211,7 +225,7 @@ public sealed class MoogleShopService : IDisposable
         balances = [];
         foreach (var cost in offer.Costs)
         {
-            if (!BlundervilleGameAdapter.TryInventory(cost.ItemId, out var count, out _)) return false;
+            if (!BlundervilleGameAdapter.TryBagInventory(cost.ItemId, out var count, out _)) return false;
             balances[cost.ItemId] = count;
         }
         return true;
@@ -371,7 +385,7 @@ public sealed class MoogleShopService : IDisposable
         pending = settling = null; pendingMove = null; npc = 0;
     }
     private bool Reject(string key) { Status = Ui.M(key); Plugin.Log.Warning("[MOGTOME][Shop] rejected: {Reason}", Status.English); return false; }
-    private void Fail(string key) { Cleanup(); Status = Ui.M(key); Plugin.Log.Warning("[MOGTOME][Shop] stopped: {Reason}; marker={Marker}", Status.English, marker); }
+    private void Fail(string key, params object?[] arguments) { Cleanup(); Status = Ui.M(key, arguments); Plugin.Log.Warning("[MOGTOME][Shop] stopped: {Reason}; marker={Marker}", Status.English, marker); }
     private void Complete()
     {
         Cleanup(); Status = Ui.M("BV_ShopDone"); Plugin.Log.Information("[MOGTOME][Shop] completed; marker={Marker}", marker);

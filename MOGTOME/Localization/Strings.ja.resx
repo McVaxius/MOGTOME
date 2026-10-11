@@ -2140,7 +2140,7 @@ DictionaryPathsとPathSelectionsByPathを比較します。
   <data name="BV_InnStay" xml:space="preserve"><value>どこにも移動しない</value></data>
   <data name="BV_Progress" xml:space="preserve"><value>セッション周回数：{0} · MGF：{1}</value></data>
   <data name="BV_ItemCost" xml:space="preserve"><value>{0} MGF / {1} · 不足：{2}</value></data>
-  <data name="BV_PurchaseHelp" xml:space="preserve"><value>目標数 / 現在の所持品数。0で削除。保管品と設置済み家具は含みません。</value></data>
+  <data name="BV_PurchaseHelp" xml:space="preserve"><value>希望数 / 現在の合計数。0で購入を無効にします。</value></data>
   <data name="BV_FarmHelp" xml:space="preserve"><value>リーダーが参加申請し、メンバーはここで待機します。全員が動かず脱落を待ちます。有効な上限のいずれかに達すると終了します。</value></data>
   <data name="BV_ReloadHelp" xml:space="preserve"><value>再読み込みシナリオ：次の読み込み後、準備完了時に1回実行します。選択変更または停止で保留中の実行を取り消します。</value></data>
   <data name="BV_ReloadNone" xml:space="preserve"><value>再読み込みシナリオなし</value></data>
@@ -2164,15 +2164,15 @@ DictionaryPathsとPathSelectionsByPathを比較します。
   <data name="BV_Outstanding" xml:space="preserve"><value>不足</value></data>
   <data name="BV_EntryLocked" xml:space="preserve"><value>Entrance SquareのLewenaから始まる「Just Crowning Around」を進め、Blunderville Squareへの入場を解放してください。停止しました。</value></data>
   <data name="BV_Wanted" xml:space="preserve"><value>所持目標数。不足分だけ購入します。0で購入を無効にします。</value></data>
-  <data name="BV_OnHand" xml:space="preserve"><value>通常の所持品4バッグ内の数。リテイナー、チョコボかばん、ハウジング倉庫、設置済み家具は含みません。</value></data>
+  <data name="BV_OnHand" xml:space="preserve"><value>所持品、装備中アイテム、アーマリーチェスト、通常・プレミアムチョコボかばんの両側、リテイナー、愛蔵品キャビネット、ミラージュドレッサーの合計。読み取れる現在数で記録数を置き換えます。収納を開いてXADBを更新してください。</value></data>
   <data name="BV_UnitMgf" xml:space="preserve"><value>アイテム1個のMGF価格。</value></data>
   <data name="BV_NeededMgf" xml:space="preserve"><value>この行の不足分に必要なMGF。達成済み・無効の目標は0です。</value></data>
   <data name="BV_TotalMgf" xml:space="preserve"><value>必要MGF合計: {0}</value></data>
   <data name="BV_Registered" xml:space="preserve"><value>所持または登録済み（所持品、リテイナー、愛蔵品キャビネット、ミラージュドレッサー）</value></data>
   <data name="BV_NotRegistered" xml:space="preserve"><value>登録およびキャラクターの保管先にないことを確認済み</value></data>
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>購入予定</value></data>
-  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>所持状況不明：保管データが不完全または利用できません</value></data>
-  <data name="BV_RegistrationHelp" xml:space="preserve"><value>収集品と装備：緑のチェック＝所持または登録済み、赤のX＝未所持を確認済み、黄色の?＝購入予定、灰色の?＝所持状況不明。その他のアイテムは空欄です。</value></data>
+  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>所持状況不明：現在のキャラクターまたはゲーム内登録データを取得できません</value></data>
+  <data name="BV_RegistrationHelp" xml:space="preserve"><value>収集品と装備：緑のチェック＝所持または登録済み、赤のX＝未所持、黄色の?＝購入予定、灰色の?＝キャラクターまたはゲーム内登録データを取得できません。手持ちの品と、XA Databaseに記録された所持品・アーマリーチェスト・チョコボかばん・リテイナー・愛蔵品キャビネット・ミラージュドレッサーの品は所持済みとして扱います。登録も手持ち／記録済みの品もなければ、保管IPCが利用できなくても未所持です。保管記録は自分で更新してください。その他のアイテムは空欄です。</value></data>
   <data name="Shop_Title" xml:space="preserve"><value>MOGTOME ショップ</value></data>
   <data name="Shop_Button" xml:space="preserve"><value>ショップ</value></data>
   <data name="Shop_Refresh" xml:space="preserve"><value>更新</value></data>
@@ -2189,6 +2189,7 @@ DictionaryPathsとPathSelectionsByPathを比較します。
   <data name="Shop_Help" xml:space="preserve"><value>カートに目標所持数を入力してください。購入で不足分を補います。0で購入対象から外れます。</value></data>
   <data name="Shop_NoCatalog" xml:space="preserve"><value>現在のモーグリ交換品を確認できません。</value></data>
   <data name="Shop_NoFunds" xml:space="preserve"><value>通貨が不足しています。購入を停止しました。</value></data>
+  <data name="Shop_NoFundsItem" xml:space="preserve"><value>{0}を購入できません。{1}が{2}必要ですが、所持数は{3}です。購入を停止しました。</value></data>
   <data name="Shop_UncertainPurchase" xml:space="preserve"><value>購入結果を確認できません。停止しました。再試行前に所持品と全通貨を確認してください。</value></data>
   <data name="Shop_Reviewed" xml:space="preserve"><value>所持品と通貨を確認済み：保留を解除</value></data>
   <data name="Shop_NoTrader" xml:space="preserve"><value>選択した都市の旅のモーグリを確認できません。</value></data>
@@ -2217,6 +2218,6 @@ DictionaryPathsとPathSelectionsByPathを比較します。
   <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>商品の購入条件を確認できません。購入前にカタログを更新してください。</value></data>
   <data name="Transparency visible on main window" xml:space="preserve"><value>メインウィンドウに透明度を表示</value></data>
   <data name="Shop_SelectMissing" xml:space="preserve"><value>未所持を選択</value></data>
-  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>未登録が確認され、手持ちや確認済みの保管品がない収集品を選択します。より大きい目標数は維持し、購入や移動は開始しません。登録状況や購入条件が不明な品は除外します。装備は未所持の確認と、PvP・ショップ・イベントの入手元確認が必要です。ダンジョンのドロップ品は除外し、入手元が不明な装備は手動選択のままです。</value></data>
+  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>未登録の収集品と購入条件を満たす装備のうち、手持ちにもXA Databaseの記録にもない品を選択します。より大きい目標数は維持し、購入や移動は開始しません。キャラクター／ゲーム内登録データを取得できない品、購入条件が不明な品、入手元が不明な装備は除外します。ダンジョンでドロップする装備は除外し、入手元が確認できたPvP・ショップ・イベントの装備を含めます。保管IPCは必須ではありません。所持品・アーマリーチェスト・チョコボかばん・リテイナー・愛蔵品キャビネット・ミラージュドレッサーの記録は自分で更新してください。</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>追加 {0}。不明のため除外：所持 {1}、装備の入手元 {2}、購入条件 {3}。</value></data>
 </root>

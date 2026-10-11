@@ -2146,7 +2146,7 @@ Results logged to Dalamud log.</value>
   <data name="BV_InnStay" xml:space="preserve"><value>Don't go anywhere</value></data>
   <data name="BV_Progress" xml:space="preserve"><value>Session cycles: {0} · MGF: {1}</value></data>
   <data name="BV_ItemCost" xml:space="preserve"><value>{0} MGF / {1} · Outstanding: {2}</value></data>
-  <data name="BV_PurchaseHelp" xml:space="preserve"><value>Desired / current carried inventory. Enter 0 to remove. Storage and placed furniture are excluded.</value></data>
+  <data name="BV_PurchaseHelp" xml:space="preserve"><value>Desired / current total. 0 disables purchases.</value></data>
   <data name="BV_FarmHelp" xml:space="preserve"><value>Leaders register; members wait here. Everyone idles until elimination. Either enabled limit ends farming.</value></data>
   <data name="BV_ReloadHelp" xml:space="preserve"><value>Reload scenario: runs once after the next load is ready. Changing selection or Stop cancels pending dispatch.</value></data>
   <data name="BV_ReloadNone" xml:space="preserve"><value>No reload scenario</value></data>
@@ -2170,15 +2170,15 @@ Results logged to Dalamud log.</value>
   <data name="BV_Outstanding" xml:space="preserve"><value>Need</value></data>
   <data name="BV_EntryLocked" xml:space="preserve"><value>Unlock Square entry through Just Crowning Around, starting with Lewena at Entrance Square; stopped.</value></data>
   <data name="BV_Wanted" xml:space="preserve"><value>Desired inventory count. Buy only the missing quantity; 0 disables purchases.</value></data>
-  <data name="BV_OnHand" xml:space="preserve"><value>Quantity in your four inventory bags. Excludes retainers, saddlebags, housing storage and placed furniture.</value></data>
+  <data name="BV_OnHand" xml:space="preserve"><value>Total in inventory, equipped gear, Armoury Chest, both normal/premium saddlebag sides, retainers, armoire and glamour dresser. Readable live counts replace recorded counts. Open storage and refresh XADB to update records.</value></data>
   <data name="BV_UnitMgf" xml:space="preserve"><value>MGF price for one item.</value></data>
   <data name="BV_NeededMgf" xml:space="preserve"><value>MGF needed for this row&apos;s missing quantity. Satisfied or disabled targets cost 0.</value></data>
   <data name="BV_TotalMgf" xml:space="preserve"><value>Total MGF needed: {0}</value></data>
   <data name="BV_Registered" xml:space="preserve"><value>Owned or registered (inventory, retainers, armoire or glamour dresser)</value></data>
   <data name="BV_NotRegistered" xml:space="preserve"><value>Confirmed missing from registration and character storage</value></data>
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>Scheduled to be purchased</value></data>
-  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Ownership unknown; character storage is incomplete or unavailable</value></data>
-  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Collectibles and gear: green check = owned or registered; red X = confirmed missing; yellow ? = scheduled purchase; grey ? = unknown ownership. Other items are blank.</value></data>
+  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Ownership unknown; current-character or native registration data is unavailable</value></data>
+  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Collectibles and gear: green check = owned or registered; red X = missing; yellow ? = scheduled purchase; grey ? = current-character or native registration data unavailable. Carried copies and XA Database records from inventory, armoury, saddlebags, retainers, armoire or glamour dresser count as owned. No registration or carried/recorded copy means missing, even without storage IPC. Refresh storage records yourself. Other items are blank.</value></data>
   <data name="Shop_Title" xml:space="preserve"><value>MOGTOME Shop</value></data>
   <data name="Shop_Button" xml:space="preserve"><value>SHOP</value></data>
   <data name="Shop_Refresh" xml:space="preserve"><value>Refresh</value></data>
@@ -2195,6 +2195,7 @@ Results logged to Dalamud log.</value>
   <data name="Shop_Help" xml:space="preserve"><value>Set cart counts to your desired bag totals. Buy purchases the deficit; 0 disables a target.</value></data>
   <data name="Shop_NoCatalog" xml:space="preserve"><value>Current Moogle offer unavailable.</value></data>
   <data name="Shop_NoFunds" xml:space="preserve"><value>Insufficient currency; shopping stopped.</value></data>
+  <data name="Shop_NoFundsItem" xml:space="preserve"><value>Cannot buy {0}: requires {2} {1}; you have {3}. Shopping stopped.</value></data>
   <data name="Shop_UncertainPurchase" xml:space="preserve"><value>Purchase result uncertain; stopped. Check bags and all currencies before trying again.</value></data>
   <data name="Shop_Reviewed" xml:space="preserve"><value>I checked bags and currencies; clear hold</value></data>
   <data name="Shop_NoTrader" xml:space="preserve"><value>Itinerant Moogle unavailable in the selected city.</value></data>
@@ -2223,6 +2224,6 @@ Use /ads mini to enable or disable AutoDuty manually.</value></data>
   <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>Offer eligibility is unavailable. Refresh the catalog before buying.</value></data>
   <data name="Transparency visible on main window" xml:space="preserve"><value>Transparency visible on main window</value></data>
   <data name="Shop_SelectMissing" xml:space="preserve"><value>Select Missing</value></data>
-  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Selects collectibles confirmed unregistered, with no carried or known stored copy. Keeps larger targets; never buys or travels. Skips unknown registration or eligibility. Equipment requires verified absence and a verified PvP, shop or event source. Dungeon drops are excluded; unknown gear sources stay manual.</value></data>
+  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Selects unregistered collectibles and eligible gear with no carried or XA Database recorded copy. Keeps larger targets; never buys or travels. Skips unavailable current-character/native registration data, unknown eligibility and unknown gear sources. Equippable dungeon drops are excluded; verified PvP, shop and event gear are included. Storage IPC is optional; refresh inventory, armoury, saddlebags, retainer, armoire and glamour dresser records yourself.</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>Added {0}. Skipped unknowns: ownership {1}, gear source {2}, eligibility {3}.</value></data>
 </root>

@@ -11,7 +11,7 @@ namespace MOGTOME.Services;
 
 public sealed class BlundervilleService : IDisposable
 {
-    public const string BuildMarker = "devhub-duty-shop-config-20261010-04";
+    public const string BuildMarker = "devhub-all-storage-shop-20261011-02";
     private enum Stage { Idle, Farming, Finishing, LeavingParty, Shopping, Ending }
     private readonly Plugin plugin;
     private readonly BlundervilleGameAdapter game;
@@ -487,9 +487,10 @@ public sealed class BlundervilleService : IDisposable
         var targets = Settings.PurchaseTargets;
         if (targets == null) { Fail("BV_NoCatalog"); return; }
         BlundervilleOffer? next = null;
+        var storedStocks = plugin.XaDatabase.ReadStocks(targets.Keys);
         foreach (var target in targets.Where(t => t.Value > 0))
         {
-            if (!BlundervilleGameAdapter.TryInventory(target.Key, out var count, out _)) { Fail("BV_NoInventory"); return; }
+            if (!plugin.XaDatabase.TryCount(target.Key, storedStocks.GetValueOrDefault(target.Key), out var count)) { Fail("BV_NoInventory"); return; }
             if (BlundervilleProgress.Deficit(target.Value, count) == 0) continue;
             var offers = Catalog.Where(o => o.ItemId == target.Key).ToArray();
             if (offers.Length != 1) { Fail("BV_NoCatalog"); return; }
@@ -560,7 +561,8 @@ public sealed class BlundervilleService : IDisposable
             return;
         }
         if (!BlundervilleGameAdapter.TryInventory(next.ItemId, out beforeCount, out var available)) { Fail("BV_NoInventory"); return; }
-        if (BlundervilleProgress.Deficit(targets[next.ItemId], beforeCount) < next.ReceiveCount) return;
+        if (!plugin.XaDatabase.TryCount(next.ItemId, out var ownedCount)) { Fail("BV_NoInventory"); return; }
+        if (BlundervilleProgress.Deficit(targets[next.ItemId], ownedCount) < next.ReceiveCount) return;
         if (!BlundervilleGameAdapter.TryWallet(out beforeWallet)) { Fail("BV_NoWallet"); return; }
         if (beforeWallet < next.Price)
         {

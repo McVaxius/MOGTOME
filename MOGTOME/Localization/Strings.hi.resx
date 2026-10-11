@@ -2312,7 +2312,7 @@ DictionaryPaths और PathSelectionsByPath की तुलना करता 
   <data name="BV_InnStay" xml:space="preserve"><value>कहीं न जाएँ</value></data>
   <data name="BV_Progress" xml:space="preserve"><value>सत्र चक्र: {0} · MGF: {1}</value></data>
   <data name="BV_ItemCost" xml:space="preserve"><value>{0} MGF / {1} · बाकी: {2}</value></data>
-  <data name="BV_PurchaseHelp" xml:space="preserve"><value>वांछित / मौजूदा साथ की इन्वेंटरी। हटाने के लिए 0 डालें। भंडारण और रखे हुए फ़र्नीचर शामिल नहीं हैं।</value></data>
+  <data name="BV_PurchaseHelp" xml:space="preserve"><value>वांछित / वर्तमान कुल मात्रा। 0 खरीद बंद करता है।</value></data>
   <data name="BV_FarmHelp" xml:space="preserve"><value>नेता पंजीकरण करते हैं; सदस्य यहीं इंतज़ार करते हैं। सभी बाहर होने तक स्थिर रहते हैं। कोई भी सक्षम सीमा फ़ार्म समाप्त करती है।</value></data>
   <data name="BV_ReloadHelp" xml:space="preserve"><value>दोबारा लोड का परिदृश्य: अगला लोड तैयार होने पर एक बार चलता है। चयन बदलना या रोकना लंबित क्रिया रद्द करता है।</value></data>
   <data name="BV_ReloadNone" xml:space="preserve"><value>कोई दोबारा लोड परिदृश्य नहीं</value></data>
@@ -2336,15 +2336,15 @@ DictionaryPaths और PathSelectionsByPath की तुलना करता 
   <data name="BV_Outstanding" xml:space="preserve"><value>बाकी</value></data>
   <data name="BV_EntryLocked" xml:space="preserve"><value>Entrance Square में Lewena से शुरू होने वाले Just Crowning Around को आगे बढ़ाकर Square में प्रवेश खोलें; रोक दिया गया।</value></data>
   <data name="BV_Wanted" xml:space="preserve"><value>इन्वेंटरी में वांछित संख्या। केवल कमी खरीदी जाती है; 0 से खरीद बंद होती है।</value></data>
-  <data name="BV_OnHand" xml:space="preserve"><value>आपके चार इन्वेंटरी बैग में संख्या। रिटेनर, सैडलबैग, आवास भंडारण और रखे गए फर्नीचर शामिल नहीं हैं।</value></data>
+  <data name="BV_OnHand" xml:space="preserve"><value>इन्वेंटरी, पहने उपकरण, आर्मरी चेस्ट, सामान्य/प्रीमियम सैडलबैग के दोनों हिस्से, रिटेनर, आर्मोयर और ग्लैमर ड्रेसर की कुल मात्रा। उपलब्ध लाइव डेटा रिकॉर्ड को बदलता है। स्टोरेज खोलें और XADB रीफ़्रेश करें।</value></data>
   <data name="BV_UnitMgf" xml:space="preserve"><value>एक वस्तु की MGF कीमत।</value></data>
   <data name="BV_NeededMgf" xml:space="preserve"><value>इस पंक्ति की कमी के लिए आवश्यक MGF। पूरे या बंद लक्ष्य की लागत 0 है।</value></data>
   <data name="BV_TotalMgf" xml:space="preserve"><value>कुल आवश्यक MGF: {0}</value></data>
   <data name="BV_Registered" xml:space="preserve"><value>उपलब्ध या पंजीकृत (इन्वेंटरी, रिटेनर, आर्मोयर या ग्लैमर ड्रेसर)</value></data>
   <data name="BV_NotRegistered" xml:space="preserve"><value>पंजीकरण और पात्र के भंडार में अनुपस्थिति की पुष्टि हुई</value></data>
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>खरीदने के लिए निर्धारित</value></data>
-  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>स्वामित्व अज्ञात; पात्र के भंडार का डेटा अधूरा या अनुपलब्ध है</value></data>
-  <data name="BV_RegistrationHelp" xml:space="preserve"><value>संग्रहणीय वस्तुएँ और उपकरण: हरा निशान = उपलब्ध या पंजीकृत; लाल X = अनुपस्थिति की पुष्टि; पीला ? = खरीद की योजना; धूसर ? = स्वामित्व अज्ञात। अन्य वस्तुएँ खाली हैं।</value></data>
+  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>स्वामित्व अज्ञात; मौजूदा पात्र या गेम में पंजीकरण का डेटा उपलब्ध नहीं है</value></data>
+  <data name="BV_RegistrationHelp" xml:space="preserve"><value>संग्रहणीय वस्तुएँ और उपकरण: हरा निशान = उपलब्ध या पंजीकृत; लाल X = नहीं है; पीला ? = खरीद की योजना; धूसर ? = पात्र या गेम में पंजीकरण का डेटा अनुपलब्ध। साथ रखी प्रतियाँ और XA Database में दर्ज इन्वेंट्री, आर्मरी, सैडलबैग, रिटेनर, आर्मोयर या ग्लैमर ड्रेसर की प्रतियाँ स्वामित्व में गिनी जाती हैं। पंजीकरण और साथ रखी/दर्ज प्रति न हो तो वस्तु नहीं है, भंडार IPC के बिना भी। भंडार रिकॉर्ड स्वयं अपडेट करें। अन्य वस्तुएँ खाली हैं।</value></data>
   <data name="Shop_Title" xml:space="preserve"><value>MOGTOME दुकान</value></data>
   <data name="Shop_Button" xml:space="preserve"><value>दुकान</value></data>
   <data name="Shop_Refresh" xml:space="preserve"><value>ताज़ा करें</value></data>
@@ -2361,6 +2361,7 @@ DictionaryPaths और PathSelectionsByPath की तुलना करता 
   <data name="Shop_Help" xml:space="preserve"><value>कार्ट में बैग की लक्षित कुल संख्या लिखें। खरीद केवल कमी पूरी करती है; 0 लक्ष्य बंद करता है।</value></data>
   <data name="Shop_NoCatalog" xml:space="preserve"><value>मूगल की वर्तमान वस्तु उपलब्ध नहीं है।</value></data>
   <data name="Shop_NoFunds" xml:space="preserve"><value>मुद्रा अपर्याप्त है; खरीद रोक दी गई।</value></data>
+  <data name="Shop_NoFundsItem" xml:space="preserve"><value>{0} नहीं खरीद सकते: {2} {1} चाहिए; आपके पास {3} हैं। खरीद रोक दी गई।</value></data>
   <data name="Shop_UncertainPurchase" xml:space="preserve"><value>खरीद का परिणाम अनिश्चित है; रोक दिया गया। फिर प्रयास से पहले बैग और सभी मुद्राएँ जाँचें।</value></data>
   <data name="Shop_Reviewed" xml:space="preserve"><value>बैग और मुद्रा जाँच लिए; रोक हटाएँ</value></data>
   <data name="Shop_NoTrader" xml:space="preserve"><value>चुने गए शहर में घूमता मूगल उपलब्ध नहीं है।</value></data>
@@ -2389,6 +2390,6 @@ AutoDuty को मैन्युअल रूप से चालू या �
   <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>प्रस्ताव की उपलब्धता की पुष्टि नहीं हो सकी। खरीदने से पहले सूची रीफ़्रेश करें।</value></data>
   <data name="Transparency visible on main window" xml:space="preserve"><value>मुख्य विंडो में पारदर्शिता दिखाएँ</value></data>
   <data name="Shop_SelectMissing" xml:space="preserve"><value>गुम वस्तुएँ चुनें</value></data>
-  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>अपंजीकृत पुष्ट संग्रहणीय वस्तुएँ चुनता है, जब साथ रखी या भंडार में ज्ञात प्रति न हो। बड़े लक्ष्य बने रहते हैं; खरीद या यात्रा शुरू नहीं होती। अज्ञात पंजीकरण या खरीद की शर्तें छोड़ता है। उपकरण के लिए पुष्ट अनुपस्थिति और सत्यापित PvP, दुकान या इवेंट स्रोत चाहिए। डंजन की लूट शामिल नहीं होती; अज्ञात स्रोत वाले उपकरण हाथ से चुने जाते हैं।</value></data>
+  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>अपंजीकृत संग्रहणीय वस्तुएँ और उपलब्ध उपकरण चुनता है, जब साथ रखी या XA Database में दर्ज प्रति न हो। बड़े लक्ष्य बने रहते हैं; खरीद या यात्रा शुरू नहीं होती। अनुपलब्ध पात्र/गेम पंजीकरण डेटा, अज्ञात खरीद की शर्तें और अज्ञात उपकरण स्रोत छोड़ता है। डंजन से मिलने वाले पहनने योग्य उपकरण शामिल नहीं होते; सत्यापित PvP, दुकान और इवेंट के उपकरण शामिल होते हैं। भंडार IPC वैकल्पिक है; इन्वेंट्री, आर्मरी, सैडलबैग, रिटेनर, आर्मोयर और ग्लैमर ड्रेसर रिकॉर्ड स्वयं अपडेट करें।</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>जोड़े: {0}। अज्ञात जानकारी के कारण छोड़े: स्वामित्व {1}, उपकरण का स्रोत {2}, खरीद की शर्तें {3}.</value></data>
 </root>

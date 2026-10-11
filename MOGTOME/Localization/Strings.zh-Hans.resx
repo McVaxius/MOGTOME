@@ -2146,7 +2146,7 @@ Path: {0}
   <data name="BV_InnStay" xml:space="preserve"><value>不前往任何地点</value></data>
   <data name="BV_Progress" xml:space="preserve"><value>本次循环：{0} · MGF：{1}</value></data>
   <data name="BV_ItemCost" xml:space="preserve"><value>{0} MGF / {1} · 尚缺：{2}</value></data>
-  <data name="BV_PurchaseHelp" xml:space="preserve"><value>目标数量 / 当前随身数量。输入0移除。不计仓库与已摆放家具。</value></data>
+  <data name="BV_PurchaseHelp" xml:space="preserve"><value>期望数量 / 当前总数。0禁用购买。</value></data>
   <data name="BV_FarmHelp" xml:space="preserve"><value>队长负责报名，队员在此等待。所有人原地等待淘汰。任一已启用限制达成即结束刷取。</value></data>
   <data name="BV_ReloadHelp" xml:space="preserve"><value>重载场景：下次加载就绪后仅执行一次。更改选择或停止会取消待执行场景。</value></data>
   <data name="BV_ReloadNone" xml:space="preserve"><value>无重载场景</value></data>
@@ -2170,15 +2170,15 @@ Path: {0}
   <data name="BV_Outstanding" xml:space="preserve"><value>缺少</value></data>
   <data name="BV_EntryLocked" xml:space="preserve"><value>请在Entrance Square找Lewena推进“Just Crowning Around”任务，解锁Blunderville Square入场。已停止。</value></data>
   <data name="BV_Wanted" xml:space="preserve"><value>背包内的目标数量。只购买不足部分；0表示不购买。</value></data>
-  <data name="BV_OnHand" xml:space="preserve"><value>四个普通背包内的数量。不包括雇员、陆行鸟鞍囊、房屋仓库和已摆放家具。</value></data>
+  <data name="BV_OnHand" xml:space="preserve"><value>合计背包、已装备物品、兵装库、普通及高级陆行鸟鞍囊两侧、雇员、收藏柜和投影台中的数量。可读取的实时数量替换记录数量。请打开储物界面并刷新XADB以更新记录。</value></data>
   <data name="BV_UnitMgf" xml:space="preserve"><value>每个物品的MGF价格。</value></data>
   <data name="BV_NeededMgf" xml:space="preserve"><value>本行不足数量所需的MGF。已满足或禁用的目标费用为0。</value></data>
   <data name="BV_TotalMgf" xml:space="preserve"><value>所需MGF总计：{0}</value></data>
   <data name="BV_Registered" xml:space="preserve"><value>已拥有或已登记（背包、雇员、收藏柜或投影台）</value></data>
   <data name="BV_NotRegistered" xml:space="preserve"><value>已确认未登记且角色储物空间中没有</value></data>
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>计划购买</value></data>
-  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>拥有状态未知：角色储物数据不完整或不可用</value></data>
-  <data name="BV_RegistrationHelp" xml:space="preserve"><value>收藏品与装备：绿色勾＝已拥有或已登记；红色X＝确认缺少；黄色?＝计划购买；灰色?＝拥有状态未知。其他物品为空白。</value></data>
+  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>拥有状态未知：当前角色或游戏内登记数据不可用</value></data>
+  <data name="BV_RegistrationHelp" xml:space="preserve"><value>收藏品与装备：绿色勾＝已拥有或已登记；红色X＝缺少；黄色?＝计划购买；灰色?＝角色或游戏内登记数据不可用。随身物品及XA Database记录的背包、兵装库、陆行鸟鞍囊、雇员、收藏柜或投影台物品均算已拥有。没有登记且没有随身或已记录的物品就算缺少，即使储物IPC不可用。请自行更新储物记录。其他物品为空白。</value></data>
   <data name="Shop_Title" xml:space="preserve"><value>MOGTOME 商店</value></data>
   <data name="Shop_Button" xml:space="preserve"><value>商店</value></data>
   <data name="Shop_Refresh" xml:space="preserve"><value>刷新</value></data>
@@ -2195,6 +2195,7 @@ Path: {0}
   <data name="Shop_Help" xml:space="preserve"><value>在购物车中填写目标背包总数。购买只补足差额；0 表示取消该目标。</value></data>
   <data name="Shop_NoCatalog" xml:space="preserve"><value>当前莫古力兑换物品不可用。</value></data>
   <data name="Shop_NoFunds" xml:space="preserve"><value>货币不足；已停止购买。</value></data>
+  <data name="Shop_NoFundsItem" xml:space="preserve"><value>无法购买{0}：需要{2}个{1}，现有{3}个。已停止购买。</value></data>
   <data name="Shop_UncertainPurchase" xml:space="preserve"><value>购买结果不确定；已停止。重试前请检查背包和所有货币。</value></data>
   <data name="Shop_Reviewed" xml:space="preserve"><value>已检查背包和货币；解除暂停</value></data>
   <data name="Shop_NoTrader" xml:space="preserve"><value>所选城市的旅行莫古力不可用。</value></data>
@@ -2223,6 +2224,6 @@ Path: {0}
   <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>无法确认商品的购买条件。购买前请刷新目录。</value></data>
   <data name="Transparency visible on main window" xml:space="preserve"><value>在主窗口显示透明度</value></data>
   <data name="Shop_SelectMissing" xml:space="preserve"><value>选择缺失物品</value></data>
-  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>选择已确认未登记、背包中没有且未发现已存放副本的收藏品。保留更大的目标，不会开始购买或移动。跳过登记状态或购买条件未知的物品。装备需要确认未持有，并核实PvP、商店或活动来源。副本掉落装备不予选择；来源未知的装备仍需手动选择。</value></data>
+  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>选择未登记的收藏品和符合购买条件的装备，且随身物品与XA Database记录中均无该物品。保留更大的目标，不会开始购买或移动。跳过角色／游戏内登记数据不可用、购买条件未知及来源未知的装备。排除副本掉落的可装备物品；包含已核实来源的PvP、商店及活动装备。储物IPC可选；请自行更新背包、兵装库、陆行鸟鞍囊、雇员、收藏柜及投影台记录。</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>已添加 {0}。因信息未知跳过：持有 {1}，装备来源 {2}，购买条件 {3}。</value></data>
 </root>

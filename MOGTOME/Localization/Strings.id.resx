@@ -2296,7 +2296,7 @@ Hasil dicatat ke log Dalamud.</value>
   <data name="BV_InnStay" xml:space="preserve"><value>Tidak pergi ke mana pun</value></data>
   <data name="BV_Progress" xml:space="preserve"><value>Siklus sesi: {0} · MGF: {1}</value></data>
   <data name="BV_ItemCost" xml:space="preserve"><value>{0} MGF / {1} · Kekurangan: {2}</value></data>
-  <data name="BV_PurchaseHelp" xml:space="preserve"><value>Jumlah yang diinginkan / saat ini dalam inventaris bawaan. Masukkan 0 untuk menghapus. Penyimpanan dan perabot terpasang tidak dihitung.</value></data>
+  <data name="BV_PurchaseHelp" xml:space="preserve"><value>Total diinginkan / saat ini. 0 menonaktifkan pembelian.</value></data>
   <data name="BV_FarmHelp" xml:space="preserve"><value>Pemimpin mendaftar; anggota menunggu di sini. Semua diam hingga eliminasi. Salah satu batas aktif mengakhiri farm.</value></data>
   <data name="BV_ReloadHelp" xml:space="preserve"><value>Skenario muat ulang: berjalan sekali setelah pemuatan berikutnya siap. Mengubah pilihan atau Berhenti membatalkan eksekusi tertunda.</value></data>
   <data name="BV_ReloadNone" xml:space="preserve"><value>Tanpa skenario muat ulang</value></data>
@@ -2320,15 +2320,15 @@ Hasil dicatat ke log Dalamud.</value>
   <data name="BV_Outstanding" xml:space="preserve"><value>Kurang</value></data>
   <data name="BV_EntryLocked" xml:space="preserve"><value>Buka akses Blunderville Square melalui misi Just Crowning Around, dimulai dengan Lewena di Entrance Square; dihentikan.</value></data>
   <data name="BV_Wanted" xml:space="preserve"><value>Jumlah yang diinginkan di inventaris. Hanya kekurangannya yang dibeli; 0 menonaktifkan pembelian.</value></data>
-  <data name="BV_OnHand" xml:space="preserve"><value>Jumlah dalam empat tas inventaris. Tidak termasuk retainer, saddlebag, penyimpanan rumah, dan furnitur terpasang.</value></data>
+  <data name="BV_OnHand" xml:space="preserve"><value>Total inventaris, perlengkapan terpasang, Armoury Chest, kedua sisi saddlebag biasa/premium, retainer, armoire, dan glamour dresser. Data langsung yang terbaca menggantikan catatan. Buka penyimpanan dan segarkan XADB.</value></data>
   <data name="BV_UnitMgf" xml:space="preserve"><value>Harga MGF untuk satu item.</value></data>
   <data name="BV_NeededMgf" xml:space="preserve"><value>MGF untuk kekurangan pada baris ini. Target terpenuhi atau dinonaktifkan berbiaya 0.</value></data>
   <data name="BV_TotalMgf" xml:space="preserve"><value>Total MGF diperlukan: {0}</value></data>
   <data name="BV_Registered" xml:space="preserve"><value>Dimiliki atau terdaftar (inventaris, retainer, armoire atau lemari glamour)</value></data>
   <data name="BV_NotRegistered" xml:space="preserve"><value>Dipastikan tidak terdaftar dan tidak ada di penyimpanan karakter</value></data>
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>Dijadwalkan untuk dibeli</value></data>
-  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Kepemilikan tidak diketahui; data penyimpanan karakter tidak lengkap atau tidak tersedia</value></data>
-  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Koleksi dan perlengkapan: centang hijau = dimiliki atau terdaftar; X merah = dipastikan belum dimiliki; ? kuning = rencana pembelian; ? abu-abu = kepemilikan tidak diketahui. Item lainnya kosong.</value></data>
+  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Kepemilikan tidak diketahui; data karakter saat ini atau pendaftaran dalam game tidak tersedia</value></data>
+  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Koleksi dan perlengkapan: centang hijau = dimiliki atau terdaftar; X merah = belum dimiliki; ? kuning = rencana pembelian; ? abu-abu = data karakter atau pendaftaran dalam game tidak tersedia. Salinan yang dibawa dan catatan XA Database dari inventaris, armoury, saddlebag, retainer, armoire atau glamour dresser dihitung sebagai dimiliki. Tanpa pendaftaran maupun salinan yang dibawa/tercatat berarti belum dimiliki, bahkan tanpa IPC penyimpanan. Perbarui catatan penyimpanan sendiri. Item lainnya kosong.</value></data>
   <data name="Shop_Title" xml:space="preserve"><value>Toko MOGTOME</value></data>
   <data name="Shop_Button" xml:space="preserve"><value>TOKO</value></data>
   <data name="Shop_Refresh" xml:space="preserve"><value>Segarkan</value></data>
@@ -2345,6 +2345,7 @@ Hasil dicatat ke log Dalamud.</value>
   <data name="Shop_Help" xml:space="preserve"><value>Keranjang menunjukkan total yang diinginkan dalam tas. Beli melengkapi kekurangan; 0 menonaktifkan target.</value></data>
   <data name="Shop_NoCatalog" xml:space="preserve"><value>Penawaran Moogle saat ini tidak tersedia.</value></data>
   <data name="Shop_NoFunds" xml:space="preserve"><value>Mata uang tidak cukup; pembelian dihentikan.</value></data>
+  <data name="Shop_NoFundsItem" xml:space="preserve"><value>Tidak dapat membeli {0}: perlu {2} {1}; Anda memiliki {3}. Pembelian dihentikan.</value></data>
   <data name="Shop_UncertainPurchase" xml:space="preserve"><value>Hasil pembelian tidak pasti; dihentikan. Periksa tas dan semua mata uang sebelum mencoba lagi.</value></data>
   <data name="Shop_Reviewed" xml:space="preserve"><value>Tas dan mata uang diperiksa; buka penahanan</value></data>
   <data name="Shop_NoTrader" xml:space="preserve"><value>Moogle keliling tidak tersedia di kota yang dipilih.</value></data>
@@ -2373,6 +2374,6 @@ Gunakan /ads mini untuk mengaktifkan atau menonaktifkan AutoDuty secara manual.<
   <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>Ketersediaan penawaran belum dapat dipastikan. Segarkan katalog sebelum membeli.</value></data>
   <data name="Transparency visible on main window" xml:space="preserve"><value>Tampilkan transparansi di jendela utama</value></data>
   <data name="Shop_SelectMissing" xml:space="preserve"><value>Pilih yang belum dimiliki</value></data>
-  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Memilih koleksi yang dipastikan belum terdaftar, tanpa salinan yang dibawa atau diketahui di penyimpanan. Target lebih besar tetap dipertahankan; tidak membeli atau bepergian. Melewati pendaftaran atau syarat pembelian yang tidak diketahui. Perlengkapan harus dipastikan belum dimiliki dan berasal dari PvP, toko atau acara yang terverifikasi. Hasil dungeon dikecualikan; sumber perlengkapan yang tidak diketahui dipilih manual.</value></data>
+  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Memilih koleksi yang belum terdaftar dan perlengkapan yang tersedia tanpa salinan yang dibawa atau tercatat di XA Database. Target lebih besar tetap dipertahankan; tidak membeli atau bepergian. Melewati data karakter/pendaftaran dalam game yang tidak tersedia, syarat pembelian yang tidak diketahui dan sumber perlengkapan yang tidak diketahui. Perlengkapan hasil dungeon dikecualikan; perlengkapan PvP, toko dan acara dengan sumber terverifikasi disertakan. IPC penyimpanan opsional; perbarui sendiri catatan inventaris, armoury, saddlebag, retainer, armoire dan glamour dresser.</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>Ditambahkan: {0}. Dilewati karena belum diketahui: kepemilikan {1}, sumber perlengkapan {2}, syarat pembelian {3}.</value></data>
 </root>

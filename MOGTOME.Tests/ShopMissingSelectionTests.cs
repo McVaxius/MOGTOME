@@ -107,14 +107,31 @@ public sealed class ShopMissingSelectionTests
     [Theory]
     [InlineData(0, (int)BlundervilleRegistration.Missing, (int)XaItemOwnershipState.Unknown, (int)BlundervilleRegistration.Unknown)]
     [InlineData(0, (int)BlundervilleRegistration.Missing, (int)XaItemOwnershipState.Missing, (int)BlundervilleRegistration.Missing)]
-    [InlineData(null, (int)BlundervilleRegistration.Missing, (int)XaItemOwnershipState.Missing, (int)BlundervilleRegistration.Unknown)]
-    [InlineData(0, (int)BlundervilleRegistration.Unknown, (int)XaItemOwnershipState.Missing, (int)BlundervilleRegistration.Unknown)]
+    [InlineData(null, (int)BlundervilleRegistration.Missing, (int)XaItemOwnershipState.Missing, (int)BlundervilleRegistration.Missing)]
+    [InlineData(0, (int)BlundervilleRegistration.Unknown, (int)XaItemOwnershipState.Missing, (int)BlundervilleRegistration.Missing)]
     [InlineData(1, (int)BlundervilleRegistration.Missing, (int)XaItemOwnershipState.Missing, (int)BlundervilleRegistration.Owned)]
     [InlineData(0, (int)BlundervilleRegistration.Owned, (int)XaItemOwnershipState.Unknown, (int)BlundervilleRegistration.Owned)]
     [InlineData(0, (int)BlundervilleRegistration.Missing, (int)XaItemOwnershipState.Owned, (int)BlundervilleRegistration.Owned)]
-    public void ShopOwnershipRequiresNativeAndStorageAbsence(int? count, int registration, int storage, int expected)
+    public void ShopOwnershipUsesRecordedCopiesAndAssumesUnrecordedItemsMissing(int? count, int registration, int storage, int expected)
         => Assert.Equal((BlundervilleRegistration)expected, BlundervilleGameAdapter.ReadOwnership(true, count,
             (BlundervilleRegistration)registration, (XaItemOwnershipState)storage));
+
+    [Fact]
+    public void EmptyOrUnavailableStorageSelectsEligibleMissingGearOnceAndPreservesTargets()
+    {
+        foreach (var query in new Func<string, string>[] { _ => "{}", _ => throw new InvalidOperationException() })
+        {
+            var ids = new uint[] { 24615, 32794, 30052, 27936, 27937 };
+            var storage = XaItemOwnership.QueryStates(query, query, ids, 42, DateTimeOffset.UtcNow);
+            var targets = new Dictionary<uint, int> { [24615] = 3, [999] = 4 };
+            var entries = ids.Select(id => (id, ShopMissingSelection.Classify(0, true, false, id),
+                BlundervilleGameAdapter.ReadOwnership(true, 0, BlundervilleRegistration.None, storage[id]), ShopOfferAvailability.Available));
+            Assert.Equal(new ShopMissingResult(4, 0, 0, 0), ShopMissingSelection.Apply(targets, entries));
+            Assert.Equal(3, targets[24615]); Assert.Equal(4, targets[999]);
+            Assert.Equal(1, targets[27937]);
+            Assert.Equal(0, ShopMissingSelection.Apply(targets, entries).Added);
+        }
+    }
 
     [Fact]
     public void NoncollectibleRowsHaveNoOwnershipIndicator()

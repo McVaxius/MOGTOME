@@ -1,3 +1,14 @@
+2026-10-11 - Count all owned storage in shop targets
+
+- Include inventory, equipped gear, Armoury Chest, both normal and premium saddlebag sides, retainers, armoire and glamour dresser in both shop counts and purchase deficits. Replace recorded readable-container counts with live counts so copies are not counted twice; retain recorded inaccessible storage.
+- Verify gear acquisitions in the Armoury Chest so automatic gear storage no longer stops the list before subsequent purchases. Keep spendable tomestones and purchase capacity based on ordinary bags, with exact live acquisition/currency verification and uncertain-purchase holds preserved.
+
+2026-10-11 - Use recorded storage for missing-item selection
+
+- Treat items without a native or recorded current-character copy as missing in both shops, including unrecorded storage. Keep recorded copies owned regardless of snapshot age; users refresh XADB after opening storage. Preserve target quantities, acquisition/offer restrictions and manual purchase controls.
+- Identify the selected item, required currency amount and held amount when a purchase stops for insufficient funds. Include exact item/currency IDs and all balances in the existing shop diagnostic.
+- Accept the game's omitted quantity display for a verified single-item exchange. Continue checking the live reward, selected row, each currency and its exact amount before confirmation.
+
 2026-10-10 - Configure shopping lists during duties
 
 - Keep both shop lists editable during duties and farming, including desired quantities, Hide Owned, CLEAR and Select Missing. Buy remains disabled during duties and conflicting automation; an active purchase still protects its own settings.

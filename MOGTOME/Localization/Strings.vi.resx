@@ -2296,7 +2296,7 @@ Ghi kết quả vào log Dalamud.</value>
   <data name="BV_InnStay" xml:space="preserve"><value>Không đi đâu</value></data>
   <data name="BV_Progress" xml:space="preserve"><value>Chu kỳ phiên: {0} · MGF: {1}</value></data>
   <data name="BV_ItemCost" xml:space="preserve"><value>{0} MGF / {1} · Còn thiếu: {2}</value></data>
-  <data name="BV_PurchaseHelp" xml:space="preserve"><value>Số lượng mong muốn / hiện có trong túi đồ mang theo. Nhập 0 để xóa. Không tính kho và đồ nội thất đã đặt.</value></data>
+  <data name="BV_PurchaseHelp" xml:space="preserve"><value>Tổng mong muốn / hiện có. 0 tắt mua.</value></data>
   <data name="BV_FarmHelp" xml:space="preserve"><value>Trưởng đội đăng ký; thành viên chờ tại đây. Mọi người đứng yên đến khi bị loại. Đạt một giới hạn đã bật sẽ kết thúc farm.</value></data>
   <data name="BV_ReloadHelp" xml:space="preserve"><value>Kịch bản tải lại: chạy một lần khi lần tải tiếp theo sẵn sàng. Đổi lựa chọn hoặc Dừng sẽ hủy lượt chạy đang chờ.</value></data>
   <data name="BV_ReloadNone" xml:space="preserve"><value>Không có kịch bản tải lại</value></data>
@@ -2320,15 +2320,15 @@ Ghi kết quả vào log Dalamud.</value>
   <data name="BV_Outstanding" xml:space="preserve"><value>Còn thiếu</value></data>
   <data name="BV_EntryLocked" xml:space="preserve"><value>Mở khóa lối vào Blunderville Square qua nhiệm vụ Just Crowning Around, bắt đầu với Lewena tại Entrance Square; đã dừng.</value></data>
   <data name="BV_Wanted" xml:space="preserve"><value>Số lượng mong muốn trong túi. Chỉ mua phần còn thiếu; 0 tắt mua vật phẩm.</value></data>
-  <data name="BV_OnHand" xml:space="preserve"><value>Số lượng trong bốn túi đồ thường. Không gồm retainer, túi yên, kho nhà và đồ nội thất đã đặt.</value></data>
+  <data name="BV_OnHand" xml:space="preserve"><value>Tổng hành trang, trang bị đang mặc, Armoury Chest, hai bên túi chocobo thường/premium, retainer, armoire và glamour dresser. Số lượng trực tiếp đọc được thay thế bản ghi. Mở kho và làm mới XADB.</value></data>
   <data name="BV_UnitMgf" xml:space="preserve"><value>Giá MGF cho một vật phẩm.</value></data>
   <data name="BV_NeededMgf" xml:space="preserve"><value>MGF cần cho số lượng còn thiếu ở dòng này. Mục tiêu đã đủ hoặc đã tắt có giá 0.</value></data>
   <data name="BV_TotalMgf" xml:space="preserve"><value>Tổng MGF cần: {0}</value></data>
   <data name="BV_Registered" xml:space="preserve"><value>Đã có hoặc đăng ký (hành trang, người hầu, tủ đồ hoặc tủ glamour)</value></data>
   <data name="BV_NotRegistered" xml:space="preserve"><value>Đã xác nhận thiếu trong đăng ký và kho nhân vật</value></data>
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>Đã lên kế hoạch mua</value></data>
-  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Chưa rõ sở hữu; dữ liệu kho nhân vật thiếu hoặc không khả dụng</value></data>
-  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Đồ sưu tầm và trang bị: dấu xanh = đã có hoặc đăng ký; X đỏ = xác nhận thiếu; ? vàng = dự định mua; ? xám = chưa rõ sở hữu. Đồ khác để trống.</value></data>
+  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Chưa rõ sở hữu; không có dữ liệu nhân vật hiện tại hoặc đăng ký trong trò chơi</value></data>
+  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Đồ sưu tầm và trang bị: dấu xanh = đã có hoặc đăng ký; X đỏ = còn thiếu; ? vàng = dự định mua; ? xám = không có dữ liệu nhân vật hoặc đăng ký trong trò chơi. Bản mang theo và bản XA Database ghi nhận trong hành trang, kho trang bị, túi yên, retainer, armoire hoặc glamour dresser được tính là đã có. Không có đăng ký và cũng không có bản mang theo/ghi nhận thì tính là còn thiếu, ngay cả khi không có IPC kho. Hãy tự cập nhật dữ liệu kho. Đồ khác để trống.</value></data>
   <data name="Shop_Title" xml:space="preserve"><value>Cửa hàng MOGTOME</value></data>
   <data name="Shop_Button" xml:space="preserve"><value>CỬA HÀNG</value></data>
   <data name="Shop_Refresh" xml:space="preserve"><value>Làm mới</value></data>
@@ -2345,6 +2345,7 @@ Ghi kết quả vào log Dalamud.</value>
   <data name="Shop_Help" xml:space="preserve"><value>Giỏ hàng là tổng số mong muốn trong túi. Mua bổ sung phần còn thiếu; 0 tắt mục tiêu.</value></data>
   <data name="Shop_NoCatalog" xml:space="preserve"><value>Không có ưu đãi Moogle hiện tại.</value></data>
   <data name="Shop_NoFunds" xml:space="preserve"><value>Không đủ tiền; đã dừng mua.</value></data>
+  <data name="Shop_NoFundsItem" xml:space="preserve"><value>Không thể mua {0}: cần {2} {1}; bạn có {3}. Đã dừng mua.</value></data>
   <data name="Shop_UncertainPurchase" xml:space="preserve"><value>Kết quả mua chưa rõ; đã dừng. Kiểm tra túi và mọi loại tiền trước khi thử lại.</value></data>
   <data name="Shop_Reviewed" xml:space="preserve"><value>Đã kiểm tra túi và tiền; bỏ tạm dừng</value></data>
   <data name="Shop_NoTrader" xml:space="preserve"><value>Không có Moogle du hành ở thành phố đã chọn.</value></data>
@@ -2373,6 +2374,6 @@ Dùng /ads mini để bật hoặc tắt AutoDuty thủ công.</value></data>
   <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>Chưa xác minh được điều kiện mua. Hãy làm mới danh mục trước khi mua.</value></data>
   <data name="Transparency visible on main window" xml:space="preserve"><value>Hiện độ trong suốt trên cửa sổ chính</value></data>
   <data name="Shop_SelectMissing" xml:space="preserve"><value>Chọn món còn thiếu</value></data>
-  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Chọn vật phẩm sưu tầm đã xác nhận chưa đăng ký, không có bản mang theo hay bản đã biết trong kho. Giữ mục tiêu lớn hơn; không mua hay di chuyển. Bỏ qua đăng ký hoặc điều kiện mua chưa rõ. Trang bị cần xác minh chưa sở hữu và nguồn PvP, cửa hàng hoặc sự kiện. Loại trừ đồ rơi từ phó bản; trang bị chưa rõ nguồn được chọn thủ công.</value></data>
+  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Chọn đồ sưu tầm chưa đăng ký và trang bị đủ điều kiện mua khi không có bản mang theo hay bản XA Database ghi nhận. Giữ mục tiêu lớn hơn; không mua hay di chuyển. Bỏ qua dữ liệu nhân vật/đăng ký trong trò chơi không khả dụng, điều kiện mua chưa rõ và trang bị chưa rõ nguồn. Loại trừ trang bị rơi từ phó bản; bao gồm trang bị PvP, cửa hàng và sự kiện đã xác minh nguồn. IPC kho là tùy chọn; hãy tự cập nhật hành trang, kho trang bị, túi yên, retainer, armoire và glamour dresser.</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>Đã thêm {0}. Bỏ qua do chưa rõ: sở hữu {1}, nguồn trang bị {2}, điều kiện mua {3}.</value></data>
 </root>

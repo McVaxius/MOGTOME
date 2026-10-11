@@ -17,6 +17,7 @@ using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Info;
+using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.FFXIV.Component.Exd;
 using Lumina.Excel.Sheets;
@@ -187,8 +188,7 @@ internal sealed unsafe class BlundervilleGameAdapter
     {
         if (ownership == BlundervilleRegistration.Owned || registration == BlundervilleRegistration.Owned)
             return BlundervilleRegistration.Owned;
-        // This manual action targets unregistered collectibles. It is not a claim
-        // that every storage source has been observed empty (required for gear).
+        // Native registration and known copies take precedence over unrecorded storage.
         return registration == BlundervilleRegistration.Missing ? registration : ownership;
     }
 
@@ -209,33 +209,116 @@ internal sealed unsafe class BlundervilleGameAdapter
         return BlundervilleProgress.Role(false, false, count, self, group->PartyMembers[(int)group->PartyLeaderIndex].ContentId);
     }
 
-    // Carried inventory: the four ordinary bags. Retainers, saddlebag/storage and placed furniture are excluded.
+    internal static readonly InventoryType[] LiveInventoryTypes =
+    [
+        InventoryType.Inventory1, InventoryType.Inventory2, InventoryType.Inventory3, InventoryType.Inventory4,
+        InventoryType.EquippedItems,
+        InventoryType.ArmoryMainHand, InventoryType.ArmoryOffHand, InventoryType.ArmoryHead,
+        InventoryType.ArmoryBody, InventoryType.ArmoryHands, InventoryType.ArmoryLegs,
+        InventoryType.ArmoryFeets, InventoryType.ArmoryEar, InventoryType.ArmoryNeck,
+        InventoryType.ArmoryWrist, InventoryType.ArmoryRings, InventoryType.ArmorySoulCrystal,
+        InventoryType.SaddleBag1, InventoryType.SaddleBag2,
+        InventoryType.PremiumSaddleBag1, InventoryType.PremiumSaddleBag2,
+    ];
+
+    // Keep acquisition and currency verification live. Recorded storage is merged separately for ownership/targets.
     public static bool TryInventory(uint itemId, out int count, out int capacity)
     {
-        count = capacity = 0;
+        count = 0;
+        if (!TryLiveInventoryCounts(itemId, out var counts, out capacity)) return false;
+        count = checked(counts.Values.Sum());
+        return true;
+    }
+
+    internal static bool TryBagInventory(uint itemId, out int count, out int capacity)
+    {
+        count = 0;
+        if (!TryLiveInventoryCounts(itemId, out var counts, out capacity)) return false;
+        count = counts.Where(entry => entry.Key is InventoryType.Inventory1 or InventoryType.Inventory2 or
+            InventoryType.Inventory3 or InventoryType.Inventory4).Sum(entry => entry.Value);
+        return true;
+    }
+
+    internal static bool TryLiveInventoryCounts(uint itemId, out Dictionary<InventoryType, int> counts, out int capacity)
+    {
+        counts = [];
+        capacity = 0;
+        return Plugin.DataManager.GetExcelSheet<Item>().TryGetRow(itemId, out var sheetItem) &&
+            TryLiveInventoryCounts(itemId, Math.Max(1, sheetItem.StackSize), out counts, out capacity);
+    }
+
+    internal static bool TryLiveInventoryCounts(uint itemId, uint stackSize,
+        out Dictionary<InventoryType, int> counts, out int capacity)
+    {
+        counts = [];
+        capacity = 0;
         var manager = InventoryManager.Instance();
         if (manager == null || !Plugin.ClientState.IsLoggedIn) return false;
-        if (!Plugin.DataManager.GetExcelSheet<Item>().TryGetRow(itemId, out var sheetItem)) return false;
-        var stackSize = Math.Max(1, sheetItem.StackSize);
-        for (var bagIndex = 0; bagIndex < 4; bagIndex++)
+        Span<nint> containers = stackalloc nint[LiveInventoryTypes.Length];
+        for (var index = 0; index < LiveInventoryTypes.Length; index++)
+            containers[index] = (nint)manager->GetInventoryContainer(LiveInventoryTypes[index]);
+        var order = ItemOrderModule.Instance();
+        return ReadLiveInventoryCounts(containers, itemId, stackSize, out counts, out capacity,
+            Plugin.PlayerState.ContentId, order == null ? 0 : order->CharacterContentId,
+            Visible("InventoryBuddy") || Visible("InventoryBuddy2"),
+            order != null && order->PremiumSaddleBagSorter != null && order->PremiumSaddleBagSorter->Items.LongCount == 70);
+    }
+
+    internal static bool ReadLiveInventoryCounts(ReadOnlySpan<nint> containers, uint itemId, uint stackSize,
+        out Dictionary<InventoryType, int> counts, out int capacity,
+        ulong contentId = 0, ulong inventoryOwner = 0, bool saddlebagVisible = false, bool premiumSortReady = false)
+    {
+        counts = [];
+        capacity = 0;
+        if (containers.Length != LiveInventoryTypes.Length || itemId == 0 || stackSize == 0) return false;
+        var sameOwner = contentId != 0 && contentId == inventoryOwner;
+        var regularFirst = (InventoryContainer*)containers[Array.IndexOf(LiveInventoryTypes, InventoryType.SaddleBag1)];
+        var regularSecond = (InventoryContainer*)containers[Array.IndexOf(LiveInventoryTypes, InventoryType.SaddleBag2)];
+        var regularReady = sameOwner && SaddlebagPairAllocated(regularFirst, regularSecond) &&
+            regularFirst->IsLoaded && regularSecond->IsLoaded;
+        var premiumFirst = (InventoryContainer*)containers[Array.IndexOf(LiveInventoryTypes, InventoryType.PremiumSaddleBag1)];
+        var premiumSecond = (InventoryContainer*)containers[Array.IndexOf(LiveInventoryTypes, InventoryType.PremiumSaddleBag2)];
+        // Premium IsLoaded is unreliable. Match XADB's verified open-window/sorter/allocated-pair readiness.
+        var premiumReady = sameOwner && saddlebagVisible && premiumSortReady && SaddlebagPairAllocated(premiumFirst, premiumSecond);
+        for (var containerIndex = 0; containerIndex < containers.Length; containerIndex++)
         {
-            var bag = manager->GetInventoryContainer((InventoryType)bagIndex);
-            if (bag == null || !bag->IsLoaded || bag->Items == null || bag->Size is < 1 or > 100) return false;
+            var bag = (InventoryContainer*)containers[containerIndex];
+            var type = LiveInventoryTypes[containerIndex];
+            var ordinaryBag = containerIndex < 4;
+            var premium = type is InventoryType.PremiumSaddleBag1 or InventoryType.PremiumSaddleBag2;
+            // Omit unreadable pairs together so recorded left/right snapshots remain authoritative.
+            if ((type is InventoryType.SaddleBag1 or InventoryType.SaddleBag2) && !regularReady || premium && !premiumReady)
+                continue;
+            if (bag == null || !premium && !bag->IsLoaded)
+            {
+                if (ordinaryBag) return false;
+                continue;
+            }
+            if (bag->Size is < 1 or > 100 || bag->Items == null)
+            {
+                if (ordinaryBag) return false;
+                continue;
+            }
+            var count = 0;
             for (var index = 0; index < bag->Size; index++)
             {
-                var slot = bag->GetInventorySlot(index);
-                if (slot == null) return false;
-                if (slot->ItemId == 0) capacity = checked(capacity + (int)stackSize);
+                var slot = &bag->Items[index];
+                if (slot->IsSymbolic) continue;
+                if (slot->ItemId == 0 && ordinaryBag) capacity = checked(capacity + (int)stackSize);
                 else if (slot->ItemId == itemId)
                 {
                     count = checked(count + (int)slot->Quantity);
-                    if ((slot->Flags & InventoryItem.ItemFlags.HighQuality) == 0)
+                    if (ordinaryBag && (slot->Flags & InventoryItem.ItemFlags.HighQuality) == 0)
                         capacity = checked(capacity + Math.Max(0, (int)stackSize - (int)slot->Quantity));
                 }
             }
+            counts.Add(type, count);
         }
         return true;
     }
+
+    private static bool SaddlebagPairAllocated(InventoryContainer* first, InventoryContainer* second)
+        => first != null && second != null && first->Items != null && second->Items != null && first->Size == 35 && second->Size == 35;
 
     public IGameObject? FindNpc(string name)
     {

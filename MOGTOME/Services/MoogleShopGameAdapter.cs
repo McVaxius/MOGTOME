@@ -273,8 +273,12 @@ internal sealed unsafe class MoogleShopGameAdapter
         // Current native 35-value layout, validated against the live item/quantity/cost prompt.
         if (values.Length != 35 || values[8].Type != AtkValueType.UInt || values[8].UInt != offer.ItemId ||
             values[9].Type != AtkValueType.UInt || values[9].UInt != 0 ||
-            values[18].Type != AtkValueType.UInt || values[18].UInt != offer.ReceiveCount ||
+            values[18].Type != AtkValueType.UInt ||
+            (values[18].UInt != offer.ReceiveCount && !(values[18].UInt == 0 && offer.ReceiveCount == 1)) ||
             values[19].Type != AtkValueType.UInt || values[19].UInt != 0) return false;
+        // The observed one-item prompt omits its quantity label and reports zero.
+        // ValidateOffer already verifies the live receive count and selected row;
+        // displayed nonzero counts and every currency cost must still match.
         var costs = new List<MoogleShopCost>();
         for (var slot = 0; slot < 3; slot++)
         {

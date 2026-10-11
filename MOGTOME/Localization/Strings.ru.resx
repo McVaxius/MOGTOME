@@ -2146,7 +2146,7 @@ Path: {0}
   <data name="BV_InnStay" xml:space="preserve"><value>Никуда не идти</value></data>
   <data name="BV_Progress" xml:space="preserve"><value>Циклы сеанса: {0} · MGF: {1}</value></data>
   <data name="BV_ItemCost" xml:space="preserve"><value>{0} MGF / {1} · Не хватает: {2}</value></data>
-  <data name="BV_PurchaseHelp" xml:space="preserve"><value>Желаемое / текущее количество в переносимом инвентаре. 0 удаляет цель. Хранилища и установленная мебель не учитываются.</value></data>
+  <data name="BV_PurchaseHelp" xml:space="preserve"><value>Желаемое / текущее общее количество. 0 отключает покупки.</value></data>
   <data name="BV_FarmHelp" xml:space="preserve"><value>Лидеры регистрируются, участники ждут на месте. Все стоят до выбывания. Любой включённый лимит завершает фарм.</value></data>
   <data name="BV_ReloadHelp" xml:space="preserve"><value>Сценарий перезагрузки: один запуск после готовности следующей загрузки. Изменение выбора или остановка отменяет ожидающий запуск.</value></data>
   <data name="BV_ReloadNone" xml:space="preserve"><value>Без сценария перезагрузки</value></data>
@@ -2170,15 +2170,15 @@ Path: {0}
   <data name="BV_Outstanding" xml:space="preserve"><value>Нужно</value></data>
   <data name="BV_EntryLocked" xml:space="preserve"><value>Откройте вход в Blunderville Square через задание «Just Crowning Around» у Lewena в Entrance Square; остановлено.</value></data>
   <data name="BV_Wanted" xml:space="preserve"><value>Желаемое количество в инвентаре. Покупается только недостающее; 0 отключает покупку.</value></data>
-  <data name="BV_OnHand" xml:space="preserve"><value>Количество в четырёх сумках инвентаря. Без слуг, седельных сумок, жилищного склада и размещённой мебели.</value></data>
+  <data name="BV_OnHand" xml:space="preserve"><value>Всего в инвентаре, надетом снаряжении, Armoury Chest, обеих половинах обычных/премиальных сумок чокобо, у ретейнеров, в armoire и glamour dresser. Доступные текущие данные заменяют записи. Откройте хранилища и обновите XADB.</value></data>
   <data name="BV_UnitMgf" xml:space="preserve"><value>Цена одной единицы в MGF.</value></data>
   <data name="BV_NeededMgf" xml:space="preserve"><value>MGF для недостающего количества в этой строке. Выполненные или отключённые цели стоят 0.</value></data>
   <data name="BV_TotalMgf" xml:space="preserve"><value>Всего требуется MGF: {0}</value></data>
   <data name="BV_Registered" xml:space="preserve"><value>Есть или зарегистрировано (инвентарь, ретейнеры, армуар или гламурный комод)</value></data>
   <data name="BV_NotRegistered" xml:space="preserve"><value>Отсутствие подтверждено в регистрации и хранилищах персонажа</value></data>
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>Запланировано к покупке</value></data>
-  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Владение неизвестно: данные хранилищ неполные или недоступны</value></data>
-  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Коллекционные предметы и снаряжение: зелёная галочка — есть или зарегистрировано; красный X — отсутствие подтверждено; жёлтый ? — покупка запланирована; серый ? — владение неизвестно. Остальные предметы без отметки.</value></data>
+  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Владение неизвестно: данные текущего персонажа или регистрации в игре недоступны</value></data>
+  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Коллекционные предметы и снаряжение: зелёная галочка — есть или зарегистрировано; красный X — нет; жёлтый ? — покупка запланирована; серый ? — данные персонажа или регистрации в игре недоступны. Копии при себе и записи XA Database об инвентаре, арсенале, седельных сумках, слугах, шкафе или комоде для проекций считаются владением. Если нет регистрации и копии при себе/в записях, предмет считается отсутствующим даже без IPC хранилищ. Обновляйте записи хранилищ самостоятельно. Остальные предметы без отметки.</value></data>
   <data name="Shop_Title" xml:space="preserve"><value>Магазин MOGTOME</value></data>
   <data name="Shop_Button" xml:space="preserve"><value>МАГАЗИН</value></data>
   <data name="Shop_Refresh" xml:space="preserve"><value>Обновить</value></data>
@@ -2195,6 +2195,7 @@ Path: {0}
   <data name="Shop_Help" xml:space="preserve"><value>В корзине укажите желаемое количество в сумках. Покупка восполнит недостающее; 0 отключает цель.</value></data>
   <data name="Shop_NoCatalog" xml:space="preserve"><value>Текущее предложение мугла недоступно.</value></data>
   <data name="Shop_NoFunds" xml:space="preserve"><value>Недостаточно валюты; покупки остановлены.</value></data>
+  <data name="Shop_NoFundsItem" xml:space="preserve"><value>Нельзя купить {0}: требуется {2} {1}; у вас {3}. Покупки остановлены.</value></data>
   <data name="Shop_UncertainPurchase" xml:space="preserve"><value>Результат покупки неизвестен; остановлено. Проверьте сумки и все валюты перед новой попыткой.</value></data>
   <data name="Shop_Reviewed" xml:space="preserve"><value>Сумки и валюты проверены; снять блокировку</value></data>
   <data name="Shop_NoTrader" xml:space="preserve"><value>Странствующий мугл недоступен в выбранном городе.</value></data>
@@ -2223,6 +2224,6 @@ Path: {0}
   <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>Доступность предложения неизвестна. Обновите каталог перед покупкой.</value></data>
   <data name="Transparency visible on main window" xml:space="preserve"><value>Показывать прозрачность в главном окне</value></data>
   <data name="Shop_SelectMissing" xml:space="preserve"><value>Выбрать недостающие</value></data>
-  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Выбирает подтверждённые незарегистрированные коллекционные предметы без копий при себе или в известных хранилищах. Сохраняет большие цели; не покупает и не перемещается. Пропускает неизвестную регистрацию или доступность. Снаряжение требует подтверждённого отсутствия и проверенного PvP-, магазинного или событийного источника. Добыча подземелий исключена; неизвестные источники выбираются вручную.</value></data>
+  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Выбирает незарегистрированные коллекционные предметы и доступное снаряжение без копий при себе или в записях XA Database. Сохраняет большие цели; не покупает и не перемещается. Пропускает недоступные данные персонажа/регистрации в игре, неизвестную доступность и неизвестные источники снаряжения. Снаряжение из подземелий исключено; снаряжение из проверенных PvP-, магазинных и событийных источников включено. IPC хранилищ необязателен; обновляйте записи об инвентаре, арсенале, седельных сумках, слугах, шкафе и комоде для проекций самостоятельно.</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>Добавлено: {0}. Пропущено из-за неизвестных данных: владение {1}, источник снаряжения {2}, доступность {3}.</value></data>
 </root>

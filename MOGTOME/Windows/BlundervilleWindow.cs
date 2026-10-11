@@ -183,10 +183,11 @@ public sealed class BlundervilleWindow : Window, IDisposable
         var allRows = offers.Keys.Concat(settings.PurchaseTargets.Keys).Distinct()
             .Select(id => (Id: id, Name: Ui.Item(id).Render()))
             .OrderBy(row => row.Name, StringComparer.Create(Ui.Culture, true)).ToArray();
-        var storedOwnership = plugin.XaDatabase.ReadOwnership(allRows.Select(row => row.Id));
+        var storedStocks = plugin.XaDatabase.ReadStocks(allRows.Select(row => row.Id));
         var inventory = allRows.ToDictionary(row => row.Id, row =>
-            BlundervilleGameAdapter.TryInventory(row.Id, out var count, out _) ? (int?)count : null);
-        var ownership = allRows.ToDictionary(row => row.Id, row => BlundervilleGameAdapter.Ownership(row.Id, inventory[row.Id], storedOwnership.GetValueOrDefault(row.Id)));
+            plugin.XaDatabase.TryCount(row.Id, storedStocks.GetValueOrDefault(row.Id), out var count) ? (int?)count : null);
+        var ownership = allRows.ToDictionary(row => row.Id, row => BlundervilleGameAdapter.Ownership(row.Id, inventory[row.Id],
+            inventory[row.Id].HasValue ? AethertekUI.Dalamud.XaItemOwnershipState.Missing : AethertekUI.Dalamud.XaItemOwnershipState.Unknown));
         var eligibility = allRows.ToDictionary(row => row.Id, row => offers.TryGetValue(row.Id, out var offer)
             ? ShopOfferEligibility.Read(offer.Gate) : ShopOfferAvailability.Unknown);
         UiLayout.SameLineIfFits(UiLayout.IconButtonWidth(Ui.T("Shop_SelectMissing")));

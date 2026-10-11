@@ -94,10 +94,11 @@ public sealed class MoogleShopWindow : Window
         var offers = completeCatalog.GroupBy(o => o.ItemId).Where(g => g.Count() == 1).ToDictionary(g => g.Key, g => g.Single());
         var allRows = catalog.Select(o => o.ItemId).Concat(settings.PurchaseTargets.Keys).Distinct()
             .Select(id => (Id: id, Name: Ui.Item(id).Render())).OrderBy(r => r.Name, StringComparer.Create(Ui.Culture, true)).ToArray();
-        var storedOwnership = plugin.XaDatabase.ReadOwnership(allRows.Select(row => row.Id));
+        var storedStocks = plugin.XaDatabase.ReadStocks(allRows.Select(row => row.Id));
         var inventory = allRows.ToDictionary(row => row.Id, row =>
-            BlundervilleGameAdapter.TryInventory(row.Id, out var count, out _) ? (int?)count : null);
-        var ownership = allRows.ToDictionary(row => row.Id, row => BlundervilleGameAdapter.Ownership(row.Id, inventory[row.Id], storedOwnership.GetValueOrDefault(row.Id)));
+            plugin.XaDatabase.TryCount(row.Id, storedStocks.GetValueOrDefault(row.Id), out var count) ? (int?)count : null);
+        var ownership = allRows.ToDictionary(row => row.Id, row => BlundervilleGameAdapter.Ownership(row.Id, inventory[row.Id],
+            inventory[row.Id].HasValue ? AethertekUI.Dalamud.XaItemOwnershipState.Missing : AethertekUI.Dalamud.XaItemOwnershipState.Unknown));
         var eligibility = allRows.ToDictionary(row => row.Id, row => offers.TryGetValue(row.Id, out var offer)
             ? ShopOfferEligibility.Read(offer.Gate) : ShopOfferAvailability.Unknown);
         var rows = allRows.Where(row => eligibility[row.Id] != ShopOfferAvailability.Locked &&
@@ -210,7 +211,7 @@ public sealed class MoogleShopWindow : Window
         var costs = MoogleShopMath.TotalCosts(settings.PurchaseTargets, offers, id => inventory.GetValueOrDefault(id), out var totalsKnown);
         foreach (var id in completeCatalog.SelectMany(o => o.Costs).Select(c => c.ItemId).Distinct())
         {
-            var known = BlundervilleGameAdapter.TryInventory(id, out var balance, out _);
+            var known = BlundervilleGameAdapter.TryBagInventory(id, out var balance, out _);
             var total = costs.GetValueOrDefault(id);
             UiLayout.Wrapped(Ui.T("Shop_Balance", Ui.Item(id), known ? balance.ToString(Ui.Culture) : "?", totalsKnown ? total.ToString(Ui.Culture) : "?"));
         }

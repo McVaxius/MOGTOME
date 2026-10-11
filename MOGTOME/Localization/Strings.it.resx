@@ -2146,7 +2146,7 @@ I risultati sono registrati nel log Dalamud.</value>
   <data name="BV_InnStay" xml:space="preserve"><value>Non andare da nessuna parte</value></data>
   <data name="BV_Progress" xml:space="preserve"><value>Cicli della sessione: {0} · MGF: {1}</value></data>
   <data name="BV_ItemCost" xml:space="preserve"><value>{0} MGF / {1} · Mancanti: {2}</value></data>
-  <data name="BV_PurchaseHelp" xml:space="preserve"><value>Inventario trasportato desiderato / attuale. Inserisci 0 per rimuovere. Depositi e mobili posizionati sono esclusi.</value></data>
+  <data name="BV_PurchaseHelp" xml:space="preserve"><value>Totale desiderato / attuale. 0 disattiva gli acquisti.</value></data>
   <data name="BV_FarmHelp" xml:space="preserve"><value>I capigruppo iscrivono; i membri aspettano qui. Tutti restano fermi fino all’eliminazione. Ogni limite attivo può terminare il farm.</value></data>
   <data name="BV_ReloadHelp" xml:space="preserve"><value>Scenario al ricaricamento: eseguito una volta quando il prossimo caricamento è pronto. Cambiare la selezione o fermare annulla l’esecuzione in attesa.</value></data>
   <data name="BV_ReloadNone" xml:space="preserve"><value>Nessuno scenario al ricaricamento</value></data>
@@ -2170,15 +2170,15 @@ I risultati sono registrati nel log Dalamud.</value>
   <data name="BV_Outstanding" xml:space="preserve"><value>Mancano</value></data>
   <data name="BV_EntryLocked" xml:space="preserve"><value>Sblocca l’accesso a Blunderville Square tramite la missione «Just Crowning Around», iniziando da Lewena a Entrance Square; arrestato.</value></data>
   <data name="BV_Wanted" xml:space="preserve"><value>Quantità desiderata nell’inventario. Si acquista solo quella mancante; 0 disattiva gli acquisti.</value></data>
-  <data name="BV_OnHand" xml:space="preserve"><value>Quantità nelle quattro borse dell’inventario. Esclude servitori, bisacce, deposito abitativo e mobili collocati.</value></data>
+  <data name="BV_OnHand" xml:space="preserve"><value>Totale in inventario, equipaggiamento indossato, Armoury Chest, entrambi i lati delle borse normali/premium, retainer, armoire e glamour dresser. I dati leggibili in tempo reale sostituiscono i registri. Apri i depositi e aggiorna XADB.</value></data>
   <data name="BV_UnitMgf" xml:space="preserve"><value>Prezzo in MGF di un singolo oggetto.</value></data>
   <data name="BV_NeededMgf" xml:space="preserve"><value>MGF necessari per la quantità mancante in questa riga. Obiettivi soddisfatti o disattivati costano 0.</value></data>
   <data name="BV_TotalMgf" xml:space="preserve"><value>MGF totali necessari: {0}</value></data>
   <data name="BV_Registered" xml:space="preserve"><value>Posseduto o registrato (inventario, servitori, armadio o cassettiera glamour)</value></data>
   <data name="BV_NotRegistered" xml:space="preserve"><value>Assenza confermata nei registri e nei depositi del personaggio</value></data>
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>Acquisto previsto</value></data>
-  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Possesso sconosciuto; depositi del personaggio incompleti o non disponibili</value></data>
-  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Collezionabili ed equipaggiamento: spunta verde = posseduto o registrato; X rossa = assenza confermata; ? giallo = acquisto previsto; ? grigio = possesso sconosciuto. Gli altri oggetti sono vuoti.</value></data>
+  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Possesso sconosciuto; dati del personaggio attuale o della registrazione nel gioco non disponibili</value></data>
+  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Collezionabili ed equipaggiamento: spunta verde = posseduto o registrato; X rossa = mancante; ? giallo = acquisto previsto; ? grigio = dati del personaggio o della registrazione nel gioco non disponibili. Le copie trasportate e i dati XA Database di inventario, armoury, bisacce, retainer, armoire o glamour dresser contano come posseduti. Senza registrazione né copia trasportata/registrata, l’oggetto è mancante, anche senza IPC di deposito. Aggiorna personalmente i dati dei depositi. Gli altri oggetti sono vuoti.</value></data>
   <data name="Shop_Title" xml:space="preserve"><value>Negozio MOGTOME</value></data>
   <data name="Shop_Button" xml:space="preserve"><value>NEGOZIO</value></data>
   <data name="Shop_Refresh" xml:space="preserve"><value>Aggiorna</value></data>
@@ -2195,6 +2195,7 @@ I risultati sono registrati nel log Dalamud.</value>
   <data name="Shop_Help" xml:space="preserve"><value>Il carrello indica il totale desiderato nelle borse. Acquista completa la quantità mancante; 0 disattiva un obiettivo.</value></data>
   <data name="Shop_NoCatalog" xml:space="preserve"><value>Offerta attuale del moguri non disponibile.</value></data>
   <data name="Shop_NoFunds" xml:space="preserve"><value>Valuta insufficiente; acquisti interrotti.</value></data>
+  <data name="Shop_NoFundsItem" xml:space="preserve"><value>Impossibile acquistare {0}: servono {2} {1}; ne hai {3}. Acquisti interrotti.</value></data>
   <data name="Shop_UncertainPurchase" xml:space="preserve"><value>Esito dell’acquisto incerto; interrotto. Controlla borse e tutte le valute prima di riprovare.</value></data>
   <data name="Shop_Reviewed" xml:space="preserve"><value>Borse e valute controllate; rimuovi blocco</value></data>
   <data name="Shop_NoTrader" xml:space="preserve"><value>Moguri itinerante non disponibile nella città scelta.</value></data>
@@ -2223,6 +2224,6 @@ Usa /ads mini per attivare o disattivare AutoDuty manualmente.</value></data>
   <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>La disponibilità dell&apos;offerta non è verificabile. Aggiorna il catalogo prima di acquistare.</value></data>
   <data name="Transparency visible on main window" xml:space="preserve"><value>Mostra trasparenza nella finestra principale</value></data>
   <data name="Shop_SelectMissing" xml:space="preserve"><value>Seleziona mancanti</value></data>
-  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Seleziona collezionabili confermati non registrati, senza copie trasportate o note in deposito. Mantiene obiettivi maggiori; non acquista né viaggia. Salta registrazione o disponibilità sconosciute. L’equipaggiamento richiede assenza verificata e una fonte PvP, negozio o evento verificata. Il bottino dei dungeon è escluso; le fonti sconosciute restano manuali.</value></data>
+  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Seleziona collezionabili non registrati ed equipaggiamento disponibile senza copie trasportate o registrate in XA Database. Mantiene obiettivi maggiori; non acquista né viaggia. Salta dati del personaggio/della registrazione nel gioco non disponibili, disponibilità sconosciuta e fonti di equipaggiamento sconosciute. Esclude l’equipaggiamento dei dungeon; include quello PvP, dei negozi e degli eventi con fonte verificata. L’IPC di deposito è facoltativo; aggiorna personalmente inventario, armoury, bisacce, retainer, armoire e glamour dresser.</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>Aggiunti: {0}. Dati sconosciuti saltati: possesso {1}, origine equipaggiamento {2}, disponibilità {3}.</value></data>
 </root>

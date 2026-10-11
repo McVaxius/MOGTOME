@@ -2140,7 +2140,7 @@ Ergebnisse im Dalamud-Protokoll.</value>
   <data name="BV_InnStay" xml:space="preserve"><value>Nirgendwohin reisen</value></data>
   <data name="BV_Progress" xml:space="preserve"><value>Sitzungszyklen: {0} · MGF: {1}</value></data>
   <data name="BV_ItemCost" xml:space="preserve"><value>{0} MGF / {1} · Fehlend: {2}</value></data>
-  <data name="BV_PurchaseHelp" xml:space="preserve"><value>Gewünschter / aktueller Bestand im getragenen Inventar. Mit 0 entfernen. Lager und platzierte Möbel zählen nicht.</value></data>
+  <data name="BV_PurchaseHelp" xml:space="preserve"><value>Gewünschte / aktuelle Gesamtmenge. 0 deaktiviert Käufe.</value></data>
   <data name="BV_FarmHelp" xml:space="preserve"><value>Anführer melden an; Mitglieder warten hier. Alle stehen bis zum Ausscheiden still. Jedes aktivierte Limit beendet das Farmen.</value></data>
   <data name="BV_ReloadHelp" xml:space="preserve"><value>Neuladeszenario: einmal ausführen, sobald der nächste Ladevorgang bereit ist. Auswahländerung oder Stopp verwirft den ausstehenden Start.</value></data>
   <data name="BV_ReloadNone" xml:space="preserve"><value>Kein Neuladeszenario</value></data>
@@ -2164,15 +2164,15 @@ Ergebnisse im Dalamud-Protokoll.</value>
   <data name="BV_Outstanding" xml:space="preserve"><value>Fehlen</value></data>
   <data name="BV_EntryLocked" xml:space="preserve"><value>Schalte den Zugang zum Blunderville-Platz über die Quest „Just Crowning Around“ bei Lewena am Eingangsplatz frei; gestoppt.</value></data>
   <data name="BV_Wanted" xml:space="preserve"><value>Gewünschter Inventarbestand. Nur die fehlende Menge wird gekauft; 0 deaktiviert Käufe.</value></data>
-  <data name="BV_OnHand" xml:space="preserve"><value>Menge in deinen vier Inventartaschen. Ohne Gehilfen, Satteltaschen, Hauslager und platzierte Möbel.</value></data>
+  <data name="BV_OnHand" xml:space="preserve"><value>Gesamtmenge in Inventar, angelegter Ausrüstung, Arsenal, beiden Seiten normaler/Premium-Satteltaschen, Gehilfen, Kostbarkeitenkabinett und Projektionskommode. Lesbare Live-Bestände ersetzen Aufzeichnungen. Lager öffnen und XADB aktualisieren.</value></data>
   <data name="BV_UnitMgf" xml:space="preserve"><value>MGF-Preis pro Gegenstand.</value></data>
   <data name="BV_NeededMgf" xml:space="preserve"><value>MGF für die fehlende Menge dieser Zeile. Erfüllte oder deaktivierte Ziele kosten 0.</value></data>
   <data name="BV_TotalMgf" xml:space="preserve"><value>MGF insgesamt benötigt: {0}</value></data>
   <data name="BV_Registered" xml:space="preserve"><value>Besessen oder registriert (Inventar, Gehilfen, Kostbarkeiten oder Projektionskommode)</value></data>
   <data name="BV_NotRegistered" xml:space="preserve"><value>Nachweislich nicht registriert und in keinem Charakterspeicher vorhanden</value></data>
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>Zum Kauf vorgemerkt</value></data>
-  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Besitz unbekannt; Charakterspeicher unvollständig oder nicht verfügbar</value></data>
-  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Sammlerstücke und Ausrüstung: grüner Haken = besessen oder registriert; rotes X = nachweislich fehlend; gelbes ? = Kauf geplant; graues ? = Besitz unbekannt. Andere Gegenstände bleiben leer.</value></data>
+  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Besitz unbekannt; Daten zum aktuellen Charakter oder zur Spielregistrierung sind nicht verfügbar</value></data>
+  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Sammlerstücke und Ausrüstung: grüner Haken = besessen oder registriert; rotes X = fehlend; gelbes ? = Kauf geplant; graues ? = Charakter- oder Spielregistrierungsdaten nicht verfügbar. Mitgeführte Kopien und XA-Database-Einträge aus Inventar, Arsenal, Satteltaschen, Gehilfen, Kostümtruhe oder Projektionskommode zählen als Besitz. Ohne Registrierung oder mitgeführte/erfasste Kopie gilt der Gegenstand als fehlend, auch ohne Speicher-IPC. Speicherdaten selbst aktualisieren. Andere Gegenstände bleiben leer.</value></data>
   <data name="Shop_Title" xml:space="preserve"><value>MOGTOME-Shop</value></data>
   <data name="Shop_Button" xml:space="preserve"><value>SHOP</value></data>
   <data name="Shop_Refresh" xml:space="preserve"><value>Aktualisieren</value></data>
@@ -2189,6 +2189,7 @@ Ergebnisse im Dalamud-Protokoll.</value>
   <data name="Shop_Help" xml:space="preserve"><value>Der Warenkorb gibt den gewünschten Inventarbestand an. Kaufen ergänzt die Fehlmenge; 0 deaktiviert ein Ziel.</value></data>
   <data name="Shop_NoCatalog" xml:space="preserve"><value>Aktuelles Mogry-Angebot nicht verfügbar.</value></data>
   <data name="Shop_NoFunds" xml:space="preserve"><value>Nicht genug Währung; Einkauf gestoppt.</value></data>
+  <data name="Shop_NoFundsItem" xml:space="preserve"><value>{0} kann nicht gekauft werden: benötigt {2} {1}; vorhanden: {3}. Einkauf gestoppt.</value></data>
   <data name="Shop_UncertainPurchase" xml:space="preserve"><value>Kaufergebnis unklar; gestoppt. Prüfe Inventar und alle Währungen vor einem weiteren Versuch.</value></data>
   <data name="Shop_Reviewed" xml:space="preserve"><value>Inventar und Währungen geprüft; Sperre aufheben</value></data>
   <data name="Shop_NoTrader" xml:space="preserve"><value>Reisender Mogry in der gewählten Stadt nicht verfügbar.</value></data>
@@ -2217,6 +2218,6 @@ Mit /ads mini kannst du AutoDuty manuell aktivieren oder deaktivieren.</value></
   <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>Die Verfügbarkeit des Angebots ist unbekannt. Aktualisiere den Katalog vor dem Kauf.</value></data>
   <data name="Transparency visible on main window" xml:space="preserve"><value>Transparenz im Hauptfenster anzeigen</value></data>
   <data name="Shop_SelectMissing" xml:space="preserve"><value>Fehlende auswählen</value></data>
-  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Wählt bestätigte, nicht registrierte Sammlerstücke ohne mitgeführte oder bekannte gelagerte Kopie. Höhere Ziele bleiben erhalten; kein Kauf und keine Reise. Unbekannte Registrierung oder Verfügbarkeit wird übersprungen. Ausrüstung erfordert bestätigte Abwesenheit und eine geprüfte PvP-, Laden- oder Eventquelle. Dungeon-Beute ist ausgeschlossen; unbekannte Ausrüstungsquellen bleiben manuell.</value></data>
+  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Wählt nicht registrierte Sammlerstücke und verfügbare Ausrüstung ohne mitgeführte oder in XA Database erfasste Kopie. Höhere Ziele bleiben erhalten; kein Kauf und keine Reise. Nicht verfügbare Charakter-/Spielregistrierungsdaten, unbekannte Verfügbarkeit und unbekannte Ausrüstungsquellen werden übersprungen. Ausrüstbare Dungeon-Beute ist ausgeschlossen; geprüfte PvP-, Laden- und Eventausrüstung ist enthalten. Speicher-IPC ist optional; Einträge aus Inventar, Arsenal, Satteltaschen, Gehilfen, Kostümtruhe und Projektionskommode selbst aktualisieren.</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>Hinzugefügt: {0}. Unbekannt übersprungen: Besitz {1}, Ausrüstungsquelle {2}, Verfügbarkeit {3}.</value></data>
 </root>

@@ -2296,7 +2296,7 @@ Sonuçlar Dalamud günlüğüne yazılır.</value>
   <data name="BV_InnStay" xml:space="preserve"><value>Hiçbir yere gitme</value></data>
   <data name="BV_Progress" xml:space="preserve"><value>Oturum döngüleri: {0} · MGF: {1}</value></data>
   <data name="BV_ItemCost" xml:space="preserve"><value>{0} MGF / {1} · Eksik: {2}</value></data>
-  <data name="BV_PurchaseHelp" xml:space="preserve"><value>İstenen / mevcut taşınan envanter. Kaldırmak için 0 girin. Depolar ve yerleştirilmiş mobilyalar sayılmaz.</value></data>
+  <data name="BV_PurchaseHelp" xml:space="preserve"><value>İstenen / mevcut toplam. 0 satın almayı kapatır.</value></data>
   <data name="BV_FarmHelp" xml:space="preserve"><value>Liderler kaydolur; üyeler burada bekler. Herkes elenene kadar hareketsiz kalır. Etkin sınırlardan biri farmı bitirir.</value></data>
   <data name="BV_ReloadHelp" xml:space="preserve"><value>Yeniden yükleme senaryosu: sonraki yükleme hazır olduğunda bir kez çalışır. Seçimi değiştirmek veya Durdur bekleyen çalışmayı iptal eder.</value></data>
   <data name="BV_ReloadNone" xml:space="preserve"><value>Yeniden yükleme senaryosu yok</value></data>
@@ -2320,15 +2320,15 @@ Sonuçlar Dalamud günlüğüne yazılır.</value>
   <data name="BV_Outstanding" xml:space="preserve"><value>Eksik</value></data>
   <data name="BV_EntryLocked" xml:space="preserve"><value>Entrance Square’daki Lewena’dan başlayan Just Crowning Around görevinde ilerleyerek Blunderville Square girişini açın; durduruldu.</value></data>
   <data name="BV_Wanted" xml:space="preserve"><value>Envanterde istenen miktar. Yalnızca eksik miktar alınır; 0 satın almayı kapatır.</value></data>
-  <data name="BV_OnHand" xml:space="preserve"><value>Dört envanter çantasındaki miktar. Retainer, heybe, konut deposu ve yerleştirilmiş mobilyalar hariçtir.</value></data>
+  <data name="BV_OnHand" xml:space="preserve"><value>Envanter, kuşanılan ekipman, Armoury Chest, normal/premium heybenin iki tarafı, retainer, armoire ve glamour dresser toplamı. Okunabilir canlı veriler kayıtları değiştirir. Depoları açın ve XADB’yi yenileyin.</value></data>
   <data name="BV_UnitMgf" xml:space="preserve"><value>Bir eşyanın MGF fiyatı.</value></data>
   <data name="BV_NeededMgf" xml:space="preserve"><value>Bu satırdaki eksik miktar için gereken MGF. Tamamlanan veya kapatılan hedeflerin maliyeti 0’dır.</value></data>
   <data name="BV_TotalMgf" xml:space="preserve"><value>Toplam gereken MGF: {0}</value></data>
   <data name="BV_Registered" xml:space="preserve"><value>Sahip olunan veya kayıtlı (envanter, yardımcılar, armoire veya glamour dolabı)</value></data>
   <data name="BV_NotRegistered" xml:space="preserve"><value>Kayıtta ve karakter depolarında bulunmadığı doğrulandı</value></data>
   <data name="BV_PlannedPurchase" xml:space="preserve"><value>Satın alınması planlandı</value></data>
-  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Sahiplik bilinmiyor; karakter depo verileri eksik veya kullanılamıyor</value></data>
-  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Koleksiyon ve ekipman: yeşil onay = sahip olunan veya kayıtlı; kırmızı X = eksikliği doğrulandı; sarı ? = satın alma planlandı; gri ? = sahiplik bilinmiyor. Diğer öğeler boş.</value></data>
+  <data name="BV_RegistrationUnknown" xml:space="preserve"><value>Sahiplik bilinmiyor; mevcut karakter veya oyun içi kayıt verileri kullanılamıyor</value></data>
+  <data name="BV_RegistrationHelp" xml:space="preserve"><value>Koleksiyon ve ekipman: yeşil onay = sahip olunan veya kayıtlı; kırmızı X = eksik; sarı ? = satın alma planlandı; gri ? = karakter veya oyun içi kayıt verileri kullanılamıyor. Taşınan kopyalar ve XA Database envanter, cephanelik, heybe, retainer, armoire veya glamour dresser kayıtları sahip olunan sayılır. Kayıt ve taşınan/kaydedilmiş kopya yoksa depo IPC’si olmadan da öğe eksik sayılır. Depo kayıtlarını kendiniz yenileyin. Diğer öğeler boş.</value></data>
   <data name="Shop_Title" xml:space="preserve"><value>MOGTOME Mağazası</value></data>
   <data name="Shop_Button" xml:space="preserve"><value>MAĞAZA</value></data>
   <data name="Shop_Refresh" xml:space="preserve"><value>Yenile</value></data>
@@ -2345,6 +2345,7 @@ Sonuçlar Dalamud günlüğüne yazılır.</value>
   <data name="Shop_Help" xml:space="preserve"><value>Sepet çantalarda istediğiniz toplam miktarı belirtir. Satın al eksikleri tamamlar; 0 hedefi devre dışı bırakır.</value></data>
   <data name="Shop_NoCatalog" xml:space="preserve"><value>Güncel Moogle teklifi kullanılamıyor.</value></data>
   <data name="Shop_NoFunds" xml:space="preserve"><value>Para birimi yetersiz; alışveriş durduruldu.</value></data>
+  <data name="Shop_NoFundsItem" xml:space="preserve"><value>{0} satın alınamıyor: {2} {1} gerekiyor; sizde {3} var. Alışveriş durduruldu.</value></data>
   <data name="Shop_UncertainPurchase" xml:space="preserve"><value>Satın alma sonucu belirsiz; durduruldu. Tekrar denemeden önce çantaları ve tüm para birimlerini kontrol edin.</value></data>
   <data name="Shop_Reviewed" xml:space="preserve"><value>Çantalar ve para birimleri kontrol edildi; bekletmeyi kaldır</value></data>
   <data name="Shop_NoTrader" xml:space="preserve"><value>Gezgin Moogle seçilen şehirde bulunamıyor.</value></data>
@@ -2373,6 +2374,6 @@ AutoDuty'yi elle etkinleştirmek veya devre dışı bırakmak için /ads mini ku
   <data name="Shop_EligibilityUnknown" xml:space="preserve"><value>Teklifin kullanılabilirliği doğrulanamıyor. Satın almadan önce kataloğu yenileyin.</value></data>
   <data name="Transparency visible on main window" xml:space="preserve"><value>Ana pencerede saydamlığı göster</value></data>
   <data name="Shop_SelectMissing" xml:space="preserve"><value>Eksikleri seç</value></data>
-  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Kayıtsız olduğu doğrulanan, taşınan veya depoda bilinen kopyası olmayan koleksiyon öğelerini seçer. Daha büyük hedefleri korur; satın alma veya seyahat başlatmaz. Kayıt veya satın alma koşulları bilinmeyen öğeleri atlar. Ekipman için doğrulanmış yokluk ve doğrulanmış PvP, mağaza veya etkinlik kaynağı gerekir. Zindan ganimetleri hariçtir; kaynağı bilinmeyen ekipman elle seçilir.</value></data>
+  <data name="Shop_SelectMissingHelp" xml:space="preserve"><value>Taşınan veya XA Database’de kaydedilmiş kopyası olmayan kayıtsız koleksiyon öğelerini ve satın alınabilir ekipmanı seçer. Daha büyük hedefleri korur; satın alma veya seyahat başlatmaz. Kullanılamayan karakter/oyun içi kayıt verilerini, bilinmeyen satın alma koşullarını ve bilinmeyen ekipman kaynaklarını atlar. Zindandan düşen giyilebilir ekipman hariçtir; doğrulanmış PvP, mağaza ve etkinlik ekipmanı dahildir. Depo IPC’si isteğe bağlıdır; envanter, cephanelik, heybe, retainer, armoire ve glamour dresser kayıtlarını kendiniz yenileyin.</value></data>
   <data name="Shop_SelectMissingResult" xml:space="preserve"><value>Eklendi: {0}. Bilinmeyen veriler nedeniyle atlandı: sahiplik {1}, ekipman kaynağı {2}, satın alma koşulları {3}.</value></data>
 </root>
