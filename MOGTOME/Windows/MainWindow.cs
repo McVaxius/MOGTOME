@@ -238,11 +238,7 @@ public class MainWindow : Window, IDisposable
         var imageSize = new Vector2(MogtomePresentation.Compact ? 72 : 78) * scale;
         var koFi = Ui.T("Main_KoFi").Trim('♡', ' ');
         var linkWidth = UiLayout.IconButtonWidth(koFi) + UiLayout.IconButtonWidth("Discord") + spacing;
-        var compactWidth = ImGui.GetFrameHeight() + ImGui.GetStyle().ItemInnerSpacing.X + AethertekUI.MaterialText.Measure("C").X;
-        var transparencyWidth = plugin.Configuration.UiTransparencyVisibleOnMainWindow
-            ? ImGui.GetFrameHeight() + ImGui.GetStyle().ItemInnerSpacing.X + AethertekUI.MaterialText.Measure(Ui.T("Transparency")).X : 0;
-        var controlsWidth = (plugin.Configuration.UiCompactVisibleOnMainWindow ? compactWidth : 0) + transparencyWidth + linkWidth
-            + (plugin.Configuration.UiLanguageVisibleOnMainWindow ? plugin.Appearance.LanguageWidth : 0) + spacing * 3;
+        var controlsWidth = linkWidth;
         MogtomeAppearance.DrawHeaderArt(origin, imageSize);
         ImGui.Dummy(imageSize);
         ImGui.SameLine(0, 24 * scale);
@@ -261,27 +257,11 @@ public class MainWindow : Window, IDisposable
             ? new Vector2(width - controlsWidth, (MogtomePresentation.Compact ? 14 : 16) * scale)
             : new Vector2(0, Math.Max(imageSize.Y, brandSize.Y) + ImGui.GetStyle().ItemSpacing.Y)));
         ImGui.BeginGroup();
-        if (plugin.Configuration.UiCompactVisibleOnMainWindow)
-        {
-            plugin.Appearance.DrawCompact();
-        }
-        if (plugin.Configuration.UiTransparencyVisibleOnMainWindow)
-        {
-            if (plugin.Configuration.UiCompactVisibleOnMainWindow) UiLayout.SameLineIfFits(transparencyWidth);
-            plugin.Appearance.DrawTransparencyToggle();
-        }
-        if (plugin.Configuration.UiCompactVisibleOnMainWindow || plugin.Configuration.UiTransparencyVisibleOnMainWindow)
-            UiLayout.SameLineIfFits(linkWidth);
         if (UiLayout.IconButton(Ui.L("Main_KoFi"), MaterialIcon.Heart, new Vector2(0, (MogtomePresentation.Compact ? 36 : 42) * scale), koFi)) Process.Start(new ProcessStartInfo { FileName = "https://ko-fi.com/mcvaxius", UseShellExecute = true });
         if (ImGui.IsItemHovered()) UiLayout.SetTooltip(Ui.T("Main_SupportDevelopmentOnKoFi"));
         UiLayout.SameLineIfFits(UiLayout.IconButtonWidth("Discord"));
         if (UiLayout.IconButton("Discord", MaterialIcon.Chat, new Vector2(0, (MogtomePresentation.Compact ? 36 : 42) * scale))) Process.Start(new ProcessStartInfo { FileName = Plugin.DiscordUrl, UseShellExecute = true });
         if (ImGui.IsItemHovered()) UiLayout.SetTooltip(Plugin.DiscordChannelHint);
-        if (plugin.Configuration.UiLanguageVisibleOnMainWindow)
-        {
-            UiLayout.SameLineIfFits(plugin.Appearance.LanguageWidth);
-            plugin.Appearance.DrawLanguage();
-        }
         ImGui.EndGroup();
         var controlsBottom = ImGui.GetItemRectMax().Y - origin.Y;
         var subtitle = Ui.T("Main_Subtitle");

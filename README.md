@@ -26,6 +26,11 @@ MOGTOME automates farming of The Praetorium (99 runs) and The Porta Decumana (un
 
 Main's **Team Leader** checkbox directly beneath the header changes the same active-account role setting as
 Config > Party. Blunderville determines its role from the actual party independently.
+Language, Compact, Transparency and Colour shortcuts are on window titlebars.
+Compact toggles immediately; the other icons open manual editors using the same
+active-account settings as the Appearance tab. Existing main-window visibility
+preferences still apply. Widen Configuration to expose its complete tab strip;
+the tabs remain directly selectable without left/right navigation arrows.
 In ADS mode, a successful AutoDuty disable notice is informational and dismissible;
 use the manual **Enable AutoDuty** and **Disable AutoDuty** buttons in `/ads mini`
 to change its loaded state afterward. A Disable retry appears only while it remains loaded.

@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Numerics;
 using AethertekUI;
+using AethertekUI.Dalamud;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Windowing;
@@ -14,6 +15,7 @@ internal sealed class MogtomeAppearance : IDisposable
 {
     private readonly System.Collections.Generic.Dictionary<Dalamud.Interface.Windowing.IWindow, AethertekUI.MaterialWindowOpacity> windowOpacities = new();
     private readonly AethertekUI.MaterialWindowOpacity fontStatusOpacity = new();
+    private readonly System.Collections.Generic.Dictionary<Window, MaterialAppearanceTitleBar> titleBars = new();
     private readonly Plugin plugin;
     private readonly AethertekUI.Dalamud.MaterialTextHost shapedText;
     private static readonly string[] NativeLanguages = ["English", "Français", "Deutsch", "日本語", "Español", "Italiano", "Русский", "한국어", "简体中文", "Tiếng Việt", "Português (Brasil)", "Bahasa Indonesia", "Polski", "Türkçe", "हिन्दी"];
@@ -147,7 +149,31 @@ internal sealed class MogtomeAppearance : IDisposable
         style.Color(ImGuiCol.FrameBgActive, MaterialColor.Layer(colors.SurfaceContainerHigh, colors.OnSurface, .14f));
         using var body = fonts.Push(MogtomeFontRole.Body);
         using var chrome = MaterialWindowChrome.Push();
+        foreach (var owner in windows.Windows.OfType<Window>())
+        {
+            if (!titleBars.TryGetValue(owner, out var titleBar))
+            {
+                titleBar = MaterialAppearanceTitleBar.Register(owner,
+                    () => new(Ui.T("Language_Label"), Ui.T("Ui_CompactMode"), Ui.T("Transparency"), Ui.T("Ui_Color")),
+                    () => DrawLanguage("titlebar-language"),
+                    () =>
+                    {
+                        if (!plugin.CanSelectUiLanguage) return;
+                        plugin.Configuration.UiCompact = !plugin.Configuration.UiCompact;
+                        plugin.ConfigManager.SaveCurrentAccount();
+                    },
+                    () => DrawWindowSettings(includeVisibility: false), DrawTitlebarPalette,
+                    ReferenceEquals(owner, plugin.MainWindow)
+                        ? () => new(plugin.Configuration.UiLanguageVisibleOnMainWindow,
+                            plugin.Configuration.UiCompactVisibleOnMainWindow,
+                            plugin.Configuration.UiTransparencyVisibleOnMainWindow, true)
+                        : null);
+                titleBars.Add(owner, titleBar);
+            }
+            titleBar.RefreshVisibility();
+        }
         windows.Draw();
+        foreach (var titleBar in titleBars.Values) titleBar.DrawPopups();
         foreach (var window in windows.Windows)
         {
             if (!windowOpacities.TryGetValue(window, out var opacity))
@@ -221,6 +247,17 @@ internal sealed class MogtomeAppearance : IDisposable
             | (uint)Math.Clamp((int)MathF.Round(accentDraft.Z * 255), 0, 255);
         plugin.ConfigManager.SaveCurrentAccount();
     }
+    private void DrawTitlebarPalette()
+    {
+        ImGui.BeginDisabled(!plugin.CanSelectUiLanguage);
+        try
+        {
+            if (MaterialAppearanceSelector.DrawPalette("titlebar-colour", ref accentDraft,
+                new(Ui.T("Ui_Color"), Ui.T("Language_Label"), Ui.T("Ui_Teal"), Ui.T("Ui_Blue"), Ui.T("Ui_Pink"), Ui.T("Ui_CustomRgb"))))
+                SaveAccent();
+        }
+        finally { ImGui.EndDisabled(); }
+    }
     internal void DrawCompact(string id = "C")
     {
         var compact = plugin.Configuration.UiCompact;
@@ -247,20 +284,24 @@ internal sealed class MogtomeAppearance : IDisposable
         ImGui.EndDisabled();
     }
 
-    internal void DrawWindowSettings()
+    internal void DrawWindowSettings() => DrawWindowSettings(includeVisibility: true);
+    private void DrawWindowSettings(bool includeVisibility)
     {
         var config = plugin.Configuration;
         var changed = false;
         ImGui.BeginDisabled(!plugin.CanSelectUiLanguage);
-        var compactVisible = config.UiCompactVisibleOnMainWindow;
-        if (UiLayout.Checkbox(Ui.T("Compact visible on main window") + "###window-compact-visible", ref compactVisible))
-        { config.UiCompactVisibleOnMainWindow = compactVisible; changed = true; }
-        var transparencyVisible = config.UiTransparencyVisibleOnMainWindow;
-        if (UiLayout.Checkbox(Ui.T("Transparency visible on main window") + "###window-transparency-visible", ref transparencyVisible))
-        { config.UiTransparencyVisibleOnMainWindow = transparencyVisible; changed = true; }
-        var languageVisible = config.UiLanguageVisibleOnMainWindow;
-        if (UiLayout.Checkbox(Ui.T("Language visible on main window") + "###window-language-visible", ref languageVisible))
-        { config.UiLanguageVisibleOnMainWindow = languageVisible; changed = true; }
+        if (includeVisibility)
+        {
+            var compactVisible = config.UiCompactVisibleOnMainWindow;
+            if (UiLayout.Checkbox(Ui.T("Compact visible on main window") + "###window-compact-visible", ref compactVisible))
+            { config.UiCompactVisibleOnMainWindow = compactVisible; changed = true; }
+            var transparencyVisible = config.UiTransparencyVisibleOnMainWindow;
+            if (UiLayout.Checkbox(Ui.T("Transparency visible on main window") + "###window-transparency-visible", ref transparencyVisible))
+            { config.UiTransparencyVisibleOnMainWindow = transparencyVisible; changed = true; }
+            var languageVisible = config.UiLanguageVisibleOnMainWindow;
+            if (UiLayout.Checkbox(Ui.T("Language visible on main window") + "###window-language-visible", ref languageVisible))
+            { config.UiLanguageVisibleOnMainWindow = languageVisible; changed = true; }
+        }
         var enabled = config.UiTransparencyEnabled;
         if (UiLayout.Checkbox(Ui.T("Transparency") + "###window-transparency", ref enabled))
         { config.UiTransparencyEnabled = enabled; changed = true; }

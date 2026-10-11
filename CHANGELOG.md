@@ -1,3 +1,8 @@
+2026-10-11 - Appearance shortcuts and configuration tabs
+
+- Move Language, Compact, Transparency and Colour shortcuts to native window titlebars, retaining existing appearance preferences, account saves and Settings controls.
+- Allow a wider configuration window so every tab label can fit. Keep tabs directly selectable without left/right arrow navigation and reserve title text space for the native titlebar controls.
+
 2026-10-11 - Select missing Blunderville kits and gear
 
 - Include every equippable reward offered by the MGF trader in Select Missing, including Gentlebean garments and crowns. Preserve the Moogle shop's existing equipment-source restrictions and saved quantities.

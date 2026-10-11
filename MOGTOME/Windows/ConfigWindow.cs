@@ -65,7 +65,7 @@ public class ConfigWindow : Window, IDisposable
         SizeConstraints = new WindowSizeConstraints
         {
             MinimumSize = new Vector2(500, 600),
-            MaximumSize = new Vector2(750, 1000),
+            MaximumSize = new Vector2(1500, 1000),
         };
     }
 
@@ -80,6 +80,11 @@ public class ConfigWindow : Window, IDisposable
     public override void PreDraw()
     {
         WindowName = Ui.T("Window_MOGTOMEConfiguration") + "###Window_MOGTOMEConfiguration_#MogtomeConfig";
+        SizeConstraints = new WindowSizeConstraints
+        {
+            MinimumSize = new Vector2(Math.Max(500, UiLayout.TitleMinimumWidth(this) / Math.Max(.01f, ImGuiHelpers.GlobalScale)), 600),
+            MaximumSize = new Vector2(1500, 1000),
+        };
         if (pendingWindowPosition.HasValue)
         {
             Position = pendingWindowPosition.Value;
@@ -134,7 +139,7 @@ public class ConfigWindow : Window, IDisposable
     }
 
     public override void PostDraw()
-        { windowMotion.Restore(this); plugin.Appearance.PaintWindowTitle(WindowName); }
+        { windowMotion.Restore(this); plugin.Appearance.PaintWindowTitleWithButtons(this); }
 
     public override void Draw()
     {
@@ -160,7 +165,8 @@ public class ConfigWindow : Window, IDisposable
         }
 
         var appearanceRoot = ImGui.GetID("");
-        if (UiLayout.BeginTabBar("ConfigTabs", new[] { "Config_SetupWizard", "Config_DependencyCheck", "Config_Party", "Config_Duty", "Config_FoodPots", "Config_Repair", "Window appearance", "Config_Advanced" }.Select(key=>Ui.T(key)).ToArray(), ImGuiTabBarFlags.FittingPolicyScroll))
+        if (UiLayout.BeginTabBar("ConfigTabs", new[] { "Config_SetupWizard", "Config_DependencyCheck", "Config_Party", "Config_Duty", "Config_FoodPots", "Config_Repair", "Window appearance", "Config_Advanced" }.Select(key=>Ui.T(key)).ToArray(),
+            ImGuiTabBarFlags.FittingPolicyResizeDown | ImGuiTabBarFlags.NoTabListScrollingButtons))
         {
             var currentAccountId = plugin.ConfigManager.CurrentAccountId;
             if (!string.Equals(setupWizardAccountId, currentAccountId, StringComparison.Ordinal))
