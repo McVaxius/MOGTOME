@@ -1,3 +1,8 @@
+2026-10-11 - Culture-safe external settings and history (I538)
+
+- Read the existing ISO run-history timestamps with invariant culture and preserve their UTC kind when loading SQLite records. Keep existing account history and provider-specific BMR number formats.
+- Format fractional healing settings for RSR's current-culture parser while retaining the same thresholds, settings and dispatch order.
+
 2026-10-11 - Titlebar status
 
 - Show current farming/shopping state, observed currency balances and progress in native titlebars, including settings. Add separate saved Appearance switches for status visibility and detailed wording, both enabled by default, and retain full details on hover.

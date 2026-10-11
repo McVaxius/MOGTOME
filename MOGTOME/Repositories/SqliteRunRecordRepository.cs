@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using System.Threading;
@@ -211,7 +212,7 @@ public class SqliteRunRecordRepository : IRunRecordRepository
                     var record = new RunRecord
                     {
                         ContentId = (ulong)reader.GetInt64(0),
-                        Timestamp = DateTime.Parse(reader.GetString(1)),
+                        Timestamp = DateTime.Parse(reader.GetString(1), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
                         TerritoryId = (ushort)reader.GetInt32(2),
                         CompletionTime = (float)reader.GetDouble(3),
                         DeathCount = totalDeaths,
