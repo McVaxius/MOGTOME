@@ -26,6 +26,7 @@ public sealed class LocalizationTests : IDisposable
     private readonly UiLanguage originalLanguage = Ui.Language;
     private readonly Dictionary<PropertyInfo, object?> originalServices = [];
     // Captured from the installed game sheets, 2026-09-12. No game process is used.
+    // LogMessage 4394/7567 added from the current four-language XIVAPI sheets, 2026-10-14.
     internal static readonly Dictionary<string, Dictionary<uint, string>> Templates =
         JsonSerializer.Deserialize<Dictionary<string, Dictionary<uint, string>>>(
             File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "GameTextFixtures.json")))!;
@@ -68,7 +69,7 @@ public sealed class LocalizationTests : IDisposable
         foreach (var prompt in new[] { "Are you sure you wish to abandon the duty?", "Abandon duty?", "Accept this party invitation?" })
             Assert.False(GameText.MatchesPrompt(prompt, GamePrompt.LeaveDuty, client,
                 (row, _) => evaluator.Text(row)));
-        foreach (var row in new uint[] { 877, 880 })
+        foreach (var row in new uint[] { 877, 880, 4394, 7567 })
         {
             Assert.True(GameText.MatchesLogMessage(evaluator.Text(row), row));
             Assert.True(GameText.MatchesLogMessage(evaluator.ChatText(row), row));
@@ -506,8 +507,10 @@ public sealed class LocalizationTests : IDisposable
         SetService("PluginInterface", Fake<IDalamudPluginInterface>((method, _) =>
             method.Name == "get_InstalledPlugins" ? new[] { db, xa } : Default(method.ReturnType)));
         Assert.Equal(expected, GameHelpers.MissingXaDependencies());
+        var farmingRequirement = slave ? string.Empty : "XA Slave";
+        Assert.Equal(farmingRequirement, GameHelpers.MissingXaDependencies(requireDatabase: false));
         Assert.Equal((database, slave), GameHelpers.LoadedXaDependencies());
-        if (expected.Length == 0) return; // Do not enter game-owned startup in an offline test.
+        if (slave) return; // Successful starts use the real-engine fixture below.
 
         var engine = (MogtomeEngine)RuntimeHelpers.GetUninitializedObject(typeof(MogtomeEngine));
         SetField(engine, "log", log);
@@ -515,7 +518,7 @@ public sealed class LocalizationTests : IDisposable
         Assert.Equal(EngineState.Idle, engine.CurrentState);
         Assert.Null(GetField(engine, "startupTask"));
         Assert.Equal("Plugin_RequiredXaPlugins", engine.Status.Key);
-        Assert.Equal(expected, engine.Status.Arguments[0]);
+        Assert.Equal(farmingRequirement, engine.Status.Arguments[0]);
 
         var plugin = (Plugin)RuntimeHelpers.GetUninitializedObject(typeof(Plugin));
         SetField(plugin, "<Engine>k__BackingField", engine);
@@ -529,7 +532,7 @@ public sealed class LocalizationTests : IDisposable
         Assert.False(plugin.IsEngineStartQueued);
         Assert.Equal(EngineState.Idle, engine.CurrentState);
         Assert.Null(GetField(engine, "startupTask"));
-        Assert.Equal(expected, engine.Status.Arguments[0]);
+        Assert.Equal(farmingRequirement, engine.Status.Arguments[0]);
 
         database = slave = true;
         Assert.Equal(string.Empty, GameHelpers.MissingXaDependencies());
@@ -600,7 +603,7 @@ public sealed class LocalizationTests : IDisposable
         {
             var resources = Ui.Resources.GetResourceSet(language == UiLanguage.English
                 ? CultureInfo.InvariantCulture : Ui.CultureFor(language), true, false)!;
-            foreach (var key in new[] { "Plugin_RequiredXaPlugins", "Config_LoadXADB", "Shop_StorageNotice", "Shop_HideStorageNotice", "Shop_ShowStorageNotice" })
+            foreach (var key in new[] { "Plugin_RequiredXaPlugins", "Plugin_XaDatabaseFarmingWarning", "Config_LoadXADB", "Shop_StorageNotice", "Shop_HideStorageNotice", "Shop_ShowStorageNotice" })
                 Assert.False(string.IsNullOrWhiteSpace(resources.GetString(key)));
             Assert.Contains("{0}", resources.GetString("Plugin_RequiredXaPlugins"));
             Assert.DoesNotContain("{1}", resources.GetString("Plugin_RequiredXaPlugins"));
@@ -636,7 +639,7 @@ public sealed class LocalizationTests : IDisposable
 
     // Simulate the evaluator boundary with captured sheets; assert every call explicitly
     // supplies the client language. This does not emulate native Dalamud/global state.
-    private sealed class SheetEvaluator(ClientLanguage client) : ISeStringEvaluator
+    internal sealed class SheetEvaluator(ClientLanguage client) : ISeStringEvaluator
     {
         internal const string Raiser = "Test Raiser";
         internal string Destination = "Test Destination";

@@ -16,6 +16,28 @@ public sealed class MoogleShopSettings
 }
 
 internal sealed record MoogleShopCost(uint ItemId, uint Count);
+internal sealed record MoogleTomestoneBalance(uint ItemId, int? Carried, int? Total,
+    int? Saddlebags, int? RetainerStorage, int? Other)
+{
+    internal int? Stored => Total.HasValue && Carried.HasValue ? Math.Max(0, Total.Value - Carried.Value) : null;
+    internal static MoogleTomestoneBalance Unavailable(uint itemId) => new(itemId, null, null, null, null, null);
+
+    internal static MoogleTomestoneBalance Read(uint itemId, IReadOnlyDictionary<string, int> live,
+        AethertekUI.Dalamud.XaItemStock? recorded)
+    {
+        var locations = recorded?.InventoryCounts.ToDictionary(pair => pair.Key, pair => pair.Value,
+            StringComparer.OrdinalIgnoreCase) ?? new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        foreach (var entry in live) locations[entry.Key] = entry.Value;
+        var carried = live.Where(pair => pair.Key is "Inventory 1" or "Inventory 2" or "Inventory 3" or "Inventory 4")
+            .Sum(pair => pair.Value);
+        var saddlebags = locations.Where(pair => pair.Key is "Saddlebag 1" or "Saddlebag 2"
+            or "Premium Saddlebag 1" or "Premium Saddlebag 2").Sum(pair => pair.Value);
+        var remote = recorded?.StorageCount ?? 0;
+        var total = recorded?.CountWithLiveInventory(live) ?? live.Values.Sum();
+        var other = (int)Math.Clamp((long)total - carried - saddlebags - remote, 0, int.MaxValue);
+        return new(itemId, carried, total, saddlebags, remote, other);
+    }
+}
 internal sealed record MoogleShopOffer(uint ShopId, string ShopName, uint ItemId, uint ReceiveCount,
     uint TomestoneId, MoogleShopCost[] Costs)
 {

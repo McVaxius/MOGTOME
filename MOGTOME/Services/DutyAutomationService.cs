@@ -641,6 +641,8 @@ public sealed class DutyAutomationService
             adsFollowerState = AdsFollowerState.Recovered;
     }
 
+    internal bool HasPendingQueueRegistration => GetActiveAdsQueueOperationId() != 0;
+
     public void HandleAdsQueueChatMessage(string messageText)
     {
         var operationId = GetActiveAdsQueueOperationId();

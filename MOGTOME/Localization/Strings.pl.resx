@@ -2389,4 +2389,28 @@ Użyj /ads mini, aby ręcznie włączyć lub wyłączyć AutoDuty.</value></data
   <data name="Ui_TitlebarBuying" xml:space="preserve"><value>Kupowanie</value></data>
   <data name="Ui_TitlebarFarming" xml:space="preserve"><value>Farmienie</value></data>
   <data name="Ui_TitlebarBlocked" xml:space="preserve"><value>Zablokowane</value></data>
+  <data name="Stats_PraetoriumDailyCounter" xml:space="preserve"><value>Praetorium dzisiaj: {0}</value></data>
+  <data name="Stats_HistoryPage" xml:space="preserve"><value>Strona {0}/{1} · zapisane przebiegi: {2}</value></data>
+  <data name="Stats_HistoryScope" xml:space="preserve"><value>Zapisane przebiegi tego konta, od najnowszych. Szczegółowe zapisy dotyczą przyszłych przebiegów; dzienny licznik Praetorium jest oddzielny.</value></data>
+  <data name="Tomes_Heading" xml:space="preserve"><value>Posiadane tomestony</value></data>
+  <data name="Tomes_Owned" xml:space="preserve"><value>Łącznie</value></data>
+  <data name="Tomes_Carried" xml:space="preserve"><value>Przy sobie</value></data>
+  <data name="Tomes_Storage" xml:space="preserve"><value>Magazyny</value></data>
+  <data name="Tomes_TitleBalance" xml:space="preserve"><value>{0}: łącznie {1}</value></data>
+  <data name="Tomes_TitleBalanceCost" xml:space="preserve"><value>{0}: łącznie {1} ({2} przy sobie), potrzeba {3}</value></data>
+  <data name="Tomes_Target" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="Tomes_Breakdown" xml:space="preserve"><value>{0}
+Przy sobie: {1}
+Torby chocobo, także premium: {2}
+Retainerzy i inne magazyny: {3}
+Inny zapisany ekwipunek: {4}
+Łącznie: {5}
+Otwórz magazyny, aby odświeżyć zapisane ilości.</value></data>
+  <data name="Tomes_NoData" xml:space="preserve"><value>Ilości niedostępne podczas ładowania danych ekwipunku lub wymiany.</value></data>
+  <data name="Config_TomestoneTargetEnabled" xml:space="preserve"><value>Zatrzymaj po osiągnięciu zapasu bieżących tomestonów</value></data>
+  <data name="Config_TomestoneTarget" xml:space="preserve"><value>Docelowy zapas</value></data>
+  <data name="Config_TomestoneTargetHelp" xml:space="preserve"><value>Łączny zapas z bieżącego wydarzenia, także w zapisanych magazynach. Sprawdzany przed rejestracją i po zadaniu. Limit przebiegów 0 używa tylko tej wartości. Po osiągnięciu celu wykonywane jest ustawione polecenie końcowe.</value></data>
+  <data name="Engine_TomestoneTotalUnavailable" xml:space="preserve"><value>Zapas bieżących tomestonów niedostępny. Automatyzacja zatrzymana; uruchom ponownie po załadowaniu danych ekwipunku i wymiany.</value></data>
+  <data name="Engine_TomestoneTargetReached" xml:space="preserve"><value>Osiągnięto cel tomestonów: łącznie {0}/{1} ({2}).</value></data>
+  <data name="Plugin_XaDatabaseFarmingWarning" xml:space="preserve"><value>XA Database nie jest załadowany. Farmienie może być kontynuowane; zapisane ilości w magazynach są niedostępne. Załaduj go przed zakupami.</value></data>
 </root>

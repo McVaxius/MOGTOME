@@ -2239,4 +2239,28 @@ Path: {0}
   <data name="Ui_TitlebarBuying" xml:space="preserve"><value>Покупка</value></data>
   <data name="Ui_TitlebarFarming" xml:space="preserve"><value>Фарм</value></data>
   <data name="Ui_TitlebarBlocked" xml:space="preserve"><value>Заблокировано</value></data>
+  <data name="Stats_PraetoriumDailyCounter" xml:space="preserve"><value>Преторий сегодня: {0}</value></data>
+  <data name="Stats_HistoryPage" xml:space="preserve"><value>Страница {0}/{1} · записано прохождений: {2}</value></data>
+  <data name="Stats_HistoryScope" xml:space="preserve"><value>Записанные прохождения этого аккаунта, начиная с новых. Подробный учёт влияет на будущие записи; дневной счётчик Претория ведётся отдельно.</value></data>
+  <data name="Tomes_Heading" xml:space="preserve"><value>Имеющиеся томстоуны</value></data>
+  <data name="Tomes_Owned" xml:space="preserve"><value>Всего</value></data>
+  <data name="Tomes_Carried" xml:space="preserve"><value>При себе</value></data>
+  <data name="Tomes_Storage" xml:space="preserve"><value>Хранилища</value></data>
+  <data name="Tomes_TitleBalance" xml:space="preserve"><value>{0}: всего {1}</value></data>
+  <data name="Tomes_TitleBalanceCost" xml:space="preserve"><value>{0}: всего {1} ({2} при себе), нужно {3}</value></data>
+  <data name="Tomes_Target" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="Tomes_Breakdown" xml:space="preserve"><value>{0}
+При себе: {1}
+Седельные сумки, включая премиум: {2}
+Ретейнеры и другие хранилища: {3}
+Прочий записанный инвентарь: {4}
+Всего: {5}
+Откройте хранилища для обновления записанных количеств.</value></data>
+  <data name="Tomes_NoData" xml:space="preserve"><value>Итоги недоступны во время загрузки данных инвентаря или обмена.</value></data>
+  <data name="Config_TomestoneTargetEnabled" xml:space="preserve"><value>Остановиться при достижении запаса текущих томстоунов</value></data>
+  <data name="Config_TomestoneTarget" xml:space="preserve"><value>Целевой запас</value></data>
+  <data name="Config_TomestoneTargetHelp" xml:space="preserve"><value>Общий запас текущего события, включая записанные хранилища. Проверка до регистрации и после выхода из контента. Лимит прохождений 0 оставляет только эту цель. После достижения выполняется настроенная команда завершения.</value></data>
+  <data name="Engine_TomestoneTotalUnavailable" xml:space="preserve"><value>Запас текущих томстоунов недоступен. Автоматизация остановлена; запустите снова после загрузки данных инвентаря и обмена.</value></data>
+  <data name="Engine_TomestoneTargetReached" xml:space="preserve"><value>Цель томстоунов достигнута: {0}/{1} всего ({2}).</value></data>
+  <data name="Plugin_XaDatabaseFarmingWarning" xml:space="preserve"><value>XA Database не загружен. Фарм можно продолжить, но записанные количества в хранилищах недоступны. Загрузите его перед покупками.</value></data>
 </root>

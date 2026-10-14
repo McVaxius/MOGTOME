@@ -32,8 +32,23 @@ public class DutyTrackerService
         state.DutyCounter = config.DutyCounter;
         state.CalculateTimeouts(2.0f);
 
-        if (state.NextResetTime == null)
-            CalculateNextResetTime();
+        // Check the persisted account boundary before scheduling the next one.
+        // A restart after 07:00 must not carry yesterday's counter into today.
+        CalculateNextResetTime();
+        var now = DateTime.UtcNow;
+        var lastResetBoundary = state.NextResetTime!.Value.AddDays(-1);
+        if (config.LastDailyDecuReset is { } lastReset && lastReset.ToUniversalTime() < lastResetBoundary)
+        {
+            state.NextResetTime = lastResetBoundary;
+            CheckDailyReset();
+        }
+        else if (!config.LastDailyDecuReset.HasValue)
+        {
+            // Old configurations have no date for their manually editable counter.
+            // Preserve it once and establish the existing timestamp for future resets.
+            config.LastDailyDecuReset = now;
+            SaveCurrentAccount("initial daily-reset baseline");
+        }
 
         log.Information($"[MOGTOME][DutyTracker] Active account configuration applied: Prae counter={state.DutyCounter}, threshold={config.PraetoriumThreshold}, maxRuns={config.MaxRuns}");
     }
@@ -180,7 +195,7 @@ public class DutyTrackerService
 
     public bool ShouldQuit()
     {
-        return state.DutyCounter >= config.MaxRuns;
+        return state.DutyCounter >= config.MaxRuns && (config.MaxRuns != 0 || !config.TomestoneTargetEnabled);
     }
 
     public bool CheckDailyReset()

@@ -21,11 +21,13 @@ internal sealed unsafe class MoogleShopGameAdapter
     private readonly HashSet<string> cancelMenus = [];
     private readonly HashSet<uint> tomestones = [];
     internal IReadOnlyList<MoogleShopOffer> Catalog { get; private set; } = [];
+    internal uint CurrentTomestoneId { get; private set; }
     internal MoogleShopGameAdapter(Plugin plugin) => interactions = new(plugin);
 
     internal void LoadCatalog()
     {
         Catalog = [];
+        CurrentTomestoneId = 0;
         tomestones.Clear(); npcIds.Clear(); exchangeMenus.Clear(); cancelMenus.Clear();
         foreach (var text in Plugin.DataManager.GetExcelSheet<Addon>(ClientLanguage.English))
             if (GameText.Normalize(text.Text.ToString()) == "Cancel")
@@ -78,6 +80,7 @@ internal sealed unsafe class MoogleShopGameAdapter
             .GroupBy(s => s.Name.ToString())
             .SelectMany(g => g.Any(s => s.RequiredFestival.RowId != 0) ? g.Where(s => s.RequiredFestival.RowId != 0) : g);
         var offers = new List<MoogleShopOffer>();
+        var newestTomestones = new HashSet<uint>();
         foreach (var identity in eligible)
         {
             var shop = Plugin.DataManager.GetExcelSheet<SpecialShop>().GetRow(identity.RowId);
@@ -86,11 +89,17 @@ internal sealed unsafe class MoogleShopGameAdapter
                 var offer = MoogleShopMath.ReadOffer(shop.RowId, shop.Name.ToString(),
                     row.ReceiveItems.Select(r => (r.Item.RowId, r.ReceiveCount, r.ReceiveHq)),
                     row.ItemCosts.Select(c => (c.ItemCost.RowId, c.CurrencyCost, (uint)c.CollectabilityCost, c.CostType)), tomestones);
-                if (offer != null) offers.Add(offer with { Gate = ShopOfferEligibility.ReadGate(shop, row) });
+                if (offer != null)
+                {
+                    offers.Add(offer with { Gate = ShopOfferEligibility.ReadGate(shop, row) });
+                    if (identity.Name.ToString() == "Newest Irregular Tomestone Exchange")
+                        newestTomestones.Add(offer.TomestoneId);
+                }
             }
         }
         var pvpItems = ShopMissingSelection.ReadPvpItems();
         Catalog = offers.Select(o => o with { MissingKind = ShopMissingSelection.ReadKind(o.ItemId, pvpItems) }).ToArray();
+        CurrentTomestoneId = newestTomestones.Count == 1 ? newestTomestones.Single() : 0;
         Plugin.Log.Information("[MOGTOME][Shop] catalog offers={Offers}; shops={Shops}; tomestones={Currencies}; traders={Traders}; cancelLabels={CancelLabels}; exchangeLabels={ExchangeLabels}; festivals={Festivals}",
             Catalog.Count, string.Join(',', Catalog.Select(o => o.ShopId).Distinct()),
             string.Join(',', Catalog.Select(o => o.TomestoneId).Distinct()), npcIds.Count, cancelMenus.Count, string.Join(" | ", exchangeMenus),

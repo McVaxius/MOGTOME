@@ -25,6 +25,9 @@ public class StatsWindow : Window, IDisposable
     private MainTab currentMainTab = MainTab.Summary;
     private DetailedSubTab currentDetailedTab = DetailedSubTab.JobPerformance;
     private DateTime lastRefresh = DateTime.MinValue;
+    private int recentRunsPage;
+    private string recentRunsAccount = string.Empty;
+    private const int RecentRunsPageSize = 50;
     private const int REFRESH_INTERVAL_SECONDS = 10;
 
     public StatsWindow(Plugin plugin)
@@ -213,7 +216,7 @@ public class StatsWindow : Window, IDisposable
             ImGui.PushTextWrapPos(0);
             AethertekUI.MaterialText.Text(Ui.T("Stats_TotalRuns", config.TotalPraes + config.TotalDecus));
             AethertekUI.MaterialText.Text(Ui.T("Stats_TotalMogtomes", config.TotalMogtomesEarned));
-            AethertekUI.MaterialText.Text(Ui.T("Stats_CurrentDailyCounter", state.DutyCounter));
+            AethertekUI.MaterialText.Text(Ui.T("Stats_PraetoriumDailyCounter", state.DutyCounter));
             AethertekUI.MaterialText.Text(Ui.T("Stats_DailyDecumanaBest", state.DecumanaCounter, config.AllTimeMaxDailyDecu));
             
             // Reset time display
@@ -680,7 +683,7 @@ public class StatsWindow : Window, IDisposable
 
     private void DrawRecentRuns()
     {
-        UiLayout.Wrapped(Ui.T("Stats_RecentRunsLast"));
+        UiLayout.Wrapped(Ui.T("Stats_RecentRuns"));
         ImGui.Separator();
         
         // Auto-refresh every 10 seconds if window is open
@@ -698,13 +701,31 @@ public class StatsWindow : Window, IDisposable
             }
         }
         
-        if (!plugin.Configuration.EnableDetailedTracking || plugin.RunHistoryService.RunHistory.Count == 0)
+        var recentRuns = plugin.RunHistoryService.GetRecentRuns();
+        if (recentRuns.Count == 0)
         {
             UiLayout.TextDisabled(Ui.T("Stats_NoRunDataAvailableEnableDetailedTracking"));
             return;
         }
 
-        var recentRuns = plugin.RunHistoryService.GetRecentRuns(25);
+        var account = plugin.ConfigManager.CurrentAccountId;
+        if (recentRunsAccount != account)
+        {
+            recentRunsAccount = account;
+            recentRunsPage = 0;
+        }
+        var pageCount = (recentRuns.Count + RecentRunsPageSize - 1) / RecentRunsPageSize;
+        recentRunsPage = Math.Clamp(recentRunsPage, 0, pageCount - 1);
+        ImGui.BeginDisabled(recentRunsPage == 0);
+        if (UiLayout.Button(Ui.T("Config_Back") + "###HistoryBack")) recentRunsPage--;
+        ImGui.EndDisabled();
+        UiLayout.SameLineIfFits(AethertekUI.MaterialText.Measure(Ui.T("Config_Next")).X + ImGui.GetStyle().FramePadding.X * 2);
+        ImGui.BeginDisabled(recentRunsPage >= pageCount - 1);
+        if (UiLayout.Button(Ui.T("Config_Next") + "###HistoryNext")) recentRunsPage++;
+        ImGui.EndDisabled();
+        UiLayout.Wrapped(Ui.T("Stats_HistoryPage", recentRunsPage + 1, pageCount, recentRuns.Count));
+        if (ImGui.IsItemHovered()) UiLayout.SetTooltip(Ui.T("Stats_HistoryScope"));
+        var pageRuns = recentRuns.Skip(recentRunsPage * RecentRunsPageSize).Take(RecentRunsPageSize).ToList();
         var scale = AethertekUI.MaterialTheme.Metrics.Scale;
         var captions = new[] { Ui.T("Stats_DateTime"), Ui.T("Config_Duty"), Ui.T("Stats_Duration"),
             Ui.T("Config_Party"), Ui.T("Stats_Deaths2"), Ui.T("Stats_Status") };
@@ -712,7 +733,7 @@ public class StatsWindow : Window, IDisposable
         var padding = 2 * scale;
         for (var column = 0; column < captions.Length; column++)
             widths[column] = MathF.Ceiling(Math.Max(widths[column], AethertekUI.MaterialText.Measure(captions[column]).X + padding));
-        foreach (var run in recentRuns)
+        foreach (var run in pageRuns)
         {
             var members = plugin.RunHistoryService.GetPartyMembersForRun(run);
             var party = members.Count > 0
@@ -734,7 +755,7 @@ public class StatsWindow : Window, IDisposable
             UiLayout.TableHeadersRow();
             
             // Data rows
-            foreach (var run in recentRuns)
+            foreach (var run in pageRuns)
             {
                 ImGui.TableNextRow();
                 

@@ -1,3 +1,25 @@
+2026-10-14 - Optional XA Database for ordinary farming (I567)
+
+- Allow ordinary MOGTOME farming without XA Database and show a translated warning at Start. Preserve XA Slave requirements, shared button/command/DAD admission, available native tomestone counts, shop validation and independent Blunderville requirements. Setup readiness no longer treats XA Database as mandatory for ordinary farming.
+
+2026-10-14 - Stop rejected duty registrations (I553)
+
+- Stop ordinary farming when its pending registration is rejected by the game's maximum-duty limit or active penalty. Show the full game-language reason and require manual Start instead of repeating registration. Preserve both in-duty backends, unrelated chat, active duties and Blunderville participation.
+
+2026-10-13 - Owned tomestone totals and farming target (I547/I548)
+
+- Show the two latest spendable currencies from the current Moogle exchange sheets, with their real item icons and carried/recorded-storage breakdowns. Extend native titlebar balances and keep Blunderville MGF confined to its own window. Refresh display quantities on the existing service cadence.
+- Add a default-off account target for total current-event tomestones owned, including recorded storage. Check before farming registration and after confirmed return; an enabled target with a zero run limit farms toward that target alone. Preserve active duties, manual Stop and the configured completion command; ordinary farming does not start shopping. Unreadable target quantities stop visibly outside the duty.
+
+2026-10-13 - Recorded run history and daily counter (I545/I546)
+
+- Show all currently loaded recorded runs in Recent Runs, newest first, with 50 rows per page. Keep existing retention, account/debug filtering and captured row details; recorded history remains visible while future detailed recording is off. Label daily Praetorium progress separately from recorded history.
+- Apply a missed 07:00 UTC reset after restart using the existing account reset timestamp. Preserve a legacy counter with no timestamp once, then track future reset boundaries. Keep completion/exit guards and manual counter controls.
+
+2026-10-13 - Wait for Blunderville NPC loading (I551)
+
+- Wait within the existing interaction deadline when a required NPC has not loaded yet, instead of stopping on the first missing object-table entry. Preserve return counting, Stop, interaction ownership and purchase checks.
+
 2026-10-11 - Culture-safe external settings and history (I538)
 
 - Read the existing ISO run-history timestamps with invariant culture and preserve their UTC kind when loading SQLite records. Keep existing account history and provider-specific BMR number formats.

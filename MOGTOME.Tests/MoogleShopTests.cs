@@ -9,6 +9,46 @@ namespace MOGTOME.Tests;
 public sealed class MoogleShopTests
 {
     [Fact]
+    public void TomestoneTotalsReplaceLiveBagsAndIncludeBothRecordedSaddlebagPairsAndRemoteStock()
+    {
+        var recorded = new AethertekUI.Dalamud.XaItemStock(new Dictionary<string, int>
+        {
+            ["Inventory 1"] = 20, ["Saddlebag 1"] = 3, ["Saddlebag 2"] = 4,
+            ["Premium Saddlebag 1"] = 5, ["Premium Saddlebag 2"] = 6,
+        }, 7);
+        var live = new Dictionary<string, int> { ["Inventory 1"] = 2, ["Inventory 2"] = 0,
+            ["Inventory 3"] = 0, ["Inventory 4"] = 0, ["Saddlebag 1"] = 0, ["Saddlebag 2"] = 1 };
+        var balance = MoogleTomestoneBalance.Read(51750, live, recorded);
+        Assert.Equal(2, balance.Carried);
+        Assert.Equal(12, balance.Saddlebags);
+        Assert.Equal(7, balance.RetainerStorage);
+        Assert.Equal(21, balance.Total);
+        Assert.Equal(19, balance.Stored);
+        Assert.Equal(0, balance.Other);
+        Assert.Null(MoogleTomestoneBalance.Unavailable(51750).Total);
+    }
+
+    [Fact]
+    public void OwnedTargetSettingsDefaultOffAndPersistSeparatelyFromBlundervilleAndShopSelections()
+    {
+        var legacy = JsonSerializer.Deserialize<Configuration>("{\"DutyCounter\":9,\"MaxRuns\":99}")!;
+        Assert.False(legacy.TomestoneTargetEnabled);
+        Assert.Equal(1000, legacy.TomestoneTarget);
+        legacy.TomestoneTargetEnabled = true;
+        legacy.TomestoneTarget = 1234;
+        legacy.Blunderville.WalletTargetEnabled = true;
+        legacy.Blunderville.WalletTarget = 5678;
+        legacy.MoogleShop.PurchaseTargets[27936] = 1;
+        var saved = JsonSerializer.Deserialize<Configuration>(JsonSerializer.Serialize(legacy))!;
+        Assert.True(saved.TomestoneTargetEnabled);
+        Assert.Equal(1234, saved.TomestoneTarget);
+        Assert.Equal(5678, saved.Blunderville.WalletTarget);
+        Assert.Equal(1, saved.MoogleShop.PurchaseTargets[27936]);
+        Assert.Equal(9, saved.DutyCounter);
+        Assert.Equal(99, saved.MaxRuns);
+    }
+
+    [Fact]
     public void StorageTotalsSuppressSatisfiedPurchasesAndLiveArmouryReceiptCompletesTheRemainingDeficit()
     {
         var stored = new AethertekUI.Dalamud.XaItemStock(new Dictionary<string, int>

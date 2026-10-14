@@ -2233,4 +2233,28 @@ DictionaryPathsとPathSelectionsByPathを比較します。
   <data name="Ui_TitlebarBuying" xml:space="preserve"><value>購入中</value></data>
   <data name="Ui_TitlebarFarming" xml:space="preserve"><value>周回中</value></data>
   <data name="Ui_TitlebarBlocked" xml:space="preserve"><value>進行不可</value></data>
+  <data name="Stats_PraetoriumDailyCounter" xml:space="preserve"><value>本日の魔導城プラエトリウム：{0}</value></data>
+  <data name="Stats_HistoryPage" xml:space="preserve"><value>{0}/{1} ページ · 記録済み {2} 回</value></data>
+  <data name="Stats_HistoryScope" xml:space="preserve"><value>このアカウントの記録を新しい順に表示します。詳細記録の設定は今後の記録に適用され、本日の魔導城プラエトリウムの回数は別に集計されます。</value></data>
+  <data name="Tomes_Heading" xml:space="preserve"><value>所持モグコレトークン</value></data>
+  <data name="Tomes_Owned" xml:space="preserve"><value>所持合計</value></data>
+  <data name="Tomes_Carried" xml:space="preserve"><value>所持品</value></data>
+  <data name="Tomes_Storage" xml:space="preserve"><value>保管分</value></data>
+  <data name="Tomes_TitleBalance" xml:space="preserve"><value>{0}：合計 {1}</value></data>
+  <data name="Tomes_TitleBalanceCost" xml:space="preserve"><value>{0}：合計 {1}（所持品 {2}）、必要 {3}</value></data>
+  <data name="Tomes_Target" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="Tomes_Breakdown" xml:space="preserve"><value>{0}
+所持品：{1}
+プレミアムを含むチョコボかばん：{2}
+リテイナーなどの保管分：{3}
+その他の記録済み所持品：{4}
+所持合計：{5}
+保管場所を開いて記録数を更新してください。</value></data>
+  <data name="Tomes_NoData" xml:space="preserve"><value>所持品または交換情報の読み込み中は合計数を取得できません。</value></data>
+  <data name="Config_TomestoneTargetEnabled" xml:space="preserve"><value>今回のトークン所持数が目標に達したら停止</value></data>
+  <data name="Config_TomestoneTarget" xml:space="preserve"><value>所持数目標</value></data>
+  <data name="Config_TomestoneTargetHelp" xml:space="preserve"><value>今回のイベントの所持合計です。記録済み保管分も含みます。申請前とコンテンツ退出後に確認します。周回制限を0にするとこの目標だけで周回します。達成後は設定済みの終了コマンドを実行します。</value></data>
+  <data name="Engine_TomestoneTotalUnavailable" xml:space="preserve"><value>今回のトークン合計数を取得できないため周回を停止しました。所持品と交換情報が利用可能になってから再度開始してください。</value></data>
+  <data name="Engine_TomestoneTargetReached" xml:space="preserve"><value>トークン目標達成：所持 {0}/{1}（{2}）。</value></data>
+  <data name="Plugin_XaDatabaseFarmingWarning" xml:space="preserve"><value>XA Database が読み込まれていません。周回は続行できますが、記録済みの保管数は利用できません。購入前に読み込んでください。</value></data>
 </root>

@@ -2405,4 +2405,28 @@ AutoDuty को मैन्युअल रूप से चालू या �
   <data name="Ui_TitlebarBuying" xml:space="preserve"><value>खरीद जारी</value></data>
   <data name="Ui_TitlebarFarming" xml:space="preserve"><value>फ़ार्मिंग</value></data>
   <data name="Ui_TitlebarBlocked" xml:space="preserve"><value>अवरुद्ध</value></data>
+  <data name="Stats_PraetoriumDailyCounter" xml:space="preserve"><value>आज के Praetorium रन: {0}</value></data>
+  <data name="Stats_HistoryPage" xml:space="preserve"><value>पृष्ठ {0}/{1} · {2} दर्ज रन</value></data>
+  <data name="Stats_HistoryScope" xml:space="preserve"><value>इस खाते के दर्ज रन, नए से पुराने क्रम में। विस्तृत रिकॉर्डिंग आगे के रिकॉर्ड पर लागू होती है; दैनिक Praetorium प्रगति अलग से गिनी जाती है।</value></data>
+  <data name="Tomes_Heading" xml:space="preserve"><value>आपके पास मौजूद tomestone</value></data>
+  <data name="Tomes_Owned" xml:space="preserve"><value>कुल</value></data>
+  <data name="Tomes_Carried" xml:space="preserve"><value>साथ में</value></data>
+  <data name="Tomes_Storage" xml:space="preserve"><value>भंडारण</value></data>
+  <data name="Tomes_TitleBalance" xml:space="preserve"><value>{0}: कुल {1}</value></data>
+  <data name="Tomes_TitleBalanceCost" xml:space="preserve"><value>{0}: कुल {1} (साथ में {2}), चाहिए {3}</value></data>
+  <data name="Tomes_Target" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="Tomes_Breakdown" xml:space="preserve"><value>{0}
+साथ में: {1}
+प्रीमियम सहित chocobo बैग: {2}
+Retainer और अन्य भंडारण: {3}
+अन्य दर्ज सामान: {4}
+कुल मौजूद: {5}
+दर्ज मात्रा अपडेट करने के लिए भंडारण खोलें।</value></data>
+  <data name="Tomes_NoData" xml:space="preserve"><value>सामान या विनिमय डेटा लोड होने के दौरान कुल मात्रा उपलब्ध नहीं है।</value></data>
+  <data name="Config_TomestoneTargetEnabled" xml:space="preserve"><value>मौजूदा इवेंट के tomestone लक्ष्य पर रोकें</value></data>
+  <data name="Config_TomestoneTarget" xml:space="preserve"><value>कुल लक्ष्य</value></data>
+  <data name="Config_TomestoneTargetHelp" xml:space="preserve"><value>मौजूदा इवेंट की कुल मौजूद मात्रा, दर्ज भंडारण सहित। पंजीकरण से पहले और ड्यूटी के बाद जाँच होती है। केवल इस लक्ष्य के लिए रन सीमा 0 रखें। पूरा होने पर निर्धारित समापन कमांड चलती है।</value></data>
+  <data name="Engine_TomestoneTotalUnavailable" xml:space="preserve"><value>मौजूदा tomestone की कुल मात्रा उपलब्ध नहीं है। फ़ार्मिंग रोक दी गई; सामान और विनिमय डेटा तैयार होने पर फिर शुरू करें।</value></data>
+  <data name="Engine_TomestoneTargetReached" xml:space="preserve"><value>Tomestone लक्ष्य पूरा: कुल {0}/{1} ({2})।</value></data>
+  <data name="Plugin_XaDatabaseFarmingWarning" xml:space="preserve"><value>XA Database लोड नहीं है। फार्मिंग जारी रह सकती है; दर्ज किए गए भंडारण की गिनती उपलब्ध नहीं है। खरीदारी से पहले इसे लोड करें।</value></data>
 </root>

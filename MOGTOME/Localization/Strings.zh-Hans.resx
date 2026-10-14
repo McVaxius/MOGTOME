@@ -2239,4 +2239,28 @@ Path: {0}
   <data name="Ui_TitlebarBuying" xml:space="preserve"><value>购买中</value></data>
   <data name="Ui_TitlebarFarming" xml:space="preserve"><value>刷取中</value></data>
   <data name="Ui_TitlebarBlocked" xml:space="preserve"><value>受阻</value></data>
+  <data name="Stats_PraetoriumDailyCounter" xml:space="preserve"><value>今日天幕魔导城次数：{0}</value></data>
+  <data name="Stats_HistoryPage" xml:space="preserve"><value>第 {0}/{1} 页 · 已记录 {2} 次</value></data>
+  <data name="Stats_HistoryScope" xml:space="preserve"><value>此账号的记录按时间从新到旧显示。详细记录设置影响今后的记录；每日天幕魔导城进度单独统计。</value></data>
+  <data name="Tomes_Heading" xml:space="preserve"><value>持有的魔典神石</value></data>
+  <data name="Tomes_Owned" xml:space="preserve"><value>持有总量</value></data>
+  <data name="Tomes_Carried" xml:space="preserve"><value>随身</value></data>
+  <data name="Tomes_Storage" xml:space="preserve"><value>存储</value></data>
+  <data name="Tomes_TitleBalance" xml:space="preserve"><value>{0}：持有 {1}</value></data>
+  <data name="Tomes_TitleBalanceCost" xml:space="preserve"><value>{0}：持有 {1}（随身 {2}），需要 {3}</value></data>
+  <data name="Tomes_Target" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="Tomes_Breakdown" xml:space="preserve"><value>{0}
+随身：{1}
+陆行鸟鞍囊（含高级）：{2}
+雇员及其他存储：{3}
+其他已记录库存：{4}
+持有总量：{5}
+打开存储位置以更新记录数量。</value></data>
+  <data name="Tomes_NoData" xml:space="preserve"><value>背包或兑换数据加载时无法读取神石总量。</value></data>
+  <data name="Config_TomestoneTargetEnabled" xml:space="preserve"><value>达到本期神石持有目标时停止</value></data>
+  <data name="Config_TomestoneTarget" xml:space="preserve"><value>持有目标</value></data>
+  <data name="Config_TomestoneTargetHelp" xml:space="preserve"><value>本期活动的持有总量，包含已记录的存储。报名之前及退出副本后检查。将次数限制设为0即可仅使用此目标。完成后执行已配置的结束命令。</value></data>
+  <data name="Engine_TomestoneTotalUnavailable" xml:space="preserve"><value>无法读取本期神石总量，已停止刷取。背包和兑换数据就绪后请重新开始。</value></data>
+  <data name="Engine_TomestoneTargetReached" xml:space="preserve"><value>已达神石目标：持有 {0}/{1}（{2}）。</value></data>
+  <data name="Plugin_XaDatabaseFarmingWarning" xml:space="preserve"><value>未加载 XA Database。仍可继续刷本，但无法使用已记录的仓储数量。购买前请先加载。</value></data>
 </root>

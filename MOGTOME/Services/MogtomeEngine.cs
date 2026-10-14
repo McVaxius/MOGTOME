@@ -52,6 +52,8 @@ public class MogtomeEngine
     private readonly IClientState clientState;
     private readonly ICommandManager commandManager;
     private readonly Action cancelQueuedStart;
+    private readonly Func<bool> farmingEligibility;
+    internal Func<(uint ItemId, int? Total)>? ReadCurrentTomestones { get; set; }
     private readonly PraetoriumFirstRoomSkipService firstRoomSkip;
     private readonly DutyStartupService dutyStartup;
     private bool firstRoomSkipAttempted;
@@ -175,6 +177,8 @@ public class MogtomeEngine
         this.clientState = clientState;
         this.commandManager = commandManager;
         this.cancelQueuedStart = cancelQueuedStart;
+        farmingEligibility = () => !config.TomestoneTargetEnabled || !TryHandleFarmingLimit();
+        dutyQueue.FarmingEligibility = farmingEligibility;
         var adsDutyIpcService = new AdsDutyIpcService(Plugin.PluginInterface, log);
         rotationService.SetAdsDutyIpcService(adsDutyIpcService);
         dutyStartup = new DutyStartupService(
@@ -219,6 +223,8 @@ public class MogtomeEngine
         firstRoomSkip.Dispose();
         Plugin.DutyStateService.DutyCompleted -= OnDutyCompleted;
         Plugin.DutyStateService.DutyStarted -= OnDutyStarted;
+        if (ReferenceEquals(dutyQueue.FarmingEligibility, farmingEligibility))
+            dutyQueue.FarmingEligibility = null;
     }
 
     private void OnDutyStarted(Dalamud.Game.DutyState.IDutyStateEventArgs args)
@@ -304,12 +310,19 @@ public class MogtomeEngine
             return;
         }
 
-        var missingPlugins = GameHelpers.MissingXaDependencies();
+        var missingPlugins = GameHelpers.MissingXaDependencies(requireDatabase: false);
         if (missingPlugins.Length > 0)
         {
             RecordStopReason(Ui.M("Plugin_RequiredXaPlugins", missingPlugins));
             log.Warning("[MOGTOME][Engine] Start rejected: {Reason}", Status.English);
             return;
+        }
+
+        if (!GameHelpers.LoadedXaDependencies().Database)
+        {
+            var warning = Ui.M("Plugin_XaDatabaseFarmingWarning");
+            log.Warning("[MOGTOME][Engine] {Warning}", warning.English);
+            Plugin.ChatGui.Print(warning.RenderGame());
         }
 
         log.Information("[MOGTOME][Engine] Starting MOGTOME engine");
@@ -321,6 +334,8 @@ public class MogtomeEngine
         CurrentState = EngineState.Initializing;
         Status = Ui.M("Engine_Initializing");
 
+        if (config.TomestoneTargetEnabled && !DutyStartupService.IsInDuty() && TryHandleFarmingLimit())
+            return;
         startupTask = StartCoreAsync(currentSession);
     }
 
@@ -489,6 +504,18 @@ public class MogtomeEngine
             log.Error($"[MOGTOME][Engine] Initialization failed: {ex.Message}");
             await GameHelpers.RunOnFrameworkThreadAsync(() => { if (IsCurrentStartup(operation)) StopWithCombatFailure(ex.Message); }).ConfigureAwait(false);
         }
+    }
+
+    internal void HandleRegistrationChatMessage(string messageText)
+    {
+        if (CurrentState != EngineState.Queueing || !state.IsPartyLeader || state.IsInDuty
+            || DutyStartupService.IsInDuty() || !dutyAutomationService.HasPendingQueueRegistration)
+            return;
+
+        // Current LogMessage identities, evaluated in the game client's language.
+        // The existing stop invalidates the owned registration, including either backend.
+        if (GameText.MatchesLogMessage(messageText, 4394) || GameText.MatchesLogMessage(messageText, 7567))
+            StopWithReason((UiText)GameText.Normalize(messageText));
     }
 
     public void Stop(string? reason = null) => StopWithReason(reason == null ? Ui.M("Engine_ManualStop") : (UiText)reason);
@@ -815,9 +842,8 @@ public class MogtomeEngine
                 return;
             }
 
-            if (!inDuty && !state.IsInDuty && dutyTracker.ShouldQuit())
+            if (!inDuty && !state.IsInDuty && TryHandleFarmingLimit())
             {
-                HandleQuit();
                 return;
             }
 
@@ -1223,9 +1249,8 @@ public class MogtomeEngine
 
     private void ContinueAfterConfirmedDutyExit(bool successful)
     {
-        if (dutyTracker.ShouldQuit())
+        if (TryHandleFarmingLimit())
         {
-            HandleQuit();
             return;
         }
         if (successful && StopAfterNextSuccessfulRunArmed)
@@ -2033,6 +2058,7 @@ public class MogtomeEngine
 
     private bool StartQueueAttempt(bool isPrae, bool ignoreCooldown, UiText statusPrefix)
     {
+        if (TryHandleFarmingLimit()) return false;
         var dutyName = Ui.Duty(dutyTracker.ShouldRunPraetorium() ? 1044u : 1048u, dutyTracker.GetCurrentDutyName());
 
         if (dutyAutomationService.IsAdsQueueRetryCooldownActive(out var cooldownRemainingSeconds, out var cooldownReason))
@@ -2238,10 +2264,44 @@ public class MogtomeEngine
         return true;
     }
 
+    private bool TryHandleFarmingLimit()
+    {
+        if (CurrentState is EngineState.Idle or EngineState.Stopped or EngineState.Stopping) return true;
+        if (state.IsInDuty || DutyStartupService.IsInDuty()) return false;
+        if (dutyTracker.ShouldQuit())
+        {
+            HandleQuit();
+            return true;
+        }
+        if (!config.TomestoneTargetEnabled) return false;
+        (uint ItemId, int? Total) balance;
+        try { balance = ReadCurrentTomestones?.Invoke() ?? (0u, (int?)null); }
+        catch (Exception ex)
+        {
+            log.Warning(ex, "[MOGTOME][Engine] Current tomestone total could not be read");
+            StopWithReason(Ui.M("Engine_TomestoneTotalUnavailable"));
+            return true;
+        }
+        if (balance.ItemId == 0 || !balance.Total.HasValue || balance.Total.Value < 0)
+        {
+            StopWithReason(Ui.M("Engine_TomestoneTotalUnavailable"));
+            return true;
+        }
+        var target = Math.Max(1, config.TomestoneTarget);
+        if (balance.Total.Value < target) return false;
+        FinishFarming(Ui.M("Engine_TomestoneTargetReached", balance.Total.Value, target, Ui.Item(balance.ItemId)));
+        return true;
+    }
+
     private void HandleQuit()
     {
         log.Information($"[MOGTOME][Engine] Quit condition reached: {state.DutyCounter} runs completed");
-        StopWithReason(Ui.M("Engine_PraetoriumDailyLimitReached", state.DutyCounter, config.MaxRuns));
+        FinishFarming(Ui.M("Engine_PraetoriumDailyLimitReached", state.DutyCounter, config.MaxRuns));
+    }
+
+    private void FinishFarming(UiText reason)
+    {
+        StopWithReason(reason);
 
         if (!string.IsNullOrEmpty(config.QuitCommand))
         {

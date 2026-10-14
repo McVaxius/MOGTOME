@@ -377,9 +377,9 @@ public sealed class BlundervilleService : IDisposable
         var npc = game.FindNpc(npcName);
         if (npc == null)
         {
-            Plugin.Log.Warning("[MOGTOME][BV] NPC unavailable: {Npc}; territory={Territory}; marker={Marker}",
+            Plugin.Log.Debug("[MOGTOME][BV] waiting for NPC within the current interaction deadline: {Npc}; territory={Territory}; marker={Marker}",
                 npcName, Plugin.ClientState.TerritoryType, loadMarker);
-            Fail("BV_NpcUnavailable");
+            nextInteraction = DateTime.UtcNow.AddSeconds(3);
             return;
         }
         if (game.ApproachAndInteract(npc, ref ownsMovement))

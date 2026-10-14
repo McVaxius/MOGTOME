@@ -200,6 +200,7 @@ public class MainWindow : Window, IDisposable
             }
         }, minimumHeight: (MogtomePresentation.Compact ? 75 : 112) * scale);
         DrawActions();
+        plugin.Appearance.DrawTomestoneBalances();
         if (engine == null) { FinalizePendingWindowPlacement(); return; }
         var width = ImGui.GetContentRegionAvail().X;
         var paired = width >= 780 * scale;

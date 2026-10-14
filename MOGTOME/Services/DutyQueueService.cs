@@ -33,6 +33,7 @@ public class DutyQueueService
     public bool LastQueueBlockedForPartySize { get; private set; }
     public bool LastQueueBlockedForPartyDuty { get; private set; }
     public int VisiblePartyMemberCount { get; private set; }
+    internal Func<bool>? FarmingEligibility { get; set; }
 
     private enum RepairCancelStage
     {
@@ -52,7 +53,8 @@ public class DutyQueueService
         this.condition = condition;
         this.configManager = configManager;
         dutyAutomationService.QueueEligibility = () =>
-            !state.IsInDuty && state.IsPartyLeader && !state.QueuePausedForRepair && IsLeaderQueueEligible();
+            !state.IsInDuty && state.IsPartyLeader && !state.QueuePausedForRepair && IsLeaderQueueEligible()
+            && FarmingEligibility?.Invoke() != false;
     }
 
     public bool TryQueue(bool isPraetorium)

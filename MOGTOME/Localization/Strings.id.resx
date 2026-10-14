@@ -2389,4 +2389,28 @@ Gunakan /ads mini untuk mengaktifkan atau menonaktifkan AutoDuty secara manual.<
   <data name="Ui_TitlebarBuying" xml:space="preserve"><value>Membeli</value></data>
   <data name="Ui_TitlebarFarming" xml:space="preserve"><value>Farming</value></data>
   <data name="Ui_TitlebarBlocked" xml:space="preserve"><value>Terhambat</value></data>
+  <data name="Stats_PraetoriumDailyCounter" xml:space="preserve"><value>Praetorium hari ini: {0}</value></data>
+  <data name="Stats_HistoryPage" xml:space="preserve"><value>Halaman {0}/{1} · {2} putaran tercatat</value></data>
+  <data name="Stats_HistoryScope" xml:space="preserve"><value>Putaran tercatat untuk akun ini, terbaru lebih dahulu. Pencatatan rinci berlaku untuk catatan berikutnya; progres harian Praetorium dihitung terpisah.</value></data>
+  <data name="Tomes_Heading" xml:space="preserve"><value>Tomestone yang dimiliki</value></data>
+  <data name="Tomes_Owned" xml:space="preserve"><value>Total</value></data>
+  <data name="Tomes_Carried" xml:space="preserve"><value>Di tas</value></data>
+  <data name="Tomes_Storage" xml:space="preserve"><value>Penyimpanan</value></data>
+  <data name="Tomes_TitleBalance" xml:space="preserve"><value>{0}: total {1}</value></data>
+  <data name="Tomes_TitleBalanceCost" xml:space="preserve"><value>{0}: total {1} ({2} di tas), perlu {3}</value></data>
+  <data name="Tomes_Target" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="Tomes_Breakdown" xml:space="preserve"><value>{0}
+Di tas: {1}
+Tas chocobo termasuk premium: {2}
+Retainer dan penyimpanan lain: {3}
+Inventaris tercatat lainnya: {4}
+Total dimiliki: {5}
+Buka penyimpanan untuk memperbarui jumlah tercatat.</value></data>
+  <data name="Tomes_NoData" xml:space="preserve"><value>Total belum tersedia saat data inventaris atau pertukaran dimuat.</value></data>
+  <data name="Config_TomestoneTargetEnabled" xml:space="preserve"><value>Berhenti pada target tomestone event saat ini</value></data>
+  <data name="Config_TomestoneTarget" xml:space="preserve"><value>Target total</value></data>
+  <data name="Config_TomestoneTargetHelp" xml:space="preserve"><value>Total yang dimiliki untuk event saat ini, termasuk penyimpanan tercatat. Diperiksa sebelum pendaftaran dan setelah tugas. Batas putaran 0 hanya memakai target ini. Setelah selesai, perintah akhir yang dikonfigurasi dijalankan.</value></data>
+  <data name="Engine_TomestoneTotalUnavailable" xml:space="preserve"><value>Total tomestone saat ini tidak tersedia. Otomasi berhenti; mulai lagi setelah data inventaris dan pertukaran siap.</value></data>
+  <data name="Engine_TomestoneTargetReached" xml:space="preserve"><value>Target tomestone tercapai: total {0}/{1} ({2}).</value></data>
+  <data name="Plugin_XaDatabaseFarmingWarning" xml:space="preserve"><value>XA Database belum dimuat. Farming dapat berlanjut; jumlah penyimpanan tercatat tidak tersedia. Muat sebelum membeli.</value></data>
 </root>

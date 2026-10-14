@@ -2389,4 +2389,28 @@ Use /ads mini para ativar ou desativar AutoDuty manualmente.</value></data>
   <data name="Ui_TitlebarBuying" xml:space="preserve"><value>Comprando</value></data>
   <data name="Ui_TitlebarFarming" xml:space="preserve"><value>Farmando</value></data>
   <data name="Ui_TitlebarBlocked" xml:space="preserve"><value>Bloqueado</value></data>
+  <data name="Stats_PraetoriumDailyCounter" xml:space="preserve"><value>Praetorium hoje: {0}</value></data>
+  <data name="Stats_HistoryPage" xml:space="preserve"><value>Página {0}/{1} · {2} execuções registradas</value></data>
+  <data name="Stats_HistoryScope" xml:space="preserve"><value>Execuções registradas desta conta, da mais recente para a mais antiga. O registro detalhado controla registros futuros; o progresso diário de Praetorium é contado separadamente.</value></data>
+  <data name="Tomes_Heading" xml:space="preserve"><value>Tomestones possuídos</value></data>
+  <data name="Tomes_Owned" xml:space="preserve"><value>Total</value></data>
+  <data name="Tomes_Carried" xml:space="preserve"><value>Nas bolsas</value></data>
+  <data name="Tomes_Storage" xml:space="preserve"><value>Armazenados</value></data>
+  <data name="Tomes_TitleBalance" xml:space="preserve"><value>{0}: {1} possuídos</value></data>
+  <data name="Tomes_TitleBalanceCost" xml:space="preserve"><value>{0}: {1} possuídos ({2} nas bolsas), precisa de {3}</value></data>
+  <data name="Tomes_Target" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="Tomes_Breakdown" xml:space="preserve"><value>{0}
+Nas bolsas: {1}
+Alforjes, incluindo premium: {2}
+Retainers e outros depósitos: {3}
+Outro inventário registrado: {4}
+Total possuído: {5}
+Abra os depósitos para atualizar as quantidades registradas.</value></data>
+  <data name="Tomes_NoData" xml:space="preserve"><value>Totais indisponíveis enquanto os dados de inventário ou troca estão carregando.</value></data>
+  <data name="Config_TomestoneTargetEnabled" xml:space="preserve"><value>Parar no total desejado de tomestones atuais</value></data>
+  <data name="Config_TomestoneTarget" xml:space="preserve"><value>Total desejado</value></data>
+  <data name="Config_TomestoneTargetHelp" xml:space="preserve"><value>Total possuído do evento atual, incluindo depósitos registrados. Verificado antes da inscrição e após o conteúdo. Limite de execuções 0 usa apenas esta meta. Ao concluir, executa o comando final configurado.</value></data>
+  <data name="Engine_TomestoneTotalUnavailable" xml:space="preserve"><value>Total de tomestones atuais indisponível. Automação parada; inicie novamente quando os dados de inventário e troca estiverem prontos.</value></data>
+  <data name="Engine_TomestoneTargetReached" xml:space="preserve"><value>Meta de tomestones atingida: {0}/{1} possuídos ({2}).</value></data>
+  <data name="Plugin_XaDatabaseFarmingWarning" xml:space="preserve"><value>XA Database não está carregado. O farm pode continuar; as quantidades registradas no armazenamento estão indisponíveis. Carregue antes de comprar.</value></data>
 </root>

@@ -53,9 +53,10 @@ public static class GameHelpers
         catch { return default; }
     }
 
-    internal static string MissingXaDependencies()
+    internal static string MissingXaDependencies(bool requireDatabase = true)
     {
         var (database, slave) = LoadedXaDependencies();
+        database |= !requireDatabase;
         return database ? slave ? string.Empty : "XA Slave" : slave ? "XA Database" : "XA Database, XA Slave";
     }
 

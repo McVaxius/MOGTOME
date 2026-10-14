@@ -34,7 +34,7 @@ public sealed class MogtomeDadIpcService : IDisposable
     public MogtomeDadIpcService(IDalamudPluginInterface pluginInterface, Plugin plugin)
     {
         this.plugin = plugin;
-        Register(pluginInterface.GetIpcProvider<bool>(IsReadyName), () => plugin.Engine != null && GameHelpers.MissingXaDependencies().Length == 0);
+        Register(pluginInterface.GetIpcProvider<bool>(IsReadyName), () => plugin.Engine != null && GameHelpers.MissingXaDependencies(requireDatabase: false).Length == 0);
         Register(pluginInterface.GetIpcProvider<string, string>(StartRunName), StartRun);
         Register(pluginInterface.GetIpcProvider<string>(GetRunStatusName), GetRunStatus);
         Register(pluginInterface.GetIpcProvider<string, string>(StopRunName), StopRun);
@@ -113,7 +113,7 @@ public sealed class MogtomeDadIpcService : IDisposable
             return Serialize(Reject("MOGTOME is already running outside DAD ownership."));
 
         var isLeader = string.Equals(request.Role, "QueueLeader", StringComparison.OrdinalIgnoreCase);
-        var missingPlugins = GameHelpers.MissingXaDependencies();
+        var missingPlugins = GameHelpers.MissingXaDependencies(requireDatabase: false);
         if (missingPlugins.Length > 0)
             return Serialize(Reject(Localization.Ui.M("Plugin_RequiredXaPlugins", missingPlugins).English));
         plugin.Configuration.IsPartyLeader = isLeader;
@@ -194,7 +194,7 @@ public sealed class MogtomeDadIpcService : IDisposable
     private MogtomeDadRunStatus Reject(string reason)
         => new()
         {
-            Ready = plugin.Engine != null && GameHelpers.MissingXaDependencies().Length == 0,
+            Ready = plugin.Engine != null && GameHelpers.MissingXaDependencies(requireDatabase: false).Length == 0,
             Accepted = false,
             Summary = reason,
             FailureReason = reason,

@@ -2233,4 +2233,28 @@ Mit /ads mini kannst du AutoDuty manuell aktivieren oder deaktivieren.</value></
   <data name="Ui_TitlebarBuying" xml:space="preserve"><value>Kaufen</value></data>
   <data name="Ui_TitlebarFarming" xml:space="preserve"><value>Farmen</value></data>
   <data name="Ui_TitlebarBlocked" xml:space="preserve"><value>Blockiert</value></data>
+  <data name="Stats_PraetoriumDailyCounter" xml:space="preserve"><value>Prätorium heute: {0}</value></data>
+  <data name="Stats_HistoryPage" xml:space="preserve"><value>Seite {0}/{1} · {2} aufgezeichnete Läufe</value></data>
+  <data name="Stats_HistoryScope" xml:space="preserve"><value>Aufgezeichnete Läufe dieses Kontos, neueste zuerst. Die Detailaufzeichnung betrifft künftige Einträge; der tägliche Prätorium-Zähler ist separat.</value></data>
+  <data name="Tomes_Heading" xml:space="preserve"><value>Eigene Mogry-Steine</value></data>
+  <data name="Tomes_Owned" xml:space="preserve"><value>Gesamt</value></data>
+  <data name="Tomes_Carried" xml:space="preserve"><value>Im Inventar</value></data>
+  <data name="Tomes_Storage" xml:space="preserve"><value>Lager</value></data>
+  <data name="Tomes_TitleBalance" xml:space="preserve"><value>{0}: {1} gesamt</value></data>
+  <data name="Tomes_TitleBalanceCost" xml:space="preserve"><value>{0}: {1} gesamt ({2} im Inventar), benötigt {3}</value></data>
+  <data name="Tomes_Target" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="Tomes_Breakdown" xml:space="preserve"><value>{0}
+Im Inventar: {1}
+Satteltaschen einschließlich Premium: {2}
+Gehilfen und anderes Lager: {3}
+Sonstiges erfasstes Inventar: {4}
+Gesamt: {5}
+Lager öffnen, um erfasste Mengen zu aktualisieren.</value></data>
+  <data name="Tomes_NoData" xml:space="preserve"><value>Steinmengen sind während des Ladens von Inventar oder Tauschdaten nicht verfügbar.</value></data>
+  <data name="Config_TomestoneTargetEnabled" xml:space="preserve"><value>Bei Zielmenge aktueller Mogry-Steine stoppen</value></data>
+  <data name="Config_TomestoneTarget" xml:space="preserve"><value>Bestandsziel</value></data>
+  <data name="Config_TomestoneTargetHelp" xml:space="preserve"><value>Gesamtbestand des aktuellen Ereignisses einschließlich erfasster Lagerbestände. Prüfung vor Anmeldung und nach dem Inhalt. Lauflimit 0 nutzt nur dieses Ziel. Bei Abschluss wird der eingestellte Abschlussbefehl ausgeführt.</value></data>
+  <data name="Engine_TomestoneTotalUnavailable" xml:space="preserve"><value>Aktueller Mogry-Steinbestand nicht verfügbar. Farmen gestoppt; nach Laden der Inventar- und Tauschdaten erneut starten.</value></data>
+  <data name="Engine_TomestoneTargetReached" xml:space="preserve"><value>Mogry-Stein-Ziel erreicht: {0}/{1} gesamt ({2}).</value></data>
+  <data name="Plugin_XaDatabaseFarmingWarning" xml:space="preserve"><value>XA Database ist nicht geladen. Farmen ist weiterhin möglich; gespeicherte Lagerbestände sind nicht verfügbar. Vor dem Einkauf laden.</value></data>
 </root>

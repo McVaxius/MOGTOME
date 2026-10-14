@@ -35,7 +35,10 @@ In ADS mode, a successful AutoDuty disable notice is informational and dismissib
 use the manual **Enable AutoDuty** and **Disable AutoDuty** buttons in `/ads mini`
 to change its loaded state afterward. A Disable retry appears only while it remains loaded.
 
-**XA Database and XA Slave must both be loaded before farming or buying.**
+**Ordinary MOGTOME farming requires XA Slave.** Missing XA Database shows a warning
+and allows farming, including command and DAD starts. Tomestone totals use readable
+native inventory and any available recorded storage; missing records add no quantity.
+**Shopping and Blunderville automation still require both XA Database and XA Slave.**
 Shopping-list editing, CLEAR and Select Missing remain available during duties
 and when these requirements are missing. The notice at the top of either shop
 reminds you to visit recorded storage; **Hide notice** saves for the active
@@ -176,6 +179,12 @@ Choose the combat provider in Settings: BMR or VBM handles attacks and movement;
 4. MOGTOME sends `/xa skipcutscenes on`, then queues, runs duties, repairs, and consumes food automatically
 
 ### Configuration
+
+The MOGTOME window shows the two latest spendable tomestone currencies from the current Moogle exchange sheets. Owned totals include native inventory and recorded storage, with carried and storage quantities shown separately; hover a total for the saddlebag/retainer breakdown. Open those storage locations to refresh their XADB records. Blunderville keeps its own MGF display and settings.
+
+In Settings > Duty, **Stop at owned current-event tomestones** is off by default. Its target applies to total current-event tomestones owned, including recorded storage. MOGTOME checks before registration and after returning from a duty, stopping at either the existing run limit or this target. Set the run limit to 0 while this target is enabled to farm toward the target alone. A met target uses the existing configured finish command; manual Stop cancels farming, and ordinary farming completion does not start shopping. An unreadable current-event currency/quantity stops visibly until manually started again.
+
+Statistics > Detailed > Recent Runs shows all loaded account records, newest first, with Back/Next pages of 50. Existing storage loads up to 1,000 records; the recording and debug-run settings retain their existing behavior. Turning detailed recording off preserves the existing history view. The daily Praetorium counter counts successful clears separately and resets at 07:00 UTC, including a reset missed while the plugin was closed. A legacy counter without a saved reset date is preserved once; future resets use the existing account timestamp.
 
 1. Open config: `/mogtome config`
 2. Complete the per-account **Setup Wizard**. It guides backend, combat provider, required checks, party setup, optional settings, and review.

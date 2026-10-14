@@ -2389,4 +2389,28 @@ AutoDuty'yi elle etkinleştirmek veya devre dışı bırakmak için /ads mini ku
   <data name="Ui_TitlebarBuying" xml:space="preserve"><value>Satın alınıyor</value></data>
   <data name="Ui_TitlebarFarming" xml:space="preserve"><value>Farm yapılıyor</value></data>
   <data name="Ui_TitlebarBlocked" xml:space="preserve"><value>Engellendi</value></data>
+  <data name="Stats_PraetoriumDailyCounter" xml:space="preserve"><value>Bugünkü Praetorium: {0}</value></data>
+  <data name="Stats_HistoryPage" xml:space="preserve"><value>Sayfa {0}/{1} · {2} kayıtlı koşu</value></data>
+  <data name="Stats_HistoryScope" xml:space="preserve"><value>Bu hesabın kayıtlı koşuları, en yeniden başlayarak. Ayrıntılı kayıt ayarı gelecekteki kayıtları etkiler; günlük Praetorium ilerlemesi ayrı sayılır.</value></data>
+  <data name="Tomes_Heading" xml:space="preserve"><value>Sahip olunan tomestone</value></data>
+  <data name="Tomes_Owned" xml:space="preserve"><value>Toplam</value></data>
+  <data name="Tomes_Carried" xml:space="preserve"><value>Çantada</value></data>
+  <data name="Tomes_Storage" xml:space="preserve"><value>Depoda</value></data>
+  <data name="Tomes_TitleBalance" xml:space="preserve"><value>{0}: toplam {1}</value></data>
+  <data name="Tomes_TitleBalanceCost" xml:space="preserve"><value>{0}: toplam {1} ({2} çantada), gereken {3}</value></data>
+  <data name="Tomes_Target" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="Tomes_Breakdown" xml:space="preserve"><value>{0}
+Çantada: {1}
+Premium dahil chocobo çantaları: {2}
+Retainer ve diğer depolar: {3}
+Diğer kayıtlı envanter: {4}
+Sahip olunan toplam: {5}
+Kayıtlı miktarları yenilemek için depoları açın.</value></data>
+  <data name="Tomes_NoData" xml:space="preserve"><value>Envanter veya takas verileri yüklenirken toplamlar kullanılamaz.</value></data>
+  <data name="Config_TomestoneTargetEnabled" xml:space="preserve"><value>Güncel etkinlik tomestone hedefine ulaşınca dur</value></data>
+  <data name="Config_TomestoneTarget" xml:space="preserve"><value>Toplam hedef</value></data>
+  <data name="Config_TomestoneTargetHelp" xml:space="preserve"><value>Güncel etkinlik için sahip olunan toplam, kayıtlı depolar dahil. Kayıttan önce ve görevden sonra kontrol edilir. Yalnızca bu hedef için koşu sınırını 0 yapın. Tamamlanınca ayarlanan bitiş komutu çalışır.</value></data>
+  <data name="Engine_TomestoneTotalUnavailable" xml:space="preserve"><value>Güncel tomestone toplamı okunamıyor. Otomasyon durdu; envanter ve takas verileri hazır olunca yeniden başlatın.</value></data>
+  <data name="Engine_TomestoneTargetReached" xml:space="preserve"><value>Tomestone hedefine ulaşıldı: toplam {0}/{1} ({2}).</value></data>
+  <data name="Plugin_XaDatabaseFarmingWarning" xml:space="preserve"><value>XA Database yüklü değil. Farm devam edebilir; kaydedilmiş depo miktarları kullanılamıyor. Satın almadan önce yükleyin.</value></data>
 </root>

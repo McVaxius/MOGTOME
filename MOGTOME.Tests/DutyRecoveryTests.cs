@@ -3,6 +3,8 @@ using System.Reflection.Emit;
 using System.Globalization;
 using System.Text.Json;
 using System.Runtime.CompilerServices;
+using Dalamud.Game;
+using Dalamud.Game.Text.Evaluator;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Party;
 using Dalamud.Plugin;
@@ -24,6 +26,229 @@ namespace MOGTOME.Tests;
 public sealed class DutyRecoveryTests
 {
     private static readonly AdsHandoffReadinessConditions Ready = new(true, true, true, false, false, false, false);
+
+    [Theory]
+    [InlineData(ClientLanguage.English)]
+    [InlineData(ClientLanguage.French)]
+    [InlineData(ClientLanguage.German)]
+    [InlineData(ClientLanguage.Japanese)]
+    public void DutyLimitAndPenaltyStopOwnedRegistrationWithoutRetryOrCompletion(ClientLanguage client)
+    {
+        foreach (var ads in new[] { false, true })
+        foreach (var row in new uint[] { 4394, 7567 })
+        {
+            var evaluator = new LocalizationTests.SheetEvaluator(client);
+            using var run = new Run(clientLanguage: client, evaluator: evaluator);
+            run.Config.UseAdsExperimental = ads;
+            run.Config.QuitCommand = "/quit-test";
+            run.State.IsPartyLeader = true;
+            var message = evaluator.Text(row);
+            var selected = Enum.Parse(typeof(DutyAutomationService).GetNestedType("SelectedMogtomeDuty", BindingFlags.NonPublic)!, "Praetorium");
+
+            Set(run.Engine, "<CurrentState>k__BackingField", EngineState.Queueing);
+            run.Engine.HandleRegistrationChatMessage(message); // No owned operation.
+            Assert.Equal(EngineState.Queueing, run.Engine.CurrentState);
+            Assert.Equal(0, evaluator.Evaluations);
+            Invoke(run.Automation, "BeginAdsQueueOperation", selected, "The Praetorium");
+            Assert.True(run.Automation.HasPendingQueueRegistration);
+
+            foreach (var ignoredState in new[] { EngineState.Idle, EngineState.WaitingOutsideDuty, EngineState.InDuty })
+            {
+                Set(run.Engine, "<CurrentState>k__BackingField", ignoredState);
+                run.Engine.HandleRegistrationChatMessage(message);
+                Assert.Equal(ignoredState, run.Engine.CurrentState);
+            }
+            Set(run.Engine, "<CurrentState>k__BackingField", EngineState.Queueing);
+            run.State.IsPartyLeader = false;
+            run.Engine.HandleRegistrationChatMessage(message);
+            run.State.IsPartyLeader = true;
+            run.State.IsInDuty = true;
+            run.Engine.HandleRegistrationChatMessage(message);
+            run.State.IsInDuty = false;
+            Assert.Equal(0, evaluator.Evaluations);
+            evaluator.Throw = true;
+            run.Engine.HandleRegistrationChatMessage(message);
+            evaluator.Throw = false;
+            run.Engine.HandleRegistrationChatMessage("Unrelated " + message);
+            run.Engine.HandleRegistrationChatMessage(evaluator.Text(880));
+            Assert.Equal(EngineState.Queueing, run.Engine.CurrentState);
+            Assert.True(run.Automation.HasPendingQueueRegistration);
+
+            run.Engine.HandleRegistrationChatMessage(message);
+            Assert.Equal(EngineState.Idle, run.Engine.CurrentState);
+            Assert.Equal(GameText.Normalize(message), run.Engine.StopReason.English);
+            Assert.False(run.Automation.HasPendingQueueRegistration);
+            Assert.DoesNotContain("/quit-test", run.Commands);
+            Assert.Empty(run.History.RunHistory);
+            var evaluations = evaluator.Evaluations;
+            run.Engine.HandleRegistrationChatMessage(message);
+            Assert.Equal(evaluations, evaluator.Evaluations);
+            run.Pump();
+            Assert.Equal(EngineState.Idle, run.Engine.CurrentState);
+
+            // A subsequent explicit registration owns a fresh operation, not a latched refusal.
+            Set(run.Engine, "<CurrentState>k__BackingField", EngineState.Queueing);
+            Invoke(run.Automation, "BeginAdsQueueOperation", selected, "The Praetorium");
+            Assert.True(run.Automation.HasPendingQueueRegistration);
+            run.Engine.Stop();
+            Assert.False(run.Automation.HasPendingQueueRegistration);
+        }
+    }
+
+    [Theory]
+    [InlineData(false, 9999, 0, 1000, false, false)]
+    [InlineData(true, 0, 0, 999, false, false)]
+    [InlineData(true, 0, 0, 1000, true, true)]
+    [InlineData(true, 2, 2, 0, true, true)]
+    [InlineData(true, 2, 1, 1000, true, true)]
+    [InlineData(true, 2, 1, null, true, false)]
+    public void FarmingLimitsUseFreshOwnedCurrentCurrencyAndEitherEnabledLimit(bool enabled, int limit,
+        int clears, int? owned, bool stopped, bool finished)
+    {
+        using var run = new Run();
+        run.Config.TomestoneTargetEnabled = enabled;
+        run.Config.TomestoneTarget = 1000;
+        run.Config.MaxRuns = limit;
+        run.Config.QuitCommand = "/quit-test";
+        run.State.DutyCounter = clears;
+        Set(run.Engine, "<CurrentState>k__BackingField", EngineState.WaitingOutsideDuty);
+        var reads = 0;
+        run.Engine.ReadCurrentTomestones = () => { reads++; return (51750u, owned); };
+        Assert.Equal(stopped, (bool)Invoke(run.Engine, "TryHandleFarmingLimit")!);
+        Assert.Equal(!stopped, run.Engine.IsRunning);
+        Assert.Equal(finished, run.Commands.Contains("/quit-test"));
+        if (!enabled || clears >= limit && limit > 0) Assert.Equal(0, reads);
+        if (stopped)
+        {
+            Assert.True((bool)Invoke(run.Engine, "TryHandleFarmingLimit")!);
+            Assert.Equal(finished ? 1 : 0, run.Commands.Count(command => command == "/quit-test"));
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void TomestoneTargetDefersInsideAndFinishesOnlyAfterConfirmedReturn(bool leader)
+    {
+        using var run = new Run();
+        run.Config.TomestoneTargetEnabled = true;
+        run.Config.TomestoneTarget = 1000;
+        run.Config.MaxRuns = 0;
+        run.Config.QuitCommand = "/quit-test";
+        run.State.IsPartyLeader = leader;
+        var reads = 0;
+        run.Engine.ReadCurrentTomestones = () => { reads++; return (51750u, 1000); };
+        run.Enter(120);
+        Set(run.Engine, "dutyCompleted", true);
+        Assert.False((bool)Invoke(run.Engine, "TryHandleFarmingLimit")!);
+        Assert.Equal(0, reads);
+        Assert.True(run.Engine.IsRunning);
+        run.CallExit();
+        Assert.Equal(1, reads);
+        Assert.False(run.Engine.IsRunning);
+        Assert.Contains("/quit-test", run.Commands);
+        Assert.Single(run.History.RunHistory);
+        Assert.Equal(1, run.State.DutyCounter);
+        Assert.DoesNotContain(run.Commands, command => command.Contains("buy", StringComparison.OrdinalIgnoreCase)
+            || command.Contains("leaveparty", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void FinalRegistrationEligibilityRechecksTargetAndManualStopDoesNotFinishOrReadIt()
+    {
+        using var run = new Run();
+        run.Config.TomestoneTargetEnabled = true;
+        run.Config.TomestoneTarget = 1000;
+        run.Config.MaxRuns = 0;
+        run.Config.OnlyQueueWithFourPeople = false;
+        run.Config.QuitCommand = "/quit-test";
+        run.State.IsPartyLeader = true;
+        Set(run.Engine, "<CurrentState>k__BackingField", EngineState.WaitingOutsideDuty);
+        var owned = 999;
+        var reads = 0;
+        run.Engine.ReadCurrentTomestones = () => { reads++; return (51750u, owned); };
+        Assert.True(run.Automation.QueueEligibility!());
+        owned = 1000;
+        Assert.False(run.Automation.QueueEligibility!());
+        Assert.Equal(2, reads);
+        Assert.False(run.Engine.IsRunning);
+        Assert.Single(run.Commands, command => command == "/quit-test");
+        run.Commands.Clear();
+        Set(run.Engine, "<CurrentState>k__BackingField", EngineState.WaitingOutsideDuty);
+        run.Engine.Stop();
+        Assert.False(run.Automation.QueueEligibility!());
+        Assert.Equal(2, reads);
+        Assert.DoesNotContain("/quit-test", run.Commands);
+    }
+
+    [Fact]
+    public void RecordedHistoryBeyond25RemainsAvailableWithRecordingOffAndKeepsDebugFiltering()
+    {
+        using var run = new Run();
+        var records = (List<RunRecord>)typeof(RunHistoryService)
+            .GetField("runHistory", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(run.History)!;
+        var start = new DateTime(2026, 10, 12, 8, 0, 0, DateTimeKind.Utc);
+        for (var index = 0; index < 60; index++)
+            records.Add(new RunRecord { Timestamp = start.AddMinutes(index), IsDebugRun = index == 59 });
+        run.Config.EnableDetailedTracking = false;
+        Assert.Equal(59, run.History.GetRecentRuns().Count);
+        Assert.Equal(start.AddMinutes(58), run.History.GetRecentRuns()[0].Timestamp);
+        Assert.Equal(25, run.History.GetRecentRuns(25).Count);
+        Assert.Equal(60, records.Count);
+        run.Config.ShowDebugRuns = true;
+        Assert.Equal(60, run.History.GetRecentRuns().Count);
+        Assert.Equal(start.AddMinutes(59), run.History.GetRecentRuns()[0].Timestamp);
+    }
+
+    [Theory]
+    [InlineData("missed", 0)]
+    [InlineData("current", 99)]
+    [InlineData("legacy", 99)]
+    public void AccountCounterUsesExistingResetTimestampAcrossRestart(string scenario, int expected)
+    {
+        using var run = new Run();
+        var now = DateTime.UtcNow;
+        var boundary = now.Date.AddHours(7);
+        if (now < boundary) boundary = boundary.AddDays(-1);
+        run.Config.DutyCounter = 99;
+        run.Config.LastDailyDecuReset = scenario switch
+        {
+            "missed" => now.AddDays(-2),
+            "current" => boundary,
+            _ => null,
+        };
+        var tracker = new DutyTrackerService(Plugin.Log, run.Config, run.State, run.Manager, run.History);
+        Assert.Equal(expected, run.State.DutyCounter);
+        Assert.Equal(expected, run.Config.DutyCounter);
+        Assert.True(run.State.NextResetTime > now);
+        Assert.NotNull(run.Config.LastDailyDecuReset);
+        Assert.False(tracker.CheckDailyReset());
+        tracker.UpdateConfiguration(run.Config);
+        Assert.Equal(expected, run.State.DutyCounter);
+        Assert.Equal(expected, run.Config.DutyCounter);
+    }
+
+    [Fact]
+    public void DuplicateSuccessfulExitAndStopDoNotAddRunsAndDailyResetAppliesOnce()
+    {
+        using var run = new Run();
+        run.Enter(120, 1044);
+        Set(run.Engine, "dutyCompleted", true);
+        run.CallExit();
+        run.CallExit();
+        run.Engine.Stop();
+        run.CallExit();
+        Assert.Equal(1, run.State.DutyCounter);
+        Assert.Equal(1, run.Config.DutyCounter);
+        Assert.Single(run.History.RunHistory);
+        var tracker = new DutyTrackerService(Plugin.Log, run.Config, run.State, run.Manager, run.History);
+        run.State.NextResetTime = DateTime.UtcNow.AddSeconds(-1);
+        Assert.True(tracker.CheckDailyReset());
+        Assert.False(tracker.CheckDailyReset());
+        Assert.Equal(0, run.State.DutyCounter);
+        Assert.Equal(0, run.Config.DutyCounter);
+        Assert.Single(run.History.RunHistory);
+    }
 
     [Theory]
     [InlineData(5)]
@@ -213,11 +438,15 @@ public sealed class DutyRecoveryTests
         Assert.Empty(run.Commands);
     }
 
-    [Fact]
-    public async Task StopBeforeInitializationCallbackCannotIssueStartupCommands()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task StopBeforeInitializationCallbackCannotIssueStartupCommands(bool databaseLoaded)
     {
         using var run = new Run();
+        run.XaDatabaseLoaded = databaseLoaded;
         run.Engine.Start();
+        Assert.Equal(EngineState.Initializing, run.Engine.CurrentState);
         var pending = (Task)Get(run.Engine, "startupTask")!;
         run.Engine.Stop();
         var commandsAfterStop = run.Commands.ToArray();
@@ -226,6 +455,56 @@ public sealed class DutyRecoveryTests
         Assert.Equal(commandsAfterStop, run.Commands);
         Assert.False(run.Engine.IsRunning);
         Assert.Equal("Manual Stop.", run.Engine.LastStopReason);
+    }
+
+    [Theory]
+    [InlineData("button")]
+    [InlineData("command")]
+    [InlineData("dad")]
+    public async Task OrdinaryStartsWarnWithoutDatabaseAndRetainStopOwnership(string source)
+    {
+        using var run = new Run();
+        run.XaDatabaseLoaded = false;
+        var warning = MOGTOME.Localization.Ui.GameT("Plugin_XaDatabaseFarmingWarning");
+        var plugin = (Plugin)RuntimeHelpers.GetUninitializedObject(typeof(Plugin));
+        Set(plugin, "<Engine>k__BackingField", run.Engine);
+        Set(plugin, "<ConfigManager>k__BackingField", run.Manager);
+        Set(plugin, "<State>k__BackingField", run.State);
+        if (source == "dad")
+        {
+            var dad = (MogtomeDadIpcService)RuntimeHelpers.GetUninitializedObject(typeof(MogtomeDadIpcService));
+            Set(dad, "plugin", plugin);
+            Set(dad, "status", new MogtomeDadRunStatus());
+            var json = (string)typeof(MogtomeDadIpcService).GetMethod("StartRun", BindingFlags.Instance | BindingFlags.NonPublic)!
+                .Invoke(dad, [JsonSerializer.Serialize(new MogtomeDadRunRequest { DadRunId = "synthetic-farming", Role = "QueueLeader" })])!;
+            using var result = JsonDocument.Parse(json);
+            Assert.True(result.RootElement.GetProperty("accepted").GetBoolean());
+            Assert.True(result.RootElement.GetProperty("ready").GetBoolean());
+            Assert.True(result.RootElement.GetProperty("dadOwned").GetBoolean());
+        }
+        else
+        {
+            if (source == "command")
+                typeof(Plugin).GetMethod("OnAliasCommand", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(plugin, ["/mog", "start"]);
+            else
+                new MainWindow(plugin).TitleBarButtons.Single(button => button.Icon == FontAwesomeIcon.Play).Click(ImGuiMouseButton.Left);
+            Assert.True(plugin.IsEngineStartQueued);
+            Assert.DoesNotContain(warning, run.ChatMessages);
+            Invoke(plugin, "TryConsumeQueuedEngineStart");
+            Assert.False(plugin.IsEngineStartQueued);
+        }
+        Assert.Equal(EngineState.Initializing, run.Engine.CurrentState);
+        Assert.Single(run.ChatMessages, message => message == warning);
+        Assert.Equal("XA Database", GameHelpers.MissingXaDependencies()); // Shops still require it.
+        var pending = (Task)Get(run.Engine, "startupTask")!;
+        run.Engine.Start(); // Duplicate requests must not repeat the warning.
+        Assert.Single(run.ChatMessages, message => message == warning);
+        run.Engine.Stop();
+        var afterStop = run.Commands.ToArray();
+        run.Pump();
+        await pending;
+        Assert.Equal(afterStop, run.Commands);
+        Assert.False(run.Engine.IsRunning);
     }
 
     [Fact]
@@ -1299,9 +1578,11 @@ public sealed class DutyRecoveryTests
 
     private sealed class Run : IDisposable
     {
-        internal readonly Configuration Config = new() { UseAdsExperimental = true, CombatProvider = CombatProvider.Wrath, EnableDetailedTracking = true, BailoutTimeout = 100 };
+        internal readonly Configuration Config = new() { UseAdsExperimental = true, CombatProvider = CombatProvider.Wrath,
+            EnableDetailedTracking = true, BailoutTimeout = 100, LastDailyDecuReset = DateTime.UtcNow };
         internal readonly DutyState State = new();
         internal readonly List<string> Commands = [];
+        internal readonly List<string> ChatMessages = [];
         internal readonly MogtomeEngine Engine;
         internal readonly DutyQueueService Queue;
         internal readonly DutyAutomationService Automation;
@@ -1311,6 +1592,7 @@ public sealed class DutyRecoveryTests
         internal readonly ConfigManager Manager;
         internal readonly BossModIPC BossMod;
         internal ulong CurrentContentId;
+        internal bool XaDatabaseLoaded = true;
         internal uint[] PartyTerritories = [];
         internal string? ThrowOnCommand;
         internal readonly List<string> RepairModes = [];
@@ -1319,12 +1601,18 @@ public sealed class DutyRecoveryTests
         private readonly System.Collections.Concurrent.ConcurrentQueue<Action> scheduled = new();
         private readonly Dictionary<string, object?> originalStatics = new();
 
-        internal Run(NativeBossModProvider? native = null)
+        internal Run(NativeBossModProvider? native = null, ClientLanguage clientLanguage = ClientLanguage.English,
+            ISeStringEvaluator? evaluator = null)
         {
             CurrentContentId = native is null ? 0UL : 1UL;
             if (native is not null) Config.CombatProvider = native.Provider;
             var log = native?.Log ?? Fake<IPluginLog>();
-            var client = Fake<IClientState>((method, _) => method.Name == "get_IsLoggedIn" ? true : Default(method.ReturnType));
+            var client = Fake<IClientState>((method, _) => method.Name switch
+            {
+                "get_IsLoggedIn" => true,
+                "get_ClientLanguage" => clientLanguage,
+                _ => Default(method.ReturnType),
+            });
             var condition = Fake<ICondition>();
             var objects = Fake<IObjectTable>();
             var player = Fake<IPlayerState>((method, _) => method.Name == "get_ContentId" ? CurrentContentId : Default(method.ReturnType));
@@ -1345,10 +1633,18 @@ public sealed class DutyRecoveryTests
                 return Default(method.ReturnType);
             });
             var requests = new HashSet<string>();
+            var dependencies = new[] { "XADatabase", "XASlave" }.Select(name =>
+                Fake<IExposedPlugin>((member, _) => member.Name switch
+                {
+                    "get_InternalName" or "get_Name" => name,
+                    "get_IsLoaded" => name != "XADatabase" || XaDatabaseLoaded,
+                    _ => Default(member.ReturnType),
+                })).ToArray();
             var pi = Fake<IDalamudPluginInterface>((method, args) =>
             {
                 if (method.Name == "GetOrCreateData") return requests;
-                if (method.Name == "get_InstalledPlugins") return native?.Interface.InstalledPlugins ?? Array.Empty<IExposedPlugin>();
+                if (method.Name == "get_InstalledPlugins") return (native?.Interface.InstalledPlugins
+                    ?? Array.Empty<IExposedPlugin>()).Concat(dependencies).ToArray();
                 if (native is not null && method.Name == "get_AssemblyLocation") return new FileInfo(typeof(BossModIPC).Assembly.Location);
                 if (native is not null && method.Name == "GetIpcSubscriber" && args![0] is string nativeName && nativeName.StartsWith("BossMod", StringComparison.Ordinal))
                     return NativeBossModProvider.Proxy(method.ReturnType, (call, values) => native.Invoke(nativeName, call, values));
@@ -1384,7 +1680,13 @@ public sealed class DutyRecoveryTests
             SetStatic("Log", log); SetStatic("ClientState", client); SetStatic("Condition", condition);
             SetStatic("ObjectTable", objects); SetStatic("PlayerState", player); SetStatic("PartyList", party);
             SetStatic("Framework", framework); SetStatic("PluginInterface", pi); SetStatic("GameGui", Fake<IGameGui>());
-            SetStatic("ChatGui", Fake<IChatGui>()); SetStatic("ToastGui", Fake<IToastGui>()); SetStatic("DutyStateService", Fake<IDutyState>());
+            SetStatic("ChatGui", Fake<IChatGui>((method, args) =>
+            {
+                if (method.Name == "Print") ChatMessages.Add(args![0]?.ToString() ?? string.Empty);
+                return Default(method.ReturnType);
+            }));
+            SetStatic("ToastGui", Fake<IToastGui>()); SetStatic("DutyStateService", Fake<IDutyState>());
+            if (evaluator != null) SetStatic("SeStringEvaluator", evaluator);
             var manager = (ConfigManager)RuntimeHelpers.GetUninitializedObject(typeof(ConfigManager));
             Set(manager, "log", log);
             Set(manager, "currentAccountId", "temporary");

@@ -2239,4 +2239,28 @@ Use /ads mini to enable or disable AutoDuty manually.</value></data>
   <data name="Ui_TitlebarBuying" xml:space="preserve"><value>Buying</value></data>
   <data name="Ui_TitlebarFarming" xml:space="preserve"><value>Farming</value></data>
   <data name="Ui_TitlebarBlocked" xml:space="preserve"><value>Blocked</value></data>
+  <data name="Stats_PraetoriumDailyCounter" xml:space="preserve"><value>Praetorium today: {0}</value></data>
+  <data name="Stats_HistoryPage" xml:space="preserve"><value>Page {0}/{1} · {2} recorded runs</value></data>
+  <data name="Stats_HistoryScope" xml:space="preserve"><value>Recorded runs for this account, newest first. Detailed recording controls future records; daily Praetorium progress is counted separately.</value></data>
+  <data name="Tomes_Heading" xml:space="preserve"><value>Tomestones owned</value></data>
+  <data name="Tomes_Owned" xml:space="preserve"><value>Owned</value></data>
+  <data name="Tomes_Carried" xml:space="preserve"><value>Carried</value></data>
+  <data name="Tomes_Storage" xml:space="preserve"><value>Storage</value></data>
+  <data name="Tomes_TitleBalance" xml:space="preserve"><value>{0}: {1} owned</value></data>
+  <data name="Tomes_TitleBalanceCost" xml:space="preserve"><value>{0}: {1} owned ({2} carried), need {3}</value></data>
+  <data name="Tomes_Target" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="Tomes_Breakdown" xml:space="preserve"><value>{0}
+Carried: {1}
+Saddlebags, including premium: {2}
+Retainers and other storage: {3}
+Other recorded inventory: {4}
+Total owned: {5}
+Open storage to refresh recorded quantities.</value></data>
+  <data name="Tomes_NoData" xml:space="preserve"><value>Tomestone totals are unavailable while inventory or exchange data is loading.</value></data>
+  <data name="Config_TomestoneTargetEnabled" xml:space="preserve"><value>Stop at owned current-event tomestones</value></data>
+  <data name="Config_TomestoneTarget" xml:space="preserve"><value>Owned target</value></data>
+  <data name="Config_TomestoneTargetHelp" xml:space="preserve"><value>Total owned for the current event, including recorded storage. Checked before registration and after the duty. Set the run limit to 0 for target-only farming. Completion runs the configured finish command.</value></data>
+  <data name="Engine_TomestoneTotalUnavailable" xml:space="preserve"><value>Current-event tomestone total unavailable. Farming stopped; use Start again after inventory and exchange data are ready.</value></data>
+  <data name="Engine_TomestoneTargetReached" xml:space="preserve"><value>Tomestone target reached: {0}/{1} owned ({2}).</value></data>
+  <data name="Plugin_XaDatabaseFarmingWarning" xml:space="preserve"><value>XA Database is not loaded. Farming can continue; recorded storage counts are unavailable. Load it before buying.</value></data>
 </root>

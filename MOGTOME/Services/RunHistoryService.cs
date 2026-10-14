@@ -870,7 +870,12 @@ public class RunHistoryService : IDisposable
     /// <summary>
     /// Get recent runs
     /// </summary>
-    public List<RunRecord> GetRecentRuns(int count = 25)
+    public List<RunRecord> GetRecentRuns()
+    {
+        return GetVisibleRuns().AsEnumerable().Reverse().ToList();
+    }
+
+    public List<RunRecord> GetRecentRuns(int count)
     {
         return GetVisibleRuns().TakeLast(count).Reverse().ToList();
     }

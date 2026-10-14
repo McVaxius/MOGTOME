@@ -129,7 +129,7 @@ internal static class GameText
 
     internal static bool MatchesLogMessage(string actual, uint row)
     {
-        if (row is not (877 or 880 or 7461)) return false;
+        if (row is not (877 or 880 or 4394 or 7461 or 7567)) return false;
         try
         {
             // 7461 resolves the actor through gnum8 / ObjStr or gstr3, not a local

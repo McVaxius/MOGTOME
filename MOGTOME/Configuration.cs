@@ -54,6 +54,8 @@ public class Configuration
     public int DutyCounter { get; set; } = 0;
     public int PraetoriumThreshold { get; set; } = 99;
     public int MaxRuns { get; set; } = 9999;
+    public bool TomestoneTargetEnabled { get; set; } = false;
+    public int TomestoneTarget { get; set; } = 1000;
     public string QuitCommand { get; set; } = "/ays m e";
     public bool TestingModeUnsynced { get; set; } = false;
     public int ReturnToEntranceDelaySeconds { get; set; } = 60;

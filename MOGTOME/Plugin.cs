@@ -129,6 +129,8 @@ public sealed class Plugin : IDalamudPlugin
     public Plugin()
     {
         Log.Information("[MOGTOME] XA requirements build {Marker}", "devhub-I534-shop-requirements-20261011-01");
+        Log.Information("[MOGTOME] Queue rejection build {Marker}", "devhub-I553-queue-rejection-20261014-01");
+        Log.Information("[MOGTOME] Farming dependency build {Marker}", "devhub-I567-farming-warning-20261014-01");
         AcquireConfigDirectoryLock();
 
         // Initialize ConfigManager first
@@ -722,6 +724,7 @@ public sealed class Plugin : IDalamudPlugin
                     DeathTrackingService,
                     AutoDutyIPC, YesAlreadyIPC, VNavIPC,
                     Condition, ClientState, CommandManager, CancelQueuedEngineStart);
+                Engine.ReadCurrentTomestones = MoogleShop.ReadCurrentTomestoneTotal;
                 Engine.RecordStopReason(stopReasonBeforeInitialization);
                 
                 Log.Information("[Plugin] Engine initialized successfully with proper config");
@@ -833,7 +836,7 @@ public sealed class Plugin : IDalamudPlugin
 
     private bool CheckXaDependenciesForStart(string source, bool notifyChat)
     {
-        var missingPlugins = GameHelpers.MissingXaDependencies();
+        var missingPlugins = GameHelpers.MissingXaDependencies(requireDatabase: false);
         if (missingPlugins.Length == 0) return true;
         var reason = Ui.M("Plugin_RequiredXaPlugins", missingPlugins);
         Engine?.RecordStopReason(reason);
@@ -932,9 +935,12 @@ public sealed class Plugin : IDalamudPlugin
         try
         {
             if (message.LogKind == XivChatType.ErrorMessage)
+            {
+                Engine?.HandleRegistrationChatMessage(message.OriginalMessage.ToString());
                 Blunderville?.HandleRegistrationChatMessage(message.OriginalMessage.ToString());
+            }
         }
-        catch (Exception ex) { Log.Error(ex, "[Plugin] Blunderville registration message failed"); }
+        catch (Exception ex) { Log.Error(ex, "[Plugin] registration message handling failed"); }
         HandleChatMessage(message.Message);
     }
 

@@ -11,7 +11,7 @@ namespace MOGTOME.Services;
 
 public sealed class MoogleShopService : IDisposable
 {
-    public const string BuildMarker = "mog-shop-0010";
+    public const string BuildMarker = "mog-shop-0011";
     private readonly Plugin plugin;
     private readonly MoogleShopGameAdapter game;
     private readonly string marker = $"{BuildMarker}/pid={Environment.ProcessId}/utc={DateTimeOffset.UtcNow:O}";
@@ -27,6 +27,11 @@ public sealed class MoogleShopService : IDisposable
     private Dictionary<uint, int> beforeBalances = [];
     private DateTime updated, started, submitted, nextInteraction, shopSeen, menuSeen;
     private string lastMenu = string.Empty;
+    private ulong balanceCharacter;
+    private IReadOnlyList<MoogleTomestoneBalance> tomestoneBalances = [];
+    internal uint CurrentTomestoneId => game.CurrentTomestoneId;
+    internal IReadOnlyList<MoogleTomestoneBalance> TomestoneBalances
+        => balanceCharacter == Plugin.PlayerState.ContentId ? tomestoneBalances : [];
     internal uint CurrencyId { get; set; }
     internal IReadOnlyList<MoogleShopOffer> Catalog => game.Catalog;
     internal IReadOnlyList<MoogleShopOffer> SelectedCatalog => Catalog.Where(o => o.TomestoneId == CurrencyId).ToArray();
@@ -63,6 +68,48 @@ public sealed class MoogleShopService : IDisposable
             }
         }
         catch (Exception ex) { Plugin.Log.Warning(ex, "[MOGTOME][Shop] catalog unavailable"); Status = Ui.M("Shop_NoCatalog"); }
+    }
+
+    internal (uint ItemId, int? Total) ReadCurrentTomestoneTotal()
+    {
+        if (!Ready) return (0, null);
+        if (!catalogLoaded) RefreshCatalog();
+        if (!catalogAvailable || CurrentTomestoneId == 0) return (0, null);
+        RefreshTomestoneBalances(force: true);
+        return (CurrentTomestoneId, TomestoneBalances.FirstOrDefault(balance => balance.ItemId == CurrentTomestoneId)?.Total);
+    }
+
+    private void RefreshTomestoneBalances(bool force = false)
+    {
+        if (!force && plugin.MainWindow?.IsOpen != true && plugin.ConfigWindow?.IsOpen != true
+            && plugin.MoogleShopWindow?.IsOpen != true && plugin.StatsWindow?.IsOpen != true)
+            return;
+        if (!Ready || !catalogAvailable)
+        {
+            balanceCharacter = 0;
+            tomestoneBalances = [];
+            return;
+        }
+        var ids = Catalog.Select(offer => offer.TomestoneId).Distinct().OrderByDescending(id => id).Take(2).ToArray();
+        try
+        {
+            var stored = plugin.XaDatabase.ReadStocks(ids);
+            tomestoneBalances = ids.Select(id =>
+            {
+                if (!BlundervilleGameAdapter.TryLiveInventoryCounts(id, out var live, out _))
+                    return MoogleTomestoneBalance.Unavailable(id);
+                var locations = live.ToDictionary(pair => IPC.XaDatabaseIPC.ContainerName(pair.Key), pair => pair.Value);
+                return MoogleTomestoneBalance.Read(id, locations, stored.GetValueOrDefault(id));
+            }).ToArray();
+            balanceCharacter = Plugin.PlayerState.ContentId;
+        }
+        catch
+        {
+            // Unreadable display/limit truth stays visible as unavailable. Never
+            // substitute a stale carried count for the fresh farming decision.
+            tomestoneBalances = ids.Select(MoogleTomestoneBalance.Unavailable).ToArray();
+            balanceCharacter = Plugin.PlayerState.ContentId;
+        }
     }
 
     public bool Buy()
@@ -126,8 +173,10 @@ public sealed class MoogleShopService : IDisposable
         if (!running)
         {
             if (!catalogLoaded && Ready) RefreshCatalog();
+            RefreshTomestoneBalances();
             return;
         }
+        RefreshTomestoneBalances();
         try
         {
             if (!Plugin.ClientState.IsLoggedIn || Plugin.PlayerState.ContentId != character || !ReferenceEquals(Settings, sessionSettings))

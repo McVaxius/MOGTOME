@@ -824,7 +824,7 @@ public class ConfigWindow : Window, IDisposable
         DrawWizardRequirement(Ui.T("Config_SelectedCombatProvider"), IsCombatProviderReady(config), Ui.T("Config_LoadTheProviderSelectedInStepRSR"), null);
         DrawWizardRequirement("vnavmesh", depVnav, Ui.T("Config_LoadVnavmesh"), "vnavmesh");
         DrawWizardRequirement("XA Slave", depXaSlave, Ui.T("Config_LoadXASlaveForXaSkipcutscenesOn"), "XASlave");
-        DrawWizardRequirement("XA Database", depXaDatabase, Ui.T("Config_LoadXADB"), "XADatabase");
+        if (!depXaDatabase) UiLayout.TextDisabled(Ui.T("Plugin_XaDatabaseFarmingWarning"));
         DrawWizardRequirement("YesAlready", depYesAlready, Ui.T("Config_LoadYesAlreadyForDialogs"), null);
 
         if (!config.UseAdsExperimental)
@@ -845,7 +845,7 @@ public class ConfigWindow : Window, IDisposable
 
         AethertekUI.MaterialText.Text(Ui.T("Config_Backend2", (config.UseAdsExperimental ? Ui.T("Config_ADSPrimary") : Ui.T("Config_AutoDutyAlternative"))));
         AethertekUI.MaterialText.Text(Ui.T("Config_CombatProvider2", Ui.EnumLabel(config.CombatProvider)));
-        AethertekUI.MaterialText.Text(Ui.T("Config_RequiredChecks", (backendReady && IsCombatProviderReady(config) && depVnav && depXaSlave && depXaDatabase && depYesAlready ? Ui.T("Config_Ready") : Ui.T("Config_Incomplete"))));
+        AethertekUI.MaterialText.Text(Ui.T("Config_RequiredChecks", (backendReady && IsCombatProviderReady(config) && depVnav && depXaSlave && depYesAlready ? Ui.T("Config_Ready") : Ui.T("Config_Incomplete"))));
         AethertekUI.MaterialText.Text(Ui.T("Config_PartyRole", (config.IsPartyLeader ? Ui.T("Config_Leader") : Ui.T("Config_Participant"))));
         AethertekUI.MaterialText.Text(Ui.T("Config_OptionalFood", (config.FoodItemId > 0 ? Ui.Item((uint)config.FoodItemId).Render() : Ui.T("Config_NotConfigured"))));
         AethertekUI.MaterialText.Text(Ui.T("Config_OptionalRepairThreshold", config.RepairThreshold));
@@ -1055,6 +1055,27 @@ public class ConfigWindow : Window, IDisposable
             changed = true;
         }
         UiLayout.TextDisabled(Ui.T("Config_StopAfterThisManySuccessfulPraetoriumClears"));
+
+        var targetEnabled = config.TomestoneTargetEnabled;
+        if (UiLayout.Checkbox(Ui.L("Config_TomestoneTargetEnabled"), ref targetEnabled))
+        {
+            config.TomestoneTargetEnabled = targetEnabled;
+            changed = true;
+        }
+        if (ImGui.IsItemHovered()) UiLayout.SetTooltip(Ui.T("Config_TomestoneTargetHelp"));
+        UiLayout.SameLineIfFits(120 * ImGuiHelpers.GlobalScale
+            + AethertekUI.MaterialText.Measure(Ui.T("Config_TomestoneTarget")).X + ImGui.GetStyle().ItemInnerSpacing.X);
+        ImGui.BeginDisabled(!targetEnabled);
+        var tomestoneTarget = config.TomestoneTarget;
+        ImGui.SetNextItemWidth(120 * ImGuiHelpers.GlobalScale);
+        if (UiLayout.InputInt("Config_TomestoneTarget", ref tomestoneTarget))
+        {
+            config.TomestoneTarget = Math.Clamp(tomestoneTarget, 1, 999999999);
+            changed = true;
+        }
+        ImGui.EndDisabled();
+        if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
+            UiLayout.SetTooltip(Ui.T("Config_TomestoneTargetHelp"));
 
         var quitCommand = config.QuitCommand;
         UiLayout.SingleLine(Ui.T("Config_QuitCommand"));

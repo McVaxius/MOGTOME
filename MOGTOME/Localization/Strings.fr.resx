@@ -2233,4 +2233,28 @@ Utilisez /ads mini pour activer ou désactiver AutoDuty manuellement.</value></d
   <data name="Ui_TitlebarBuying" xml:space="preserve"><value>Achats</value></data>
   <data name="Ui_TitlebarFarming" xml:space="preserve"><value>Farm</value></data>
   <data name="Ui_TitlebarBlocked" xml:space="preserve"><value>Bloqué</value></data>
+  <data name="Stats_PraetoriumDailyCounter" xml:space="preserve"><value>Praetorium aujourd’hui : {0}</value></data>
+  <data name="Stats_HistoryPage" xml:space="preserve"><value>Page {0}/{1} · {2} passages enregistrés</value></data>
+  <data name="Stats_HistoryScope" xml:space="preserve"><value>Passages enregistrés pour ce compte, du plus récent au plus ancien. Le suivi détaillé concerne les prochains passages ; la progression quotidienne du Praetorium est comptée séparément.</value></data>
+  <data name="Tomes_Heading" xml:space="preserve"><value>Mémoquartz possédés</value></data>
+  <data name="Tomes_Owned" xml:space="preserve"><value>Total</value></data>
+  <data name="Tomes_Carried" xml:space="preserve"><value>Sur soi</value></data>
+  <data name="Tomes_Storage" xml:space="preserve"><value>Stockage</value></data>
+  <data name="Tomes_TitleBalance" xml:space="preserve"><value>{0} : {1} possédés</value></data>
+  <data name="Tomes_TitleBalanceCost" xml:space="preserve"><value>{0} : {1} possédés ({2} sur soi), requis {3}</value></data>
+  <data name="Tomes_Target" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="Tomes_Breakdown" xml:space="preserve"><value>{0}
+Sur soi : {1}
+Sacoches, premium incluses : {2}
+Servants et autres stockages : {3}
+Autre inventaire enregistré : {4}
+Total possédé : {5}
+Ouvrir les stockages pour actualiser les quantités enregistrées.</value></data>
+  <data name="Tomes_NoData" xml:space="preserve"><value>Totaux indisponibles pendant le chargement des données de stockage ou du marchand.</value></data>
+  <data name="Config_TomestoneTargetEnabled" xml:space="preserve"><value>Arrêter au total visé de mémoquartz actuels</value></data>
+  <data name="Config_TomestoneTarget" xml:space="preserve"><value>Total visé</value></data>
+  <data name="Config_TomestoneTargetHelp" xml:space="preserve"><value>Total possédé pour cet événement, stockages enregistrés inclus. Vérifié avant inscription et après le contenu. Limite de passages à 0 pour utiliser uniquement cet objectif. La commande de fin configurée est exécutée à la fin.</value></data>
+  <data name="Engine_TomestoneTotalUnavailable" xml:space="preserve"><value>Total des mémoquartz actuels indisponible. Automatisation arrêtée ; relancer après le chargement des données de stockage et du marchand.</value></data>
+  <data name="Engine_TomestoneTargetReached" xml:space="preserve"><value>Objectif de mémoquartz atteint : {0}/{1} possédés ({2}).</value></data>
+  <data name="Plugin_XaDatabaseFarmingWarning" xml:space="preserve"><value>XA Database n’est pas chargé. Le farming peut continuer ; les quantités enregistrées dans les stockages sont indisponibles. Chargez-le avant d’acheter.</value></data>
 </root>

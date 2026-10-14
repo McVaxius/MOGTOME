@@ -130,14 +130,27 @@ internal sealed class MogtomeAppearance : IDisposable
             var costs = MoogleShopMath.TotalCosts(targets, offers, id => counts.GetValueOrDefault(id), out var known);
             fields.Add(Ui.T("Ui_TitlebarItemsLeft", counts.Values.Any(count => !count.HasValue) ? "—"
                 : targets.Sum(target => Math.Max(0L, (long)target.Value - counts.GetValueOrDefault(target.Key).GetValueOrDefault())).ToString(Ui.Culture)));
-            foreach (var id in shop.SelectedCatalog.SelectMany(offer => offer.Costs).Select(cost => cost.ItemId).Distinct())
+            foreach (var id in shop.SelectedCatalog.SelectMany(offer => offer.Costs).Select(cost => cost.ItemId)
+                .Concat(shop.TomestoneBalances.Select(balance => balance.ItemId)).Distinct())
             {
-                var balanceKnown = BlundervilleGameAdapter.TryBagInventory(id, out var balance, out _);
-                fields.Add(Ui.T("Shop_Balance", Ui.Item(id), balanceKnown ? balance.ToString(Ui.Culture) : "—",
-                    known ? costs.GetValueOrDefault(id).ToString(Ui.Culture) : "—"));
+                var owned = shop.TomestoneBalances.FirstOrDefault(balance => balance.ItemId == id);
+                if (owned != null)
+                {
+                    fields.Add(costs.ContainsKey(id)
+                        ? Ui.T("Tomes_TitleBalanceCost", Ui.Item(id), Quantity(owned.Total), Quantity(owned.Carried),
+                            known ? costs[id].ToString(Ui.Culture) : "—")
+                        : Ui.T("Tomes_TitleBalance", Ui.Item(id), Quantity(owned.Total)));
+                    detail += "\n" + TomestoneBreakdown(owned);
+                }
+                else
+                {
+                    var balanceKnown = BlundervilleGameAdapter.TryBagInventory(id, out var balance, out _);
+                    fields.Add(Ui.T("Shop_Balance", Ui.Item(id), balanceKnown ? balance.ToString(Ui.Culture) : "—",
+                        known ? costs.GetValueOrDefault(id).ToString(Ui.Culture) : "—"));
+                }
             }
         }
-        else if (owner is BlundervilleWindow || plugin.Blunderville.IsRunning)
+        else if (owner is BlundervilleWindow)
         {
             var service = plugin.Blunderville;
             var settings = config.Blunderville;
@@ -170,12 +183,15 @@ internal sealed class MogtomeAppearance : IDisposable
             active = engine?.IsRunning == true;
             state = engine == null ? Ui.T("Main_StateInitializing") : Ui.EnumLabel(engine.CurrentState);
             detail = engine?.Status.Render() ?? Ui.T("Main_StatusWaitingForAccountAndEngineInitialization");
-            var currency = plugin.MoogleShop.CurrencyId;
-            if (currency != 0)
+            foreach (var balance in plugin.MoogleShop.TomestoneBalances)
             {
-                var known = BlundervilleGameAdapter.TryBagInventory(currency, out var balance, out _);
-                fields.Add($"{Ui.Item(currency).Render()}: {(known ? balance.ToString(Ui.Culture) : "—")}");
+                fields.Add(Ui.T("Tomes_TitleBalance", Ui.Item(balance.ItemId), Quantity(balance.Total)));
+                detail += "\n" + TomestoneBreakdown(balance);
             }
+            if (config.TomestoneTargetEnabled)
+                fields.Add(Ui.T("Config_TomestoneTarget") + ": " + Ui.T("Tomes_Target", Quantity(plugin.MoogleShop.TomestoneBalances
+                    .FirstOrDefault(balance => balance.ItemId == plugin.MoogleShop.CurrentTomestoneId)?.Total),
+                    Math.Max(1, config.TomestoneTarget)));
             fields.Add($"P{plugin.State.DutyCounter.ToString(Ui.Culture)} D{plugin.State.DecumanaCounter.ToString(Ui.Culture)}");
             detail = Ui.T("Main_CounterPraeDailyPraetoriumLimit", plugin.State.DutyCounter, config.PraetoriumThreshold, config.MaxRuns)
                 + "\n" + Ui.T("Main_DailyDecuHeading") + ": " + plugin.State.DecumanaCounter.ToString(Ui.Culture) + "\n" + detail;
@@ -186,6 +202,73 @@ internal sealed class MogtomeAppearance : IDisposable
             concise, tooltip, blocked ? MaterialTheme.Current.Colors.Error
                 : active ? MaterialTheme.Current.Colors.Primary : MaterialTheme.Current.Colors.OnSurfaceVariant);
     }
+    private static string Quantity(int? quantity) => quantity?.ToString(Ui.Culture) ?? "—";
+
+    private static string TomestoneBreakdown(MoogleTomestoneBalance balance)
+        => balance.Total.HasValue
+            ? Ui.T("Tomes_Breakdown", Ui.Item(balance.ItemId), Quantity(balance.Carried), Quantity(balance.Saddlebags),
+                Quantity(balance.RetainerStorage), Quantity(balance.Other), Quantity(balance.Total))
+            : Ui.T("Tomes_NoData");
+
+    internal void DrawTomestoneBalances()
+    {
+        var balances = plugin.MoogleShop.TomestoneBalances;
+        UiLayout.SingleLine(Ui.T("Tomes_Heading"));
+        if (balances.Count == 0) { UiLayout.TextDisabled(Ui.T("Tomes_NoData")); return; }
+        using var controls = MaterialTable.PushControls();
+        using var rows = MaterialTable.PushTightRows();
+        var scale = ImGuiHelpers.GlobalScale;
+        var target = plugin.Configuration.TomestoneTargetEnabled;
+        var headings = new[] { Ui.T("BV_Item"), Ui.T("Tomes_Owned"), Ui.T("Tomes_Carried"), Ui.T("Tomes_Storage"), Ui.T("Config_TomestoneTarget") };
+        var countWidth = MathF.Max(MaterialText.Measure("9999999999").X,
+            headings.Skip(1).Take(3).Max(heading => MaterialText.Measure(heading).X)) + 4 * scale;
+        var targetWidth = MathF.Max(MaterialText.Measure("9999999999 / 999999999").X,
+            MaterialText.Measure(headings[4]).X) + 4 * scale;
+        var itemWidth = balances.Max(balance => MaterialText.Measure(Ui.Item(balance.ItemId).Render()).X) + 28 * scale;
+        var innerWidth = itemWidth + countWidth * 3 + (target ? targetWidth : 0) + 12 * scale;
+        var scrolling = innerWidth > UiLayout.AvailableWidth;
+        var height = scrolling ? ImGui.GetTextLineHeight() + balances.Count * MathF.Max(24 * scale, ImGui.GetTextLineHeight())
+            + ImGui.GetStyle().ScrollbarSize + 2 * ImGui.GetStyle().WindowPadding.Y + 4 * scale : 0;
+        var flags = ImGuiTableFlags.RowBg | ImGuiTableFlags.BordersInnerV | ImGuiTableFlags.NoSavedSettings;
+        if (scrolling) flags |= ImGuiTableFlags.ScrollX;
+        if (!ImGui.BeginTable("MogtomeTomestones", target ? 5 : 4, flags, new Vector2(0, height), scrolling ? innerWidth : 0)) return;
+        try
+        {
+            ImGui.TableSetupColumn(headings[0], ImGuiTableColumnFlags.WidthStretch);
+            for (var column = 1; column < 4; column++)
+                ImGui.TableSetupColumn(headings[column], ImGuiTableColumnFlags.WidthFixed, countWidth);
+            if (target) ImGui.TableSetupColumn(headings[4], ImGuiTableColumnFlags.WidthFixed, targetWidth);
+            UiLayout.TableHeadersRow();
+            foreach (var balance in balances)
+            {
+                ImGui.TableNextRow();
+                ImGui.TableSetColumnIndex(0);
+                var item = Plugin.DataManager.GetExcelSheet<Lumina.Excel.Sheets.Item>().GetRowOrDefault(balance.ItemId);
+                if (item is { } row)
+                {
+                    var icon = Plugin.TextureProvider.GetFromGameIcon(new Dalamud.Interface.Textures.GameIconLookup(row.Icon)).GetWrapOrEmpty();
+                    MaterialCanvas.DrawImage(ImGui.GetWindowDrawList(), icon.Handle, icon.Size,
+                        ImGui.GetCursorScreenPos(), ImGui.GetCursorScreenPos() + new Vector2(24 * scale));
+                    ImGui.Dummy(new Vector2(24 * scale));
+                    ImGui.SameLine(0, 4 * scale);
+                }
+                UiLayout.SingleLine(Ui.Item(balance.ItemId).Render());
+                if (ImGui.IsItemHovered()) UiLayout.SetTooltip(TomestoneBreakdown(balance));
+                ImGui.TableSetColumnIndex(1); MaterialText.Text(Quantity(balance.Total));
+                if (ImGui.IsItemHovered()) UiLayout.SetTooltip(TomestoneBreakdown(balance));
+                ImGui.TableSetColumnIndex(2); MaterialText.Text(Quantity(balance.Carried));
+                ImGui.TableSetColumnIndex(3); MaterialText.Text(Quantity(balance.Stored));
+                if (target)
+                {
+                    ImGui.TableSetColumnIndex(4);
+                    if (balance.ItemId == plugin.MoogleShop.CurrentTomestoneId)
+                        MaterialText.Text(Ui.T("Tomes_Target", Quantity(balance.Total), Math.Max(1, plugin.Configuration.TomestoneTarget)));
+                }
+            }
+        }
+        finally { ImGui.EndTable(); }
+    }
+
     internal void Draw(WindowSystem windows)
     {
         using var shaping = shapedText.Push();

@@ -2389,4 +2389,28 @@ Dùng /ads mini để bật hoặc tắt AutoDuty thủ công.</value></data>
   <data name="Ui_TitlebarBuying" xml:space="preserve"><value>Đang mua</value></data>
   <data name="Ui_TitlebarFarming" xml:space="preserve"><value>Đang farm</value></data>
   <data name="Ui_TitlebarBlocked" xml:space="preserve"><value>Bị chặn</value></data>
+  <data name="Stats_PraetoriumDailyCounter" xml:space="preserve"><value>Praetorium hôm nay: {0}</value></data>
+  <data name="Stats_HistoryPage" xml:space="preserve"><value>Trang {0}/{1} · {2} lượt đã ghi</value></data>
+  <data name="Stats_HistoryScope" xml:space="preserve"><value>Các lượt đã ghi của tài khoản này, mới nhất trước. Ghi chi tiết áp dụng cho các lượt sau; tiến độ Praetorium hằng ngày được tính riêng.</value></data>
+  <data name="Tomes_Heading" xml:space="preserve"><value>Tomestone đang có</value></data>
+  <data name="Tomes_Owned" xml:space="preserve"><value>Tổng</value></data>
+  <data name="Tomes_Carried" xml:space="preserve"><value>Trong túi</value></data>
+  <data name="Tomes_Storage" xml:space="preserve"><value>Lưu trữ</value></data>
+  <data name="Tomes_TitleBalance" xml:space="preserve"><value>{0}: tổng {1}</value></data>
+  <data name="Tomes_TitleBalanceCost" xml:space="preserve"><value>{0}: tổng {1} ({2} trong túi), cần {3}</value></data>
+  <data name="Tomes_Target" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="Tomes_Breakdown" xml:space="preserve"><value>{0}
+Trong túi: {1}
+Túi chocobo, gồm premium: {2}
+Retainer và kho khác: {3}
+Tồn kho đã ghi khác: {4}
+Tổng đang có: {5}
+Mở kho để cập nhật số lượng đã ghi.</value></data>
+  <data name="Tomes_NoData" xml:space="preserve"><value>Chưa có tổng tomestone khi dữ liệu túi hoặc đổi vật phẩm đang tải.</value></data>
+  <data name="Config_TomestoneTargetEnabled" xml:space="preserve"><value>Dừng khi đủ tomestone của sự kiện hiện tại</value></data>
+  <data name="Config_TomestoneTarget" xml:space="preserve"><value>Tổng mục tiêu</value></data>
+  <data name="Config_TomestoneTargetHelp" xml:space="preserve"><value>Tổng đang có của sự kiện hiện tại, gồm kho đã ghi. Kiểm tra trước khi đăng ký và sau nhiệm vụ. Đặt giới hạn lượt là 0 để chỉ dùng mục tiêu này. Khi hoàn tất sẽ chạy lệnh kết thúc đã cấu hình.</value></data>
+  <data name="Engine_TomestoneTotalUnavailable" xml:space="preserve"><value>Không đọc được tổng tomestone hiện tại. Đã dừng; hãy bắt đầu lại khi dữ liệu túi và đổi vật phẩm sẵn sàng.</value></data>
+  <data name="Engine_TomestoneTargetReached" xml:space="preserve"><value>Đã đạt mục tiêu tomestone: {0}/{1} đang có ({2}).</value></data>
+  <data name="Plugin_XaDatabaseFarmingWarning" xml:space="preserve"><value>XA Database chưa được tải. Có thể tiếp tục farm; số lượng đã ghi trong kho không khả dụng. Hãy tải trước khi mua.</value></data>
 </root>
