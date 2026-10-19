@@ -2413,4 +2413,5 @@ Kayıtlı miktarları yenilemek için depoları açın.</value></data>
   <data name="Engine_TomestoneTotalUnavailable" xml:space="preserve"><value>Güncel tomestone toplamı okunamıyor. Otomasyon durdu; envanter ve takas verileri hazır olunca yeniden başlatın.</value></data>
   <data name="Engine_TomestoneTargetReached" xml:space="preserve"><value>Tomestone hedefine ulaşıldı: toplam {0}/{1} ({2}).</value></data>
   <data name="Plugin_XaDatabaseFarmingWarning" xml:space="preserve"><value>XA Database yüklü değil. Farm devam edebilir; kaydedilmiş depo miktarları kullanılamıyor. Satın almadan önce yükleyin.</value></data>
+  <data name="Automation_AutoDutyNotReady" xml:space="preserve"><value>AutoDuty hazır değil: {0}</value></data>
 </root>

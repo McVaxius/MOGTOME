@@ -2263,4 +2263,5 @@ Apri i depositi per aggiornare le quantità registrate.</value></data>
   <data name="Engine_TomestoneTotalUnavailable" xml:space="preserve"><value>Totale dei tomestone attuali non disponibile. Automazione fermata; riavvia quando i dati di inventario e scambio sono pronti.</value></data>
   <data name="Engine_TomestoneTargetReached" xml:space="preserve"><value>Obiettivo tomestone raggiunto: {0}/{1} posseduti ({2}).</value></data>
   <data name="Plugin_XaDatabaseFarmingWarning" xml:space="preserve"><value>XA Database non è caricato. Il farming può continuare; le quantità registrate nei depositi non sono disponibili. Caricalo prima di acquistare.</value></data>
+  <data name="Automation_AutoDutyNotReady" xml:space="preserve"><value>AutoDuty non è pronto: {0}</value></data>
 </root>

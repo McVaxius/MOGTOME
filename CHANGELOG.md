@@ -1,3 +1,8 @@
+2026-10-18 - AutoDuty readiness failure details (F584)
+
+- Show the actual AutoDuty readiness failure at startup: missing/unloaded plugin, unreadable loaded instance, incompatible configuration interface, ongoing initialization or an exception. Do not describe a missing/non-boolean initialization member as ordinary loading.
+- Retain the existing 20-second wait, cancellation/current-request checks and requirement to prove readiness before preparing or starting the selected path. The inspected AutoDuty source still uses ConfigurationMain.Instance.Initialized; no gameplay reproduction or AutoDuty integration test is claimed.
+
 2026-10-14 - Optional XA Database for ordinary farming (I567)
 
 - Allow ordinary MOGTOME farming without XA Database and show a translated warning at Start. Preserve XA Slave requirements, shared button/command/DAD admission, available native tomestone counts, shop validation and independent Blunderville requirements. Setup readiness no longer treats XA Database as mandatory for ordinary farming.

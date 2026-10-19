@@ -2263,4 +2263,5 @@ Path: {0}
   <data name="Engine_TomestoneTotalUnavailable" xml:space="preserve"><value>无法读取本期神石总量，已停止刷取。背包和兑换数据就绪后请重新开始。</value></data>
   <data name="Engine_TomestoneTargetReached" xml:space="preserve"><value>已达神石目标：持有 {0}/{1}（{2}）。</value></data>
   <data name="Plugin_XaDatabaseFarmingWarning" xml:space="preserve"><value>未加载 XA Database。仍可继续刷本，但无法使用已记录的仓储数量。购买前请先加载。</value></data>
+  <data name="Automation_AutoDutyNotReady" xml:space="preserve"><value>AutoDuty尚未就绪：{0}</value></data>
 </root>

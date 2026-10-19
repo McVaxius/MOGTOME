@@ -2257,4 +2257,5 @@ Ouvrir les stockages pour actualiser les quantités enregistrées.</value></data
   <data name="Engine_TomestoneTotalUnavailable" xml:space="preserve"><value>Total des mémoquartz actuels indisponible. Automatisation arrêtée ; relancer après le chargement des données de stockage et du marchand.</value></data>
   <data name="Engine_TomestoneTargetReached" xml:space="preserve"><value>Objectif de mémoquartz atteint : {0}/{1} possédés ({2}).</value></data>
   <data name="Plugin_XaDatabaseFarmingWarning" xml:space="preserve"><value>XA Database n’est pas chargé. Le farming peut continuer ; les quantités enregistrées dans les stockages sont indisponibles. Chargez-le avant d’acheter.</value></data>
+  <data name="Automation_AutoDutyNotReady" xml:space="preserve"><value>AutoDuty n'est pas prêt : {0}</value></data>
 </root>

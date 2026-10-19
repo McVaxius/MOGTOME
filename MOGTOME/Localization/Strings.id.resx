@@ -2413,4 +2413,5 @@ Buka penyimpanan untuk memperbarui jumlah tercatat.</value></data>
   <data name="Engine_TomestoneTotalUnavailable" xml:space="preserve"><value>Total tomestone saat ini tidak tersedia. Otomasi berhenti; mulai lagi setelah data inventaris dan pertukaran siap.</value></data>
   <data name="Engine_TomestoneTargetReached" xml:space="preserve"><value>Target tomestone tercapai: total {0}/{1} ({2}).</value></data>
   <data name="Plugin_XaDatabaseFarmingWarning" xml:space="preserve"><value>XA Database belum dimuat. Farming dapat berlanjut; jumlah penyimpanan tercatat tidak tersedia. Muat sebelum membeli.</value></data>
+  <data name="Automation_AutoDutyNotReady" xml:space="preserve"><value>AutoDuty belum siap: {0}</value></data>
 </root>

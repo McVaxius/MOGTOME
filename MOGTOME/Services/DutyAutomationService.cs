@@ -216,7 +216,7 @@ public sealed class DutyAutomationService
         if (!isCurrent()) return false;
         if (!autoDutyReady)
         {
-            var startupFailure = Ui.M("DutyAutomationService_AutoDutyIsStillInitializingOrFaultedRetry");
+            var startupFailure = Ui.M("Automation_AutoDutyNotReady", autoDutyPathService.LastReadinessStatus);
             PreparationFailure = startupFailure;
             log.Warning($"[MOGTOME][Automation] {startupFailure}");
             Plugin.ChatGui.Print(Ui.GameT("Chat_MOGTOME", startupFailure));

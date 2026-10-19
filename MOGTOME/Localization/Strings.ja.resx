@@ -2257,4 +2257,5 @@ DictionaryPathsとPathSelectionsByPathを比較します。
   <data name="Engine_TomestoneTotalUnavailable" xml:space="preserve"><value>今回のトークン合計数を取得できないため周回を停止しました。所持品と交換情報が利用可能になってから再度開始してください。</value></data>
   <data name="Engine_TomestoneTargetReached" xml:space="preserve"><value>トークン目標達成：所持 {0}/{1}（{2}）。</value></data>
   <data name="Plugin_XaDatabaseFarmingWarning" xml:space="preserve"><value>XA Database が読み込まれていません。周回は続行できますが、記録済みの保管数は利用できません。購入前に読み込んでください。</value></data>
+  <data name="Automation_AutoDutyNotReady" xml:space="preserve"><value>AutoDutyの準備ができていません：{0}</value></data>
 </root>

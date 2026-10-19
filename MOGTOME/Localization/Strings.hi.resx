@@ -2429,4 +2429,5 @@ Retainer और अन्य भंडारण: {3}
   <data name="Engine_TomestoneTotalUnavailable" xml:space="preserve"><value>मौजूदा tomestone की कुल मात्रा उपलब्ध नहीं है। फ़ार्मिंग रोक दी गई; सामान और विनिमय डेटा तैयार होने पर फिर शुरू करें।</value></data>
   <data name="Engine_TomestoneTargetReached" xml:space="preserve"><value>Tomestone लक्ष्य पूरा: कुल {0}/{1} ({2})।</value></data>
   <data name="Plugin_XaDatabaseFarmingWarning" xml:space="preserve"><value>XA Database लोड नहीं है। फार्मिंग जारी रह सकती है; दर्ज किए गए भंडारण की गिनती उपलब्ध नहीं है। खरीदारी से पहले इसे लोड करें।</value></data>
+  <data name="Automation_AutoDutyNotReady" xml:space="preserve"><value>AutoDuty तैयार नहीं है: {0}</value></data>
 </root>

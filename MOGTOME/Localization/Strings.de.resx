@@ -2257,4 +2257,5 @@ Lager öffnen, um erfasste Mengen zu aktualisieren.</value></data>
   <data name="Engine_TomestoneTotalUnavailable" xml:space="preserve"><value>Aktueller Mogry-Steinbestand nicht verfügbar. Farmen gestoppt; nach Laden der Inventar- und Tauschdaten erneut starten.</value></data>
   <data name="Engine_TomestoneTargetReached" xml:space="preserve"><value>Mogry-Stein-Ziel erreicht: {0}/{1} gesamt ({2}).</value></data>
   <data name="Plugin_XaDatabaseFarmingWarning" xml:space="preserve"><value>XA Database ist nicht geladen. Farmen ist weiterhin möglich; gespeicherte Lagerbestände sind nicht verfügbar. Vor dem Einkauf laden.</value></data>
+  <data name="Automation_AutoDutyNotReady" xml:space="preserve"><value>AutoDuty ist nicht bereit: {0}</value></data>
 </root>

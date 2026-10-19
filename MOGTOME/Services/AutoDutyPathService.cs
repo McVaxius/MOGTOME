@@ -35,6 +35,7 @@ public class AutoDutyPathService
     // Last result for UI display
     public string LastForceResult => ForceResult.English;
     public UiText ForceResult { get; private set; } = Ui.M("Path_NotAttempted");
+    public string LastReadinessStatus { get; private set; } = "AutoDuty readiness has not been checked";
 
     public AutoDutyPathService(IPluginLog log, IDalamudPluginInterface pluginInterface)
     {
@@ -80,39 +81,51 @@ public class AutoDutyPathService
     {
         try
         {
+            var installed = PluginInterface.InstalledPlugins.FirstOrDefault(plugin => plugin.InternalName == "AutoDuty");
+            if (installed == null || !installed.IsLoaded)
+            {
+                status = LastReadinessStatus = installed == null ? "AutoDuty is not installed" : "AutoDuty is not loaded";
+                return false;
+            }
             var autoDutyPlugin = FindDalamudPluginInstance("AutoDuty");
             if (autoDutyPlugin == null)
             {
-                status = "AutoDuty plugin not found or not loaded";
+                status = LastReadinessStatus = "AutoDuty is loaded, but its live plugin instance could not be read; the Dalamud reflection interface may be incompatible";
                 return false;
             }
 
             var configMainType = autoDutyPlugin.GetType().Assembly.GetType("AutoDuty.Windows.ConfigurationMain");
             if (configMainType == null)
             {
-                status = "AutoDuty.Windows.ConfigurationMain type not found";
+                status = LastReadinessStatus = "AutoDuty.Windows.ConfigurationMain type not found; the installed AutoDuty interface is incompatible";
+                return false;
+            }
+
+            if (configMainType.GetField("Instance", AllFlags) == null && configMainType.GetProperty("Instance", AllFlags) == null)
+            {
+                status = LastReadinessStatus = "AutoDuty ConfigurationMain.Instance member is missing; the installed AutoDuty interface is incompatible";
                 return false;
             }
 
             var configMain = GetMemberValue(configMainType, null, "Instance");
             if (configMain == null)
             {
-                status = "ConfigurationMain.Instance is null";
+                status = LastReadinessStatus = "AutoDuty ConfigurationMain.Instance is null; configuration is still loading";
                 return false;
             }
 
-            if (GetMemberValue(configMainType, configMain, "Initialized") is bool initialized && initialized)
+            if (GetMemberValue(configMainType, configMain, "Initialized") is not bool initialized)
             {
-                status = "Ready";
-                return true;
+                status = LastReadinessStatus = "AutoDuty ConfigurationMain.Initialized is missing or is not a boolean; the installed AutoDuty interface is incompatible";
+                return false;
             }
 
-            status = "AutoDuty profile initialization still in progress";
-            return false;
+            status = LastReadinessStatus = initialized ? "Ready" : "AutoDuty profile initialization still in progress";
+            return initialized;
         }
         catch (Exception ex)
         {
-            status = $"Readiness check failed: {ex.Message}";
+            status = LastReadinessStatus = $"AutoDuty readiness check failed: {ex.GetBaseException().Message}";
             return false;
         }
     }

@@ -2413,4 +2413,5 @@ Mở kho để cập nhật số lượng đã ghi.</value></data>
   <data name="Engine_TomestoneTotalUnavailable" xml:space="preserve"><value>Không đọc được tổng tomestone hiện tại. Đã dừng; hãy bắt đầu lại khi dữ liệu túi và đổi vật phẩm sẵn sàng.</value></data>
   <data name="Engine_TomestoneTargetReached" xml:space="preserve"><value>Đã đạt mục tiêu tomestone: {0}/{1} đang có ({2}).</value></data>
   <data name="Plugin_XaDatabaseFarmingWarning" xml:space="preserve"><value>XA Database chưa được tải. Có thể tiếp tục farm; số lượng đã ghi trong kho không khả dụng. Hãy tải trước khi mua.</value></data>
+  <data name="Automation_AutoDutyNotReady" xml:space="preserve"><value>AutoDuty chưa sẵn sàng: {0}</value></data>
 </root>

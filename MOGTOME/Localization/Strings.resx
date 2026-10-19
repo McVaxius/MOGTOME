@@ -2263,4 +2263,5 @@ Open storage to refresh recorded quantities.</value></data>
   <data name="Engine_TomestoneTotalUnavailable" xml:space="preserve"><value>Current-event tomestone total unavailable. Farming stopped; use Start again after inventory and exchange data are ready.</value></data>
   <data name="Engine_TomestoneTargetReached" xml:space="preserve"><value>Tomestone target reached: {0}/{1} owned ({2}).</value></data>
   <data name="Plugin_XaDatabaseFarmingWarning" xml:space="preserve"><value>XA Database is not loaded. Farming can continue; recorded storage counts are unavailable. Load it before buying.</value></data>
+  <data name="Automation_AutoDutyNotReady" xml:space="preserve"><value>AutoDuty is not ready: {0}</value></data>
 </root>

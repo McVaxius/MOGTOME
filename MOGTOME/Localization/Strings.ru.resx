@@ -2263,4 +2263,5 @@ Path: {0}
   <data name="Engine_TomestoneTotalUnavailable" xml:space="preserve"><value>Запас текущих томстоунов недоступен. Автоматизация остановлена; запустите снова после загрузки данных инвентаря и обмена.</value></data>
   <data name="Engine_TomestoneTargetReached" xml:space="preserve"><value>Цель томстоунов достигнута: {0}/{1} всего ({2}).</value></data>
   <data name="Plugin_XaDatabaseFarmingWarning" xml:space="preserve"><value>XA Database не загружен. Фарм можно продолжить, но записанные количества в хранилищах недоступны. Загрузите его перед покупками.</value></data>
+  <data name="Automation_AutoDutyNotReady" xml:space="preserve"><value>AutoDuty не готов: {0}</value></data>
 </root>
