@@ -78,6 +78,12 @@ internal static class MoogleShopMath
     internal static bool FestivalEligible(uint required, uint phase, IEnumerable<(uint Id, uint Phase)> active)
         => required == 0 || active.Any(f => f.Id == required && (phase == 0 || f.Phase == phase));
 
+    internal static uint CurrentTomestone(ISet<uint> currencies)
+        // Astronomy II's current exchange retains Astronomy I offers in the same shop.
+        // Recognize that known pair without guessing for other multi-currency catalogs.
+        => currencies.Count == 1 ? currencies.Single()
+            : currencies.SetEquals([51750u, 51751u]) ? 51751u : 0;
+
     internal static MoogleShopOffer? ReadOffer(uint shop, string name,
         IEnumerable<(uint ItemId, uint Count, bool Hq)> rewards,
         IEnumerable<(uint ItemId, uint Count, uint Collectability, byte Type)> costs, ISet<uint> tomestones)

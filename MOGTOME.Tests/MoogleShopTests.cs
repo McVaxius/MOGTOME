@@ -311,6 +311,37 @@ public sealed class MoogleShopTests
     }
 
     [Fact]
+    public void AstronomyIIExchangeRetainsOldOffersAndUsesNewCurrencyForFarming()
+    {
+        // SpecialShop 1769929 contains both Astronomy II and Astronomy I rewards.
+        var currencies = new HashSet<uint> { 51750, 51751 };
+        var newer = MoogleShopMath.ReadOffer(1769929, "Newest Irregular Tomestone Exchange", [(50440, 1, false)],
+            [(51751, 100, 0, 0), (51752, 10, 0, 0)], currencies);
+        var older = MoogleShopMath.ReadOffer(1769929, "Newest Irregular Tomestone Exchange", [(50440, 1, false)],
+            [(51750, 100, 0, 0), (51752, 10, 0, 0)], currencies);
+        var token = MoogleShopMath.ReadOffer(1769929, "Newest Irregular Tomestone Exchange", [(51752, 1, false)],
+            [(51751, 30, 0, 0)], currencies);
+        Assert.NotNull(newer); Assert.NotNull(older); Assert.NotNull(token);
+        Assert.Equal(51751u, newer.TomestoneId);
+        Assert.Equal(51750u, older.TomestoneId);
+        Assert.Equal(new[] { new MoogleShopCost(51751, 100), new MoogleShopCost(51752, 10) }, newer.Costs);
+        Assert.Equal(new[] { new MoogleShopCost(51750, 100), new MoogleShopCost(51752, 10) }, older.Costs);
+        Assert.Equal(new[] { new MoogleShopCost(51751, 30) }, token.Costs);
+        Assert.Equal(51751u, MoogleShopMath.CurrentTomestone(new HashSet<uint> { newer.TomestoneId, older.TomestoneId, token.TomestoneId }));
+    }
+
+    [Fact]
+    public void CurrentCurrencyKeepsSingleCurrenciesAndDoesNotGuessOtherAmbiguousCatalogs()
+    {
+        Assert.Equal(51750u, MoogleShopMath.CurrentTomestone(new HashSet<uint> { 51750 }));
+        Assert.Equal(51751u, MoogleShopMath.CurrentTomestone(new HashSet<uint> { 51751 }));
+        Assert.Equal(123u, MoogleShopMath.CurrentTomestone(new HashSet<uint> { 123 }));
+        Assert.Equal(0u, MoogleShopMath.CurrentTomestone(new HashSet<uint>()));
+        Assert.Equal(0u, MoogleShopMath.CurrentTomestone(new HashSet<uint> { 123, 51751 }));
+        Assert.Equal(0u, MoogleShopMath.CurrentTomestone(new HashSet<uint> { 123, 51750, 51751 }));
+    }
+
+    [Fact]
     public void CurrentOffersRetainEveryLiteralCurrencyIncludingRewardTokens()
     {
         var offer = MoogleShopMath.ReadOffer(1, "Current", [(100, 1, false), (0, 1, false)],

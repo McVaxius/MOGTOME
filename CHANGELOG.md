@@ -1,3 +1,9 @@
+2026-10-20 - Prepare Astronomy II shop support
+
+- Add the verified Company Hat, Company Tabard and Qiqirn Earring rewards to Select Missing; exclude the four additional dungeon coats while retaining Astronomy I classifications and saved targets.
+- Recognize Astronomy II as the farming-target currency when the active newest exchange offers both Astronomy I and II. Keep both currencies' offers and every Uolon Horn cost; retain the existing festival checks and single-currency behavior.
+- Record the 30 Astronomy II offers and their game-sheet prices in docs/astronomy-ii-shop.md. The runtime catalog continues to come from current game sheets; this preparation does not activate the event or establish its start date.
+
 2026-10-18 - AutoDuty readiness failure details (F584)
 
 - Show the actual AutoDuty readiness failure at startup: missing/unloaded plugin, unreadable loaded instance, incompatible configuration interface, ongoing initialization or an exception. Do not describe a missing/non-boolean initialization member as ordinary loading.
