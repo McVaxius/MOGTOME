@@ -30,6 +30,10 @@ internal sealed class MogtomeAppearance : IDisposable
     private string appliedLanguage = "";
     private uint appliedAccent;
     private Vector3 accentDraft;
+    private MaterialColorSettings colorDraft = new();
+    private Configuration? draftOwner;
+    private MaterialColorSettings? appliedSavedColors;
+    private MaterialColorSettings? appliedColors;
     private string[] required = [];
     private int checkedGeneration = -1;
     private int checkedHindiGeneration = -1;
@@ -283,11 +287,21 @@ internal sealed class MogtomeAppearance : IDisposable
             checkedGeneration = -1; fontIssueLogged = false;
             checkedHindiGeneration = -1;
         }
-        if (theme is null || appliedAccent != (config.UiAccentRgb & 0xFFFFFF))
+        var savedColors = plugin.Configuration.UiColors ?? new MaterialColorSettings();
+        var ownerChanged = !ReferenceEquals(draftOwner, config);
+        if (ownerChanged || savedColors != appliedSavedColors)
         {
-            appliedAccent = config.UiAccentRgb & 0xFFFFFF;
-            theme = MogtomePresentation.Theme(appliedAccent);
-            var rgb = MogtomePresentation.Rgb(appliedAccent); accentDraft = new(rgb.X, rgb.Y, rgb.Z);
+            draftOwner = config;
+            colorDraft = savedColors;
+            appliedSavedColors = savedColors;
+        }
+        if (ownerChanged || theme is null || appliedAccent != (plugin.Configuration.UiAccentRgb & 0xFFFFFF) || colorDraft != appliedColors)
+        {
+            appliedAccent = plugin.Configuration.UiAccentRgb & 0xFFFFFF;
+            appliedColors = colorDraft;
+            theme = MogtomePresentation.Theme(appliedAccent, colorDraft);
+            var rgb = MogtomePresentation.Rgb(appliedAccent);
+            accentDraft = new(rgb.X, rgb.Y, rgb.Z);
         }
         theme.Density = config.UiCompact ? MaterialDensity.Compact : MaterialDensity.Standard;
         if (!windows.Windows.Any(window => window.IsOpen)) return;
@@ -408,22 +422,19 @@ internal sealed class MogtomeAppearance : IDisposable
         var language = (int)Ui.Language;
         using var controls = MaterialControls.Push(MogtomePresentation.Controls());
         ImGui.BeginDisabled(!plugin.CanSelectUiLanguage);
-        var changed = MaterialAppearanceSelector.Draw(id, ref accentDraft,
-            new(Ui.T("Ui_Color"), Ui.T("Language_Label"), Ui.T("Ui_Teal"), Ui.T("Ui_Blue"), Ui.T("Ui_Pink"), Ui.T("Ui_CustomRgb")), () =>
-            {
-                ImGui.SetNextItemWidth(Math.Max(140 * ImGuiHelpers.GlobalScale,
-                    MaterialText.Measure(LanguageLabel(language)).X + ImGui.GetFrameHeight() + ImGui.GetStyle().FramePadding.X * 2));
-                // Retain the old native Combo's suffix and original option index/name IDs.
-                return UiLayout.Combo("###Language_Label", ref language, NativeLanguages, NativeLanguages.Length,
-                    hindiAvailable ? -1 : (int)UiLanguage.Hindi, "Hindi (unavailable)");
-            });
+        var colorChanged = DrawColourEditor(id);
+        ImGui.SetNextItemWidth(Math.Max(140 * ImGuiHelpers.GlobalScale,
+            MaterialText.Measure(LanguageLabel(language)).X + ImGui.GetFrameHeight() + ImGui.GetStyle().FramePadding.X * 2));
+        // Retain the old native Combo's suffix and original option index/name IDs.
+        var languageChanged = UiLayout.Combo("###Language_Label", ref language, NativeLanguages, NativeLanguages.Length,
+            hindiAvailable ? -1 : (int)UiLanguage.Hindi, "Hindi (unavailable)");
         ImGui.EndDisabled();
-        if (changed.AccentChanged) SaveAccent();
-        if (changed.LanguageChanged)
+        if (languageChanged)
         {
             plugin.Configuration.UiLanguage = (UiLanguage)language;
             plugin.ConfigManager.SaveCurrentAccount();
         }
+        if (colorChanged && !languageChanged) plugin.ConfigManager.SaveCurrentAccount();
         if (!plugin.CanSelectUiLanguage && ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) UiLayout.SetTooltip(Ui.T("Language_WaitForProfile"));
     }
     internal void DrawAccent(string id = "appearance")
@@ -469,15 +480,31 @@ internal sealed class MogtomeAppearance : IDisposable
             | (uint)Math.Clamp((int)MathF.Round(accentDraft.Z * 255), 0, 255);
         plugin.ConfigManager.SaveCurrentAccount();
     }
+    private bool DrawColourEditor(string id)
+    {
+        var config = plugin.Configuration;
+        if (!ReferenceEquals(draftOwner, config))
+        {
+            draftOwner = config;
+            colorDraft = config.UiColors ?? new MaterialColorSettings();
+            appliedSavedColors = colorDraft;
+            var rgb = MogtomePresentation.Rgb(config.UiAccentRgb);
+            accentDraft = new(rgb.X, rgb.Y, rgb.Z);
+        }
+        var changed = MaterialAppearanceSelector.DrawColors(id, ref colorDraft, ref accentDraft,
+            new(Ui.T("Ui_Color"), Ui.T("Language_Label"), Ui.T("Ui_Teal"), Ui.T("Ui_Blue"), Ui.T("Ui_Pink"), Ui.T("Ui_CustomRgb")),
+            new(Ui.T("Auto"), Ui.T("Picker"), Ui.T("Default"), Ui.T("Background, controls and text follow your theme."), Ui.T("Theme colour"), Ui.T("Choose each colour independently."), Ui.T("Background"), Ui.T("Controls"), Ui.T("Text"), Ui.T("Aa  Preview text"), Ui.T("Control"), Ui.T("Switch to Picker to set each colour yourself."), Ui.T("Switch back to Auto to use the automatic theme.")), plugin.Configuration.UiCompact ? 298 : 316);
+        if (!changed) return false;
+        config.UiColors = colorDraft;
+        config.UiAccentRgb = MaterialColorSettings.ToRgb(accentDraft);
+        return true;
+    }
+
     private void DrawTitlebarPalette()
     {
+        using var controls = MaterialControls.Push(MogtomePresentation.Controls());
         ImGui.BeginDisabled(!plugin.CanSelectUiLanguage);
-        try
-        {
-            if (MaterialAppearanceSelector.DrawPalette("titlebar-colour", ref accentDraft,
-                new(Ui.T("Ui_Color"), Ui.T("Language_Label"), Ui.T("Ui_Teal"), Ui.T("Ui_Blue"), Ui.T("Ui_Pink"), Ui.T("Ui_CustomRgb"))))
-                SaveAccent();
-        }
+        try { if (DrawColourEditor("titlebar-colour")) plugin.ConfigManager.SaveCurrentAccount(); }
         finally { ImGui.EndDisabled(); }
     }
     internal void DrawCompact(string id = "C")

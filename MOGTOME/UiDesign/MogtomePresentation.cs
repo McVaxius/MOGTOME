@@ -30,7 +30,9 @@ internal static class MogtomePresentation
     };
     internal static bool Compact => MaterialTheme.Current.Density == MaterialDensity.Compact;
     internal static Vector4 Rgb(uint rgb) => new(((rgb >> 16) & 255) / 255f, ((rgb >> 8) & 255) / 255f, (rgb & 255) / 255f, 1);
-    internal static MaterialTheme Theme(uint accent)
+    internal static MaterialTheme Theme(uint accent) => Theme(accent, new MaterialColorSettings());
+
+    internal static MaterialTheme Theme(uint accent, MaterialColorSettings colorSettings)
     {
         accent &= 0xFFFFFF;
         var selected = Rgb(accent); var reference = Rgb(ReferenceAccent);
@@ -62,7 +64,7 @@ internal static class MogtomePresentation
             Tertiary = Relative(0xFEDF79), OnTertiary = background, TertiaryContainer = Relative(0x453C29), OnTertiaryContainer = foreground,
             InverseSurface = foreground, InverseOnSurface = background, InversePrimary = Relative(0xBA8B27),
         };
-        return new(colors, MaterialDensity.Standard) { SurfaceOpacity = 1 };
+        return new(colorSettings.Apply(colors), MaterialDensity.Standard) { SurfaceOpacity = 1 };
     }
     internal static MaterialControlMetrics Controls()
     {

@@ -342,6 +342,53 @@ public sealed class MoogleShopTests
     }
 
     [Fact]
+    public void SelectedCurrencyGridResolvesSharedRewardsAndStillRejectsAmbiguousOffers()
+    {
+        var older = new MoogleShopOffer(1769929, "Newest", 50440, 1, 51750, [new(51750, 100), new(51752, 10)])
+            { MissingKind = ShopMissingKind.Collectible, Gate = new(ItemQuest: 10) };
+        var newer = older with { TomestoneId = 51751, Costs = [new(51751, 100), new(51752, 10)], Gate = new(ItemQuest: 20) };
+        var game = (MoogleShopGameAdapter)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(MoogleShopGameAdapter));
+        var shop = (MoogleShopService)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(MoogleShopService));
+        var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+        var catalogProperty = typeof(MoogleShopGameAdapter).GetProperty("Catalog", flags)!;
+        typeof(MoogleShopService).GetField("game", flags)!.SetValue(shop, game);
+        foreach (var expected in new[] { older, newer })
+        {
+            catalogProperty.SetValue(game, new[] { older, newer });
+            shop.CurrencyId = expected.TomestoneId;
+            var offers = Windows.MoogleShopWindow.GridOffers(shop.SelectedCatalog);
+            Assert.Same(expected, Assert.Single(offers).Value);
+            var eligibility = offers[50440].Gate.Resolve(id => id == expected.Gate.ItemQuest, _ => null, (_, _) => null, (_, _) => null);
+            Assert.Equal(ShopOfferAvailability.Available, eligibility);
+            var settings = new MoogleShopSettings { PurchaseTargets = new() { [123456] = 7 } };
+            var result = ShopMissingSelection.Apply(settings.PurchaseTargets, offers.Values.Select(offer =>
+                (offer.ItemId, offer.MissingKind, BlundervilleRegistration.Missing, eligibility)));
+            Assert.Equal(new ShopMissingResult(1, 0, 0, 0), result);
+            Assert.Equal(1, settings.PurchaseTargets[50440]);
+            Assert.Equal(7, settings.PurchaseTargets[123456]);
+            settings.PurchaseTargets[50440] = 2;
+            var costs = MoogleShopMath.TotalCosts(settings.PurchaseTargets, offers, id => id == 123456 ? 7 : 0, out var known);
+            Assert.True(known);
+            Assert.Equal(200ul, costs[expected.TomestoneId]);
+            Assert.Equal(20ul, costs[51752]);
+            Assert.Equal(2, costs.Count);
+            Assert.Equal(7, settings.PurchaseTargets[123456]);
+
+            catalogProperty.SetValue(game, new[] { older, newer, expected with { ShopId = 999 } });
+            var ambiguous = Windows.MoogleShopWindow.GridOffers(shop.SelectedCatalog);
+            Assert.Empty(ambiguous);
+            MoogleShopMath.TotalCosts(settings.PurchaseTargets, ambiguous, id => id == 123456 ? 7 : 0, out known);
+            Assert.False(known);
+            settings.PurchaseTargets.Remove(50440);
+            result = ShopMissingSelection.Apply(settings.PurchaseTargets, ambiguous.Values.Select(offer =>
+                (offer.ItemId, offer.MissingKind, BlundervilleRegistration.Missing, eligibility)));
+            Assert.Equal(new ShopMissingResult(0, 0, 0, 0), result);
+            Assert.False(settings.PurchaseTargets.ContainsKey(50440));
+            Assert.Equal(7, settings.PurchaseTargets[123456]);
+        }
+    }
+
+    [Fact]
     public void CurrentOffersRetainEveryLiteralCurrencyIncludingRewardTokens()
     {
         var offer = MoogleShopMath.ReadOffer(1, "Current", [(100, 1, false), (0, 1, false)],

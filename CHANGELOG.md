@@ -2,7 +2,13 @@
 
 - Add the verified Company Hat, Company Tabard and Qiqirn Earring rewards to Select Missing; exclude the four additional dungeon coats while retaining Astronomy I classifications and saved targets.
 - Recognize Astronomy II as the farming-target currency when the active newest exchange offers both Astronomy I and II. Keep both currencies' offers and every Uolon Horn cost; retain the existing festival checks and single-currency behavior.
+- Resolve grid prices, eligibility, totals and Select Missing from the selected currency so rewards shared by Astronomy I and II stay usable. Keep ambiguous offers within one currency unavailable and preserve unrelated saved targets.
 - Record the 30 Astronomy II offers and their game-sheet prices in docs/astronomy-ii-shop.md. The runtime catalog continues to come from current game sheets; this preparation does not activate the event or establish its start date.
+
+2026-10-20 - Independent UI colours
+
+- Add Auto (default) and Picker in Colour and Settings, with independent Background, Controls and Text choices. Preserve the existing automatic palette, saved manual choices, native controls and unrelated settings. Translate the editor in every supported language.
+- Save through the current account owner and discard unfinished drafts when switching account configurations.
 
 2026-10-18 - AutoDuty readiness failure details (F584)
 

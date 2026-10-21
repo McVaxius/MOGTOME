@@ -560,6 +560,7 @@ public sealed class LocalizationTests : IDisposable
         {
             var a = JsonSerializer.Deserialize<Configuration>("""{"Version":2,"UiCompactDefaultsApplied":true,"MaxRuns":66,"Blunderville":{"PurchaseTargets":{"41491":2}},"MoogleShop":{"PurchaseTargets":{"50440":1},"PurchaseReviewRequired":true},"FutureSetting":{"value":"unchanged"}}""")!;
             var b = new Configuration { UiCompactDefaultsApplied = true };
+            Assert.Equal(AethertekUI.MaterialColorMode.Auto, a.UiColors.Mode);
             Assert.False(a.ShopStorageNoticeHidden);
             Assert.False(b.ShopStorageNoticeHidden);
             var manager = (ConfigManager)RuntimeHelpers.GetUninitializedObject(typeof(ConfigManager));
@@ -573,10 +574,19 @@ public sealed class LocalizationTests : IDisposable
             });
             SetField(manager, "currentAccountId", "test-a");
             manager.GetActiveConfig().ShopStorageNoticeHidden = true;
+            a.UiColors = new() { Mode = AethertekUI.MaterialColorMode.Picker,
+                BackgroundRgb = 0x123456, ControlsRgb = 0xABCDEF, TextRgb = 0xFEDCBA };
             manager.SaveCurrentAccount();
             var pathA = Path.Combine(directory, "MOGTOME", "test-a_MOGTOME.json");
             var savedA = Configuration.LoadFromFile(pathA);
             Assert.True(savedA.ShopStorageNoticeHidden);
+            Assert.Equal(a.UiColors, savedA.UiColors);
+            var automatic = UiDesign.MogtomePresentation.Theme(savedA.UiAccentRgb).Colors;
+            var picked = UiDesign.MogtomePresentation.Theme(savedA.UiAccentRgb, savedA.UiColors).Colors;
+            Assert.Equal(new System.Numerics.Vector4(AethertekUI.MaterialColorSettings.Rgb(a.UiColors.BackgroundRgb), 1), picked.Background);
+            Assert.Equal(new System.Numerics.Vector4(AethertekUI.MaterialColorSettings.Rgb(a.UiColors.ControlsRgb), 1), picked.Primary);
+            Assert.Equal(new System.Numerics.Vector4(AethertekUI.MaterialColorSettings.Rgb(a.UiColors.TextRgb), 1), picked.OnSurface);
+            Assert.Equal(automatic.Error, picked.Error);
             Assert.Equal(66, savedA.MaxRuns);
             Assert.Equal(2, savedA.Blunderville.PurchaseTargets[41491]);
             Assert.Equal(1, savedA.MoogleShop.PurchaseTargets[50440]);
@@ -585,9 +595,13 @@ public sealed class LocalizationTests : IDisposable
 
             SetField(manager, "currentAccountId", "test-b");
             Assert.False(manager.GetActiveConfig().ShopStorageNoticeHidden);
+            Assert.Equal(AethertekUI.MaterialColorMode.Auto, manager.GetActiveConfig().UiColors.Mode);
+            b.UiColors = a.UiColors with { Mode = AethertekUI.MaterialColorMode.Auto };
             manager.SaveCurrentAccount();
             Assert.False(Configuration.LoadFromFile(Path.Combine(directory, "MOGTOME", "test-b_MOGTOME.json")).ShopStorageNoticeHidden);
             Assert.True(Configuration.LoadFromFile(pathA).ShopStorageNoticeHidden);
+            Assert.Equal(a.UiColors, Configuration.LoadFromFile(pathA).UiColors);
+            Assert.Equal(b.UiColors, Configuration.LoadFromFile(Path.Combine(directory, "MOGTOME", "test-b_MOGTOME.json")).UiColors);
             SetField(manager, "currentAccountId", "test-a");
             manager.GetActiveConfig().ShopStorageNoticeHidden = false;
             manager.SaveCurrentAccount();
@@ -603,7 +617,7 @@ public sealed class LocalizationTests : IDisposable
         {
             var resources = Ui.Resources.GetResourceSet(language == UiLanguage.English
                 ? CultureInfo.InvariantCulture : Ui.CultureFor(language), true, false)!;
-            foreach (var key in new[] { "Plugin_RequiredXaPlugins", "Plugin_XaDatabaseFarmingWarning", "Config_LoadXADB", "Shop_StorageNotice", "Shop_HideStorageNotice", "Shop_ShowStorageNotice" })
+            foreach (var key in new[] { "Plugin_RequiredXaPlugins", "Plugin_XaDatabaseFarmingWarning", "Config_LoadXADB", "Shop_StorageNotice", "Shop_HideStorageNotice", "Shop_ShowStorageNotice", "Auto", "Picker", "Background", "Controls", "Text", "Choose each colour independently.", "Switch back to Auto to use the automatic theme." })
                 Assert.False(string.IsNullOrWhiteSpace(resources.GetString(key)));
             Assert.Contains("{0}", resources.GetString("Plugin_RequiredXaPlugins"));
             Assert.DoesNotContain("{1}", resources.GetString("Plugin_RequiredXaPlugins"));

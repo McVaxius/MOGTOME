@@ -2414,4 +2414,17 @@ Buka penyimpanan untuk memperbarui jumlah tercatat.</value></data>
   <data name="Engine_TomestoneTargetReached" xml:space="preserve"><value>Target tomestone tercapai: total {0}/{1} ({2}).</value></data>
   <data name="Plugin_XaDatabaseFarmingWarning" xml:space="preserve"><value>XA Database belum dimuat. Farming dapat berlanjut; jumlah penyimpanan tercatat tidak tersedia. Muat sebelum membeli.</value></data>
   <data name="Automation_AutoDutyNotReady" xml:space="preserve"><value>AutoDuty belum siap: {0}</value></data>
+  <data name="Auto" xml:space="preserve"><value>Otomatis</value></data>
+  <data name="Picker" xml:space="preserve"><value>Pemilih</value></data>
+  <data name="Default" xml:space="preserve"><value>Bawaan</value></data>
+  <data name="Background, controls and text follow your theme." xml:space="preserve"><value>Latar belakang, kontrol, dan teks mengikuti tema.</value></data>
+  <data name="Theme colour" xml:space="preserve"><value>Warna tema</value></data>
+  <data name="Choose each colour independently." xml:space="preserve"><value>Pilih setiap warna secara terpisah.</value></data>
+  <data name="Background" xml:space="preserve"><value>Latar belakang</value></data>
+  <data name="Controls" xml:space="preserve"><value>Kontrol</value></data>
+  <data name="Text" xml:space="preserve"><value>Teks</value></data>
+  <data name="Aa  Preview text" xml:space="preserve"><value>Aa  Pratinjau teks</value></data>
+  <data name="Control" xml:space="preserve"><value>Kontrol</value></data>
+  <data name="Switch to Picker to set each colour yourself." xml:space="preserve"><value>Beralih ke Pemilih untuk menentukan setiap warna.</value></data>
+  <data name="Switch back to Auto to use the automatic theme." xml:space="preserve"><value>Kembali ke Otomatis untuk menggunakan tema otomatis.</value></data>
 </root>
