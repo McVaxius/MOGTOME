@@ -1,3 +1,8 @@
+2026-10-20 - Independent UI colours
+
+- Add Auto (default) and Picker in Colour and Settings, with independent Background, Controls and Text choices. Preserve the existing automatic palette, saved manual choices, native controls and unrelated settings. Translate the editor in every supported language.
+- Save through the current account owner and discard unfinished drafts when switching account configurations.
+
 2026-10-18 - AutoDuty readiness failure details (F584)
 
 - Show the actual AutoDuty readiness failure at startup: missing/unloaded plugin, unreadable loaded instance, incompatible configuration interface, ongoing initialization or an exception. Do not describe a missing/non-boolean initialization member as ordinary loading.

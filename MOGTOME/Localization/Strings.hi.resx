@@ -2430,4 +2430,17 @@ Retainer और अन्य भंडारण: {3}
   <data name="Engine_TomestoneTargetReached" xml:space="preserve"><value>Tomestone लक्ष्य पूरा: कुल {0}/{1} ({2})।</value></data>
   <data name="Plugin_XaDatabaseFarmingWarning" xml:space="preserve"><value>XA Database लोड नहीं है। फार्मिंग जारी रह सकती है; दर्ज किए गए भंडारण की गिनती उपलब्ध नहीं है। खरीदारी से पहले इसे लोड करें।</value></data>
   <data name="Automation_AutoDutyNotReady" xml:space="preserve"><value>AutoDuty तैयार नहीं है: {0}</value></data>
+  <data name="Auto" xml:space="preserve"><value>स्वचालित</value></data>
+  <data name="Picker" xml:space="preserve"><value>चयनकर्ता</value></data>
+  <data name="Default" xml:space="preserve"><value>डिफ़ॉल्ट</value></data>
+  <data name="Background, controls and text follow your theme." xml:space="preserve"><value>पृष्ठभूमि, नियंत्रण और पाठ आपकी थीम का पालन करते हैं।</value></data>
+  <data name="Theme colour" xml:space="preserve"><value>थीम का रंग</value></data>
+  <data name="Choose each colour independently." xml:space="preserve"><value>हर रंग अलग से चुनें।</value></data>
+  <data name="Background" xml:space="preserve"><value>पृष्ठभूमि</value></data>
+  <data name="Controls" xml:space="preserve"><value>नियंत्रण</value></data>
+  <data name="Text" xml:space="preserve"><value>पाठ</value></data>
+  <data name="Aa  Preview text" xml:space="preserve"><value>Aa  पाठ का पूर्वावलोकन</value></data>
+  <data name="Control" xml:space="preserve"><value>नियंत्रण</value></data>
+  <data name="Switch to Picker to set each colour yourself." xml:space="preserve"><value>हर रंग स्वयं तय करने के लिए चयनकर्ता चुनें।</value></data>
+  <data name="Switch back to Auto to use the automatic theme." xml:space="preserve"><value>स्वचालित थीम के लिए स्वचालित विकल्प चुनें।</value></data>
 </root>
