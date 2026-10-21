@@ -103,17 +103,18 @@ public sealed class ShopMissingSelectionTests
         => Assert.Equal(expected, ShopMissingSelection.IsPvpCost((uint)currency, (uint)cost, (byte)costType));
 
     [Fact]
-    public void CurrentEventGarmentsAreSelectableWhileDungeonCoatsAndUnverifiedGearAreExcluded()
+    public void AstronomyIAndIIGearIsSelectableWhileDungeonCoatsAndUnverifiedGearAreExcluded()
     {
-        // SpecialShop 1770710 captured 2026-10-10. Acquisition records establish five
-        // event/scrip/FATE garments and three Pharos Sirius (Hard)/Arboretum coats.
-        uint[] garments = [24615, 32794, 30052, 27936, 27937];
-        uint[] dungeonCoats = [13162, 13174, 13186];
+        // Astronomy I: SpecialShop 1770710. Astronomy II: SpecialShop 1769929.
+        // Both catalogs retain their verified event/crafted/scrip/FATE equipment;
+        // all seven Pharos Sirius (Hard)/Arboretum coats stay manual-only.
+        uint[] garments = [24615, 32794, 30052, 27936, 27937, 2650, 2993, 12986];
+        uint[] dungeonCoats = [13162, 13174, 13186, 13168, 13180, 13192, 13198];
         var entries = garments.Concat(dungeonCoats).Append(900000u).Select(id =>
             (id, ShopMissingSelection.Classify(0, true, false, id),
                 BlundervilleRegistration.Missing, ShopOfferAvailability.Available)).ToArray();
         var targets = new Dictionary<uint, int> { [32794] = 4, [999] = 2 };
-        Assert.Equal(new ShopMissingResult(4, 0, 1, 0), ShopMissingSelection.Apply(targets, entries));
+        Assert.Equal(new ShopMissingResult(7, 0, 1, 0), ShopMissingSelection.Apply(targets, entries));
         Assert.Equal(4, targets[32794]);
         Assert.Equal(2, targets[999]);
         Assert.All(garments.Where(id => id != 32794), id => Assert.Equal(1, targets[id]));
@@ -124,7 +125,7 @@ public sealed class ShopMissingSelectionTests
         var unknownEntries = garments.Select(id => (id, ShopMissingSelection.Classify(0, true, false, id),
             BlundervilleRegistration.Unknown, ShopOfferAvailability.Available));
         var unknownTargets = new Dictionary<uint, int>();
-        Assert.Equal(new ShopMissingResult(0, 5, 0, 0), ShopMissingSelection.Apply(unknownTargets, unknownEntries));
+        Assert.Equal(new ShopMissingResult(0, 8, 0, 0), ShopMissingSelection.Apply(unknownTargets, unknownEntries));
         Assert.Empty(unknownTargets);
     }
 

@@ -99,7 +99,7 @@ internal sealed unsafe class MoogleShopGameAdapter
         }
         var pvpItems = ShopMissingSelection.ReadPvpItems();
         Catalog = offers.Select(o => o with { MissingKind = ShopMissingSelection.ReadKind(o.ItemId, pvpItems) }).ToArray();
-        CurrentTomestoneId = newestTomestones.Count == 1 ? newestTomestones.Single() : 0;
+        CurrentTomestoneId = MoogleShopMath.CurrentTomestone(newestTomestones);
         Plugin.Log.Information("[MOGTOME][Shop] catalog offers={Offers}; shops={Shops}; tomestones={Currencies}; traders={Traders}; cancelLabels={CancelLabels}; exchangeLabels={ExchangeLabels}; festivals={Festivals}",
             Catalog.Count, string.Join(',', Catalog.Select(o => o.ShopId).Distinct()),
             string.Join(',', Catalog.Select(o => o.TomestoneId).Distinct()), npcIds.Count, cancelMenus.Count, string.Join(" | ", exchangeMenus),

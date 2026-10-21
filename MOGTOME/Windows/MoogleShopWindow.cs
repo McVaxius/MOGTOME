@@ -91,10 +91,13 @@ public sealed class MoogleShopWindow : Window
         if (changed) plugin.ConfigManager.SaveCurrentAccount();
     }
 
+    internal static Dictionary<uint, MoogleShopOffer> GridOffers(IReadOnlyList<MoogleShopOffer> catalog)
+        => catalog.GroupBy(o => o.ItemId).Where(g => g.Count() == 1).ToDictionary(g => g.Key, g => g.Single());
+
     private bool DrawGrid(MoogleShopSettings settings, IReadOnlyList<MoogleShopOffer> catalog, IReadOnlyList<MoogleShopOffer> completeCatalog)
     {
         var scale = ImGuiHelpers.GlobalScale;
-        var offers = completeCatalog.GroupBy(o => o.ItemId).Where(g => g.Count() == 1).ToDictionary(g => g.Key, g => g.Single());
+        var offers = GridOffers(catalog);
         var allRows = catalog.Select(o => o.ItemId).Concat(settings.PurchaseTargets.Keys).Distinct()
             .Select(id => (Id: id, Name: Ui.Item(id).Render())).OrderBy(r => r.Name, StringComparer.Create(Ui.Culture, true)).ToArray();
         var storedStocks = plugin.XaDatabase.ReadStocks(allRows.Select(row => row.Id));
@@ -111,7 +114,7 @@ public sealed class MoogleShopWindow : Window
         if (UiLayout.Button(Ui.L("Shop_SelectMissing")))
         {
             missingResult = ShopMissingSelection.Apply(settings.PurchaseTargets,
-                catalog.GroupBy(o => o.ItemId).Where(g => g.Count() == 1).Select(g => g.Single())
+                offers.Values
                     .Select(o => (o.ItemId, o.MissingKind,
                         BlundervilleGameAdapter.SelectionState(o.ItemId, inventory[o.ItemId], ownership[o.ItemId]), eligibility[o.ItemId])));
             changed = missingResult.Value.Added > 0;

@@ -39,11 +39,13 @@ internal static class ShopMissingSelection
             : !equippable ? ShopMissingKind.None : pvp ? ShopMissingKind.PvpEquipment
             : verifiedShopEquipment ? ShopMissingKind.ShopEquipment : itemId switch
             {
-                // Current rewards verified 2026-10-10 against Garland Tools item acquisition records.
+                // Astronomy I rewards verified 2026-10-10 against Garland Tools acquisition records.
                 // Mameshiba event reward; Skybuilders' Scrip garments; Archaeotania's Horn garments.
                 24615 or 32794 or 30052 or 27936 or 27937 => ShopMissingKind.ShopEquipment,
+                // Astronomy II: crafted Company Hat/Tabard; Metal Gears Revengeance 2 Qiqirn Earring.
+                2650 or 2993 or 12986 => ShopMissingKind.ShopEquipment,
                 // These coats drop in Pharos Sirius (Hard) / Saint Mocianne's Arboretum.
-                13162 or 13174 or 13186 => ShopMissingKind.None,
+                13162 or 13174 or 13186 or 13168 or 13180 or 13192 or 13198 => ShopMissingKind.None,
                 _ => ShopMissingKind.UnknownEquipment,
             };
 
