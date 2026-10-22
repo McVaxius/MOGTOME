@@ -13,6 +13,7 @@ public class Configuration
 {
     public int Version { get; set; } = 2;
     public BlundervilleSettings Blunderville { get; set; } = new();
+    public KeyboundBrawlerSettings KeyboundBrawler { get; set; } = new();
     public MoogleShopSettings MoogleShop { get; set; } = new();
     public bool ShopStorageNoticeHidden { get; set; }
     public Localization.UiLanguage? UiLanguage { get; set; }

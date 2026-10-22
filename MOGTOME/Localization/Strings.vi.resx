@@ -2428,7 +2428,12 @@ Mở kho để cập nhật số lượng đã ghi.</value></data>
   <data name="Switch to Picker to set each colour yourself." xml:space="preserve"><value>Chuyển sang Bộ chọn để tự đặt từng màu.</value></data>
   <data name="Switch back to Auto to use the automatic theme." xml:space="preserve"><value>Chuyển về Tự động để dùng chủ đề tự động.</value></data>
   <data name="KB_Title" xml:space="preserve"><value>Keybound Brawler</value></data>
-  <data name="KB_Help" xml:space="preserve"><value>Một vòng được vào thủ công. Mở cửa sổ này không vào hay bắt đầu sự kiện.</value></data>
+  <data name="KB_Help" xml:space="preserve"><value>Thiết lập giới hạn cày và mục tiêu mua sắm. Mở cửa sổ này không bắt đầu thao tác nào.</value></data>
+  <data name="KB_ShopPending" xml:space="preserve"><value>Tính năng tự chơi sự kiện đang chờ hoàn thiện. Mua sắm có thể dùng độc lập.</value></data>
+  <data name="KB_WalletTarget" xml:space="preserve"><value>Mục tiêu số dư MGC</value></data>
+  <data name="KB_TargetCurrency" xml:space="preserve"><value>MGC mục tiêu</value></data>
+  <data name="KB_TotalCurrency" xml:space="preserve"><value>Tổng MGC cần: {0}</value></data>
+  <data name="KB_NoCatalog" xml:space="preserve"><value>Mặt hàng đổi bằng MGC hiện chưa có.</value></data>
   <data name="KB_Idle" xml:space="preserve"><value>Đang chờ. Không kiểm soát vòng chơi hay thao tác nhập.</value></data>
   <data name="KB_Pending" xml:space="preserve"><value>Chờ thực hiện — xác minh cách chơi</value></data>
   <data name="KB_ProfileUnavailable" xml:space="preserve"><value>Chờ nhân vật đăng nhập và hồ sơ tài khoản tải xong.</value></data>
@@ -2436,4 +2441,39 @@ Mở kho để cập nhật số lượng đã ghi.</value></data>
   <data name="KB_OutsideEvent" xml:space="preserve"><value>Chưa xác minh khu vực Keybound Brawler. Hãy vào sự kiện thủ công.</value></data>
   <data name="KB_GameplayUnverified" xml:space="preserve"><value>Chưa thể chơi: cần xác minh giao diện, thao tác được chấp nhận và kết thúc vòng.</value></data>
   <data name="KB_Stopped" xml:space="preserve"><value>Đã dừng. Không giữ phím nào và không tự động tiếp tục.</value></data>
+  <data name="KB_CurrencyName" xml:space="preserve"><value>Tín dụng Manderville Gold Saucer</value></data>
+  <data name="KB_Wallet" xml:space="preserve"><value>Số dư MGC: {0}</value></data>
+  <data name="KB_FinishRule" xml:space="preserve"><value>Đạt bất kỳ giới hạn nào đã bật sẽ kết thúc cày.</value></data>
+  <data name="KB_AfterShopping" xml:space="preserve"><value>Sau khi mua sắm</value></data>
+  <data name="KB_IdleShop" xml:space="preserve"><value>Chờ</value></data>
+  <data name="KB_RunSolverPending" xml:space="preserve"><value>Tính năng tự chơi sự kiện chưa khả dụng. Các điều khiển mua sắm hoạt động độc lập.</value></data>
+  <data name="KB_SelectedSummary" xml:space="preserve"><value>{0} mục tiêu · thiếu {1} bản</value></data>
+  <data name="KB_AfterPurchases" xml:space="preserve"><value>Sau khi mua: {0} MGC</value></data>
+  <data name="KB_Shortfall" xml:space="preserve"><value>Còn thiếu: {0} MGC</value></data>
+  <data name="KB_RewardCount" xml:space="preserve"><value>{0} trên {1} phần thưởng</value></data>
+  <data name="KB_OneOfEach" xml:space="preserve"><value>Mỗi loại một món: {0} MGC</value></data>
+  <data name="KB_SearchRewards" xml:space="preserve"><value>Tìm phần thưởng…</value></data>
+  <data name="KB_AllRewards" xml:space="preserve"><value>Tất cả phần thưởng</value></data>
+  <data name="KB_CategoryGlamour" xml:space="preserve"><value>Ngoại hình</value></data>
+  <data name="KB_CategoryFashionAccessory" xml:space="preserve"><value>Phụ kiện thời trang</value></data>
+  <data name="KB_CategoryMount" xml:space="preserve"><value>Thú cưỡi</value></data>
+  <data name="KB_CategoryMinion" xml:space="preserve"><value>Bạn đồng hành</value></data>
+  <data name="KB_CategoryOrchestrion" xml:space="preserve"><value>Orchestrion</value></data>
+  <data name="KB_CategoryFramerKit" xml:space="preserve"><value>Bộ chân dung</value></data>
+  <data name="KB_CategoryEmote" xml:space="preserve"><value>Biểu cảm</value></data>
+  <data name="KB_CategoryCoffer" xml:space="preserve"><value>Rương</value></data>
+  <data name="KB_SelectMissingHelp" xml:space="preserve"><value>Chọn mọi phần thưởng còn thiếu trừ Rương Keybound có thể nhận nhiều lần. Giữ các mục tiêu lớn hơn và bỏ qua trạng thái sở hữu chưa rõ.</value></data>
+  <data name="KB_UnitMgc" xml:space="preserve"><value>MGC mỗi món</value></data>
+  <data name="KB_NeedMgc" xml:space="preserve"><value>MGC cần có</value></data>
+  <data name="KB_Target" xml:space="preserve"><value>Mục tiêu</value></data>
+  <data name="KB_OnHand" xml:space="preserve"><value>Đang có</value></data>
+  <data name="KB_Owned" xml:space="preserve"><value>Đã sở hữu</value></data>
+  <data name="KB_CategoryOther" xml:space="preserve"><value>Khác</value></data>
+  <data name="KB_WalletUnknown" xml:space="preserve"><value>Không có số dư MGC.</value></data>
+  <data name="KB_CostUnknown" xml:space="preserve"><value>Chưa tính được chi phí khi chưa rõ quyền sở hữu.</value></data>
+  <data name="KB_NoWallet" xml:space="preserve"><value>Không có số dư MGC; đã dừng.</value></data>
+  <data name="KB_NoFunds" xml:space="preserve"><value>Không đủ MGC; đã dừng mua sắm.</value></data>
+  <data name="KB_TraderUnavailable" xml:space="preserve"><value>Thương nhân MGC không khả dụng hoặc chưa xác minh được cửa hàng.</value></data>
+  <data name="KB_Reward" xml:space="preserve"><value>Phần thưởng</value></data>
+  <data name="KB_OwnedHelp" xml:space="preserve"><value>Phần thưởng đã sở hữu gồm vật phẩm sưu tầm đã đăng ký và bản sao đã xác nhận.</value></data>
 </root>

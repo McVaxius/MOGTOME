@@ -2428,7 +2428,12 @@ Kayıtlı miktarları yenilemek için depoları açın.</value></data>
   <data name="Switch to Picker to set each colour yourself." xml:space="preserve"><value>Her rengi ayarlamak için Seçici'ye geçin.</value></data>
   <data name="Switch back to Auto to use the automatic theme." xml:space="preserve"><value>Otomatik temayı kullanmak için Otomatik'e dönün.</value></data>
   <data name="KB_Title" xml:space="preserve"><value>Keybound Brawler</value></data>
-  <data name="KB_Help" xml:space="preserve"><value>Elle girilen tek bir tur. Bu pencereyi açmak etkinliğe girmez veya etkinliği başlatmaz.</value></data>
+  <data name="KB_Help" xml:space="preserve"><value>Para kasma sınırlarını ve satın alma hedeflerini ayarlayın. Bu pencereyi açmak hiçbir şeyi başlatmaz.</value></data>
+  <data name="KB_ShopPending" xml:space="preserve"><value>Etkinliğin otomatik oynanışı beklemede. Alışveriş bağımsız olarak kullanılabilir.</value></data>
+  <data name="KB_WalletTarget" xml:space="preserve"><value>MGC bakiye hedefi</value></data>
+  <data name="KB_TargetCurrency" xml:space="preserve"><value>Hedef MGC</value></data>
+  <data name="KB_TotalCurrency" xml:space="preserve"><value>Gereken toplam MGC: {0}</value></data>
+  <data name="KB_NoCatalog" xml:space="preserve"><value>Mevcut MGC teklifi kullanılamıyor.</value></data>
   <data name="KB_Idle" xml:space="preserve"><value>Boşta. Hiçbir tur veya giriş denetlenmiyor.</value></data>
   <data name="KB_Pending" xml:space="preserve"><value>Yapılacak — oyun doğrulaması</value></data>
   <data name="KB_ProfileUnavailable" xml:space="preserve"><value>Karakterin giriş yapmasını ve hesap profilinin yüklenmesini bekleyin.</value></data>
@@ -2436,4 +2441,39 @@ Kayıtlı miktarları yenilemek için depoları açın.</value></data>
   <data name="KB_OutsideEvent" xml:space="preserve"><value>Keybound Brawler bölgesi doğrulanmadı. Etkinliğe elle girin.</value></data>
   <data name="KB_GameplayUnverified" xml:space="preserve"><value>Oyun kullanılamıyor: arayüz, kabul edilen giriş ve tur sonu geçişi doğrulanmalıdır.</value></data>
   <data name="KB_Stopped" xml:space="preserve"><value>Durduruldu. Hiçbir tuş basılı tutulmuyor; otomatik devam edilmeyecek.</value></data>
+  <data name="KB_CurrencyName" xml:space="preserve"><value>Manderville Gold Saucer kredileri</value></data>
+  <data name="KB_Wallet" xml:space="preserve"><value>MGC bakiyesi: {0}</value></data>
+  <data name="KB_FinishRule" xml:space="preserve"><value>Etkin sınırlardan herhangi biri kasmayı bitirir.</value></data>
+  <data name="KB_AfterShopping" xml:space="preserve"><value>Alışverişten sonra</value></data>
+  <data name="KB_IdleShop" xml:space="preserve"><value>Boşta</value></data>
+  <data name="KB_RunSolverPending" xml:space="preserve"><value>Etkinliğin otomatik oynanışı henüz kullanılamıyor. Alışveriş kontrolleri bağımsız çalışır.</value></data>
+  <data name="KB_SelectedSummary" xml:space="preserve"><value>{0} hedef · {1} adet eksik</value></data>
+  <data name="KB_AfterPurchases" xml:space="preserve"><value>Alışverişten sonra: {0} MGC</value></data>
+  <data name="KB_Shortfall" xml:space="preserve"><value>Eksik: {0} MGC</value></data>
+  <data name="KB_RewardCount" xml:space="preserve"><value>{1} ödülden {0} tanesi</value></data>
+  <data name="KB_OneOfEach" xml:space="preserve"><value>Her birinden bir tane: {0} MGC</value></data>
+  <data name="KB_SearchRewards" xml:space="preserve"><value>Ödül ara…</value></data>
+  <data name="KB_AllRewards" xml:space="preserve"><value>Tüm ödüller</value></data>
+  <data name="KB_CategoryGlamour" xml:space="preserve"><value>Görünüm</value></data>
+  <data name="KB_CategoryFashionAccessory" xml:space="preserve"><value>Moda aksesuarı</value></data>
+  <data name="KB_CategoryMount" xml:space="preserve"><value>Binek</value></data>
+  <data name="KB_CategoryMinion" xml:space="preserve"><value>Yoldaş</value></data>
+  <data name="KB_CategoryOrchestrion" xml:space="preserve"><value>Orchestrion</value></data>
+  <data name="KB_CategoryFramerKit" xml:space="preserve"><value>Portre kiti</value></data>
+  <data name="KB_CategoryEmote" xml:space="preserve"><value>İfade</value></data>
+  <data name="KB_CategoryCoffer" xml:space="preserve"><value>Sandık</value></data>
+  <data name="KB_SelectMissingHelp" xml:space="preserve"><value>Tekrar alınabilen Keybound Sandığı dışındaki tüm eksik ödülleri seç. Daha yüksek hedefleri koru ve sahiplik durumu bilinmeyenleri atla.</value></data>
+  <data name="KB_UnitMgc" xml:space="preserve"><value>Birim MGC</value></data>
+  <data name="KB_NeedMgc" xml:space="preserve"><value>Gereken MGC</value></data>
+  <data name="KB_Target" xml:space="preserve"><value>Hedef</value></data>
+  <data name="KB_OnHand" xml:space="preserve"><value>Eldeki</value></data>
+  <data name="KB_Owned" xml:space="preserve"><value>Sahip olunan</value></data>
+  <data name="KB_CategoryOther" xml:space="preserve"><value>Diğer</value></data>
+  <data name="KB_WalletUnknown" xml:space="preserve"><value>MGC bakiyesi kullanılamıyor.</value></data>
+  <data name="KB_CostUnknown" xml:space="preserve"><value>Sahiplik bilinmeden maliyet hesaplanamaz.</value></data>
+  <data name="KB_NoWallet" xml:space="preserve"><value>MGC bakiyesi kullanılamıyor; durduruldu.</value></data>
+  <data name="KB_NoFunds" xml:space="preserve"><value>MGC yetersiz; alışveriş durduruldu.</value></data>
+  <data name="KB_TraderUnavailable" xml:space="preserve"><value>MGC tüccarı kullanılamıyor veya dükkânı doğrulanamadı.</value></data>
+  <data name="KB_Reward" xml:space="preserve"><value>Ödül</value></data>
+  <data name="KB_OwnedHelp" xml:space="preserve"><value>Sahip olunan ödüller kayıtlı koleksiyonları ve bilinen kopyaları içerir.</value></data>
 </root>

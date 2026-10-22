@@ -11,13 +11,15 @@ public class YesAlreadyIPC : IDisposable
     private const string LockName = "MOGTOME";
 
     private readonly IPluginLog log;
+    private readonly Func<bool>? keepPaused;
     private bool isPaused;
 
     public bool IsPaused => isPaused;
 
-    public YesAlreadyIPC(IPluginLog log)
+    public YesAlreadyIPC(IPluginLog log, Func<bool>? keepPaused = null)
     {
         this.log = log;
+        this.keepPaused = keepPaused;
     }
 
     public void Pause()
@@ -39,6 +41,7 @@ public class YesAlreadyIPC : IDisposable
 
     public void Unpause()
     {
+        if (keepPaused?.Invoke() == true) return;
         if (!isPaused) return;
 
         try
@@ -56,6 +59,7 @@ public class YesAlreadyIPC : IDisposable
 
     public void Dispose()
     {
+        if (keepPaused?.Invoke() == true) return;
         if (isPaused)
         {
             try

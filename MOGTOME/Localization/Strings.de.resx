@@ -2272,7 +2272,12 @@ Lager öffnen, um erfasste Mengen zu aktualisieren.</value></data>
   <data name="Switch to Picker to set each colour yourself." xml:space="preserve"><value>Wechsle zur Farbwahl, um jede Farbe selbst festzulegen.</value></data>
   <data name="Switch back to Auto to use the automatic theme." xml:space="preserve"><value>Wechsle zurück zu Automatisch, um das automatische Design zu verwenden.</value></data>
   <data name="KB_Title" xml:space="preserve"><value>Keybound Brawler</value></data>
-  <data name="KB_Help" xml:space="preserve"><value>Eine manuell betretene Runde. Das Öffnen dieses Fensters betritt oder startet das Ereignis nicht.</value></data>
+  <data name="KB_Help" xml:space="preserve"><value>Lege die Grenzen für das Farmen und die Kaufziele fest. Das Öffnen dieses Fensters startet nichts.</value></data>
+  <data name="KB_ShopPending" xml:space="preserve"><value>Die Ereignisautomatik steht noch aus. Einkäufe sind unabhängig davon verfügbar.</value></data>
+  <data name="KB_WalletTarget" xml:space="preserve"><value>MGC-Guthabenziel</value></data>
+  <data name="KB_TargetCurrency" xml:space="preserve"><value>MGC-Ziel</value></data>
+  <data name="KB_TotalCurrency" xml:space="preserve"><value>Insgesamt benötigte MGC: {0}</value></data>
+  <data name="KB_NoCatalog" xml:space="preserve"><value>Aktuelles MGC-Angebot nicht verfügbar.</value></data>
   <data name="KB_Idle" xml:space="preserve"><value>Inaktiv. Keine Runde oder Eingabe wird gesteuert.</value></data>
   <data name="KB_Pending" xml:space="preserve"><value>Ausstehend — Spielprüfung</value></data>
   <data name="KB_ProfileUnavailable" xml:space="preserve"><value>Auf einen angemeldeten Charakter und sein Kontoprofil warten.</value></data>
@@ -2280,4 +2285,39 @@ Lager öffnen, um erfasste Mengen zu aktualisieren.</value></data>
   <data name="KB_OutsideEvent" xml:space="preserve"><value>Kein verifiziertes Keybound-Brawler-Gebiet. Das Ereignis manuell betreten.</value></data>
   <data name="KB_GameplayUnverified" xml:space="preserve"><value>Spiel nicht verfügbar: Oberfläche, bestätigte Eingabe und Rundenende müssen geprüft werden.</value></data>
   <data name="KB_Stopped" xml:space="preserve"><value>Gestoppt. Keine Taste wird gehalten; keine automatische Fortsetzung.</value></data>
+  <data name="KB_CurrencyName" xml:space="preserve"><value>Manderville-Gold-Saucer-Credits</value></data>
+  <data name="KB_Wallet" xml:space="preserve"><value>MGC-Guthaben: {0}</value></data>
+  <data name="KB_FinishRule" xml:space="preserve"><value>Jedes aktivierte Limit beendet das Farmen.</value></data>
+  <data name="KB_AfterShopping" xml:space="preserve"><value>Nach dem Einkauf</value></data>
+  <data name="KB_IdleShop" xml:space="preserve"><value>Inaktiv</value></data>
+  <data name="KB_RunSolverPending" xml:space="preserve"><value>Die Ereignisautomatik ist noch nicht verfügbar. Die Einkaufssteuerung funktioniert unabhängig davon.</value></data>
+  <data name="KB_SelectedSummary" xml:space="preserve"><value>{0} Ziele · {1} Exemplare fehlen</value></data>
+  <data name="KB_AfterPurchases" xml:space="preserve"><value>Nach dem Einkauf: {0} MGC</value></data>
+  <data name="KB_Shortfall" xml:space="preserve"><value>Fehlbetrag: {0} MGC</value></data>
+  <data name="KB_RewardCount" xml:space="preserve"><value>{0} von {1} Belohnungen</value></data>
+  <data name="KB_OneOfEach" xml:space="preserve"><value>Je ein Exemplar: {0} MGC</value></data>
+  <data name="KB_SearchRewards" xml:space="preserve"><value>Belohnungen suchen…</value></data>
+  <data name="KB_AllRewards" xml:space="preserve"><value>Alle Belohnungen</value></data>
+  <data name="KB_CategoryGlamour" xml:space="preserve"><value>Projektionen</value></data>
+  <data name="KB_CategoryFashionAccessory" xml:space="preserve"><value>Modeaccessoire</value></data>
+  <data name="KB_CategoryMount" xml:space="preserve"><value>Reittier</value></data>
+  <data name="KB_CategoryMinion" xml:space="preserve"><value>Begleiter</value></data>
+  <data name="KB_CategoryOrchestrion" xml:space="preserve"><value>Orchestrion</value></data>
+  <data name="KB_CategoryFramerKit" xml:space="preserve"><value>Portraitmaterial</value></data>
+  <data name="KB_CategoryEmote" xml:space="preserve"><value>Emote</value></data>
+  <data name="KB_CategoryCoffer" xml:space="preserve"><value>Truhe</value></data>
+  <data name="KB_SelectMissingHelp" xml:space="preserve"><value>Alle fehlenden Belohnungen außer der wiederholt erhältlichen Keybound-Truhe auswählen. Höhere Zielmengen beibehalten und unbekannten Besitz überspringen.</value></data>
+  <data name="KB_UnitMgc" xml:space="preserve"><value>MGC pro Stück</value></data>
+  <data name="KB_NeedMgc" xml:space="preserve"><value>Benötigte MGC</value></data>
+  <data name="KB_Target" xml:space="preserve"><value>Zielmenge</value></data>
+  <data name="KB_OnHand" xml:space="preserve"><value>Vorhanden</value></data>
+  <data name="KB_Owned" xml:space="preserve"><value>Im Besitz</value></data>
+  <data name="KB_CategoryOther" xml:space="preserve"><value>Sonstiges</value></data>
+  <data name="KB_WalletUnknown" xml:space="preserve"><value>MGC-Guthaben nicht verfügbar.</value></data>
+  <data name="KB_CostUnknown" xml:space="preserve"><value>Kosten erst bei bekanntem Besitz verfügbar.</value></data>
+  <data name="KB_NoWallet" xml:space="preserve"><value>MGC-Guthaben nicht verfügbar; angehalten.</value></data>
+  <data name="KB_NoFunds" xml:space="preserve"><value>Nicht genügend MGC; Einkauf angehalten.</value></data>
+  <data name="KB_TraderUnavailable" xml:space="preserve"><value>Der MGC-Händler ist nicht verfügbar oder sein Laden konnte nicht überprüft werden.</value></data>
+  <data name="KB_Reward" xml:space="preserve"><value>Belohnung</value></data>
+  <data name="KB_OwnedHelp" xml:space="preserve"><value>Besitz umfasst registrierte Sammelobjekte und bekannte Exemplare.</value></data>
 </root>

@@ -2444,7 +2444,12 @@ Retainer और अन्य भंडारण: {3}
   <data name="Switch to Picker to set each colour yourself." xml:space="preserve"><value>हर रंग स्वयं तय करने के लिए चयनकर्ता चुनें।</value></data>
   <data name="Switch back to Auto to use the automatic theme." xml:space="preserve"><value>स्वचालित थीम के लिए स्वचालित विकल्प चुनें।</value></data>
   <data name="KB_Title" xml:space="preserve"><value>Keybound Brawler</value></data>
-  <data name="KB_Help" xml:space="preserve"><value>मैन्युअल रूप से प्रवेश किए गए एक राउंड के लिए। यह विंडो खोलने से इवेंट में प्रवेश या शुरुआत नहीं होती।</value></data>
+  <data name="KB_Help" xml:space="preserve"><value>फार्मिंग की सीमाएँ और खरीद के लक्ष्य तैयार करें। यह विंडो खोलने से कुछ भी शुरू नहीं होता।</value></data>
+  <data name="KB_ShopPending" xml:space="preserve"><value>इवेंट की स्वचालित खेलने की सुविधा लंबित है। खरीदारी स्वतंत्र रूप से उपलब्ध है।</value></data>
+  <data name="KB_WalletTarget" xml:space="preserve"><value>MGC वॉलेट लक्ष्य</value></data>
+  <data name="KB_TargetCurrency" xml:space="preserve"><value>लक्षित MGC</value></data>
+  <data name="KB_TotalCurrency" xml:space="preserve"><value>कुल आवश्यक MGC: {0}</value></data>
+  <data name="KB_NoCatalog" xml:space="preserve"><value>वर्तमान MGC ऑफ़र उपलब्ध नहीं है।</value></data>
   <data name="KB_Idle" xml:space="preserve"><value>निष्क्रिय। किसी राउंड या इनपुट का नियंत्रण नहीं लिया गया है।</value></data>
   <data name="KB_Pending" xml:space="preserve"><value>बाकी — गेमप्ले का सत्यापन</value></data>
   <data name="KB_ProfileUnavailable" xml:space="preserve"><value>पात्र के लॉगिन और खाते की प्रोफ़ाइल की प्रतीक्षा करें।</value></data>
@@ -2452,4 +2457,39 @@ Retainer और अन्य भंडारण: {3}
   <data name="KB_OutsideEvent" xml:space="preserve"><value>Keybound Brawler क्षेत्र सत्यापित नहीं है। इवेंट में मैन्युअल रूप से प्रवेश करें।</value></data>
   <data name="KB_GameplayUnverified" xml:space="preserve"><value>गेमप्ले उपलब्ध नहीं है: इवेंट स्क्रीन, स्वीकार किए गए इनपुट और राउंड के अंत का सत्यापन बाकी है।</value></data>
   <data name="KB_Stopped" xml:space="preserve"><value>रोक दिया गया। कोई कुंजी दबाकर नहीं रखी गई है और अपने आप दोबारा शुरू नहीं होगा।</value></data>
+  <data name="KB_CurrencyName" xml:space="preserve"><value>मैंडेर्विल गोल्ड सॉसर क्रेडिट</value></data>
+  <data name="KB_Wallet" xml:space="preserve"><value>MGC शेष: {0}</value></data>
+  <data name="KB_FinishRule" xml:space="preserve"><value>सक्रिय सीमाओं में से कोई भी पूरी होने पर फ़ार्मिंग रुकती है।</value></data>
+  <data name="KB_AfterShopping" xml:space="preserve"><value>खरीदारी के बाद</value></data>
+  <data name="KB_IdleShop" xml:space="preserve"><value>निष्क्रिय</value></data>
+  <data name="KB_RunSolverPending" xml:space="preserve"><value>इवेंट की स्वचालित खेलने की सुविधा अभी उपलब्ध नहीं है। खरीदारी के नियंत्रण स्वतंत्र रूप से काम करते हैं।</value></data>
+  <data name="KB_SelectedSummary" xml:space="preserve"><value>{0} लक्ष्य · {1} प्रतियाँ कम हैं</value></data>
+  <data name="KB_AfterPurchases" xml:space="preserve"><value>खरीदारी के बाद: {0} MGC</value></data>
+  <data name="KB_Shortfall" xml:space="preserve"><value>कमी: {0} MGC</value></data>
+  <data name="KB_RewardCount" xml:space="preserve"><value>{1} में से {0} पुरस्कार</value></data>
+  <data name="KB_OneOfEach" xml:space="preserve"><value>हर एक की एक प्रति: {0} MGC</value></data>
+  <data name="KB_SearchRewards" xml:space="preserve"><value>पुरस्कार खोजें…</value></data>
+  <data name="KB_AllRewards" xml:space="preserve"><value>सभी पुरस्कार</value></data>
+  <data name="KB_CategoryGlamour" xml:space="preserve"><value>रूप-सज्जा</value></data>
+  <data name="KB_CategoryFashionAccessory" xml:space="preserve"><value>फ़ैशन सहायक</value></data>
+  <data name="KB_CategoryMount" xml:space="preserve"><value>सवारी</value></data>
+  <data name="KB_CategoryMinion" xml:space="preserve"><value>मिनियन</value></data>
+  <data name="KB_CategoryOrchestrion" xml:space="preserve"><value>ऑर्केस्ट्रियन</value></data>
+  <data name="KB_CategoryFramerKit" xml:space="preserve"><value>पोर्ट्रेट किट</value></data>
+  <data name="KB_CategoryEmote" xml:space="preserve"><value>भाव-भंगिमा</value></data>
+  <data name="KB_CategoryCoffer" xml:space="preserve"><value>संदूक</value></data>
+  <data name="KB_SelectMissingHelp" xml:space="preserve"><value>बार-बार मिलने वाले Keybound संदूक को छोड़कर सभी अनुपलब्ध पुरस्कार चुनें। बड़े लक्ष्य बनाए रखें और अज्ञात स्वामित्व को छोड़ें।</value></data>
+  <data name="KB_UnitMgc" xml:space="preserve"><value>प्रति इकाई MGC</value></data>
+  <data name="KB_NeedMgc" xml:space="preserve"><value>आवश्यक MGC</value></data>
+  <data name="KB_Target" xml:space="preserve"><value>लक्ष्य</value></data>
+  <data name="KB_OnHand" xml:space="preserve"><value>पास में</value></data>
+  <data name="KB_Owned" xml:space="preserve"><value>स्वामित्व में</value></data>
+  <data name="KB_CategoryOther" xml:space="preserve"><value>अन्य</value></data>
+  <data name="KB_WalletUnknown" xml:space="preserve"><value>MGC शेष उपलब्ध नहीं है।</value></data>
+  <data name="KB_CostUnknown" xml:space="preserve"><value>स्वामित्व ज्ञात होने तक लागत उपलब्ध नहीं है।</value></data>
+  <data name="KB_NoWallet" xml:space="preserve"><value>MGC शेष उपलब्ध नहीं है; रोक दिया गया।</value></data>
+  <data name="KB_NoFunds" xml:space="preserve"><value>MGC अपर्याप्त हैं; खरीदारी रोक दी गई।</value></data>
+  <data name="KB_TraderUnavailable" xml:space="preserve"><value>MGC व्यापारी उपलब्ध नहीं है या उसकी दुकान सत्यापित नहीं हो सकी।</value></data>
+  <data name="KB_Reward" xml:space="preserve"><value>इनाम</value></data>
+  <data name="KB_OwnedHelp" xml:space="preserve"><value>स्वामित्व वाले इनामों में पंजीकृत संग्रहणीय वस्तुएँ और ज्ञात प्रतियाँ शामिल हैं।</value></data>
 </root>

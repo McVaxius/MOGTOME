@@ -128,24 +128,10 @@ public class MainWindow : Window, IDisposable
         plugin.ConsumableInventoryService.Refresh();
         DrawHeader();
         DrawTeamLeader();
-        if (UiLayout.Button(Ui.L("KB_Title"))) plugin.KeyboundBrawlerWindow.IsOpen = true;
-        UiLayout.Panel(() =>
-        {
-            var origin = ImGui.GetCursorScreenPos();
-            var width = UiLayout.AvailableWidth;
-            MaterialIcons.Draw(MaterialIcon.Location, origin + new Vector2(0, 4 * scale), 30 * scale, MaterialTheme.Current.Colors.Primary);
-            ImGui.SetCursorScreenPos(origin + new Vector2(44 * scale, 0));
-            ImGui.BeginGroup();
-            Heading("Window_BlundervilleFailer");
-            UiLayout.Wrapped(Ui.T("Main_OpenBlunderville"));
-            ImGui.EndGroup();
-            var buttonWidth = UiLayout.IconButtonWidth(Ui.T("Main_Open"));
-            if (width >= ImGui.GetItemRectSize().X + 44 * scale + buttonWidth + 16 * scale)
-                ImGui.SetCursorScreenPos(origin + new Vector2(width - buttonWidth, 0));
-            if (UiLayout.IconButton(Ui.L("Window_BlundervilleFailer"), MaterialIcon.ArrowRight,
-                new Vector2(Math.Min(buttonWidth, UiLayout.AvailableWidth), (MogtomePresentation.Compact ? 36 : 42) * scale), Ui.T("Main_Open")))
-                plugin.BlundervilleWindow.IsOpen = true;
-        }, minimumHeight: (MogtomePresentation.Compact ? 60 : 74) * scale);
+        DrawActivityNavigation("Window_BlundervilleFailer", Ui.T("Main_OpenBlunderville"),
+            () => plugin.BlundervilleWindow.IsOpen = true);
+        DrawActivityNavigation("KB_Title", Ui.T("Main_Open") + ": " + Ui.T("KB_Title"),
+            () => plugin.KeyboundBrawlerWindow.IsOpen = true);
         UiLayout.Panel(() =>
         {
             var origin = ImGui.GetCursorScreenPos();
@@ -370,6 +356,34 @@ public class MainWindow : Window, IDisposable
         }
         using var heading = plugin.Appearance.Font(MogtomeFontRole.CompactHeading);
         AethertekUI.MaterialText.Text(Ui.T(key));
+    }
+
+    private void DrawActivityNavigation(string titleKey, string description, Action open)
+    {
+        var scale = ImGuiHelpers.GlobalScale;
+        UiLayout.Panel(() =>
+        {
+            var origin = ImGui.GetCursorScreenPos();
+            var width = UiLayout.AvailableWidth;
+            if (titleKey is "KB_Title" or "Window_BlundervilleFailer")
+            {
+                var icon = titleKey == "KB_Title" ? plugin.Appearance.KeyboundIcon : plugin.Appearance.BlundervilleIcon;
+                MaterialCanvas.DrawImage(ImGui.GetWindowDrawList(), icon.Handle, icon.Size,
+                    origin, origin + new Vector2(36 * scale));
+            }
+            else MaterialIcons.Draw(MaterialIcon.Location, origin + new Vector2(0, 4 * scale), 30 * scale, MaterialTheme.Current.Colors.Primary);
+            ImGui.SetCursorScreenPos(origin + new Vector2(44 * scale, 0));
+            ImGui.BeginGroup();
+            Heading(titleKey);
+            UiLayout.Wrapped(description);
+            ImGui.EndGroup();
+            var buttonWidth = UiLayout.IconButtonWidth(Ui.T("Main_Open"));
+            if (width >= ImGui.GetItemRectSize().X + 44 * scale + buttonWidth + 16 * scale)
+                ImGui.SetCursorScreenPos(origin + new Vector2(width - buttonWidth, 0));
+            if (UiLayout.IconButton(Ui.L(titleKey), MaterialIcon.ArrowRight,
+                new Vector2(Math.Min(buttonWidth, UiLayout.AvailableWidth), (MogtomePresentation.Compact ? 36 : 42) * scale), Ui.T("Main_Open")))
+                open();
+        }, minimumHeight: (MogtomePresentation.Compact ? 60 : 74) * scale);
     }
 
     private static void DrawCard(Action draw)

@@ -47,6 +47,8 @@ internal sealed class MogtomeAppearance : IDisposable
     internal const string OriginalIconResource = "MOGTOME.images.icon.png";
     // The host owns this shared texture and keeps it alive through render submission.
     internal IDalamudTextureWrap OriginalIcon => Plugin.TextureProvider.GetFromManifestResource(typeof(Plugin).Assembly, OriginalIconResource).GetWrapOrEmpty();
+    internal IDalamudTextureWrap KeyboundIcon => Plugin.TextureProvider.GetFromManifestResource(typeof(Plugin).Assembly, "MOGTOME.images.keybound-icon.png").GetWrapOrEmpty();
+    internal IDalamudTextureWrap BlundervilleIcon => Plugin.TextureProvider.GetFromManifestResource(typeof(Plugin).Assembly, "MOGTOME.images.blunderville-icon.png").GetWrapOrEmpty();
     internal static void DrawHeaderArt(Vector2 origin, Vector2 size)
     {
         var icon = Plugin.TextureProvider.GetFromManifestResource(typeof(Plugin).Assembly, OriginalIconResource).GetWrapOrEmpty();
@@ -103,7 +105,7 @@ internal sealed class MogtomeAppearance : IDisposable
         var count = owner.TitleBarButtons.Count(button => !owner.IsClickthrough || button.AvailableClickthrough);
         if (owner.AllowPinning || owner.AllowClickthrough || owner.AllowBackgroundBlur) count++;
         var extraRight = count * (ImGuiP.CalcFontSize(window) + ImGui.GetStyle().ItemInnerSpacing.X);
-        var icon = OriginalIcon;
+        var icon = owner is KeyboundBrawlerWindow ? KeyboundIcon : owner is BlundervilleWindow ? BlundervilleIcon : OriginalIcon;
         using var font = Font(MogtomeFontRole.Body);
         if (status is { } summary)
             MaterialWindowHeader.PaintTitleWithStatus(window, owner.WindowName.Split("##", 2)[0], icon.Handle, icon.Size,
@@ -183,10 +185,14 @@ internal sealed class MogtomeAppearance : IDisposable
         }
         else if (owner is KeyboundBrawlerWindow)
         {
-            active = false;
-            state = Ui.T("KB_Pending");
-            detail = plugin.KeyboundBrawler.UnavailableReason.Render();
-            blocked = true;
+            var shop = plugin.KeyboundShop;
+            active = shop.IsRunning || plugin.IsKeyboundShopActionQueued;
+            blocked = !active && shop.Status.Key is not ("BV_Idle" or "BV_ShopDone" or "BV_Stopped");
+            state = Ui.T(active ? "Ui_TitlebarBuying" : blocked ? "Ui_TitlebarBlocked"
+                : shop.Status.Key == "BV_Stopped" ? "Main_Stopped" : "BV_Idle");
+            detail = shop.Status.Render();
+            var walletKnown = KeyboundBrawlerShop.TryWallet(out var wallet);
+            fields.Add($"MGC {(walletKnown ? wallet.ToString(Ui.Culture) : "—")}");
         }
         else
         {

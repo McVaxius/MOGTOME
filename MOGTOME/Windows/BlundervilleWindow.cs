@@ -18,13 +18,14 @@ public sealed class BlundervilleWindow : Window, IDisposable
 {
     private readonly AethertekUI.Dalamud.MaterialWindowMotion windowMotion = new();
     private readonly Plugin plugin;
-    private ShopMissingResult? missingResult;
+    private readonly EventShopTargetEditor shopEditor;
     public bool DebugVisible { get; set; }
 
     public BlundervilleWindow(Plugin plugin)
         : base(Ui.T("Window_BlundervilleFailer") + "###MogtomeBlunderville", ImGuiWindowFlags.HorizontalScrollbar)
     {
         this.plugin = plugin;
+        shopEditor = new(plugin);
         Size = new Vector2(740, 630);
         SizeCondition = ImGuiCond.FirstUseEver;
         SizeConstraints = new WindowSizeConstraints
@@ -52,7 +53,9 @@ public sealed class BlundervilleWindow : Window, IDisposable
         var moogle = plugin.Appearance.OriginalIcon;
         var scale = ImGuiHelpers.GlobalScale;
         var unavailable = new Vector4(1f, .60f, .80f, 1f);
-        MaterialIcons.Draw(MaterialIcon.Location, ImGui.GetCursorScreenPos(), 30 * scale, unavailable);
+        var eventIcon = plugin.Appearance.BlundervilleIcon;
+        MaterialCanvas.DrawImage(ImGui.GetWindowDrawList(), eventIcon.Handle, eventIcon.Size,
+            ImGui.GetCursorScreenPos(), ImGui.GetCursorScreenPos() + new Vector2(30 * scale));
         ImGui.Dummy(new Vector2(30 * scale));
         ImGui.SameLine();
         using (plugin.Appearance.Font(MogtomePresentation.Compact ? MogtomeFontRole.CompactHeading : MogtomeFontRole.Heading))
@@ -88,6 +91,26 @@ public sealed class BlundervilleWindow : Window, IDisposable
             if (UiLayout.IconButton(Ui.L("Blunderville_OpenMogtome"), MaterialIcon.ExternalLink, new Vector2(UiLayout.AvailableWidth, 0)))
                 plugin.MainWindow.IsOpen = true;
         });
+        UiLayout.Panel(() =>
+        {
+            var origin = ImGui.GetCursorScreenPos();
+            var width = UiLayout.AvailableWidth;
+            var icon = plugin.Appearance.KeyboundIcon;
+            MaterialCanvas.DrawImage(ImGui.GetWindowDrawList(), icon.Handle, icon.Size,
+                origin, origin + new Vector2(36 * scale));
+            ImGui.SetCursorScreenPos(origin + new Vector2(44 * scale, 0));
+            ImGui.BeginGroup();
+            using (plugin.Appearance.Font(MogtomeFontRole.CompactHeading))
+                UiLayout.Wrapped(Ui.T("KB_Title"));
+            UiLayout.Wrapped(Ui.T("Main_Open") + ": " + Ui.T("KB_Title"));
+            ImGui.EndGroup();
+            var buttonWidth = UiLayout.IconButtonWidth(Ui.T("Main_Open"));
+            if (width >= ImGui.GetItemRectSize().X + 44 * scale + buttonWidth + 16 * scale)
+                ImGui.SetCursorScreenPos(origin + new Vector2(width - buttonWidth, 0));
+            if (UiLayout.IconButton(Ui.L("KB_Title"), MaterialIcon.ArrowRight,
+                new Vector2(Math.Min(buttonWidth, UiLayout.AvailableWidth), (MogtomePresentation.Compact ? 36 : 42) * scale), Ui.T("Main_Open")))
+                plugin.KeyboundBrawlerWindow.IsOpen = true;
+        }, minimumHeight: (MogtomePresentation.Compact ? 60 : 74) * scale);
         ImGui.Separator();
         DrawControls();
     }
@@ -171,159 +194,10 @@ public sealed class BlundervilleWindow : Window, IDisposable
 
     private bool DrawShop(BlundervilleSettings settings, IReadOnlyList<BlundervilleOffer> catalog)
     {
-        var changed = false;
-        var scale = ImGuiHelpers.GlobalScale;
-        var offers = catalog.GroupBy(o => o.ItemId).Select(g => g.First()).ToDictionary(o => o.ItemId);
-        using (plugin.Appearance.Font(MogtomeFontRole.CompactHeading))
-            UiLayout.SingleLine(Ui.T("BV_ShopTargets"));
-        UiLayout.SameLineIfFits(UiLayout.IconButtonWidth(Ui.T("Shop_Clear")));
-        ImGui.BeginDisabled(settings.PurchaseTargets.Count == 0);
-        if (UiLayout.Button(Ui.L("Shop_Clear"))) { settings.PurchaseTargets.Clear(); missingResult = null; changed = true; }
-        ImGui.EndDisabled();
-        UiLayout.SameLineIfFits(MaterialText.Measure(Ui.T("Shop_HideOwned")).X + ImGui.GetFrameHeight() + ImGui.GetStyle().ItemSpacing.X);
         var hideOwned = settings.HideOwned;
-        if (UiLayout.Checkbox(Ui.L("Shop_HideOwned"), ref hideOwned)) { settings.HideOwned = hideOwned; changed = true; }
-        var allRows = offers.Keys.Concat(settings.PurchaseTargets.Keys).Distinct()
-            .Select(id => (Id: id, Name: Ui.Item(id).Render()))
-            .OrderBy(row => row.Name, StringComparer.Create(Ui.Culture, true)).ToArray();
-        var storedStocks = plugin.XaDatabase.ReadStocks(allRows.Select(row => row.Id));
-        var inventory = allRows.ToDictionary(row => row.Id, row =>
-            plugin.XaDatabase.TryCount(row.Id, storedStocks.GetValueOrDefault(row.Id), out var count) ? (int?)count : null);
-        var ownership = allRows.ToDictionary(row => row.Id, row => BlundervilleGameAdapter.Ownership(row.Id, inventory[row.Id],
-            inventory[row.Id].HasValue ? AethertekUI.Dalamud.XaItemOwnershipState.Missing : AethertekUI.Dalamud.XaItemOwnershipState.Unknown));
-        var eligibility = allRows.ToDictionary(row => row.Id, row => offers.TryGetValue(row.Id, out var offer)
-            ? ShopOfferEligibility.Read(offer.Gate) : ShopOfferAvailability.Unknown);
-        UiLayout.SameLineIfFits(UiLayout.IconButtonWidth(Ui.T("Shop_SelectMissing")));
-        if (UiLayout.Button(Ui.L("Shop_SelectMissing")))
-        {
-            missingResult = ShopMissingSelection.Apply(settings.PurchaseTargets,
-                catalog.GroupBy(o => o.ItemId).Where(g => g.Count() == 1).Select(g => g.Single())
-                    .Select(o => (o.ItemId, o.MissingKind,
-                        BlundervilleGameAdapter.SelectionState(o.ItemId, inventory[o.ItemId], ownership[o.ItemId]), eligibility[o.ItemId])));
-            changed |= missingResult.Value.Added > 0;
-        }
-        if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) UiLayout.SetTooltip(Ui.T("Shop_SelectMissingHelp"));
-        if (missingResult is { } result) UiLayout.Wrapped(Ui.T("Shop_SelectMissingResult",
-            result.Added, result.UnknownOwnership, result.UnknownAcquisition, result.UnknownEligibility));
-        var rows = allRows.Where(row => eligibility[row.Id] != ShopOfferAvailability.Locked &&
-            (!settings.HideOwned || ownership[row.Id] != BlundervilleRegistration.Owned)).ToArray();
-        if (allRows.Length == 0)
-        {
-            UiLayout.TextDisabled(Ui.T("BV_NoCatalog"));
-            UiLayout.Wrapped(Ui.T("BV_TotalMgf", 0));
-            return changed;
-        }
-
-        var captions = new[] { Ui.T("BV_Item"), "###Wanted", "###OnHand", "###UnitMgf", "###NeededMgf", "###Registration" };
-        var tips = new[] { Ui.T("BV_Item"), Ui.T("BV_Wanted"), Ui.T("BV_OnHand"), Ui.T("BV_UnitMgf"), Ui.T("BV_NeededMgf"), Ui.T("BV_RegistrationHelp") };
-        var controlRoot = ImGui.GetID(""); // Retain the count editor's original window/row identity inside the table.
-        using var tableControls = MaterialTable.PushControls();
-        using var tightRows = MogtomePresentation.Compact ? MaterialTable.PushTightRows() : default;
-        var padding = ImGui.GetStyle().CellPadding;
-        var widths = new[]
-        {
-            Math.Max(MaterialText.Measure(captions[0]).X, rows.Select(row => MaterialText.Measure(row.Name).X).DefaultIfEmpty().Max()),
-            64 * scale, 58 * scale, 72 * scale, 82 * scale, 26 * scale,
-        };
-        var innerWidth = widths.Sum() + padding.X * 12 + 2;
-        var scroll = innerWidth > UiLayout.AvailableWidth;
-        var rowHeight = Math.Max(ImGui.GetFrameHeight(), rows.Select(row => MaterialText.Measure(row.Name).Y).DefaultIfEmpty().Max()) + padding.Y * 2;
-        var flags = ImGuiTableFlags.RowBg | ImGuiTableFlags.BordersInnerH | ImGuiTableFlags.BordersOuter |
-            ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.NoSavedSettings | ImGuiTableFlags.ScrollY;
-        if (scroll) flags |= ImGuiTableFlags.ScrollX;
-        var height = Math.Min(rowHeight * (rows.Length + 1) + (scroll ? ImGui.GetStyle().ScrollbarSize : 0) + padding.Y * 2,
-            (MogtomePresentation.Compact ? 280 : 320) * scale);
-        if (rows.Length == 0) UiLayout.TextDisabled(Ui.T("Shop_EmptyView"));
-        else if (ImGui.BeginTable("###BlundervillePurchaseGrid", 6, flags, new Vector2(UiLayout.AvailableWidth, height), scroll ? innerWidth : 0))
-        {
-            try
-            {
-                ImGui.TableSetupColumn(captions[0], ImGuiTableColumnFlags.WidthStretch, widths[0]);
-                for (var column = 1; column < widths.Length; column++)
-                    ImGui.TableSetupColumn(captions[column], ImGuiTableColumnFlags.WidthFixed, widths[column]);
-                ImGui.TableSetupScrollFreeze(0, 1);
-                ImGui.TableNextRow(ImGuiTableRowFlags.Headers, ImGui.GetFrameHeight());
-                for (var column = 0; column < captions.Length; column++)
-                {
-                    if (!ImGui.TableSetColumnIndex(column)) continue;
-                    ImGui.PushID(column);
-                    try
-                    {
-                        var ink = ImGui.GetColorU32(ImGuiCol.Text);
-                        ImGui.PushStyleColor(ImGuiCol.Text, Vector4.Zero);
-                        ImGui.TableHeader(captions[column]);
-                        ImGui.PopStyleColor();
-                        var min = ImGui.GetItemRectMin();
-                        var max = ImGui.GetItemRectMax();
-                        var icon = column == 1 ? MaterialIcon.Cart : column == 2 ? MaterialIcon.Backpack : MaterialIcon.None;
-                        if (icon != MaterialIcon.None)
-                        {
-                            var side = ImGui.GetTextLineHeight();
-                            MaterialIcons.Draw(icon, (min + max - new Vector2(side)) * .5f, side, ImGui.GetStyle().Colors[(int)ImGuiCol.Text]);
-                        }
-                        else
-                        {
-                            var text = column == 0 ? captions[0] : column == 3 ? "$" : column == 4 ? "$$" : "?";
-                            var textSize = MaterialText.Measure(text);
-                            MaterialText.AddText(ImGui.GetWindowDrawList(), new Vector2(column == 0 ? min.X : (min.X + max.X - textSize.X) * .5f,
-                                (min.Y + max.Y - textSize.Y) * .5f), ink, text);
-                        }
-                        if (ImGui.IsItemHovered()) UiLayout.SetTooltip(tips[column]);
-                    }
-                    finally { ImGui.PopID(); }
-                }
-                foreach (var (id, name) in rows)
-                {
-                    ImGui.TableNextRow(ImGuiTableRowFlags.None, rowHeight);
-                    ImGuiP.PushOverrideID(controlRoot);
-                    try
-                    {
-                        var desired = settings.PurchaseTargets.GetValueOrDefault(id);
-                        var known = inventory[id].HasValue;
-                        var current = inventory[id].GetValueOrDefault();
-                        offers.TryGetValue(id, out var offer);
-                        ImGui.TableSetColumnIndex(0);
-                        ImGui.AlignTextToFramePadding();
-                        UiLayout.SingleLine(name);
-                        if (ImGui.IsItemHovered()) UiLayout.SetTooltip(name + (eligibility[id] == ShopOfferAvailability.Unknown
-                            ? "\n" + Ui.T("Shop_EligibilityUnknown") : string.Empty));
-                        ImGui.TableSetColumnIndex(1);
-                        ImGui.PushID((int)id);
-                        try
-                        {
-                            ImGui.SetNextItemWidth(-1);
-                            if (ImGui.InputInt("###DesiredInventoryCount", ref desired, 0, 0))
-                            {
-                                desired = Math.Max(0, desired);
-                                if (desired == 0) settings.PurchaseTargets.Remove(id);
-                                else settings.PurchaseTargets[id] = desired;
-                                changed = true;
-                            }
-                        }
-                        finally { ImGui.PopID(); }
-                        ImGui.TableSetColumnIndex(2);
-                        ImGui.AlignTextToFramePadding();
-                        UiLayout.SingleLine(known ? current.ToString(Ui.Culture) : "?");
-                        ImGui.TableSetColumnIndex(3);
-                        ImGui.AlignTextToFramePadding();
-                        UiLayout.SingleLine(offer?.ReceiveCount > 0 ? ((decimal)offer.Price / offer.ReceiveCount).ToString("0.##", Ui.Culture) : "?");
-                        var deficit = known ? BlundervilleProgress.Deficit(desired, current) : 0;
-                        var costKnown = desired == 0 || (known && (deficit == 0 || (offer?.ReceiveCount > 0 && deficit % offer.ReceiveCount == 0)));
-                        var cost = costKnown && deficit > 0 ? (ulong)deficit / offer!.ReceiveCount * offer.Price : 0;
-                        ImGui.TableSetColumnIndex(4);
-                        ImGui.AlignTextToFramePadding();
-                        UiLayout.SingleLine(costKnown ? cost.ToString(Ui.Culture) : "?");
-                        ImGui.TableSetColumnIndex(5);
-                        ImGui.AlignTextToFramePadding();
-                        DrawRegistration(ownership[id], desired > (known ? current : 0));
-                    }
-                    finally { ImGui.PopID(); }
-                }
-            }
-            finally { ImGui.EndTable(); }
-        }
-        var total = BlundervilleProgress.TotalMgf(settings.PurchaseTargets, offers, id => inventory.GetValueOrDefault(id), out var totalKnown);
-        UiLayout.Wrapped(Ui.T("BV_TotalMgf", totalKnown ? total.ToString(Ui.Culture) : "?"));
+        var changed = shopEditor.Draw(settings.PurchaseTargets, ref hideOwned, catalog,
+            "###BlundervillePurchaseGrid", "BV_UnitMgf", "BV_NeededMgf", "BV_TotalMgf");
+        settings.HideOwned = hideOwned;
         return changed;
     }
 

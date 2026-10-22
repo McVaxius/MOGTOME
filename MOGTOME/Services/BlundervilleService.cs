@@ -86,6 +86,7 @@ public sealed class BlundervilleService : IDisposable
     public bool Buy() => Request(Stage.Shopping);
     private bool Request(Stage requested)
     {
+        if (plugin.KeyboundShopOwnsAutomation) return Reject("BV_Unavailable");
         if (Volatile.Read(ref stopRequested) != 0) return Reject("BV_Stopped");
         if (!Ready || IsRunning || plugin.Engine.IsRunning || plugin.IsEngineStartQueued || plugin.MoogleShop?.IsRunning == true || plugin.IsMoogleShopActionQueued)
             return Reject("BV_Unavailable");
@@ -169,7 +170,7 @@ public sealed class BlundervilleService : IDisposable
                 {
                     Plugin.Log.Information("[MOGTOME][BV][Reload] consumed {Marker}; scenario={Scenario}", loadMarker, scenario);
                     // Refuse to disturb another owner's activity during startup cleanup.
-                    if (!IsRunning && !plugin.Engine.IsRunning && !plugin.IsEngineStartQueued && plugin.MoogleShop?.IsRunning != true && !plugin.IsMoogleShopActionQueued)
+                    if (!IsRunning && !plugin.Engine.IsRunning && !plugin.IsEngineStartQueued && plugin.MoogleShop?.IsRunning != true && !plugin.IsMoogleShopActionQueued && !plugin.KeyboundShopOwnsAutomation)
                     {
                         StopCore(false);
                         var accepted = !reload.IsCancelled && Ready && (scenario == BlundervilleReloadScenario.Start ? Start() : Buy());

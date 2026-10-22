@@ -2428,7 +2428,12 @@ Buka penyimpanan untuk memperbarui jumlah tercatat.</value></data>
   <data name="Switch to Picker to set each colour yourself." xml:space="preserve"><value>Beralih ke Pemilih untuk menentukan setiap warna.</value></data>
   <data name="Switch back to Auto to use the automatic theme." xml:space="preserve"><value>Kembali ke Otomatis untuk menggunakan tema otomatis.</value></data>
   <data name="KB_Title" xml:space="preserve"><value>Keybound Brawler</value></data>
-  <data name="KB_Help" xml:space="preserve"><value>Satu ronde yang dimasuki manual. Membuka jendela ini tidak memasuki atau memulai acara.</value></data>
+  <data name="KB_Help" xml:space="preserve"><value>Siapkan batas farming dan target belanja. Membuka jendela ini tidak memulai apa pun.</value></data>
+  <data name="KB_ShopPending" xml:space="preserve"><value>Otomatisasi permainan event masih tertunda. Pembelian tersedia secara terpisah.</value></data>
+  <data name="KB_WalletTarget" xml:space="preserve"><value>Target saldo MGC</value></data>
+  <data name="KB_TargetCurrency" xml:space="preserve"><value>Target MGC</value></data>
+  <data name="KB_TotalCurrency" xml:space="preserve"><value>Total MGC yang dibutuhkan: {0}</value></data>
+  <data name="KB_NoCatalog" xml:space="preserve"><value>Penawaran MGC saat ini tidak tersedia.</value></data>
   <data name="KB_Idle" xml:space="preserve"><value>Siaga. Tidak mengendalikan ronde atau input.</value></data>
   <data name="KB_Pending" xml:space="preserve"><value>Belum selesai — verifikasi permainan</value></data>
   <data name="KB_ProfileUnavailable" xml:space="preserve"><value>Tunggu karakter masuk dan profil akun dimuat.</value></data>
@@ -2436,4 +2441,39 @@ Buka penyimpanan untuk memperbarui jumlah tercatat.</value></data>
   <data name="KB_OutsideEvent" xml:space="preserve"><value>Wilayah Keybound Brawler belum terverifikasi. Masuki acara secara manual.</value></data>
   <data name="KB_GameplayUnverified" xml:space="preserve"><value>Permainan belum tersedia: tampilan, input yang diterima, dan akhir ronde perlu diverifikasi.</value></data>
   <data name="KB_Stopped" xml:space="preserve"><value>Dihentikan. Tidak ada tombol yang ditahan dan tidak dilanjutkan otomatis.</value></data>
+  <data name="KB_CurrencyName" xml:space="preserve"><value>Kredit Manderville Gold Saucer</value></data>
+  <data name="KB_Wallet" xml:space="preserve"><value>Saldo MGC: {0}</value></data>
+  <data name="KB_FinishRule" xml:space="preserve"><value>Salah satu batas yang diaktifkan akan menghentikan farming.</value></data>
+  <data name="KB_AfterShopping" xml:space="preserve"><value>Setelah berbelanja</value></data>
+  <data name="KB_IdleShop" xml:space="preserve"><value>Diam</value></data>
+  <data name="KB_RunSolverPending" xml:space="preserve"><value>Otomatisasi permainan event belum tersedia. Kontrol belanja bekerja secara terpisah.</value></data>
+  <data name="KB_SelectedSummary" xml:space="preserve"><value>{0} target · kurang {1} salinan</value></data>
+  <data name="KB_AfterPurchases" xml:space="preserve"><value>Setelah pembelian: {0} MGC</value></data>
+  <data name="KB_Shortfall" xml:space="preserve"><value>Kekurangan: {0} MGC</value></data>
+  <data name="KB_RewardCount" xml:space="preserve"><value>{0} dari {1} hadiah</value></data>
+  <data name="KB_OneOfEach" xml:space="preserve"><value>Masing-masing satu: {0} MGC</value></data>
+  <data name="KB_SearchRewards" xml:space="preserve"><value>Cari hadiah…</value></data>
+  <data name="KB_AllRewards" xml:space="preserve"><value>Semua hadiah</value></data>
+  <data name="KB_CategoryGlamour" xml:space="preserve"><value>Glamour</value></data>
+  <data name="KB_CategoryFashionAccessory" xml:space="preserve"><value>Aksesori mode</value></data>
+  <data name="KB_CategoryMount" xml:space="preserve"><value>Tunggangan</value></data>
+  <data name="KB_CategoryMinion" xml:space="preserve"><value>Minion</value></data>
+  <data name="KB_CategoryOrchestrion" xml:space="preserve"><value>Orchestrion</value></data>
+  <data name="KB_CategoryFramerKit" xml:space="preserve"><value>Kit potret</value></data>
+  <data name="KB_CategoryEmote" xml:space="preserve"><value>Emote</value></data>
+  <data name="KB_CategoryCoffer" xml:space="preserve"><value>Peti</value></data>
+  <data name="KB_SelectMissingHelp" xml:space="preserve"><value>Pilih semua hadiah yang belum dimiliki kecuali Peti Keybound yang dapat diperoleh berulang kali. Pertahankan target yang lebih besar dan lewati kepemilikan yang belum diketahui.</value></data>
+  <data name="KB_UnitMgc" xml:space="preserve"><value>MGC per unit</value></data>
+  <data name="KB_NeedMgc" xml:space="preserve"><value>MGC diperlukan</value></data>
+  <data name="KB_Target" xml:space="preserve"><value>Target jumlah</value></data>
+  <data name="KB_OnHand" xml:space="preserve"><value>Tersedia</value></data>
+  <data name="KB_Owned" xml:space="preserve"><value>Dimiliki</value></data>
+  <data name="KB_CategoryOther" xml:space="preserve"><value>Lainnya</value></data>
+  <data name="KB_WalletUnknown" xml:space="preserve"><value>Saldo MGC tidak tersedia.</value></data>
+  <data name="KB_CostUnknown" xml:space="preserve"><value>Biaya belum tersedia sampai kepemilikan diketahui.</value></data>
+  <data name="KB_NoWallet" xml:space="preserve"><value>Saldo MGC tidak tersedia; dihentikan.</value></data>
+  <data name="KB_NoFunds" xml:space="preserve"><value>MGC tidak cukup; belanja dihentikan.</value></data>
+  <data name="KB_TraderUnavailable" xml:space="preserve"><value>Pedagang MGC tidak tersedia atau tokonya tidak dapat diverifikasi.</value></data>
+  <data name="KB_Reward" xml:space="preserve"><value>Hadiah</value></data>
+  <data name="KB_OwnedHelp" xml:space="preserve"><value>Hadiah yang dimiliki mencakup koleksi terdaftar dan salinan yang diketahui.</value></data>
 </root>

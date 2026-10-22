@@ -2278,7 +2278,12 @@ Path: {0}
   <data name="Switch to Picker to set each colour yourself." xml:space="preserve"><value>Переключитесь на Палитру, чтобы задать каждый цвет.</value></data>
   <data name="Switch back to Auto to use the automatic theme." xml:space="preserve"><value>Вернитесь в Авто, чтобы использовать автоматическую тему.</value></data>
   <data name="KB_Title" xml:space="preserve"><value>Keybound Brawler</value></data>
-  <data name="KB_Help" xml:space="preserve"><value>Один раунд с ручным входом. Открытие окна не входит в событие и не запускает его.</value></data>
+  <data name="KB_Help" xml:space="preserve"><value>Настройте ограничения фарма и цели покупок. Открытие этого окна ничего не запускает.</value></data>
+  <data name="KB_ShopPending" xml:space="preserve"><value>Автоматическое прохождение события в разработке. Покупки доступны отдельно.</value></data>
+  <data name="KB_WalletTarget" xml:space="preserve"><value>Целевой баланс MGC</value></data>
+  <data name="KB_TargetCurrency" xml:space="preserve"><value>Цель MGC</value></data>
+  <data name="KB_TotalCurrency" xml:space="preserve"><value>Всего требуется MGC: {0}</value></data>
+  <data name="KB_NoCatalog" xml:space="preserve"><value>Текущее предложение за MGC недоступно.</value></data>
   <data name="KB_Idle" xml:space="preserve"><value>Ожидание. Раунд и ввод не управляются.</value></data>
   <data name="KB_Pending" xml:space="preserve"><value>В планах — проверка игры</value></data>
   <data name="KB_ProfileUnavailable" xml:space="preserve"><value>Дождитесь входа персонажа и загрузки профиля.</value></data>
@@ -2286,4 +2291,39 @@ Path: {0}
   <data name="KB_OutsideEvent" xml:space="preserve"><value>Территория Keybound Brawler не подтверждена. Войдите в событие вручную.</value></data>
   <data name="KB_GameplayUnverified" xml:space="preserve"><value>Игра недоступна: нужно проверить интерфейс, принятие ввода и завершение раунда.</value></data>
   <data name="KB_Stopped" xml:space="preserve"><value>Остановлено. Клавиши не удерживаются; автоматического возобновления нет.</value></data>
+  <data name="KB_CurrencyName" xml:space="preserve"><value>Кредиты «Мандервильского Золотого Блюдца»</value></data>
+  <data name="KB_Wallet" xml:space="preserve"><value>Баланс MGC: {0}</value></data>
+  <data name="KB_FinishRule" xml:space="preserve"><value>Любой включённый лимит завершает фарм.</value></data>
+  <data name="KB_AfterShopping" xml:space="preserve"><value>После покупок</value></data>
+  <data name="KB_IdleShop" xml:space="preserve"><value>Ожидание</value></data>
+  <data name="KB_RunSolverPending" xml:space="preserve"><value>Автоматическое прохождение события пока недоступно. Управление покупками работает отдельно.</value></data>
+  <data name="KB_SelectedSummary" xml:space="preserve"><value>Целей: {0} · не хватает {1} шт.</value></data>
+  <data name="KB_AfterPurchases" xml:space="preserve"><value>После покупок: {0} MGC</value></data>
+  <data name="KB_Shortfall" xml:space="preserve"><value>Не хватает: {0} MGC</value></data>
+  <data name="KB_RewardCount" xml:space="preserve"><value>Наград: {0} из {1}</value></data>
+  <data name="KB_OneOfEach" xml:space="preserve"><value>По одной каждой: {0} MGC</value></data>
+  <data name="KB_SearchRewards" xml:space="preserve"><value>Поиск наград…</value></data>
+  <data name="KB_AllRewards" xml:space="preserve"><value>Все награды</value></data>
+  <data name="KB_CategoryGlamour" xml:space="preserve"><value>Внешний вид</value></data>
+  <data name="KB_CategoryFashionAccessory" xml:space="preserve"><value>Модный аксессуар</value></data>
+  <data name="KB_CategoryMount" xml:space="preserve"><value>Ездовое животное</value></data>
+  <data name="KB_CategoryMinion" xml:space="preserve"><value>Спутник</value></data>
+  <data name="KB_CategoryOrchestrion" xml:space="preserve"><value>Оркестрион</value></data>
+  <data name="KB_CategoryFramerKit" xml:space="preserve"><value>Набор для портрета</value></data>
+  <data name="KB_CategoryEmote" xml:space="preserve"><value>Эмоция</value></data>
+  <data name="KB_CategoryCoffer" xml:space="preserve"><value>Сундук</value></data>
+  <data name="KB_SelectMissingHelp" xml:space="preserve"><value>Выбрать все отсутствующие награды, кроме повторяемого сундука Keybound. Сохранить большие цели и пропустить награды с неизвестным владением.</value></data>
+  <data name="KB_UnitMgc" xml:space="preserve"><value>MGC за шт.</value></data>
+  <data name="KB_NeedMgc" xml:space="preserve"><value>Нужно MGC</value></data>
+  <data name="KB_Target" xml:space="preserve"><value>Цель</value></data>
+  <data name="KB_OnHand" xml:space="preserve"><value>В наличии</value></data>
+  <data name="KB_Owned" xml:space="preserve"><value>Получено</value></data>
+  <data name="KB_CategoryOther" xml:space="preserve"><value>Прочее</value></data>
+  <data name="KB_WalletUnknown" xml:space="preserve"><value>Баланс MGC недоступен.</value></data>
+  <data name="KB_CostUnknown" xml:space="preserve"><value>Стоимость недоступна, пока владение не определено.</value></data>
+  <data name="KB_NoWallet" xml:space="preserve"><value>Баланс MGC недоступен; остановлено.</value></data>
+  <data name="KB_NoFunds" xml:space="preserve"><value>Недостаточно MGC; покупки остановлены.</value></data>
+  <data name="KB_TraderUnavailable" xml:space="preserve"><value>Торговец MGC недоступен или его магазин не удалось проверить.</value></data>
+  <data name="KB_Reward" xml:space="preserve"><value>Награда</value></data>
+  <data name="KB_OwnedHelp" xml:space="preserve"><value>Полученные награды включают зарегистрированные коллекционные предметы и известные экземпляры.</value></data>
 </root>

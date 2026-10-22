@@ -57,6 +57,8 @@ public sealed class Plugin : IDalamudPlugin
     private const string AliasCommandName = "/mog";
     private const string BlundervilleCommandName = "/blunderville";
     private const string BlundervilleAliasCommandName = "/bv";
+    private const string KeyboundCommandName = "/keybound";
+    private const string KeyboundAliasCommandName = "/kbb";
     private const string AdsEnterInnCommand = "/ads enterinn";
     private const string XaSkipCutscenesCommand = "/xa skipcutscenes on";
 
@@ -94,6 +96,11 @@ public sealed class Plugin : IDalamudPlugin
     public BlundervilleService Blunderville { get; private set; }
     public MoogleShopService MoogleShop { get; private set; }
     public KeyboundBrawlerService KeyboundBrawler { get; private set; }
+    public KeyboundBrawlerShopService KeyboundShop { get; private set; }
+    private int keyboundShopActionGeneration;
+    public bool IsKeyboundShopActionQueued { get; private set; }
+    internal bool KeyboundShopOwnsAutomation => KeyboundShop?.HoldAutomaticDialogs == true ||
+        IsKeyboundShopActionQueued || ConfigManager?.GetActiveConfig()?.KeyboundBrawler?.PurchaseReviewRequired == true;
     private int moogleShopActionGeneration;
     public bool IsMoogleShopActionQueued { get; private set; }
     private int blundervilleActionGeneration;
@@ -148,7 +155,7 @@ public sealed class Plugin : IDalamudPlugin
 
         // Initialize IPC that RotationService needs
         BossModIPC = new BossModIPC(PluginInterface, Log, CommandManager);
-        YesAlreadyIPC = new YesAlreadyIPC(Log);
+        YesAlreadyIPC = new YesAlreadyIPC(Log, () => KeyboundShopOwnsAutomation);
         VNavIPC = new VNavIPC(Log, CommandManager);
         RotationService = new RotationService(Log, ConfigManager, BossModIPC);
         AutoDutyIPC = new AutoDutyIPC(Log, CommandManager, RunHistoryService);
@@ -187,6 +194,7 @@ public sealed class Plugin : IDalamudPlugin
         Blunderville = new BlundervilleService(this);
         MoogleShop = new MoogleShopService(this);
         KeyboundBrawler = new KeyboundBrawlerService();
+        KeyboundShop = new KeyboundBrawlerShopService(this);
 
         Appearance = new(this);
 
@@ -221,10 +229,16 @@ public sealed class Plugin : IDalamudPlugin
         {
             HelpMessage = Ui.GameT("BV_CommandHelp")
         };
+        keyboundCommandInfo = new CommandInfo(OnKeyboundCommand)
+        {
+            HelpMessage = Ui.GameT("Main_Open") + ": " + Ui.GameT("KB_Title") + " (/keybound, /kbb)"
+        };
         CommandManager.AddHandler(CommandName, mainCommandInfo);
         CommandManager.AddHandler(AliasCommandName, aliasCommandInfo);
         CommandManager.AddHandler(BlundervilleCommandName, blundervilleCommandInfo);
         CommandManager.AddHandler(BlundervilleAliasCommandName, blundervilleCommandInfo);
+        CommandManager.AddHandler(KeyboundCommandName, keyboundCommandInfo);
+        CommandManager.AddHandler(KeyboundAliasCommandName, keyboundCommandInfo);
 
         AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
         TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
@@ -246,6 +260,9 @@ public sealed class Plugin : IDalamudPlugin
     {
         ++blundervilleActionGeneration;
         ++moogleShopActionGeneration;
+        ++keyboundShopActionGeneration;
+        IsKeyboundShopActionQueued = false;
+        KeyboundShop.Dispose();
         MoogleShop.Dispose();
         KeyboundBrawler.Dispose();
         Blunderville.Dispose();
@@ -300,6 +317,8 @@ public sealed class Plugin : IDalamudPlugin
         CommandManager.RemoveHandler(CommandName);
         CommandManager.RemoveHandler(BlundervilleAliasCommandName);
         CommandManager.RemoveHandler(BlundervilleCommandName);
+        CommandManager.RemoveHandler(KeyboundAliasCommandName);
+        CommandManager.RemoveHandler(KeyboundCommandName);
 
         Log.Information("=== MOGTOME unloaded! ===");
     }
@@ -317,8 +336,48 @@ public sealed class Plugin : IDalamudPlugin
         if (parts.Length == 0 || !parts[0].Equals("keybound", StringComparison.OrdinalIgnoreCase)) return false;
         KeyboundBrawlerWindow.IsOpen = true;
         if (parts.Length == 2 && parts[1].Equals("start", StringComparison.OrdinalIgnoreCase)) StartKeyboundBrawler();
-        else if (parts.Length == 2 && parts[1].Equals("stop", StringComparison.OrdinalIgnoreCase)) KeyboundBrawler.Stop();
+        else if (parts.Length == 2 && parts[1].Equals("buy", StringComparison.OrdinalIgnoreCase)) RequestKeyboundShopBuy();
+        else if (parts.Length == 2 && parts[1].Equals("refresh", StringComparison.OrdinalIgnoreCase)) RefreshKeyboundShop();
+        else if (parts.Length == 2 && parts[1].Equals("stop", StringComparison.OrdinalIgnoreCase))
+        { KeyboundBrawler.Stop(); StopKeyboundShop(); }
         return true;
+    }
+
+    private void OnKeyboundCommand(string command, string args) => HandleKeyboundBrawlerCommand("keybound " + args);
+
+    public void RequestKeyboundShopBuy()
+    {
+        if (IsKeyboundShopActionQueued || KeyboundShop.IsRunning || IsEngineStartQueued || Engine?.IsRunning == true ||
+            Engine?.IsStartupPending == true || MoogleShop.IsRunning || IsMoogleShopActionQueued ||
+            Blunderville.IsRunning || IsBlundervilleActionQueued || !KeyboundShop.Ready) return;
+        var selected = Configuration.KeyboundBrawler;
+        var account = ConfigManager.CurrentAccountId;
+        var character = PlayerState.ContentId;
+        var generation = ++keyboundShopActionGeneration;
+        IsKeyboundShopActionQueued = true;
+        GameHelpers.QueueFrameworkAction("Keybound shop", "Buy", TimeSpan.Zero, () =>
+        {
+            if (generation != keyboundShopActionGeneration) return;
+            IsKeyboundShopActionQueued = false;
+            if (!ClientState.IsLoggedIn || account != ConfigManager.CurrentAccountId || character != PlayerState.ContentId ||
+                !ReferenceEquals(selected, Configuration.KeyboundBrawler)) return;
+            KeyboundShop.Buy();
+        });
+    }
+
+    public void StopKeyboundShop()
+    {
+        ++keyboundShopActionGeneration;
+        IsKeyboundShopActionQueued = false;
+        if (KeyboundShop == null) return;
+        KeyboundShop.RequestStop();
+        GameHelpers.QueueFrameworkAction("Keybound shop", "Stop", TimeSpan.Zero, KeyboundShop.Stop);
+    }
+
+    public void RefreshKeyboundShop()
+    {
+        if (KeyboundShop.IsRunning || IsKeyboundShopActionQueued) return;
+        GameHelpers.QueueFrameworkAction("Keybound shop", "Refresh", TimeSpan.Zero, KeyboundShop.RefreshCatalog);
     }
 
     public void StartKeyboundBrawler()
@@ -334,7 +393,7 @@ public sealed class Plugin : IDalamudPlugin
                 !Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas] &&
                 !Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas51],
             Engine?.IsRunning == true || IsEngineStartQueued || Blunderville.IsRunning || IsBlundervilleActionQueued ||
-                MoogleShop.IsRunning || IsMoogleShopActionQueued,
+                MoogleShop.IsRunning || IsMoogleShopActionQueued || KeyboundShopOwnsAutomation,
             ClientState.IsLoggedIn ? KeyboundBrawlerService.ReadTerritoryIntendedUse() : null);
 
     public void OpenMoogleShop()
@@ -348,6 +407,7 @@ public sealed class Plugin : IDalamudPlugin
 
     public void RequestMoogleShopBuy()
     {
+        if (KeyboundShopOwnsAutomation) return;
         if (IsMoogleShopActionQueued || MoogleShop.IsRunning || Blunderville.IsRunning || IsBlundervilleActionQueued ||
             IsEngineStartQueued || Engine?.IsRunning == true) return;
         var generation = ++moogleShopActionGeneration;
@@ -386,6 +446,7 @@ public sealed class Plugin : IDalamudPlugin
 
     public void RequestBlundervilleAction(bool buy)
     {
+        if (KeyboundShopOwnsAutomation) return;
         if (IsBlundervilleActionQueued || Blunderville.IsRunning || MoogleShop?.IsRunning == true || IsMoogleShopActionQueued || IsEngineStartQueued || Engine?.IsRunning == true) return;
         var generation = ++blundervilleActionGeneration;
         IsBlundervilleActionQueued = true;
@@ -410,6 +471,7 @@ public sealed class Plugin : IDalamudPlugin
     private readonly CommandInfo mainCommandInfo;
     private readonly CommandInfo aliasCommandInfo;
     private readonly CommandInfo blundervilleCommandInfo;
+    private readonly CommandInfo keyboundCommandInfo;
 
     private void DrawUi()
     {
@@ -420,6 +482,7 @@ public sealed class Plugin : IDalamudPlugin
             mainCommandInfo.HelpMessage = Ui.GameT("Plugin_CommandMainHelp") + " | " + Ui.GameT("KB_Title") + ": /mogtome keybound";
             aliasCommandInfo.HelpMessage = Ui.GameT("Plugin_CommandAliasHelp") + " | " + Ui.GameT("KB_Title") + ": /mog keybound";
             blundervilleCommandInfo.HelpMessage = Ui.GameT("BV_CommandHelp");
+            keyboundCommandInfo.HelpMessage = Ui.GameT("Main_Open") + ": " + Ui.GameT("KB_Title") + " (/keybound, /kbb)";
             commandHelpLanguage = Ui.Language;
         }
         Appearance.Draw(WindowSystem);
@@ -569,6 +632,11 @@ public sealed class Plugin : IDalamudPlugin
 
     public void QueueEngineStart(string source, bool notifyChat)
     {
+        if (KeyboundShopOwnsAutomation)
+        {
+            if (notifyChat) ChatGui.Print(Ui.GameT("BV_Unavailable"));
+            return;
+        }
         if (Blunderville?.IsRunning == true || IsBlundervilleActionQueued || MoogleShop?.IsRunning == true || IsMoogleShopActionQueued)
         {
             if (notifyChat) ChatGui.Print(Ui.GameT("BV_Unavailable"));
@@ -623,12 +691,14 @@ public sealed class Plugin : IDalamudPlugin
 
     public bool StopEngine(string? reason = null)
     {
+        var stoppedKeyboundShop = KeyboundShop?.IsRunning == true || IsKeyboundShopActionQueued;
+        StopKeyboundShop();
         var stoppedBlunderville = Blunderville?.IsRunning == true || IsBlundervilleActionQueued;
         var stoppedShop = MoogleShop?.IsRunning == true || IsMoogleShopActionQueued;
         StopMoogleShop();
         StopBlunderville();
         UiText stopReason = reason == null ? Ui.M("Engine_ManualStop") : (UiText)reason;
-        var stopped = IsEngineStartQueued || stoppedBlunderville || stoppedShop;
+        var stopped = IsEngineStartQueued || stoppedBlunderville || stoppedShop || stoppedKeyboundShop;
         CancelQueuedEngineStart();
         if (Engine?.IsRunning == true)
         {
@@ -721,6 +791,7 @@ public sealed class Plugin : IDalamudPlugin
         {
             if (Blunderville.IsRunning) Blunderville.Stop();
             if (MoogleShop.IsRunning || IsMoogleShopActionQueued) StopMoogleShop();
+            if (KeyboundShop.IsRunning || IsKeyboundShopActionQueued) StopKeyboundShop();
             RotationService.EndSessionForLogout();
             return;
         }
@@ -829,12 +900,14 @@ public sealed class Plugin : IDalamudPlugin
         DadIpcService.Update();
         MoogleShop.Update();
         Blunderville.Update();
+        KeyboundShop.Update();
     }
 
     private void TryConsumeQueuedEngineStart()
     {
         if (!pendingEngineStartRequest)
             return;
+        if (KeyboundShopOwnsAutomation) { CancelQueuedEngineStart(); return; }
         if (Blunderville?.IsRunning == true || IsBlundervilleActionQueued || MoogleShop?.IsRunning == true || IsMoogleShopActionQueued)
         {
             CancelQueuedEngineStart();

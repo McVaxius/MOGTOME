@@ -15,7 +15,7 @@ public sealed class KeyboundBrawlerService : IDisposable
     // No action route has been established. A territory category is not an actionable round state.
     // Never acquire an automation owner, post keys, fire callbacks or report completion in this slice.
     // Reviewed 2026-10-21: ClientStructs d6397a76 has TerritoryIntendedUse.KeyboundBrawler (65)
-    // and AgentId.TurnBreak (449), but no verified relationship or event action contract.
+    // and AgentId.TurnBreak (449), but no verified native input/action contract.
     // Lumina.Excel 7.5.1 defines MiniGameTurnBreak* sheets with Unknown* fields. XIVAPI dataset
     // 0874aee069e1e7c4 has populated rows (including Action 1, "Pom Fire"); these are not key bindings.
     // Reviewed 2026-10-22: NumberArrayType.TurnBreak=151 (not a string-array mapping),
@@ -25,8 +25,13 @@ public sealed class KeyboundBrawlerService : IDisposable
     // Therefore Stop must release only owned input; it must never press Escape to exit the event.
     // Addon 17839/17840 label input disabled/enabled; 17846 labels Results. These text rows do not
     // establish native node/buffer indices, accepted text, HP/score acknowledgement or result transitions.
+    // Gameplay input must preserve the active client's native phrase and language, independently of UiLanguage.
+    // Never submit Ui.T translations, English fallbacks or GameText.Normalize output. KTGTypeWordTextData
+    // and KTGTypeWordProgram contain localized words/readings and program data, but do not identify the
+    // currently actionable word. Verify that native mapping and discard stale word/language state before input.
     // Official availability starts 2026-10-28 08:00 UTC. One user-run round after that date is still
     // needed to identify those exact native fields before the input route can be enabled.
+    // Any mechanic or input-permission state not observed in that round must continue withholding input.
     public bool CanStart => false;
     public bool IsRunning => false;
 

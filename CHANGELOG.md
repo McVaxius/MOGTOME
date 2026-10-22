@@ -1,3 +1,12 @@
+2026-10-22 - Approved Keybound shop layout and independent shopping
+
+- Implement the approved compact layout: short activity navigation/actions, inline limits and finish settings, a full-height shop table, game item icons, category/search filters and responsive totals. Keep all 20 native offers and prices available for preparation before the festival opens.
+- Select Missing includes all 19 other rewards and excludes the repeatable Keybound Coffer. Preserve larger targets and manually selected coffer quantities; skip owned rewards and unknown ownership.
+- Add independent MGC shopping, Stop/Refresh and selected ending inn travel. Require exact trader/shop/currency/item/cost matching, current eligibility, inventory capacity, account/session ownership and exact purchase receipts. Persist uncertain-purchase review holds before dispatch and retain them across cancellation/reload. Preserve MGF validation as the existing default.
+- Add original typing-impact and obstacle-course icons for Keybound and Blunderville, including native titlebars and Main navigation. These symbols use no game characters, assets or likenesses.
+- Save the account's run/wallet limits, wanted quantities, Hide Owned, shop-on-finish and ending destination separately. Translate the controls in all 15 languages and retain existing Blunderville editor IDs and behavior.
+- Retain `/keybound` and `/kbb` plus Main/Blunderville navigation; add explicit buy, refresh and stop actions. The event solver and automatic round entry/farming remain unavailable. Native shopping/travel and the rendered host UI still require live verification; preparing settings or opening a window starts nothing.
+
 2026-10-21 - Keybound Brawler preparation (I622)
 
 - Add a Keybound Brawler window from Main and `/mog keybound` or `/mogtome keybound`, using existing account appearance, language and window lifecycle. Opening it starts nothing; no extra settings are saved.

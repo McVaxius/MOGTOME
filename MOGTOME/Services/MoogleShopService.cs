@@ -114,6 +114,7 @@ public sealed class MoogleShopService : IDisposable
 
     public bool Buy()
     {
+        if (plugin.KeyboundShopOwnsAutomation) return Reject("BV_Unavailable");
         if (Volatile.Read(ref stopRequested) != 0 || !Ready || running || plugin.IsEngineStartQueued || plugin.Engine.IsRunning ||
             plugin.Blunderville.IsRunning || plugin.IsBlundervilleActionQueued) return Reject("BV_Unavailable");
         var missingPlugins = GameHelpers.MissingXaDependencies();

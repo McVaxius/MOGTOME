@@ -2272,7 +2272,12 @@ DictionaryPathsとPathSelectionsByPathを比較します。
   <data name="Switch to Picker to set each colour yourself." xml:space="preserve"><value>各色を自分で設定するにはピッカーに切り替えます。</value></data>
   <data name="Switch back to Auto to use the automatic theme." xml:space="preserve"><value>自動テーマを使うには「自動」に戻します。</value></data>
   <data name="KB_Title" xml:space="preserve"><value>Keybound Brawler</value></data>
-  <data name="KB_Help" xml:space="preserve"><value>手動で参加した1ラウンドが対象です。このウィンドウを開いてもイベントへの参加や開始は行いません。</value></data>
+  <data name="KB_Help" xml:space="preserve"><value>周回の上限と購入目標を設定します。このウィンドウを開いても何も開始しません。</value></data>
+  <data name="KB_ShopPending" xml:space="preserve"><value>イベントの自動プレイは準備中です。ショップでの購入は単独で利用できます。</value></data>
+  <data name="KB_WalletTarget" xml:space="preserve"><value>MGC所持数の目標</value></data>
+  <data name="KB_TargetCurrency" xml:space="preserve"><value>目標MGC</value></data>
+  <data name="KB_TotalCurrency" xml:space="preserve"><value>必要なMGCの合計：{0}</value></data>
+  <data name="KB_NoCatalog" xml:space="preserve"><value>現在のMGC交換品は利用できません。</value></data>
   <data name="KB_Idle" xml:space="preserve"><value>待機中。ラウンドや入力の制御は取得していません。</value></data>
   <data name="KB_Pending" xml:space="preserve"><value>未実装 — ゲーム動作の検証待ち</value></data>
   <data name="KB_ProfileUnavailable" xml:space="preserve"><value>キャラクターのログインとアカウントプロファイルの読み込みを待ってください。</value></data>
@@ -2280,4 +2285,39 @@ DictionaryPathsとPathSelectionsByPathを比較します。
   <data name="KB_OutsideEvent" xml:space="preserve"><value>Keybound Brawlerのエリアを確認できません。イベントに手動で参加してください。</value></data>
   <data name="KB_GameplayUnverified" xml:space="preserve"><value>ゲーム操作は利用できません。画面の識別、入力の反映、ラウンド終了の遷移を検証する必要があります。</value></data>
   <data name="KB_Stopped" xml:space="preserve"><value>停止しました。キーは保持しておらず、自動再開もしません。</value></data>
+  <data name="KB_CurrencyName" xml:space="preserve"><value>マンダヴィル・ゴールドソーサークレジット</value></data>
+  <data name="KB_Wallet" xml:space="preserve"><value>所持MGC：{0}</value></data>
+  <data name="KB_FinishRule" xml:space="preserve"><value>有効な上限のいずれかに達すると周回を終了します。</value></data>
+  <data name="KB_AfterShopping" xml:space="preserve"><value>購入後</value></data>
+  <data name="KB_IdleShop" xml:space="preserve"><value>待機</value></data>
+  <data name="KB_RunSolverPending" xml:space="preserve"><value>イベントの自動プレイはまだ利用できません。ショップ操作は単独で利用できます。</value></data>
+  <data name="KB_SelectedSummary" xml:space="preserve"><value>対象 {0} 件・不足 {1} 個</value></data>
+  <data name="KB_AfterPurchases" xml:space="preserve"><value>購入後：{0} MGC</value></data>
+  <data name="KB_Shortfall" xml:space="preserve"><value>不足：{0} MGC</value></data>
+  <data name="KB_RewardCount" xml:space="preserve"><value>報酬 {1} 件中 {0} 件</value></data>
+  <data name="KB_OneOfEach" xml:space="preserve"><value>各1個：{0} MGC</value></data>
+  <data name="KB_SearchRewards" xml:space="preserve"><value>報酬を検索…</value></data>
+  <data name="KB_AllRewards" xml:space="preserve"><value>すべての報酬</value></data>
+  <data name="KB_CategoryGlamour" xml:space="preserve"><value>おしゃれ装備</value></data>
+  <data name="KB_CategoryFashionAccessory" xml:space="preserve"><value>ファッションアクセサリー</value></data>
+  <data name="KB_CategoryMount" xml:space="preserve"><value>マウント</value></data>
+  <data name="KB_CategoryMinion" xml:space="preserve"><value>ミニオン</value></data>
+  <data name="KB_CategoryOrchestrion" xml:space="preserve"><value>オーケストリオン</value></data>
+  <data name="KB_CategoryFramerKit" xml:space="preserve"><value>ポートレート教材</value></data>
+  <data name="KB_CategoryEmote" xml:space="preserve"><value>エモート</value></data>
+  <data name="KB_CategoryCoffer" xml:space="preserve"><value>宝箱</value></data>
+  <data name="KB_SelectMissingHelp" xml:space="preserve"><value>繰り返し入手できるKeyboundの宝箱を除き、未所持の報酬をすべて選択します。既存の大きい目標数は維持し、所持状況が不明な報酬は除外します。</value></data>
+  <data name="KB_UnitMgc" xml:space="preserve"><value>単価MGC</value></data>
+  <data name="KB_NeedMgc" xml:space="preserve"><value>必要MGC</value></data>
+  <data name="KB_Target" xml:space="preserve"><value>目標数</value></data>
+  <data name="KB_OnHand" xml:space="preserve"><value>所持数</value></data>
+  <data name="KB_Owned" xml:space="preserve"><value>所持済み</value></data>
+  <data name="KB_CategoryOther" xml:space="preserve"><value>その他</value></data>
+  <data name="KB_WalletUnknown" xml:space="preserve"><value>MGC残高を取得できません。</value></data>
+  <data name="KB_CostUnknown" xml:space="preserve"><value>所持状況が判明するまで費用を算出できません。</value></data>
+  <data name="KB_NoWallet" xml:space="preserve"><value>MGC残高を取得できないため停止しました。</value></data>
+  <data name="KB_NoFunds" xml:space="preserve"><value>MGC不足のため購入を停止しました。</value></data>
+  <data name="KB_TraderUnavailable" xml:space="preserve"><value>MGC交換担当が利用できないか、ショップを確認できませんでした。</value></data>
+  <data name="KB_Reward" xml:space="preserve"><value>報酬</value></data>
+  <data name="KB_OwnedHelp" xml:space="preserve"><value>所持済みの報酬には登録済みの収集品と確認できた所持品が含まれます。</value></data>
 </root>

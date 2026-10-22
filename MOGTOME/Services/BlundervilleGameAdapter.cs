@@ -475,7 +475,7 @@ internal sealed unsafe class BlundervilleGameAdapter
         return addon != null && addon->IsVisible && addon->IsReady && agent != null && agent->IsAgentActive() && agent->IsAddonReady();
     }
 
-    public static bool TryValidateOffer(BlundervilleOffer offer, out string addonName, out int callbackRow)
+    public static bool TryValidateOffer(BlundervilleOffer offer, out string addonName, out int callbackRow, uint currencyItemId = MgfItemId)
     {
         addonName = Visible("ShopExchangeCurrency") ? "ShopExchangeCurrency" : "ShopExchangeItem";
         callbackRow = -1;
@@ -493,7 +493,7 @@ internal sealed unsafe class BlundervilleGameAdapter
             if (count is < 1 or > 122 || addon->AtkValuesCount < 1310 + count || Number(addon->AtkValues[3]) != receives.Length) return false;
             var icon = Number(addon->AtkValues[87]);
             var currency = Plugin.DataManager.GetExcelSheet<Item>().Where(i => i.Icon == icon).Take(2).ToArray();
-            if (currency.Length != 1 || currency[0].RowId != MgfItemId) return false;
+            if (currency.Length != 1 || currency[0].RowId != currencyItemId) return false;
             var native = new (uint ItemId, uint Count)[receives.Length];
             for (var i = 0; i < native.Length; i++) native[i] = (receives[i].ItemId, receives[i].ItemCount);
             var rows = new (long ItemId, long Price, long Callback)[(int)count];
@@ -517,7 +517,7 @@ internal sealed unsafe class BlundervilleGameAdapter
                     var cost = costs[i * stride + j];
                     if (cost.ItemId == 0 && cost.ItemCount == 0) continue;
                     populated++;
-                    valid &= cost.ItemId == MgfItemId && cost.ItemCount == offer.Price;
+                    valid &= cost.ItemId == currencyItemId && cost.ItemCount == offer.Price;
                 }
                 if (!valid || populated != 1) continue;
                 if (callbackRow != -1) return false;
@@ -639,9 +639,9 @@ internal sealed unsafe class BlundervilleGameAdapter
         }
     }
 
-    public static bool ConfirmPurchase(BlundervilleOffer offer, string ownedAddon)
+    public static bool ConfirmPurchase(BlundervilleOffer offer, string ownedAddon, uint currencyItemId = MgfItemId)
     {
-        if (!TryValidateOffer(offer, out var currentAddon, out _) || currentAddon != ownedAddon) return false;
+        if (!TryValidateOffer(offer, out var currentAddon, out _, currencyItemId) || currentAddon != ownedAddon) return false;
         if (Visible("SelectYesno"))
         {
             var addon = (AddonSelectYesno*)Plugin.GameGui.GetAddonByName("SelectYesno").Address;
@@ -660,7 +660,7 @@ internal sealed unsafe class BlundervilleGameAdapter
         // The item-exchange quantity dialog has no verified MGF quantity layout in this adapter.
         if (ownedAddon != "ShopExchangeCurrency") return false;
         // Revalidate the owned shop before accepting its quantity dialog. Each submission is one transaction.
-        if (!TryValidateOffer(offer, out var addonName, out _) || addonName != ownedAddon) return false;
+        if (!TryValidateOffer(offer, out var addonName, out _, currencyItemId) || addonName != ownedAddon) return false;
         var dialog = (AtkUnitBase*)Plugin.GameGui.GetAddonByName(dialogName).Address;
         if (dialog == null || dialog->UldManager.NodeList == null) return false;
         if (ownedAddon == "ShopExchangeCurrency")

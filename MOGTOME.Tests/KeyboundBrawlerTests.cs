@@ -1,6 +1,8 @@
 using FFXIVClientStructs.FFXIV.Client.Enums;
 using MOGTOME.Localization;
 using MOGTOME.Services;
+using MOGTOME.Models;
+using System.Text.Json;
 
 namespace MOGTOME.Tests;
 
@@ -61,5 +63,82 @@ public sealed class KeyboundBrawlerTests
             Assert.False(string.IsNullOrWhiteSpace(service.Status.Render(language)));
             Assert.NotEqual("KB_GameplayUnverified", service.Status.Render(language));
         }
+    }
+
+    [Fact]
+    public void ShopPreparationRoundTripsSeparatelyFromBlundervilleAndOrdinaryDuties()
+    {
+        var config = JsonSerializer.Deserialize<Configuration>("{\"DutyCounter\":42,\"MaxRuns\":99}")!;
+        Assert.True(config.KeyboundBrawler.RunLimitEnabled);
+        Assert.Equal(1, config.KeyboundBrawler.RunLimit);
+        Assert.False(config.KeyboundBrawler.ShopWhenFinished);
+        Assert.Empty(config.KeyboundBrawler.PurchaseTargets);
+        config.Blunderville.PurchaseTargets[52323] = 7;
+        config.KeyboundBrawler.PurchaseTargets[52323] = 2;
+        config.KeyboundBrawler.RunLimit = 5;
+        config.KeyboundBrawler.WalletTargetEnabled = true;
+        config.KeyboundBrawler.WalletTarget = 910;
+        config.KeyboundBrawler.HideOwned = true;
+        config.KeyboundBrawler.ShopWhenFinished = true;
+        config.KeyboundBrawler.EndingLocation = BlundervilleEndingLocation.Limsa;
+        var restored = JsonSerializer.Deserialize<Configuration>(JsonSerializer.Serialize(config))!;
+        Assert.Equal(42, restored.DutyCounter);
+        Assert.Equal(99, restored.MaxRuns);
+        Assert.Equal(7, restored.Blunderville.PurchaseTargets[52323]);
+        Assert.Equal(2, restored.KeyboundBrawler.PurchaseTargets[52323]);
+        Assert.Equal(5, restored.KeyboundBrawler.RunLimit);
+        Assert.True(restored.KeyboundBrawler.WalletTargetEnabled);
+        Assert.Equal(910, restored.KeyboundBrawler.WalletTarget);
+        Assert.True(restored.KeyboundBrawler.HideOwned);
+        Assert.True(restored.KeyboundBrawler.ShopWhenFinished);
+        Assert.Equal(BlundervilleEndingLocation.Limsa, restored.KeyboundBrawler.EndingLocation);
+        Assert.Empty(new Configuration().KeyboundBrawler.PurchaseTargets);
+        using var service = new KeyboundBrawlerService();
+        service.Observe(true, false, 65);
+        Assert.False(service.Start()); // Saved farming/shopping choices must not arm the pending feature.
+    }
+
+    [Fact]
+    public void ShopOffersRequireTheVerifiedMgcShopAndOneUnambiguousCurrencyCost()
+    {
+        var offer = KeyboundBrawlerShop.ReadOffer(1771021, "", [(52450, 1, false), (0, 1, false)], [(52322, 910, 0, 0)]);
+        Assert.NotNull(offer);
+        Assert.Equal(52450u, offer.ItemId);
+        Assert.Equal(910u, offer.Price);
+        Assert.Equal(1u, offer.ReceiveCount);
+        Assert.Null(KeyboundBrawlerShop.ReadOffer(1770724, "", [(52450, 1, false)], [(52322, 910, 0, 0)]));
+        Assert.Null(KeyboundBrawlerShop.ReadOffer(1771021, "", [(52450, 1, false)], [(41629, 910, 0, 0)]));
+        Assert.Null(KeyboundBrawlerShop.ReadOffer(1771021, "", [(52450, 1, false)], [(52322, 910, 0, 0), (29, 1, 0, 0)]));
+        Assert.Null(KeyboundBrawlerShop.ReadOffer(1771021, "", [(52450, 1, false), (52283, 1, false)], [(52322, 910, 0, 0)]));
+        Assert.Null(KeyboundBrawlerShop.ReadOffer(1771021, "", [(52450, 1, true)], [(52322, 910, 0, 0)]));
+        Assert.Null(KeyboundBrawlerShop.ReadOffer(1771021, "", [(52450, 0, false)], [(52322, 910, 0, 0)]));
+        Assert.Null(KeyboundBrawlerShop.ReadOffer(1771021, "", [(52450, 1, false)], [(52322, 0, 0, 0)]));
+        Assert.Null(KeyboundBrawlerShop.ReadOffer(1771021, "", [(52450, 1, false)], [(52322, 910, 1, 0)]));
+        Assert.Null(KeyboundBrawlerShop.ReadOffer(1771021, "", [(52450, 1, false)], [(52322, 910, 0, 3)]));
+        Assert.Equal(1820ul, BlundervilleProgress.TotalMgf(new Dictionary<uint, int> { [52450] = 3 },
+            new Dictionary<uint, BlundervilleOffer> { [52450] = offer }, _ => 1, out var known));
+        Assert.True(known);
+    }
+
+    [Fact]
+    public void PreparationLabelsRenderInEveryLanguageAndTheNavigationIconIsEmbedded()
+    {
+        var labels = new[] { "KB_Help", "KB_ShopPending", "KB_WalletTarget", "KB_TargetCurrency", "KB_NoCatalog" };
+        foreach (var language in Enum.GetValues<UiLanguage>())
+        {
+            foreach (var key in labels)
+            {
+                var text = Ui.M(key).Render(language);
+                Assert.False(string.IsNullOrWhiteSpace(text));
+                Assert.NotEqual(key, text);
+            }
+            Assert.Contains("910", Ui.M("KB_TotalCurrency", 910).Render(language));
+        }
+        using var image = typeof(KeyboundBrawlerService).Assembly.GetManifestResourceStream("MOGTOME.images.keybound-icon.png");
+        Assert.NotNull(image);
+        Assert.True(image.Length > 0);
+        using var blunderville = typeof(KeyboundBrawlerService).Assembly.GetManifestResourceStream("MOGTOME.images.blunderville-icon.png");
+        Assert.NotNull(blunderville);
+        Assert.True(blunderville.Length > 0);
     }
 }

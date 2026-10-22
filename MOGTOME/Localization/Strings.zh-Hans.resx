@@ -2278,7 +2278,12 @@ Path: {0}
   <data name="Switch to Picker to set each colour yourself." xml:space="preserve"><value>切换到选色器以自行设置每种颜色。</value></data>
   <data name="Switch back to Auto to use the automatic theme." xml:space="preserve"><value>切换回自动以使用自动主题。</value></data>
   <data name="KB_Title" xml:space="preserve"><value>Keybound Brawler</value></data>
-  <data name="KB_Help" xml:space="preserve"><value>仅针对手动进入的一局。打开此窗口不会进入或启动活动。</value></data>
+  <data name="KB_Help" xml:space="preserve"><value>设置刷取上限和购买目标。打开此窗口不会启动任何操作。</value></data>
+  <data name="KB_ShopPending" xml:space="preserve"><value>活动自动游玩功能尚待完成。商店购买可独立使用。</value></data>
+  <data name="KB_WalletTarget" xml:space="preserve"><value>MGC持有量目标</value></data>
+  <data name="KB_TargetCurrency" xml:space="preserve"><value>目标MGC</value></data>
+  <data name="KB_TotalCurrency" xml:space="preserve"><value>需要的MGC总额：{0}</value></data>
+  <data name="KB_NoCatalog" xml:space="preserve"><value>当前MGC兑换项目不可用。</value></data>
   <data name="KB_Idle" xml:space="preserve"><value>空闲。未接管任何对局或输入。</value></data>
   <data name="KB_Pending" xml:space="preserve"><value>待完成 — 游戏操作验证</value></data>
   <data name="KB_ProfileUnavailable" xml:space="preserve"><value>请等待角色登录和账号配置加载。</value></data>
@@ -2286,4 +2291,39 @@ Path: {0}
   <data name="KB_OutsideEvent" xml:space="preserve"><value>尚未确认Keybound Brawler区域。请手动进入活动。</value></data>
   <data name="KB_GameplayUnverified" xml:space="preserve"><value>游戏操作不可用：需要验证活动界面、输入是否被接受以及对局结束转换。</value></data>
   <data name="KB_Stopped" xml:space="preserve"><value>已停止。未按住任何键，不会自动恢复。</value></data>
+  <data name="KB_CurrencyName" xml:space="preserve"><value>曼德维尔金碟游乐场代币</value></data>
+  <data name="KB_Wallet" xml:space="preserve"><value>持有MGC：{0}</value></data>
+  <data name="KB_FinishRule" xml:space="preserve"><value>达到任一已启用的上限时结束刷取。</value></data>
+  <data name="KB_AfterShopping" xml:space="preserve"><value>购买后</value></data>
+  <data name="KB_IdleShop" xml:space="preserve"><value>待机</value></data>
+  <data name="KB_RunSolverPending" xml:space="preserve"><value>活动自动游玩功能暂不可用。商店操作可独立使用。</value></data>
+  <data name="KB_SelectedSummary" xml:space="preserve"><value>{0}项目标 · 还缺{1}个</value></data>
+  <data name="KB_AfterPurchases" xml:space="preserve"><value>购买后：{0} MGC</value></data>
+  <data name="KB_Shortfall" xml:space="preserve"><value>缺少：{0} MGC</value></data>
+  <data name="KB_RewardCount" xml:space="preserve"><value>显示{0}/{1}项奖励</value></data>
+  <data name="KB_OneOfEach" xml:space="preserve"><value>每种一个：{0} MGC</value></data>
+  <data name="KB_SearchRewards" xml:space="preserve"><value>搜索奖励…</value></data>
+  <data name="KB_AllRewards" xml:space="preserve"><value>全部奖励</value></data>
+  <data name="KB_CategoryGlamour" xml:space="preserve"><value>幻化装备</value></data>
+  <data name="KB_CategoryFashionAccessory" xml:space="preserve"><value>时尚配饰</value></data>
+  <data name="KB_CategoryMount" xml:space="preserve"><value>坐骑</value></data>
+  <data name="KB_CategoryMinion" xml:space="preserve"><value>宠物</value></data>
+  <data name="KB_CategoryOrchestrion" xml:space="preserve"><value>管弦乐</value></data>
+  <data name="KB_CategoryFramerKit" xml:space="preserve"><value>肖像套装</value></data>
+  <data name="KB_CategoryEmote" xml:space="preserve"><value>情感动作</value></data>
+  <data name="KB_CategoryCoffer" xml:space="preserve"><value>宝箱</value></data>
+  <data name="KB_SelectMissingHelp" xml:space="preserve"><value>选择所有未拥有的奖励，但不包含可重复获取的Keybound宝箱。保留较大的目标数量，并跳过拥有状态未知的奖励。</value></data>
+  <data name="KB_UnitMgc" xml:space="preserve"><value>单价MGC</value></data>
+  <data name="KB_NeedMgc" xml:space="preserve"><value>所需MGC</value></data>
+  <data name="KB_Target" xml:space="preserve"><value>目标</value></data>
+  <data name="KB_OnHand" xml:space="preserve"><value>持有数量</value></data>
+  <data name="KB_Owned" xml:space="preserve"><value>已拥有</value></data>
+  <data name="KB_CategoryOther" xml:space="preserve"><value>其他</value></data>
+  <data name="KB_WalletUnknown" xml:space="preserve"><value>无法获取MGC余额。</value></data>
+  <data name="KB_CostUnknown" xml:space="preserve"><value>拥有状态明确后才能计算费用。</value></data>
+  <data name="KB_NoWallet" xml:space="preserve"><value>无法获取MGC余额；已停止。</value></data>
+  <data name="KB_NoFunds" xml:space="preserve"><value>MGC不足；已停止购买。</value></data>
+  <data name="KB_TraderUnavailable" xml:space="preserve"><value>MGC交易员不可用或无法验证其商店。</value></data>
+  <data name="KB_Reward" xml:space="preserve"><value>奖励</value></data>
+  <data name="KB_OwnedHelp" xml:space="preserve"><value>已拥有的奖励包括已登记的收藏品和已确认的持有物品。</value></data>
 </root>

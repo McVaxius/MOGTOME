@@ -135,16 +135,41 @@ Automation uses numeric boss, action, and innkeeper IDs and evaluated client-lan
 
 Hindi uses the consumer-owned Windows text renderer for natural Devanagari shaping in owned windows. Game-owned chat, toast and command-help surfaces retain English for that selection. The current Debug/x64 build and offline Hindi catalog, appearance/save, Main/Blunderville, Settings, Statistics, warning and supplied-state checks pass with retained native identities and font roles at both densities and 100%/150% scales. Managed-host, game, GPU and IME acceptance remain pending. The UI uses managed Segoe UI and symbol fonts with verified host Noto CJK faces. It waits for font readiness and checks required glyphs after atlas rebuilds. AethertekUI.dll and the fourteen satellite resource assemblies are included in the existing plugin artifact flow; host DLLs and fonts are not plugin payloads. The earlier Release build and 230 focused localization tests passed across the original fourteen interface choices and four client languages; that evidence does not cover the added Hindi choice. Automated checks do not establish game-rendered acceptance. Visual verification of regular/compact layouts, selectors, popups, CJK glyphs, and host display scales remains outstanding; no live client was used for this adoption.
 
-### Keybound Brawler (TBD)
+### Keybound Brawler
 
-Open **Keybound Brawler** on Main, `/mog keybound`, or `/mogtome keybound`.
-The first version is intended for one manually entered round. The window currently
-shows translated readiness and an explicit pending state; Start and Stop remain
-disabled because gameplay has not been verified. `keybound start` also refuses
-to start. Opening the window never enters the event, sends input or starts another
-activity. There is no automatic entry, farming, shopping, saved round state or
-claimed score/reward. Basic play still requires a verified event screen, accepted
-input and round-end transition, followed by cancellation/input-release checks.
+Open **Keybound Brawler** with `/keybound`, `/kbb`, `/mog keybound`, or
+`/mogtome keybound`. Main, Blunderville and Keybound provide navigation between
+all three windows. Original typing-impact and obstacle-course icons identify
+Keybound and Blunderville in navigation and their native titlebars.
+
+The compact window gives most of its space to the MGC shop: all 20 rewards with
+game item icons, search/category filters, desired counts, inventory/storage
+ownership, Hide Owned and remaining costs. **Select Missing covers all 19 other
+rewards and excludes the Keybound Coffer**; manually selected coffer targets stay
+in the cart. Its offers and prices come from the current
+game shop linked to the MGC trader, cross-checked against the
+[official reward list](https://na.finalfantasyxiv.com/lodestone/special/keybound_brawler/).
+Targets can be prepared before the festival opens. Run limits, MGC wallet target,
+shop-on-finish and ending destination save separately in the current account;
+changing them does not start activity. The run limits and shop-on-finish choice
+are prepared for the pending event solver.
+
+**Buy works independently of the solver.** Be near the loaded MGC trader and
+use Buy, `/keybound buy` or `/kbb buy`. The shopper approaches that identified
+trader, validates its current shop/items/prices and festival eligibility, buys
+only missing quantities, and checks the exact item/MGC receipt after each
+transaction. It respects other MOGTOME activity and account/character changes.
+Stop cancels owned work; Refresh reloads the native catalog. After a completed
+shopping list, the selected inn destination uses the existing Lifestream route.
+An uncertain purchase persists a review hold; check bags and MGC before clearing
+it with the review action. The native purchase and travel paths still need live
+event verification.
+
+Start and event entry/farming remain unavailable while the solver is pending.
+Opening the window never enters the event, sends input or starts another activity.
+No round state, score or reward is claimed. Basic play still requires a verified
+event screen, accepted input and round-end transition, followed by cancellation
+and input-release checks.
 
 The official event starts October 28, 2026 at 08:00 UTC. Its game help describes
 typing an enemy's displayed word and pressing Enter, with no keypresses during
@@ -228,6 +253,7 @@ This sequence is experimental and has not been live-duty validated by this imple
 - `/mog stop` - Stop the bot
 - `/mog inn` - Delegate inn entry to ADS with `/ads enterinn`
 - `/mog status` - Print current status
+- `/keybound` or `/kbb` - Open Keybound Brawler and its shop preparation
 
 ---
 
