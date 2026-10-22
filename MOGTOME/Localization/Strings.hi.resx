@@ -2443,4 +2443,13 @@ Retainer और अन्य भंडारण: {3}
   <data name="Control" xml:space="preserve"><value>नियंत्रण</value></data>
   <data name="Switch to Picker to set each colour yourself." xml:space="preserve"><value>हर रंग स्वयं तय करने के लिए चयनकर्ता चुनें।</value></data>
   <data name="Switch back to Auto to use the automatic theme." xml:space="preserve"><value>स्वचालित थीम के लिए स्वचालित विकल्प चुनें।</value></data>
+  <data name="KB_Title" xml:space="preserve"><value>Keybound Brawler</value></data>
+  <data name="KB_Help" xml:space="preserve"><value>मैन्युअल रूप से प्रवेश किए गए एक राउंड के लिए। यह विंडो खोलने से इवेंट में प्रवेश या शुरुआत नहीं होती।</value></data>
+  <data name="KB_Idle" xml:space="preserve"><value>निष्क्रिय। किसी राउंड या इनपुट का नियंत्रण नहीं लिया गया है।</value></data>
+  <data name="KB_Pending" xml:space="preserve"><value>बाकी — गेमप्ले का सत्यापन</value></data>
+  <data name="KB_ProfileUnavailable" xml:space="preserve"><value>पात्र के लॉगिन और खाते की प्रोफ़ाइल की प्रतीक्षा करें।</value></data>
+  <data name="KB_AutomationBusy" xml:space="preserve"><value>राउंड शुरू करने से पहले MOGTOME गतिविधि रोकें।</value></data>
+  <data name="KB_OutsideEvent" xml:space="preserve"><value>Keybound Brawler क्षेत्र सत्यापित नहीं है। इवेंट में मैन्युअल रूप से प्रवेश करें।</value></data>
+  <data name="KB_GameplayUnverified" xml:space="preserve"><value>गेमप्ले उपलब्ध नहीं है: इवेंट स्क्रीन, स्वीकार किए गए इनपुट और राउंड के अंत का सत्यापन बाकी है।</value></data>
+  <data name="KB_Stopped" xml:space="preserve"><value>रोक दिया गया। कोई कुंजी दबाकर नहीं रखी गई है और अपने आप दोबारा शुरू नहीं होगा।</value></data>
 </root>

@@ -135,6 +135,25 @@ Automation uses numeric boss, action, and innkeeper IDs and evaluated client-lan
 
 Hindi uses the consumer-owned Windows text renderer for natural Devanagari shaping in owned windows. Game-owned chat, toast and command-help surfaces retain English for that selection. The current Debug/x64 build and offline Hindi catalog, appearance/save, Main/Blunderville, Settings, Statistics, warning and supplied-state checks pass with retained native identities and font roles at both densities and 100%/150% scales. Managed-host, game, GPU and IME acceptance remain pending. The UI uses managed Segoe UI and symbol fonts with verified host Noto CJK faces. It waits for font readiness and checks required glyphs after atlas rebuilds. AethertekUI.dll and the fourteen satellite resource assemblies are included in the existing plugin artifact flow; host DLLs and fonts are not plugin payloads. The earlier Release build and 230 focused localization tests passed across the original fourteen interface choices and four client languages; that evidence does not cover the added Hindi choice. Automated checks do not establish game-rendered acceptance. Visual verification of regular/compact layouts, selectors, popups, CJK glyphs, and host display scales remains outstanding; no live client was used for this adoption.
 
+### Keybound Brawler (TBD)
+
+Open **Keybound Brawler** on Main, `/mog keybound`, or `/mogtome keybound`.
+The first version is intended for one manually entered round. The window currently
+shows translated readiness and an explicit pending state; Start and Stop remain
+disabled because gameplay has not been verified. `keybound start` also refuses
+to start. Opening the window never enters the event, sends input or starts another
+activity. There is no automatic entry, farming, shopping, saved round state or
+claimed score/reward. Basic play still requires a verified event screen, accepted
+input and round-end transition, followed by cancellation/input-release checks.
+
+The official event starts October 28, 2026 at 08:00 UTC. Its game help describes
+typing an enemy's displayed word and pressing Enter, with no keypresses during
+Letterlock. Escape abandons the event and may incur a penalty; stopping this
+feature must never use Escape. The displayed-word buffer, input-enabled state,
+accepted-word/progress acknowledgement and native result transition still need
+to be identified from one manually entered round. Public text labels alone do
+not establish those native fields or a supported automated input route.
+
 ### Moogle shopping list
 
 Open **SHOP** on Main, `/mog shop`, or `/mogtome shop`. Opening the window or reloading never travels or spends. Choose the Itinerant Moogle's city (Limsa Lominsa, Ul'dah, or Gridania) and the displayed tomestone type. The current game-sheet exchange is filtered by active festival requirements; archived previous/past catalogs are excluded. City and desired item counts belong to the active account, separately from Blunderville. The tomestone view selection lasts for the current plugin load.

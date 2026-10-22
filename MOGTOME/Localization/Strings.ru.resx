@@ -2277,4 +2277,13 @@ Path: {0}
   <data name="Control" xml:space="preserve"><value>Кнопка</value></data>
   <data name="Switch to Picker to set each colour yourself." xml:space="preserve"><value>Переключитесь на Палитру, чтобы задать каждый цвет.</value></data>
   <data name="Switch back to Auto to use the automatic theme." xml:space="preserve"><value>Вернитесь в Авто, чтобы использовать автоматическую тему.</value></data>
+  <data name="KB_Title" xml:space="preserve"><value>Keybound Brawler</value></data>
+  <data name="KB_Help" xml:space="preserve"><value>Один раунд с ручным входом. Открытие окна не входит в событие и не запускает его.</value></data>
+  <data name="KB_Idle" xml:space="preserve"><value>Ожидание. Раунд и ввод не управляются.</value></data>
+  <data name="KB_Pending" xml:space="preserve"><value>В планах — проверка игры</value></data>
+  <data name="KB_ProfileUnavailable" xml:space="preserve"><value>Дождитесь входа персонажа и загрузки профиля.</value></data>
+  <data name="KB_AutomationBusy" xml:space="preserve"><value>Остановите задачу MOGTOME перед запуском раунда.</value></data>
+  <data name="KB_OutsideEvent" xml:space="preserve"><value>Территория Keybound Brawler не подтверждена. Войдите в событие вручную.</value></data>
+  <data name="KB_GameplayUnverified" xml:space="preserve"><value>Игра недоступна: нужно проверить интерфейс, принятие ввода и завершение раунда.</value></data>
+  <data name="KB_Stopped" xml:space="preserve"><value>Остановлено. Клавиши не удерживаются; автоматического возобновления нет.</value></data>
 </root>

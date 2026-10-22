@@ -128,6 +128,7 @@ public class MainWindow : Window, IDisposable
         plugin.ConsumableInventoryService.Refresh();
         DrawHeader();
         DrawTeamLeader();
+        if (UiLayout.Button(Ui.L("KB_Title"))) plugin.KeyboundBrawlerWindow.IsOpen = true;
         UiLayout.Panel(() =>
         {
             var origin = ImGui.GetCursorScreenPos();

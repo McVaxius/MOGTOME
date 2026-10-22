@@ -93,6 +93,7 @@ public sealed class Plugin : IDalamudPlugin
     public MogtomeEngine Engine { get; private set; }
     public BlundervilleService Blunderville { get; private set; }
     public MoogleShopService MoogleShop { get; private set; }
+    public KeyboundBrawlerService KeyboundBrawler { get; private set; }
     private int moogleShopActionGeneration;
     public bool IsMoogleShopActionQueued { get; private set; }
     private int blundervilleActionGeneration;
@@ -104,6 +105,7 @@ public sealed class Plugin : IDalamudPlugin
     public MainWindow MainWindow { get; init; }
     public BlundervilleWindow BlundervilleWindow { get; init; }
     public MoogleShopWindow MoogleShopWindow { get; init; }
+    public KeyboundBrawlerWindow KeyboundBrawlerWindow { get; init; }
     public StatsWindow StatsWindow { get; init; }
     public ActionWarningWindow ActionWarningWindow { get; init; }
     public WarningTextWindow WarningTextWindow { get; init; }
@@ -184,6 +186,7 @@ public sealed class Plugin : IDalamudPlugin
 
         Blunderville = new BlundervilleService(this);
         MoogleShop = new MoogleShopService(this);
+        KeyboundBrawler = new KeyboundBrawlerService();
 
         Appearance = new(this);
 
@@ -192,6 +195,7 @@ public sealed class Plugin : IDalamudPlugin
         MainWindow = new MainWindow(this);
         BlundervilleWindow = new BlundervilleWindow(this);
         MoogleShopWindow = new MoogleShopWindow(this);
+        KeyboundBrawlerWindow = new KeyboundBrawlerWindow(this);
         StatsWindow = new StatsWindow(this);
         ActionWarningWindow = new ActionWarningWindow(this);
         WarningTextWindow = new WarningTextWindow(this);
@@ -199,6 +203,7 @@ public sealed class Plugin : IDalamudPlugin
         WindowSystem.AddWindow(MainWindow);
         WindowSystem.AddWindow(BlundervilleWindow);
         WindowSystem.AddWindow(MoogleShopWindow);
+        WindowSystem.AddWindow(KeyboundBrawlerWindow);
         WindowSystem.AddWindow(StatsWindow);
         WindowSystem.AddWindow(ActionWarningWindow);
         WindowSystem.AddWindow(WarningTextWindow);
@@ -206,11 +211,11 @@ public sealed class Plugin : IDalamudPlugin
         // Commands
         mainCommandInfo = new CommandInfo(OnCommand)
         {
-            HelpMessage = Ui.GameT("Plugin_CommandMainHelp")
+            HelpMessage = Ui.GameT("Plugin_CommandMainHelp") + " | " + Ui.GameT("KB_Title") + ": /mogtome keybound"
         };
         aliasCommandInfo = new CommandInfo(OnAliasCommand)
         {
-            HelpMessage = Ui.GameT("Plugin_CommandAliasHelp")
+            HelpMessage = Ui.GameT("Plugin_CommandAliasHelp") + " | " + Ui.GameT("KB_Title") + ": /mog keybound"
         };
         blundervilleCommandInfo = new CommandInfo(OnBlundervilleCommand)
         {
@@ -242,6 +247,7 @@ public sealed class Plugin : IDalamudPlugin
         ++blundervilleActionGeneration;
         ++moogleShopActionGeneration;
         MoogleShop.Dispose();
+        KeyboundBrawler.Dispose();
         Blunderville.Dispose();
         CancelQueuedEngineStart();
         DutyStateService.DutyCompleted -= OnDutyCompleted;
@@ -276,6 +282,7 @@ public sealed class Plugin : IDalamudPlugin
         ConfigWindow.Dispose();
         MainWindow.Dispose();
         BlundervilleWindow.Dispose();
+        KeyboundBrawlerWindow.Dispose();
         StatsWindow.Dispose();
         ActionWarningWindow.Dispose();
         WarningTextWindow.Dispose();
@@ -300,8 +307,35 @@ public sealed class Plugin : IDalamudPlugin
     private void OnCommand(string command, string args)
     {
         if (args.Trim().Equals("shop", StringComparison.OrdinalIgnoreCase)) { OpenMoogleShop(); return; }
+        if (HandleKeyboundBrawlerCommand(args)) return;
         MainWindow.Toggle();
     }
+
+    private bool HandleKeyboundBrawlerCommand(string args)
+    {
+        var parts = args.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 0 || !parts[0].Equals("keybound", StringComparison.OrdinalIgnoreCase)) return false;
+        KeyboundBrawlerWindow.IsOpen = true;
+        if (parts.Length == 2 && parts[1].Equals("start", StringComparison.OrdinalIgnoreCase)) StartKeyboundBrawler();
+        else if (parts.Length == 2 && parts[1].Equals("stop", StringComparison.OrdinalIgnoreCase)) KeyboundBrawler.Stop();
+        return true;
+    }
+
+    public void StartKeyboundBrawler()
+    {
+        // Admission remains closed even through commands. No framework/game action is queued.
+        UpdateKeyboundBrawler();
+        KeyboundBrawler.Start();
+    }
+
+    private void UpdateKeyboundBrawler()
+        => KeyboundBrawler.Observe(CanSelectUiLanguage && ObjectTable.LocalPlayer != null &&
+                !Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.LoggingOut] &&
+                !Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas] &&
+                !Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas51],
+            Engine?.IsRunning == true || IsEngineStartQueued || Blunderville.IsRunning || IsBlundervilleActionQueued ||
+                MoogleShop.IsRunning || IsMoogleShopActionQueued,
+            ClientState.IsLoggedIn ? KeyboundBrawlerService.ReadTerritoryIntendedUse() : null);
 
     public void OpenMoogleShop()
     {
@@ -383,8 +417,8 @@ public sealed class Plugin : IDalamudPlugin
             Localization.Ui.SetLanguage(Localization.Ui.FromClient(ClientState.ClientLanguage));
         if (commandHelpLanguage != Ui.Language)
         {
-            mainCommandInfo.HelpMessage = Ui.GameT("Plugin_CommandMainHelp");
-            aliasCommandInfo.HelpMessage = Ui.GameT("Plugin_CommandAliasHelp");
+            mainCommandInfo.HelpMessage = Ui.GameT("Plugin_CommandMainHelp") + " | " + Ui.GameT("KB_Title") + ": /mogtome keybound";
+            aliasCommandInfo.HelpMessage = Ui.GameT("Plugin_CommandAliasHelp") + " | " + Ui.GameT("KB_Title") + ": /mog keybound";
             blundervilleCommandInfo.HelpMessage = Ui.GameT("BV_CommandHelp");
             commandHelpLanguage = Ui.Language;
         }
@@ -393,6 +427,7 @@ public sealed class Plugin : IDalamudPlugin
 
     private void OnAliasCommand(string command, string args)
     {
+        if (HandleKeyboundBrawlerCommand(args)) return;
         var arg = args.Trim().ToLowerInvariant();
         switch (arg)
         {
@@ -680,6 +715,7 @@ public sealed class Plugin : IDalamudPlugin
 
     private void OnFrameworkUpdate(IFramework fw)
     {
+        UpdateKeyboundBrawler();
         RotationService.ObserveSessionDeparture();
         if (ClientState.IsLoggedIn && Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.LoggingOut])
         {

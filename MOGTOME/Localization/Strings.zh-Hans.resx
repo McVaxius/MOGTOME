@@ -2277,4 +2277,13 @@ Path: {0}
   <data name="Control" xml:space="preserve"><value>控件</value></data>
   <data name="Switch to Picker to set each colour yourself." xml:space="preserve"><value>切换到选色器以自行设置每种颜色。</value></data>
   <data name="Switch back to Auto to use the automatic theme." xml:space="preserve"><value>切换回自动以使用自动主题。</value></data>
+  <data name="KB_Title" xml:space="preserve"><value>Keybound Brawler</value></data>
+  <data name="KB_Help" xml:space="preserve"><value>仅针对手动进入的一局。打开此窗口不会进入或启动活动。</value></data>
+  <data name="KB_Idle" xml:space="preserve"><value>空闲。未接管任何对局或输入。</value></data>
+  <data name="KB_Pending" xml:space="preserve"><value>待完成 — 游戏操作验证</value></data>
+  <data name="KB_ProfileUnavailable" xml:space="preserve"><value>请等待角色登录和账号配置加载。</value></data>
+  <data name="KB_AutomationBusy" xml:space="preserve"><value>开始一局之前，请停止MOGTOME任务。</value></data>
+  <data name="KB_OutsideEvent" xml:space="preserve"><value>尚未确认Keybound Brawler区域。请手动进入活动。</value></data>
+  <data name="KB_GameplayUnverified" xml:space="preserve"><value>游戏操作不可用：需要验证活动界面、输入是否被接受以及对局结束转换。</value></data>
+  <data name="KB_Stopped" xml:space="preserve"><value>已停止。未按住任何键，不会自动恢复。</value></data>
 </root>

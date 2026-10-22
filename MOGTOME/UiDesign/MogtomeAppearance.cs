@@ -117,7 +117,7 @@ internal sealed class MogtomeAppearance : IDisposable
         var fields = new System.Collections.Generic.List<string>();
         string state, detail;
         bool active, blocked = false;
-        if (owner is MoogleShopWindow || owner is not BlundervilleWindow && plugin.MoogleShop.IsRunning)
+        if (owner is MoogleShopWindow || owner is not (BlundervilleWindow or KeyboundBrawlerWindow) && plugin.MoogleShop.IsRunning)
         {
             var shop = plugin.MoogleShop;
             active = shop.IsRunning;
@@ -180,6 +180,13 @@ internal sealed class MogtomeAppearance : IDisposable
             fields.Add(Ui.T("Ui_TitlebarItemsLeft", counts.Values.Any(count => !count.HasValue) ? "—"
                 : settings.PurchaseTargets.Sum(target => Math.Max(0L, (long)target.Value - counts.GetValueOrDefault(target.Key).GetValueOrDefault())).ToString(Ui.Culture)));
             fields.Add(Ui.T("Ui_TitlebarCost", known ? cost.ToString(Ui.Culture) : "—"));
+        }
+        else if (owner is KeyboundBrawlerWindow)
+        {
+            active = false;
+            state = Ui.T("KB_Pending");
+            detail = plugin.KeyboundBrawler.UnavailableReason.Render();
+            blocked = true;
         }
         else
         {
@@ -406,7 +413,8 @@ internal sealed class MogtomeAppearance : IDisposable
             {
                 MaterialTitlebarStatus? status = null;
                 if (config.UiShowTitlebarStatus)
-                    status = owner is MoogleShopWindow || owner is not BlundervilleWindow && plugin.MoogleShop.IsRunning
+                    status = owner is KeyboundBrawlerWindow ? TitlebarStatus(owner)
+                        : owner is MoogleShopWindow || owner is not BlundervilleWindow && plugin.MoogleShop.IsRunning
                         ? moogleStatus ??= TitlebarStatus(owner)
                         : owner is BlundervilleWindow || plugin.Blunderville.IsRunning
                             ? blundervilleStatus ??= TitlebarStatus(owner) : mainStatus ??= TitlebarStatus(owner);

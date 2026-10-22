@@ -2427,4 +2427,13 @@ Otwórz magazyny, aby odświeżyć zapisane ilości.</value></data>
   <data name="Control" xml:space="preserve"><value>Przycisk</value></data>
   <data name="Switch to Picker to set each colour yourself." xml:space="preserve"><value>Przejdź do opcji Wybór, aby ustawić każdy kolor.</value></data>
   <data name="Switch back to Auto to use the automatic theme." xml:space="preserve"><value>Wróć do Auto, aby używać motywu automatycznego.</value></data>
+  <data name="KB_Title" xml:space="preserve"><value>Keybound Brawler</value></data>
+  <data name="KB_Help" xml:space="preserve"><value>Jedna runda z ręcznym wejściem. Otwarcie okna nie wchodzi do wydarzenia ani go nie uruchamia.</value></data>
+  <data name="KB_Idle" xml:space="preserve"><value>Bezczynność. Brak sterowania rundą lub klawiszami.</value></data>
+  <data name="KB_Pending" xml:space="preserve"><value>Do zrobienia — weryfikacja gry</value></data>
+  <data name="KB_ProfileUnavailable" xml:space="preserve"><value>Poczekaj na zalogowaną postać i profil konta.</value></data>
+  <data name="KB_AutomationBusy" xml:space="preserve"><value>Zatrzymaj aktywność MOGTOME przed rozpoczęciem rundy.</value></data>
+  <data name="KB_OutsideEvent" xml:space="preserve"><value>Nie potwierdzono obszaru Keybound Brawler. Wejdź do wydarzenia ręcznie.</value></data>
+  <data name="KB_GameplayUnverified" xml:space="preserve"><value>Gra niedostępna: trzeba zweryfikować interfejs, przyjęcie wejścia i zakończenie rundy.</value></data>
+  <data name="KB_Stopped" xml:space="preserve"><value>Zatrzymano. Żaden klawisz nie jest przytrzymany; brak automatycznego wznowienia.</value></data>
 </root>

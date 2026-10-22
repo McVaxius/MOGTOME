@@ -2427,4 +2427,13 @@ Buka penyimpanan untuk memperbarui jumlah tercatat.</value></data>
   <data name="Control" xml:space="preserve"><value>Kontrol</value></data>
   <data name="Switch to Picker to set each colour yourself." xml:space="preserve"><value>Beralih ke Pemilih untuk menentukan setiap warna.</value></data>
   <data name="Switch back to Auto to use the automatic theme." xml:space="preserve"><value>Kembali ke Otomatis untuk menggunakan tema otomatis.</value></data>
+  <data name="KB_Title" xml:space="preserve"><value>Keybound Brawler</value></data>
+  <data name="KB_Help" xml:space="preserve"><value>Satu ronde yang dimasuki manual. Membuka jendela ini tidak memasuki atau memulai acara.</value></data>
+  <data name="KB_Idle" xml:space="preserve"><value>Siaga. Tidak mengendalikan ronde atau input.</value></data>
+  <data name="KB_Pending" xml:space="preserve"><value>Belum selesai — verifikasi permainan</value></data>
+  <data name="KB_ProfileUnavailable" xml:space="preserve"><value>Tunggu karakter masuk dan profil akun dimuat.</value></data>
+  <data name="KB_AutomationBusy" xml:space="preserve"><value>Hentikan aktivitas MOGTOME sebelum memulai ronde.</value></data>
+  <data name="KB_OutsideEvent" xml:space="preserve"><value>Wilayah Keybound Brawler belum terverifikasi. Masuki acara secara manual.</value></data>
+  <data name="KB_GameplayUnverified" xml:space="preserve"><value>Permainan belum tersedia: tampilan, input yang diterima, dan akhir ronde perlu diverifikasi.</value></data>
+  <data name="KB_Stopped" xml:space="preserve"><value>Dihentikan. Tidak ada tombol yang ditahan dan tidak dilanjutkan otomatis.</value></data>
 </root>

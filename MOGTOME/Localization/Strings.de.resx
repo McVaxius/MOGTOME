@@ -2271,4 +2271,13 @@ Lager öffnen, um erfasste Mengen zu aktualisieren.</value></data>
   <data name="Control" xml:space="preserve"><value>Steuerelement</value></data>
   <data name="Switch to Picker to set each colour yourself." xml:space="preserve"><value>Wechsle zur Farbwahl, um jede Farbe selbst festzulegen.</value></data>
   <data name="Switch back to Auto to use the automatic theme." xml:space="preserve"><value>Wechsle zurück zu Automatisch, um das automatische Design zu verwenden.</value></data>
+  <data name="KB_Title" xml:space="preserve"><value>Keybound Brawler</value></data>
+  <data name="KB_Help" xml:space="preserve"><value>Eine manuell betretene Runde. Das Öffnen dieses Fensters betritt oder startet das Ereignis nicht.</value></data>
+  <data name="KB_Idle" xml:space="preserve"><value>Inaktiv. Keine Runde oder Eingabe wird gesteuert.</value></data>
+  <data name="KB_Pending" xml:space="preserve"><value>Ausstehend — Spielprüfung</value></data>
+  <data name="KB_ProfileUnavailable" xml:space="preserve"><value>Auf einen angemeldeten Charakter und sein Kontoprofil warten.</value></data>
+  <data name="KB_AutomationBusy" xml:space="preserve"><value>Die MOGTOME-Aktivität vor dem Rundenstart stoppen.</value></data>
+  <data name="KB_OutsideEvent" xml:space="preserve"><value>Kein verifiziertes Keybound-Brawler-Gebiet. Das Ereignis manuell betreten.</value></data>
+  <data name="KB_GameplayUnverified" xml:space="preserve"><value>Spiel nicht verfügbar: Oberfläche, bestätigte Eingabe und Rundenende müssen geprüft werden.</value></data>
+  <data name="KB_Stopped" xml:space="preserve"><value>Gestoppt. Keine Taste wird gehalten; keine automatische Fortsetzung.</value></data>
 </root>

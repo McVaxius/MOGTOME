@@ -2427,4 +2427,13 @@ Mở kho để cập nhật số lượng đã ghi.</value></data>
   <data name="Control" xml:space="preserve"><value>Điều khiển</value></data>
   <data name="Switch to Picker to set each colour yourself." xml:space="preserve"><value>Chuyển sang Bộ chọn để tự đặt từng màu.</value></data>
   <data name="Switch back to Auto to use the automatic theme." xml:space="preserve"><value>Chuyển về Tự động để dùng chủ đề tự động.</value></data>
+  <data name="KB_Title" xml:space="preserve"><value>Keybound Brawler</value></data>
+  <data name="KB_Help" xml:space="preserve"><value>Một vòng được vào thủ công. Mở cửa sổ này không vào hay bắt đầu sự kiện.</value></data>
+  <data name="KB_Idle" xml:space="preserve"><value>Đang chờ. Không kiểm soát vòng chơi hay thao tác nhập.</value></data>
+  <data name="KB_Pending" xml:space="preserve"><value>Chờ thực hiện — xác minh cách chơi</value></data>
+  <data name="KB_ProfileUnavailable" xml:space="preserve"><value>Chờ nhân vật đăng nhập và hồ sơ tài khoản tải xong.</value></data>
+  <data name="KB_AutomationBusy" xml:space="preserve"><value>Dừng hoạt động MOGTOME trước khi bắt đầu một vòng.</value></data>
+  <data name="KB_OutsideEvent" xml:space="preserve"><value>Chưa xác minh khu vực Keybound Brawler. Hãy vào sự kiện thủ công.</value></data>
+  <data name="KB_GameplayUnverified" xml:space="preserve"><value>Chưa thể chơi: cần xác minh giao diện, thao tác được chấp nhận và kết thúc vòng.</value></data>
+  <data name="KB_Stopped" xml:space="preserve"><value>Đã dừng. Không giữ phím nào và không tự động tiếp tục.</value></data>
 </root>

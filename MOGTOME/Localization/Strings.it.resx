@@ -2277,4 +2277,13 @@ Apri i depositi per aggiornare le quantità registrate.</value></data>
   <data name="Control" xml:space="preserve"><value>Controllo</value></data>
   <data name="Switch to Picker to set each colour yourself." xml:space="preserve"><value>Passa a Selettore per impostare ogni colore.</value></data>
   <data name="Switch back to Auto to use the automatic theme." xml:space="preserve"><value>Torna ad Automatico per usare il tema automatico.</value></data>
+  <data name="KB_Title" xml:space="preserve"><value>Keybound Brawler</value></data>
+  <data name="KB_Help" xml:space="preserve"><value>Una partita con ingresso manuale. Aprire questa finestra non entra né avvia l’evento.</value></data>
+  <data name="KB_Idle" xml:space="preserve"><value>Inattivo. Nessuna partita o immissione è controllata.</value></data>
+  <data name="KB_Pending" xml:space="preserve"><value>Da fare — verifica del gioco</value></data>
+  <data name="KB_ProfileUnavailable" xml:space="preserve"><value>Attendi un personaggio connesso e il profilo dell’account.</value></data>
+  <data name="KB_AutomationBusy" xml:space="preserve"><value>Ferma l’attività MOGTOME prima di avviare una partita.</value></data>
+  <data name="KB_OutsideEvent" xml:space="preserve"><value>Nessun territorio Keybound Brawler verificato. Entra nell’evento manualmente.</value></data>
+  <data name="KB_GameplayUnverified" xml:space="preserve"><value>Gioco non disponibile: interfaccia, input accettato e fine partita devono essere verificati.</value></data>
+  <data name="KB_Stopped" xml:space="preserve"><value>Fermato. Nessun tasto tenuto premuto e nessuna ripresa automatica.</value></data>
 </root>

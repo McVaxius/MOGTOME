@@ -2277,4 +2277,13 @@ Open storage to refresh recorded quantities.</value></data>
   <data name="Control" xml:space="preserve"><value>Control</value></data>
   <data name="Switch to Picker to set each colour yourself." xml:space="preserve"><value>Switch to Picker to set each colour yourself.</value></data>
   <data name="Switch back to Auto to use the automatic theme." xml:space="preserve"><value>Switch back to Auto to use the automatic theme.</value></data>
+  <data name="KB_Title" xml:space="preserve"><value>Keybound Brawler</value></data>
+  <data name="KB_Help" xml:space="preserve"><value>One manually entered round. Opening this window never enters or starts the event.</value></data>
+  <data name="KB_Idle" xml:space="preserve"><value>Idle. No round or input is owned.</value></data>
+  <data name="KB_Pending" xml:space="preserve"><value>TBD — gameplay verification</value></data>
+  <data name="KB_ProfileUnavailable" xml:space="preserve"><value>Wait for a logged-in character and account profile.</value></data>
+  <data name="KB_AutomationBusy" xml:space="preserve"><value>Stop the current MOGTOME activity before starting a round.</value></data>
+  <data name="KB_OutsideEvent" xml:space="preserve"><value>No Keybound Brawler territory is verified. Enter the event manually.</value></data>
+  <data name="KB_GameplayUnverified" xml:space="preserve"><value>Gameplay is unavailable: the event surface, accepted input and round-end transition need verification.</value></data>
+  <data name="KB_Stopped" xml:space="preserve"><value>Stopped. No input is held and nothing will resume automatically.</value></data>
 </root>

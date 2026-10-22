@@ -2271,4 +2271,13 @@ Ouvrir les stockages pour actualiser les quantités enregistrées.</value></data
   <data name="Control" xml:space="preserve"><value>Commande</value></data>
   <data name="Switch to Picker to set each colour yourself." xml:space="preserve"><value>Passez au Sélecteur pour définir chaque couleur.</value></data>
   <data name="Switch back to Auto to use the automatic theme." xml:space="preserve"><value>Revenez à Automatique pour utiliser le thème automatique.</value></data>
+  <data name="KB_Title" xml:space="preserve"><value>Keybound Brawler</value></data>
+  <data name="KB_Help" xml:space="preserve"><value>Une manche rejointe manuellement. Ouvrir cette fenêtre ne rejoint ni ne démarre l’événement.</value></data>
+  <data name="KB_Idle" xml:space="preserve"><value>Inactif. Aucune manche ni entrée contrôlée.</value></data>
+  <data name="KB_Pending" xml:space="preserve"><value>À venir — vérification du jeu</value></data>
+  <data name="KB_ProfileUnavailable" xml:space="preserve"><value>Attendez la connexion du personnage et le chargement de son profil.</value></data>
+  <data name="KB_AutomationBusy" xml:space="preserve"><value>Arrêtez l’activité MOGTOME avant de démarrer une manche.</value></data>
+  <data name="KB_OutsideEvent" xml:space="preserve"><value>Aucun territoire Keybound Brawler vérifié. Rejoignez l’événement manuellement.</value></data>
+  <data name="KB_GameplayUnverified" xml:space="preserve"><value>Jeu indisponible : interface, entrées acceptées et fin de manche restent à vérifier.</value></data>
+  <data name="KB_Stopped" xml:space="preserve"><value>Arrêté. Aucune touche maintenue et aucune reprise automatique.</value></data>
 </root>

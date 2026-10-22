@@ -2271,4 +2271,13 @@ DictionaryPathsとPathSelectionsByPathを比較します。
   <data name="Control" xml:space="preserve"><value>コントロール</value></data>
   <data name="Switch to Picker to set each colour yourself." xml:space="preserve"><value>各色を自分で設定するにはピッカーに切り替えます。</value></data>
   <data name="Switch back to Auto to use the automatic theme." xml:space="preserve"><value>自動テーマを使うには「自動」に戻します。</value></data>
+  <data name="KB_Title" xml:space="preserve"><value>Keybound Brawler</value></data>
+  <data name="KB_Help" xml:space="preserve"><value>手動で参加した1ラウンドが対象です。このウィンドウを開いてもイベントへの参加や開始は行いません。</value></data>
+  <data name="KB_Idle" xml:space="preserve"><value>待機中。ラウンドや入力の制御は取得していません。</value></data>
+  <data name="KB_Pending" xml:space="preserve"><value>未実装 — ゲーム動作の検証待ち</value></data>
+  <data name="KB_ProfileUnavailable" xml:space="preserve"><value>キャラクターのログインとアカウントプロファイルの読み込みを待ってください。</value></data>
+  <data name="KB_AutomationBusy" xml:space="preserve"><value>ラウンドを開始する前に、実行中のMOGTOMEの処理を停止してください。</value></data>
+  <data name="KB_OutsideEvent" xml:space="preserve"><value>Keybound Brawlerのエリアを確認できません。イベントに手動で参加してください。</value></data>
+  <data name="KB_GameplayUnverified" xml:space="preserve"><value>ゲーム操作は利用できません。画面の識別、入力の反映、ラウンド終了の遷移を検証する必要があります。</value></data>
+  <data name="KB_Stopped" xml:space="preserve"><value>停止しました。キーは保持しておらず、自動再開もしません。</value></data>
 </root>

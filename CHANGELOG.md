@@ -1,3 +1,10 @@
+2026-10-21 - Keybound Brawler preparation (I622)
+
+- Add a Keybound Brawler window from Main and `/mog keybound` or `/mogtome keybound`, using existing account appearance, language and window lifecycle. Opening it starts nothing; no extra settings are saved.
+- Add explicit Start/Stop presentation and translated status in every supported language. Gameplay remains unavailable/TBD: native territory metadata and populated TurnBreak sheets do not establish the event surface, supported input, accepted action or round-end contract. Commands also reject Start; no keys, callbacks, travel, ownership or completion are produced.
+- Keep basic play pending one identified manually entered round with verified input, progress acknowledgement, round-end transition and cancellation checks. No live game or score/reward verification is claimed.
+- Reconcile the October 28 availability and current game-help contract: type a displayed word then Enter, withhold keys during Letterlock, and never use Escape for Stop because it abandons the game. Candidate addon/number-array identifiers and help labels remain distinct from unverified native buffer, progress and result mappings; gameplay stays disabled.
+
 2026-10-20 - Prepare Astronomy II shop support
 
 - Add the verified Company Hat, Company Tabard and Qiqirn Earring rewards to Select Missing; exclude the four additional dungeon coats while retaining Astronomy I classifications and saved targets.

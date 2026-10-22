@@ -2277,4 +2277,13 @@ Abre los almacenes para actualizar las cantidades registradas.</value></data>
   <data name="Control" xml:space="preserve"><value>Control</value></data>
   <data name="Switch to Picker to set each colour yourself." xml:space="preserve"><value>Cambia a Selector para definir cada color.</value></data>
   <data name="Switch back to Auto to use the automatic theme." xml:space="preserve"><value>Vuelve a Automático para usar el tema automático.</value></data>
+  <data name="KB_Title" xml:space="preserve"><value>Keybound Brawler</value></data>
+  <data name="KB_Help" xml:space="preserve"><value>Una ronda con entrada manual. Abrir esta ventana no entra ni inicia el evento.</value></data>
+  <data name="KB_Idle" xml:space="preserve"><value>Inactivo. No se controla ninguna ronda ni entrada.</value></data>
+  <data name="KB_Pending" xml:space="preserve"><value>Pendiente — verificación del juego</value></data>
+  <data name="KB_ProfileUnavailable" xml:space="preserve"><value>Espera a un personaje conectado y su perfil de cuenta.</value></data>
+  <data name="KB_AutomationBusy" xml:space="preserve"><value>Detén la actividad de MOGTOME antes de iniciar una ronda.</value></data>
+  <data name="KB_OutsideEvent" xml:space="preserve"><value>No se ha verificado un territorio de Keybound Brawler. Entra al evento manualmente.</value></data>
+  <data name="KB_GameplayUnverified" xml:space="preserve"><value>Juego no disponible: faltan verificar la interfaz, la entrada aceptada y el final de ronda.</value></data>
+  <data name="KB_Stopped" xml:space="preserve"><value>Detenido. No hay teclas pulsadas ni reanudación automática.</value></data>
 </root>
