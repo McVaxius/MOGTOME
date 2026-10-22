@@ -1,3 +1,8 @@
+2026-10-22 - Keybound reward-collection defaults
+
+- Default new Keybound configurations to one of each of the 19 non-coffer rewards, no run limit, a 5,470 MGC wallet target, and shopping when farming finishes. Keep the coffer at zero and the ending destination unchanged.
+- Preserve saved targets, including an empty list or a manually selected coffer, and saved run/wallet/shopping choices. These defaults do not enable the pending event solver or start automation.
+
 2026-10-22 - Approved Keybound shop layout and independent shopping
 
 - Implement the approved compact layout: short activity navigation/actions, inline limits and finish settings, a full-height shop table, game item icons, category/search filters and responsive totals. Keep all 20 native offers and prices available for preparation before the festival opens.

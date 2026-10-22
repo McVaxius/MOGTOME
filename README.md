@@ -154,6 +154,12 @@ shop-on-finish and ending destination save separately in the current account;
 changing them does not start activity. The run limits and shop-on-finish choice
 are prepared for the pending event solver.
 
+New configurations target one of each of the 19 non-coffer rewards, with the
+run limit disabled, the MGC wallet target enabled at **5,470 MGC**, and
+shop-on-finish enabled. The coffer starts at zero; the ending destination is
+"Don't go anywhere." These are editable defaults; existing saved targets and
+preferences are retained. Preparing a new configuration starts nothing.
+
 **Buy works independently of the solver.** Be near the loaded MGC trader and
 use Buy, `/keybound buy` or `/kbb buy`. The shopper approaches that identified
 trader, validates its current shop/items/prices and festival eligibility, buys

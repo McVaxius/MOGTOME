@@ -69,30 +69,46 @@ public sealed class KeyboundBrawlerTests
     public void ShopPreparationRoundTripsSeparatelyFromBlundervilleAndOrdinaryDuties()
     {
         var config = JsonSerializer.Deserialize<Configuration>("{\"DutyCounter\":42,\"MaxRuns\":99}")!;
-        Assert.True(config.KeyboundBrawler.RunLimitEnabled);
+        Assert.False(config.KeyboundBrawler.RunLimitEnabled);
         Assert.Equal(1, config.KeyboundBrawler.RunLimit);
-        Assert.False(config.KeyboundBrawler.ShopWhenFinished);
-        Assert.Empty(config.KeyboundBrawler.PurchaseTargets);
+        Assert.True(config.KeyboundBrawler.WalletTargetEnabled);
+        Assert.Equal(5470, config.KeyboundBrawler.WalletTarget);
+        Assert.True(config.KeyboundBrawler.ShopWhenFinished);
+        Assert.Equal(19, config.KeyboundBrawler.PurchaseTargets.Count);
+        Assert.All(config.KeyboundBrawler.PurchaseTargets, target =>
+        {
+            Assert.True(KeyboundBrawlerShop.IsSelectMissingReward(target.Key));
+            Assert.Equal(1, target.Value);
+        });
+        Assert.False(config.KeyboundBrawler.PurchaseTargets.ContainsKey(KeyboundBrawlerShop.CofferItemId));
         config.Blunderville.PurchaseTargets[52323] = 7;
+        config.KeyboundBrawler.PurchaseTargets.Clear();
         config.KeyboundBrawler.PurchaseTargets[52323] = 2;
+        config.KeyboundBrawler.PurchaseTargets[KeyboundBrawlerShop.CofferItemId] = 3;
+        config.KeyboundBrawler.RunLimitEnabled = true;
         config.KeyboundBrawler.RunLimit = 5;
-        config.KeyboundBrawler.WalletTargetEnabled = true;
+        config.KeyboundBrawler.WalletTargetEnabled = false;
         config.KeyboundBrawler.WalletTarget = 910;
         config.KeyboundBrawler.HideOwned = true;
-        config.KeyboundBrawler.ShopWhenFinished = true;
+        config.KeyboundBrawler.ShopWhenFinished = false;
         config.KeyboundBrawler.EndingLocation = BlundervilleEndingLocation.Limsa;
         var restored = JsonSerializer.Deserialize<Configuration>(JsonSerializer.Serialize(config))!;
         Assert.Equal(42, restored.DutyCounter);
         Assert.Equal(99, restored.MaxRuns);
         Assert.Equal(7, restored.Blunderville.PurchaseTargets[52323]);
         Assert.Equal(2, restored.KeyboundBrawler.PurchaseTargets[52323]);
+        Assert.Equal(3, restored.KeyboundBrawler.PurchaseTargets[KeyboundBrawlerShop.CofferItemId]);
+        Assert.Equal(2, restored.KeyboundBrawler.PurchaseTargets.Count);
+        Assert.True(restored.KeyboundBrawler.RunLimitEnabled);
         Assert.Equal(5, restored.KeyboundBrawler.RunLimit);
-        Assert.True(restored.KeyboundBrawler.WalletTargetEnabled);
+        Assert.False(restored.KeyboundBrawler.WalletTargetEnabled);
         Assert.Equal(910, restored.KeyboundBrawler.WalletTarget);
         Assert.True(restored.KeyboundBrawler.HideOwned);
-        Assert.True(restored.KeyboundBrawler.ShopWhenFinished);
+        Assert.False(restored.KeyboundBrawler.ShopWhenFinished);
         Assert.Equal(BlundervilleEndingLocation.Limsa, restored.KeyboundBrawler.EndingLocation);
-        Assert.Empty(new Configuration().KeyboundBrawler.PurchaseTargets);
+        Assert.Equal(19, new Configuration().KeyboundBrawler.PurchaseTargets.Count);
+        config.KeyboundBrawler.PurchaseTargets.Clear();
+        Assert.Empty(JsonSerializer.Deserialize<Configuration>(JsonSerializer.Serialize(config))!.KeyboundBrawler.PurchaseTargets);
         using var service = new KeyboundBrawlerService();
         service.Observe(true, false, 65);
         Assert.False(service.Start()); // Saved farming/shopping choices must not arm the pending feature.
