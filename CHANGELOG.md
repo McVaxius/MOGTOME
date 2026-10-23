@@ -1,3 +1,8 @@
+2026-10-22 - VBM preset-catalog compatibility (I507)
+
+- Read the live preset database from the published TickService field or the newer registered RotationDatabase service. Select the demonstrated provider layout and validate the returned native type without constructing a service or reading generated constructor fields.
+- Preserve BMR catalog behavior and existing IPC. Offline contract tests cover both VBM layouts; loaded-client acceptance remains unverified. No version or deployment change.
+
 2026-10-22 - Keybound reward-collection defaults
 
 - Default new Keybound configurations to one of each of the 19 non-coffer rewards, no run limit, a 5,470 MGC wallet target, and shopping when farming finishes. Keep the coffer at zero and the ending destination unchanged.

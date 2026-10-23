@@ -25,6 +25,39 @@ namespace MOGTOME.Tests;
 // database, or native callbacks are used by this fixture.
 public sealed class DutyRecoveryTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void VbmCatalogUsesTheReleasedTickOrNewRegisteredDatabase(bool releasedLayout)
+    {
+        var assembly = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("SyntheticVbmCatalog"), AssemblyBuilderAccess.Run);
+        var module = assembly.DefineDynamicModule("Provider");
+        var databaseType = module.DefineType("BossMod.Autorotation.RotationDatabase", TypeAttributes.Public).CreateType()!;
+        var tickBuilder = module.DefineType("BossMod.Services.TickService", TypeAttributes.Public);
+        if (releasedLayout)
+            tickBuilder.DefineField("_rotationDB", databaseType, FieldAttributes.Private);
+        var tickType = tickBuilder.CreateType()!;
+        var database = Activator.CreateInstance(databaseType)!;
+        var service = releasedLayout ? Activator.CreateInstance(tickType)! : database;
+        if (releasedLayout)
+            tickType.GetField("_rotationDB", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(service, database);
+        var services = new CatalogServices(service);
+        var provider = new CatalogPlugin(new NativeHost(services));
+
+        Assert.Same(database, BossModIPC.ReadRotationDatabase("VBM", provider, assembly));
+        Assert.Equal(new[] { releasedLayout ? tickType : databaseType }, services.Requests);
+        services.Service = new object();
+        Assert.Null(BossModIPC.ReadRotationDatabase("VBM", provider, assembly));
+    }
+
+    private sealed record CatalogPlugin(NativeHost Host);
+    private sealed class CatalogServices(object service) : IServiceProvider
+    {
+        internal object Service = service;
+        internal List<Type> Requests = new();
+        public object? GetService(Type type) { Requests.Add(type); return Service; }
+    }
+
     private static readonly AdsHandoffReadinessConditions Ready = new(true, true, true, false, false, false, false);
 
     [Theory]
