@@ -44,6 +44,7 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
     public override void Draw()
     {
         windowMotion.DrawChrome();
+        if (AethertekUI.MaterialTheme.Current.IsLcars) AethertekUI.MaterialLcars.Header(string.Empty);
         using var controls = MaterialControls.Push(MogtomePresentation.Compact
             ? MaterialControlContext.Dense : MaterialControlContext.Toolbar);
         DrawNavigation();

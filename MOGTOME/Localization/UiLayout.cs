@@ -18,8 +18,14 @@ internal static class UiLayout
         using var controls = ImGui.GetStyle().FramePadding.Y == 0 || MaterialControls.Context == MaterialControlContext.Dense
             ? default(MaterialControls.ControlScope) : MaterialControls.Push(MaterialControlContext.Toolbar);
         using var height = MaterialText.PushLineHeight(visible);
+        using var nativeButtons = MaterialLcars.NativeButtonStyle();
         size.X = MaterialLayout.FitNextItemWidth(size.X, MaterialText.Measure(visible).X + ImGui.GetStyle().FramePadding.X * 2);
-        if (!MaterialText.RequiresShaping(visible)) return ImGui.Button(label, size);
+        if (!MaterialText.RequiresShaping(visible))
+        {
+            var pressed = ImGui.Button(label, size);
+            MaterialLcars.Feedback(pressed);
+            return pressed;
+        }
         ImGui.PushStyleColor(ImGuiCol.Text, Vector4.Zero);
         var clicked = ImGui.Button(label, size);
         ImGui.PopStyleColor();
@@ -27,6 +33,7 @@ internal static class UiLayout
         var list = ImGui.GetWindowDrawList(); list.PushClipRect(min, max, true);
         try { MaterialText.AddText(list, min + new Vector2((max.X-min.X-measured.X)*.5f, (max.Y-min.Y-measured.Y)*.5f), ImGui.GetColorU32(ImGuiCol.Text), visible); }
         finally { list.PopClipRect(); }
+        MaterialLcars.Feedback(clicked);
         return clicked;
     }
 
@@ -83,6 +90,7 @@ internal static class UiLayout
             ? default(MaterialControls.ControlScope) : MaterialControls.Push(MaterialControlContext.Toolbar);
         var paddingY = ImGui.GetStyle().FramePadding.Y;
         using var height = MaterialText.PushLineHeight(text);
+        using var nativeButtons = MaterialLcars.NativeButtonStyle();
         size.X = MaterialLayout.FitNextItemWidth(size.X, IconButtonWidth(text));
         var textSize = MaterialText.Measure(text);
         size.Y = Math.Max(size.Y, Math.Max(MaterialControls.Metrics.Height,
@@ -99,11 +107,13 @@ internal static class UiLayout
         list.PushClipRect(min, max, true);
         MaterialIcons.Draw(icon, new(left, min.Y + (max.Y - min.Y - 22 * scale) * .5f), 22 * scale, foreground);
         MaterialText.AddText(list, ImGui.GetFont(), ImGui.GetFontSize(), new(left + 32 * scale, min.Y + (max.Y - min.Y - textSize.Y) * .5f), MaterialCanvas.Color(foreground), text);
-        list.PopClipRect(); return clicked;
+        list.PopClipRect();
+        MaterialLcars.Feedback(clicked);
+        return clicked;
     }
     internal static Vector2 Panel(Action draw, float width = 0, float minimumHeight = 0)
     {
-        var scale = MaterialTheme.Metrics.Scale; var padding = (MogtomePresentation.Compact ? 12 : 16) * scale;
+        var scale = MaterialTheme.Metrics.Scale; var padding = (MaterialTheme.Current.IsLcars ? 18 : MogtomePresentation.Compact ? 12 : 16) * scale;
         if (width <= 0) width = ImGui.GetContentRegionAvail().X;
         var origin = ImGui.GetCursorScreenPos(); var list = ImGui.GetWindowDrawList();
         var previousRight = panelRight;
@@ -124,8 +134,12 @@ internal static class UiLayout
             height = Math.Max(minimumHeight, ImGui.GetItemRectSize().Y + padding * 2);
             list.ChannelsSetCurrent(0);
             var colors = MaterialTheme.Current.Colors;
-            MaterialCanvas.Surface(origin, origin + new Vector2(width, height), colors.SurfaceContainer, colors.Surface, 4 * scale);
-            list.AddRect(origin, origin + new Vector2(width, height), MaterialCanvas.Color(colors.OutlineVariant), 4 * scale);
+            if (MaterialTheme.Current.IsLcars) MaterialLcars.PanelFrame(origin, origin + new Vector2(width, height), 1);
+            else
+            {
+                MaterialCanvas.Surface(origin, origin + new Vector2(width, height), colors.SurfaceContainer, colors.Surface, 4 * scale);
+                list.AddRect(origin, origin + new Vector2(width, height), MaterialCanvas.Color(colors.OutlineVariant), 4 * scale);
+            }
         }
         finally
         {
@@ -165,24 +179,36 @@ internal static class UiLayout
     {
         var text = label.Split("##", 2)[0];
         using var height = MaterialText.PushLineHeight(text);
-        if (!MaterialText.RequiresShaping(text)) return ImGui.Checkbox(label, ref value);
+        if (!MaterialText.RequiresShaping(text))
+        {
+            var pressed = ImGui.Checkbox(label, ref value);
+            MaterialLcars.Feedback(pressed, MaterialUiSoundCue.Toggle);
+            return pressed;
+        }
         var gap = ImGui.GetStyle().ItemInnerSpacing;
         ImGui.PushStyleVar(ImGuiStyleVar.ItemInnerSpacing, new Vector2(gap.X + Math.Max(0, MaterialText.Measure(text).X-ImGui.CalcTextSize(text).X), gap.Y));
         ImGui.PushStyleColor(ImGuiCol.Text, Vector4.Zero);
         var changed = ImGui.Checkbox(label, ref value); ImGui.PopStyleColor(); ImGui.PopStyleVar();
         MaterialText.AddText(ImGui.GetWindowDrawList(), ImGui.GetItemRectMin() + new Vector2(ImGui.GetFrameHeight()+gap.X, (ImGui.GetItemRectSize().Y-MaterialText.Measure(text).Y)*.5f), ImGui.GetColorU32(ImGuiCol.Text), text);
+        MaterialLcars.Feedback(changed, MaterialUiSoundCue.Toggle);
         return changed;
     }
     internal static bool RadioButton(string label, bool active)
     {
         var text = label.Split("##", 2)[0];
         using var height = MaterialText.PushLineHeight(text);
-        if (!MaterialText.RequiresShaping(text)) return ImGui.RadioButton(label, active);
+        if (!MaterialText.RequiresShaping(text))
+        {
+            var pressed = ImGui.RadioButton(label, active);
+            MaterialLcars.Feedback(pressed, MaterialUiSoundCue.Toggle);
+            return pressed;
+        }
         var gap = ImGui.GetStyle().ItemInnerSpacing;
         ImGui.PushStyleVar(ImGuiStyleVar.ItemInnerSpacing, new Vector2(gap.X+Math.Max(0,MaterialText.Measure(text).X-ImGui.CalcTextSize(text).X),gap.Y));
         ImGui.PushStyleColor(ImGuiCol.Text, Vector4.Zero);
         var changed = ImGui.RadioButton(label, active); ImGui.PopStyleColor(); ImGui.PopStyleVar();
         MaterialText.AddText(ImGui.GetWindowDrawList(), ImGui.GetItemRectMin()+new Vector2(ImGui.GetFrameHeight()+gap.X,(ImGui.GetItemRectSize().Y-MaterialText.Measure(text).Y)*.5f), ImGui.GetColorU32(ImGuiCol.Text), text);
+        MaterialLcars.Feedback(changed, MaterialUiSoundCue.Toggle);
         return changed;
     }
     internal static bool RadioButton(string label, ref int selected, int value)

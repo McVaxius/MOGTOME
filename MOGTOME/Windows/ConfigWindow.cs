@@ -146,6 +146,7 @@ public class ConfigWindow : Window, IDisposable
     public override void Draw()
     {
         windowMotion.DrawChrome();
+        if (AethertekUI.MaterialTheme.Current.IsLcars) AethertekUI.MaterialLcars.Header(WindowName.Split("##", 2)[0]);
         EnsureItemsLoaded();
         var config = plugin.Configuration;
         var changed = false;

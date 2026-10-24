@@ -122,16 +122,14 @@ public class MainWindow : Window, IDisposable
     public override void Draw()
     {
         windowMotion.DrawChrome();
+        if (AethertekUI.MaterialTheme.Current.IsLcars) AethertekUI.MaterialLcars.Header(string.Empty);
         var config = plugin.Configuration;
         var engine = plugin.Engine;
         var scale = ImGuiHelpers.GlobalScale;
         plugin.ConsumableInventoryService.Refresh();
         DrawHeader();
         DrawTeamLeader();
-        DrawActivityNavigation("Window_BlundervilleFailer", Ui.T("Main_OpenBlunderville"),
-            () => plugin.BlundervilleWindow.IsOpen = true);
-        DrawActivityNavigation("KB_Title", Ui.T("Main_Open") + ": " + Ui.T("KB_Title"),
-            () => plugin.KeyboundBrawlerWindow.IsOpen = true);
+        if (!MaterialTheme.Current.IsLcars) DrawActivities();
         UiLayout.Panel(() =>
         {
             var origin = ImGui.GetCursorScreenPos();
@@ -188,7 +186,12 @@ public class MainWindow : Window, IDisposable
         }, minimumHeight: (MogtomePresentation.Compact ? 75 : 112) * scale);
         DrawActions();
         plugin.Appearance.DrawTomestoneBalances();
-        if (engine == null) { FinalizePendingWindowPlacement(); return; }
+        if (engine == null)
+        {
+            if (MaterialTheme.Current.IsLcars) DrawActivities();
+            FinalizePendingWindowPlacement();
+            return;
+        }
         var width = ImGui.GetContentRegionAvail().X;
         var paired = width >= 780 * scale;
         var gap = (MogtomePresentation.Compact ? 15 : 18) * scale;
@@ -207,12 +210,14 @@ public class MainWindow : Window, IDisposable
         {
             Heading("Main_MainWindowSettings");
             CardSeparator();
+            if (MaterialTheme.Current.IsLcars) plugin.Appearance.DrawLcarsMainPreferences();
             var useAdsExperimental = config.UseAdsExperimental;
             if (UiLayout.Checkbox(Ui.L("Main_AIDutySolverADS"), ref useAdsExperimental)) ToggleAdsExperimental(useAdsExperimental);
             if (ImGui.IsItemHovered()) UiLayout.SetTooltip(Ui.T("Main_DutyBackendSelectorEnablingADSImmediatelySends"));
             plugin.ConfigWindow.DrawCombatRotationSelector("Main");
             UiLayout.TextDisabled(config.UseAdsExperimental ? Ui.T("Main_ADSDutyBackendActiveADSAlsoHandles") : Ui.T("Main_AutoDutyDutyBackendActiveADSIsOptional"));
         }, minimumHeight: (MogtomePresentation.Compact ? 100 : 122) * scale);
+        if (MaterialTheme.Current.IsLcars) DrawActivities();
         if (config.DebugModeEnabled && MaterialText.CollapsingHeader(Ui.L("Main_DebugTools"), ImGuiTreeNodeFlags.NoTreePushOnOpen)) DrawDebug();
         FinalizePendingWindowPlacement();
     }
@@ -343,6 +348,12 @@ public class MainWindow : Window, IDisposable
 
     private void Heading(string key)
     {
+        if (MaterialTheme.Current.IsLcars)
+        {
+            using var font = plugin.Appearance.Font(MogtomeFontRole.CompactHeading);
+            MaterialLcars.PanelHeading(Ui.T(key), key == "Main_PartySummary" ? 2 : key == "Main_MainWindowSettings" ? 0 : 1);
+            return;
+        }
         var origin = ImGui.GetCursorScreenPos();
         var icon = key == "Main_PartySummary" ? MaterialIcon.Group
             : key == "Main_MainWindowSettings" ? MaterialIcon.Settings
@@ -384,6 +395,14 @@ public class MainWindow : Window, IDisposable
                 new Vector2(Math.Min(buttonWidth, UiLayout.AvailableWidth), (MogtomePresentation.Compact ? 36 : 42) * scale), Ui.T("Main_Open")))
                 open();
         }, minimumHeight: (MogtomePresentation.Compact ? 60 : 74) * scale);
+    }
+
+    private void DrawActivities()
+    {
+        DrawActivityNavigation("Window_BlundervilleFailer", Ui.T("Main_OpenBlunderville"),
+            () => plugin.BlundervilleWindow.IsOpen = true);
+        DrawActivityNavigation("KB_Title", Ui.T("Main_Open") + ": " + Ui.T("KB_Title"),
+            () => plugin.KeyboundBrawlerWindow.IsOpen = true);
     }
 
     private static void DrawCard(Action draw)

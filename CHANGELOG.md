@@ -1,7 +1,13 @@
+2026-10-23 - LCARS appearance (unreleased)
+
+- Add LCARS after Auto and Picker, with segmented window rails, inset framed panels and outlined native actions across Main, Settings, Stats, Shop, activity and warning windows. Retain Advanced before Window appearance and the existing compact boolean.
+- Add default-muted UI tones shared by Window appearance and the native titlebar speaker. Preserve Picker RGB, active-account ownership and all existing activity, shop and privacy settings; translate new controls in fifteen catalogs.
+- Pin the consumer workflow to the published AethertekUI baseline. Keep the current plugin version unchanged.
+
 2026-10-22 - VBM preset-catalog compatibility (I507)
 
 - Read the live preset database from the published TickService field or the newer registered RotationDatabase service. Select the demonstrated provider layout and validate the returned native type without constructing a service or reading generated constructor fields.
-- Preserve BMR catalog behavior and existing IPC. Offline contract tests cover both VBM layouts; loaded-client acceptance remains unverified. No version or deployment change.
+- Preserve BMR catalog behavior and existing IPC. All 141 focused duty-recovery tests passed with the complete Release/x64 plugin build, including both VBM catalog layouts; loaded-client acceptance remains unverified. No version or deployment change.
 
 2026-10-22 - Keybound reward-collection defaults
 

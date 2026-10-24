@@ -103,6 +103,7 @@ public sealed class WarningTextWindow : Window, IDisposable
     public override void Draw()
     {
         windowMotion.DrawChrome();
+        if (AethertekUI.MaterialTheme.Current.IsLcars) AethertekUI.MaterialLcars.Header(WindowName.Split("##", 2)[0]);
         if (ImGui.IsWindowAppearing())
         {
             var viewport = ImGui.GetMainViewport();

@@ -22,6 +22,8 @@ A Dalamud plugin for automated duty farming and tome acquisition in FFXIV.
 
 ## Overview
 
+Appearance offers Auto, Picker and LCARS across the existing plugin windows. LCARS adds segmented rails, framed panels and outlined controls; changing modes retains saved Picker colours. UI sounds start muted. Window appearance and the titlebar speaker share the active account's saved mute setting, with a single Preview sound action when enabled. Muting, leaving LCARS or unloading stops only the owned UI player. Activity controls and account ownership keep their existing behavior.
+
 MOGTOME automates farming of The Praetorium (99 runs) and The Porta Decumana (until daily reset) for efficient tome acquisition. Converted from the G.O.O.N. SND script to a native Dalamud plugin.
 
 Main's **Team Leader** checkbox directly beneath the header changes the same active-account role setting as

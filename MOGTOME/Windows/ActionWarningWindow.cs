@@ -80,6 +80,7 @@ public sealed class ActionWarningWindow : Window, IDisposable
     public override void Draw()
     {
         windowMotion.DrawChrome();
+        if (AethertekUI.MaterialTheme.Current.IsLcars) AethertekUI.MaterialLcars.Header(WindowName.Split("##", 2)[0]);
         var scale = AethertekUI.MaterialTheme.Metrics.Scale;
         if (ImGui.IsWindowAppearing())
         {

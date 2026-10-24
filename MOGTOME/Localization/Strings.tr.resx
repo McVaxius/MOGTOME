@@ -2476,4 +2476,15 @@ Kayıtlı miktarları yenilemek için depoları açın.</value></data>
   <data name="KB_TraderUnavailable" xml:space="preserve"><value>MGC tüccarı kullanılamıyor veya dükkânı doğrulanamadı.</value></data>
   <data name="KB_Reward" xml:space="preserve"><value>Ödül</value></data>
   <data name="KB_OwnedHelp" xml:space="preserve"><value>Sahip olunan ödüller kayıtlı koleksiyonları ve bilinen kopyaları içerir.</value></data>
+  <data name="LCARS" xml:space="preserve"><value>LCARS</value></data>
+  <data name="LCARS panels, bars and controls" xml:space="preserve"><value>LCARS panelleri, çubukları ve denetimleri</value></data>
+  <data name="LCARS UI sounds" xml:space="preserve"><value>LCARS arayüz sesleri</value></data>
+  <data name="UI sounds" xml:space="preserve"><value>Arayüz sesleri</value></data>
+  <data name="Preview sound" xml:space="preserve"><value>Sesi dinle</value></data>
+  <data name="Custom UI tones. The titlebar speaker toggles the same setting." xml:space="preserve"><value>Özel arayüz sesleri. Başlık çubuğundaki hoparlör aynı ayarı değiştirir.</value></data>
+  <data name="Select LCARS to use UI sounds." xml:space="preserve"><value>Arayüz seslerini kullanmak için LCARS seçin.</value></data>
+  <data name="Turn on UI sounds to preview." xml:space="preserve"><value>Önizleme için arayüz seslerini açın.</value></data>
+  <data name="Audio output is unavailable." xml:space="preserve"><value>Ses çıkışı kullanılamıyor.</value></data>
+  <data name="UI sounds muted" xml:space="preserve"><value>Arayüz sesleri kapalı</value></data>
+  <data name="UI sounds on" xml:space="preserve"><value>Arayüz sesleri açık</value></data>
 </root>

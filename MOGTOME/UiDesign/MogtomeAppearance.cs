@@ -7,6 +7,7 @@ using AethertekUI.Dalamud;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Windowing;
+using Dalamud.Interface;
 using Dalamud.Interface.Textures.TextureWraps;
 using MOGTOME.Localization;
 using MOGTOME.Models;
@@ -39,6 +40,9 @@ internal sealed class MogtomeAppearance : IDisposable
     private int checkedHindiGeneration = -1;
     private bool hindiAvailable;
     private bool fontIssueLogged;
+    private MaterialUiSoundPlayer? uiSoundPlayer;
+    private bool appliedSoundsMuted = true;
+    private readonly Dictionary<Window, TitleBarButton> soundTitleButtons = new();
     internal MogtomeAppearance(Plugin plugin)
     {
         this.plugin = plugin;
@@ -313,10 +317,17 @@ internal sealed class MogtomeAppearance : IDisposable
             appliedAccent = plugin.Configuration.UiAccentRgb & 0xFFFFFF;
             appliedColors = colorDraft;
             theme = MogtomePresentation.Theme(appliedAccent, colorDraft);
+            theme.Feedback = PlayLcarsSound;
+            if (!theme.IsLcars) uiSoundPlayer?.Stop();
             var rgb = MogtomePresentation.Rgb(appliedAccent);
             accentDraft = new(rgb.X, rgb.Y, rgb.Z);
         }
         theme.Density = config.UiCompact ? MaterialDensity.Compact : MaterialDensity.Standard;
+        if (appliedSoundsMuted != config.UiLcarsSoundsMuted)
+        {
+            appliedSoundsMuted = config.UiLcarsSoundsMuted;
+            if (appliedSoundsMuted) uiSoundPlayer?.Stop();
+        }
         if (!windows.Windows.Any(window => window.IsOpen)) return;
         if (fonts!.Ready && checkedHindiGeneration != fonts.Generation)
         {
@@ -379,14 +390,16 @@ internal sealed class MogtomeAppearance : IDisposable
         style.Style(ImGuiStyleVar.FrameRounding, 4 * scale);
         style.Style(ImGuiStyleVar.ChildRounding, 4 * scale);
         var colors = theme.Colors;
-        style.Color(ImGuiCol.Button, colors.SurfaceContainerHigh);
-        style.Color(ImGuiCol.ButtonHovered, MaterialColor.Layer(colors.SurfaceContainerHigh, colors.OnSurface, .08f));
-        style.Color(ImGuiCol.ButtonActive, MaterialColor.Layer(colors.SurfaceContainerHigh, colors.OnSurface, .14f));
+        var buttonFill = theme.IsLcars ? colors.SurfaceContainerHighest : colors.SurfaceContainerHigh;
+        style.Color(ImGuiCol.Button, buttonFill);
+        style.Color(ImGuiCol.ButtonHovered, MaterialColor.Layer(buttonFill, colors.OnSurface, .08f));
+        style.Color(ImGuiCol.ButtonActive, MaterialColor.Layer(buttonFill, colors.OnSurface, .14f));
         style.Color(ImGuiCol.FrameBg, colors.SurfaceContainerHigh);
         style.Color(ImGuiCol.FrameBgHovered, MaterialColor.Layer(colors.SurfaceContainerHigh, colors.OnSurface, .08f));
         style.Color(ImGuiCol.FrameBgActive, MaterialColor.Layer(colors.SurfaceContainerHigh, colors.OnSurface, .14f));
         using var body = fonts.Push(MogtomeFontRole.Body);
         using var chrome = MaterialWindowChrome.Push();
+        using var nativeButtons = MaterialLcars.NativeButtonStyle();
         foreach (var owner in windows.Windows.OfType<Window>())
         {
             if (!titleBars.TryGetValue(owner, out var titleBar))
@@ -401,6 +414,14 @@ internal sealed class MogtomeAppearance : IDisposable
                         plugin.ConfigManager.SaveCurrentAccount();
                     },
                     () => DrawWindowSettings(includeVisibility: false), DrawTitlebarPalette,
+                    () =>
+                    {
+                        if (!plugin.CanSelectUiLanguage) return;
+                        if (owner is StatsWindow) plugin.Configuration.StatsKrangleNames = !plugin.Configuration.StatsKrangleNames;
+                        else plugin.Configuration.KrangleNames = !plugin.Configuration.KrangleNames;
+                        plugin.ConfigManager.SaveCurrentAccount();
+                    },
+                    () => Ui.T("Stats_KrangleNames"),
                     ReferenceEquals(owner, plugin.MainWindow)
                         ? () => new(plugin.Configuration.UiLanguageVisibleOnMainWindow,
                             plugin.Configuration.UiCompactVisibleOnMainWindow,
@@ -409,6 +430,21 @@ internal sealed class MogtomeAppearance : IDisposable
                 titleBars.Add(owner, titleBar);
             }
             titleBar.RefreshVisibility();
+            titleBar.SetLcarsIcons(theme.IsLcars);
+            if (!soundTitleButtons.TryGetValue(owner, out var sound))
+            {
+                sound = new TitleBarButton
+                {
+                    Priority = (int)Math.Max(int.MinValue + 1L, owner.TitleBarButtons.Select(static button => (long)button.Priority).DefaultIfEmpty(0).Min() - 1),
+                    IconOffset = new(2, 1),
+                    Click = mouse => { if (mouse == ImGuiMouseButton.Left && LcarsActive) SetLcarsSounds(plugin.Configuration.UiLcarsSoundsMuted); },
+                    ShowTooltip = () => MaterialText.SetTooltip(Ui.T(plugin.Configuration.UiLcarsSoundsMuted ? "UI sounds muted" : "UI sounds on")),
+                };
+                soundTitleButtons.Add(owner, sound);
+            }
+            sound.Icon = plugin.Configuration.UiLcarsSoundsMuted ? FontAwesomeIcon.VolumeMute : FontAwesomeIcon.VolumeUp;
+            if (theme.IsLcars && !owner.TitleBarButtons.Contains(sound)) owner.TitleBarButtons.Add(sound);
+            else if (!theme.IsLcars) owner.TitleBarButtons.Remove(sound);
         }
         windows.Draw();
         foreach (var titleBar in titleBars.Values) titleBar.DrawPopups();
@@ -507,7 +543,8 @@ internal sealed class MogtomeAppearance : IDisposable
         }
         var changed = MaterialAppearanceSelector.DrawColors(id, ref colorDraft, ref accentDraft,
             new(Ui.T("Ui_Color"), Ui.T("Language_Label"), Ui.T("Ui_Teal"), Ui.T("Ui_Blue"), Ui.T("Ui_Pink"), Ui.T("Ui_CustomRgb")),
-            new(Ui.T("Auto"), Ui.T("Picker"), Ui.T("Default"), Ui.T("Background, controls and text follow your theme."), Ui.T("Theme colour"), Ui.T("Choose each colour independently."), Ui.T("Background"), Ui.T("Controls"), Ui.T("Text"), Ui.T("Aa  Preview text"), Ui.T("Control"), Ui.T("Switch to Picker to set each colour yourself."), Ui.T("Switch back to Auto to use the automatic theme.")), plugin.Configuration.UiCompact ? 298 : 316);
+            new(Ui.T("Auto"), Ui.T("Picker"), Ui.T("Default"), Ui.T("Background, controls and text follow your theme."), Ui.T("Theme colour"), Ui.T("Choose each colour independently."), Ui.T("Background"), Ui.T("Controls"), Ui.T("Text"), Ui.T("Aa  Preview text"), Ui.T("Control"), Ui.T("Switch to Picker to set each colour yourself."), Ui.T("Switch back to Auto to use the automatic theme."))
+            { Lcars = Ui.T("LCARS"), LcarsHelp = Ui.T("LCARS panels, bars and controls") }, plugin.Configuration.UiCompact ? 298 : 316);
         if (!changed) return false;
         config.UiColors = colorDraft;
         config.UiAccentRgb = MaterialColorSettings.ToRgb(accentDraft);
@@ -529,7 +566,7 @@ internal sealed class MogtomeAppearance : IDisposable
         ImGui.EndDisabled();
         if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) UiLayout.SetTooltip(Ui.T("Ui_CompactMode"));
     }
-    public void Dispose() { fonts?.Dispose(); shapedText.Dispose(); }
+    public void Dispose() { uiSoundPlayer?.Dispose(); fonts?.Dispose(); shapedText.Dispose(); }
 
     internal void ApplyWindowOpacity(AethertekUI.MaterialWindowOpacity opacity, string windowName)
     {
@@ -595,5 +632,76 @@ internal sealed class MogtomeAppearance : IDisposable
         ImGui.EndDisabled();
         ImGui.EndDisabled();
         if (changed) plugin.ConfigManager.SaveCurrentAccount();
+        if (includeVisibility) DrawLcarsSounds();
+    }
+
+    private bool LcarsActive => plugin.Configuration.UiColors?.Mode == MaterialColorMode.Lcars;
+
+    private void PlayLcarsSound(MaterialUiSoundCue cue)
+    {
+        if (!LcarsActive || plugin.Configuration.UiLcarsSoundsMuted) return;
+        (uiSoundPlayer ??= new MaterialUiSoundPlayer()).TryPlay(cue);
+    }
+
+    private void SetLcarsSounds(bool enabled)
+    {
+        if (!plugin.CanSelectUiLanguage) return;
+        plugin.Configuration.UiLcarsSoundsMuted = !enabled;
+        if (!enabled) uiSoundPlayer?.Stop();
+        plugin.ConfigManager.SaveCurrentAccount();
+    }
+
+    private void DrawLcarsSounds()
+    {
+        MaterialSettings.Section(Ui.T("LCARS UI sounds"));
+        ImGui.BeginDisabled(!LcarsActive || !plugin.CanSelectUiLanguage);
+        try
+        {
+            var enabled = !plugin.Configuration.UiLcarsSoundsMuted;
+            if (UiLayout.Checkbox(Ui.L("UI sounds"), ref enabled)) SetLcarsSounds(enabled);
+            UiLayout.Wrapped(Ui.T("Custom UI tones. The titlebar speaker toggles the same setting."));
+            ImGui.BeginDisabled(plugin.Configuration.UiLcarsSoundsMuted);
+            try
+            {
+                var activeTheme = MaterialTheme.Current;
+                var feedback = activeTheme.Feedback;
+                bool preview;
+                try { activeTheme.Feedback = null; preview = UiLayout.Button(Ui.L("Preview sound")); }
+                finally { activeTheme.Feedback = feedback; }
+                MaterialLcars.Feedback(preview, MaterialUiSoundCue.Preview);
+            }
+            finally { ImGui.EndDisabled(); }
+            if (uiSoundPlayer?.Error is not null) UiLayout.Wrapped(Ui.T("Audio output is unavailable."));
+        }
+        finally { ImGui.EndDisabled(); }
+        if (!LcarsActive) UiLayout.TextDisabled(Ui.T("Select LCARS to use UI sounds."));
+        else if (plugin.Configuration.UiLcarsSoundsMuted) UiLayout.TextDisabled(Ui.T("Turn on UI sounds to preview."));
+    }
+
+    internal void DrawLcarsMainPreferences()
+    {
+        ImGui.BeginDisabled(!plugin.CanSelectUiLanguage);
+        try
+        {
+            foreach (var mode in new[] { MaterialColorMode.Auto, MaterialColorMode.Picker, MaterialColorMode.Lcars })
+            {
+                var caption = mode == MaterialColorMode.Lcars ? "LCARS" : mode.ToString();
+                if (mode != MaterialColorMode.Auto)
+                    UiLayout.SameLineIfFits(MaterialText.Measure(Ui.T(caption)).X + ImGui.GetFrameHeight() + ImGui.GetStyle().ItemInnerSpacing.X);
+                if (UiLayout.RadioButton(Ui.L(caption) + "##MainColour", plugin.Configuration.UiColors.Mode == mode)
+                    && plugin.Configuration.UiColors.Mode != mode)
+                {
+                    plugin.Configuration.UiColors = plugin.Configuration.UiColors with { Mode = mode };
+                    plugin.ConfigManager.SaveCurrentAccount();
+                }
+            }
+            var enabled = !plugin.Configuration.UiLcarsSoundsMuted;
+            ImGui.BeginDisabled(!LcarsActive);
+            try { if (UiLayout.Checkbox(Ui.L("UI sounds"), ref enabled)) SetLcarsSounds(enabled); }
+            finally { ImGui.EndDisabled(); }
+            if (plugin.Configuration.UiLanguageVisibleOnMainWindow) DrawLanguage("main-appearance");
+            if (plugin.Configuration.UiCompactVisibleOnMainWindow) DrawCompact(Ui.L("Ui_CompactMode"));
+        }
+        finally { ImGui.EndDisabled(); }
     }
 }

@@ -68,6 +68,7 @@ public class StatsWindow : Window, IDisposable
     public override void Draw()
     {
         windowMotion.DrawChrome();
+        if (AethertekUI.MaterialTheme.Current.IsLcars) AethertekUI.MaterialLcars.Header(WindowName.Split("##", 2)[0]);
         // Auto-refresh every 10 seconds
         if (DateTime.Now - lastRefresh > TimeSpan.FromSeconds(REFRESH_INTERVAL_SECONDS))
         {

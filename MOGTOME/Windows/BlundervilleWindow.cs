@@ -50,6 +50,7 @@ public sealed class BlundervilleWindow : Window, IDisposable
     public override void Draw()
     {
         windowMotion.DrawChrome();
+        if (AethertekUI.MaterialTheme.Current.IsLcars) AethertekUI.MaterialLcars.Header(string.Empty);
         var moogle = plugin.Appearance.OriginalIcon;
         var scale = ImGuiHelpers.GlobalScale;
         var unavailable = new Vector4(1f, .60f, .80f, 1f);

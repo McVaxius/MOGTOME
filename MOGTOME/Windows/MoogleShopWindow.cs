@@ -35,6 +35,7 @@ public sealed class MoogleShopWindow : Window
     public override void Draw()
     {
         motion.DrawChrome();
+        if (AethertekUI.MaterialTheme.Current.IsLcars) AethertekUI.MaterialLcars.Header(WindowName.Split("##", 2)[0]);
         var shop = plugin.MoogleShop;
         var settings = plugin.Configuration.MoogleShop;
         var scale = ImGuiHelpers.GlobalScale;

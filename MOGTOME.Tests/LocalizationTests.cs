@@ -563,6 +563,8 @@ public sealed class LocalizationTests : IDisposable
             Assert.Equal(AethertekUI.MaterialColorMode.Auto, a.UiColors.Mode);
             Assert.False(a.ShopStorageNoticeHidden);
             Assert.False(b.ShopStorageNoticeHidden);
+            Assert.True(a.UiLcarsSoundsMuted);
+            Assert.True(b.UiLcarsSoundsMuted);
             var manager = (ConfigManager)RuntimeHelpers.GetUninitializedObject(typeof(ConfigManager));
             SetField(manager, "log", log);
             SetField(manager, "pluginInterface", Fake<IDalamudPluginInterface>((method, _) =>
@@ -593,19 +595,36 @@ public sealed class LocalizationTests : IDisposable
             Assert.True(savedA.MoogleShop.PurchaseReviewRequired);
             Assert.Equal("unchanged", savedA.AdditionalSettings["FutureSetting"].GetProperty("value").GetString());
 
+            var picker = a.UiColors;
+            a.UiColors = picker with { Mode = AethertekUI.MaterialColorMode.Lcars };
+            a.UiLcarsSoundsMuted = false;
+            manager.SaveCurrentAccount();
+            savedA = Configuration.LoadFromFile(pathA);
+            Assert.Equal(picker with { Mode = AethertekUI.MaterialColorMode.Lcars }, savedA.UiColors);
+            Assert.False(savedA.UiLcarsSoundsMuted);
+            Assert.True(UiDesign.MogtomePresentation.Theme(savedA.UiAccentRgb, savedA.UiColors).IsLcars);
+            Assert.Equal(66, savedA.MaxRuns);
+            Assert.Equal(2, savedA.Blunderville.PurchaseTargets[41491]);
+            Assert.Equal(1, savedA.MoogleShop.PurchaseTargets[50440]);
+            Assert.Equal("unchanged", savedA.AdditionalSettings["FutureSetting"].GetProperty("value").GetString());
+
             SetField(manager, "currentAccountId", "test-b");
             Assert.False(manager.GetActiveConfig().ShopStorageNoticeHidden);
             Assert.Equal(AethertekUI.MaterialColorMode.Auto, manager.GetActiveConfig().UiColors.Mode);
+            Assert.True(manager.GetActiveConfig().UiLcarsSoundsMuted);
             b.UiColors = a.UiColors with { Mode = AethertekUI.MaterialColorMode.Auto };
             manager.SaveCurrentAccount();
             Assert.False(Configuration.LoadFromFile(Path.Combine(directory, "MOGTOME", "test-b_MOGTOME.json")).ShopStorageNoticeHidden);
             Assert.True(Configuration.LoadFromFile(pathA).ShopStorageNoticeHidden);
             Assert.Equal(a.UiColors, Configuration.LoadFromFile(pathA).UiColors);
             Assert.Equal(b.UiColors, Configuration.LoadFromFile(Path.Combine(directory, "MOGTOME", "test-b_MOGTOME.json")).UiColors);
+            Assert.True(Configuration.LoadFromFile(Path.Combine(directory, "MOGTOME", "test-b_MOGTOME.json")).UiLcarsSoundsMuted);
             SetField(manager, "currentAccountId", "test-a");
             manager.GetActiveConfig().ShopStorageNoticeHidden = false;
+            a.UiColors = picker with { Mode = AethertekUI.MaterialColorMode.Auto };
             manager.SaveCurrentAccount();
             Assert.False(Configuration.LoadFromFile(pathA).ShopStorageNoticeHidden);
+            Assert.Equal(picker with { Mode = AethertekUI.MaterialColorMode.Auto }, Configuration.LoadFromFile(pathA).UiColors);
         }
         finally { Directory.Delete(directory, recursive: true); }
     }
