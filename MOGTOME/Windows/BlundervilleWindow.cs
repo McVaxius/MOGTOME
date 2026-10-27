@@ -17,6 +17,7 @@ namespace MOGTOME.Windows;
 public sealed class BlundervilleWindow : Window, IDisposable
 {
     private readonly AethertekUI.Dalamud.MaterialWindowMotion windowMotion = new();
+    private bool materialBackdropStylePushed;
     private readonly Plugin plugin;
     private readonly EventShopTargetEditor shopEditor;
     public bool DebugVisible { get; set; }
@@ -41,14 +42,32 @@ public sealed class BlundervilleWindow : Window, IDisposable
     {
         WindowName = Ui.T("Window_BlundervilleFailer") + "###MogtomeBlunderville";
         Size = MogtomePresentation.Compact ? new Vector2(720, 611) : new Vector2(740, 630);
+        if (MogtomePresentation.HasMaterial)
+        {
+            ImGui.PushStyleColor(ImGuiCol.WindowBg, Vector4.Zero);
+            materialBackdropStylePushed = true;
+        }
         windowMotion.Prepare(this, reducedMotion: false, roundedCorners: true);
     }
 
     public override void PostDraw()
-        { windowMotion.Restore(this); }
+    {
+        windowMotion.Restore(this);
+        if (materialBackdropStylePushed)
+        {
+            ImGui.PopStyleColor();
+            materialBackdropStylePushed = false;
+        }
+    }
 
     public override void Draw()
     {
+        if (materialBackdropStylePushed)
+        {
+            ImGui.PopStyleColor();
+            materialBackdropStylePushed = false;
+        }
+        MaterialSkin.Backdrop();
         windowMotion.DrawChrome();
         if (AethertekUI.MaterialTheme.Current.IsLcars) AethertekUI.MaterialLcars.Header(string.Empty);
         var moogle = plugin.Appearance.OriginalIcon;
@@ -60,7 +79,10 @@ public sealed class BlundervilleWindow : Window, IDisposable
         ImGui.Dummy(new Vector2(30 * scale));
         ImGui.SameLine();
         using (plugin.Appearance.Font(MogtomePresentation.Compact ? MogtomeFontRole.CompactHeading : MogtomeFontRole.Heading))
-            UiLayout.Wrapped(Ui.T("Window_BlundervilleFailer"));
+        {
+            if (MogtomePresentation.HasMaterial) MaterialSkin.Heading(Ui.T("Window_BlundervilleFailer"));
+            else UiLayout.Wrapped(Ui.T("Window_BlundervilleFailer"));
+        }
         plugin.Appearance.DrawShopStorageNotice();
         ImGui.Separator();
         DrawSection(() =>
@@ -182,7 +204,9 @@ public sealed class BlundervilleWindow : Window, IDisposable
             var scenario = (int)settings.ReloadScenario;
             var scenarios = new[] { Ui.T("BV_ReloadNone"), Ui.T("Main_Start"), Ui.T("BV_Buy") };
             ImGui.SetNextItemWidth(UiLayout.AvailableWidth);
-            if (ImGui.Combo("###BlundervilleReloadScenario", ref scenario, scenarios, scenarios.Length))
+            if (MogtomePresentation.HasMaterial
+                ? UiLayout.Combo("###BlundervilleReloadScenario", ref scenario, scenarios, scenarios.Length)
+                : ImGui.Combo("###BlundervilleReloadScenario", ref scenario, scenarios, scenarios.Length))
             {
                 settings.ReloadScenario = (BlundervilleReloadScenario)scenario;
                 GameHelpers.QueueFrameworkAction("Blunderville", "Selection change", TimeSpan.Zero, service.ReloadSelectionChanged);

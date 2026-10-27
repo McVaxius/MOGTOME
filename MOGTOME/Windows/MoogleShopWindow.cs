@@ -19,6 +19,7 @@ public sealed class MoogleShopWindow : Window
     private readonly Plugin plugin;
     private ShopMissingResult? missingResult;
     private readonly AethertekUI.Dalamud.MaterialWindowMotion motion = new();
+    private bool materialBackdropStylePushed;
     public MoogleShopWindow(Plugin plugin) : base(Ui.T("Shop_Title") + "###MogtomeShop")
     {
         this.plugin = plugin;
@@ -29,18 +30,41 @@ public sealed class MoogleShopWindow : Window
     public override void PreDraw()
     {
         WindowName = Ui.T("Shop_Title") + "###MogtomeShop";
+        if (MogtomePresentation.HasMaterial)
+        {
+            ImGui.PushStyleColor(ImGuiCol.WindowBg, Vector4.Zero);
+            materialBackdropStylePushed = true;
+        }
         motion.Prepare(this, reducedMotion: false, roundedCorners: true);
     }
-    public override void PostDraw() { motion.Restore(this); }
+    public override void PostDraw()
+    {
+        motion.Restore(this);
+        if (materialBackdropStylePushed)
+        {
+            ImGui.PopStyleColor();
+            materialBackdropStylePushed = false;
+        }
+    }
     public override void Draw()
     {
+        if (materialBackdropStylePushed)
+        {
+            ImGui.PopStyleColor();
+            materialBackdropStylePushed = false;
+        }
+        MaterialSkin.Backdrop();
         motion.DrawChrome();
         if (AethertekUI.MaterialTheme.Current.IsLcars) AethertekUI.MaterialLcars.Header(WindowName.Split("##", 2)[0]);
         var shop = plugin.MoogleShop;
         var settings = plugin.Configuration.MoogleShop;
         var scale = ImGuiHelpers.GlobalScale;
         var changed = false;
-        using (plugin.Appearance.Font(MogtomeFontRole.CompactHeading)) UiLayout.SingleLine(Ui.T("Shop_Title"));
+        using (plugin.Appearance.Font(MogtomeFontRole.CompactHeading))
+        {
+            if (MogtomePresentation.HasMaterial) MaterialSkin.Heading(Ui.T("Shop_Title"));
+            else UiLayout.SingleLine(Ui.T("Shop_Title"));
+        }
         plugin.Appearance.DrawShopStorageNotice();
         UiLayout.Wrapped(shop.Status.Render());
         var missingPlugins = GameHelpers.MissingXaDependencies();
@@ -191,11 +215,14 @@ public sealed class MoogleShopWindow : Window
                         if (ImGui.IsItemHovered()) UiLayout.SetTooltip(name + (eligibility[id] == ShopOfferAvailability.Unknown
                             ? "\n" + Ui.T("Shop_EligibilityUnknown") : string.Empty));
                         ImGui.TableSetColumnIndex(1); ImGui.SetNextItemWidth(-1);
-                        if (ImGui.InputInt("###Desired", ref desired, 0, 0))
+                        using (MaterialSkin.NativeFieldStyle())
                         {
-                            desired = Math.Max(0, desired);
-                            if (desired == 0) settings.PurchaseTargets.Remove(id); else settings.PurchaseTargets[id] = desired;
-                            changed = true;
+                            if (ImGui.InputInt("###Desired", ref desired, 0, 0))
+                            {
+                                desired = Math.Max(0, desired);
+                                if (desired == 0) settings.PurchaseTargets.Remove(id); else settings.PurchaseTargets[id] = desired;
+                                changed = true;
+                            }
                         }
                         ImGui.TableSetColumnIndex(2); ImGui.AlignTextToFramePadding(); UiLayout.SingleLine(known ? count.ToString(Ui.Culture) : "?");
                         var transactions = offer != null && known ? MoogleShopMath.Transactions(desired, count, offer.ReceiveCount) : 0;

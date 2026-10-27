@@ -20,6 +20,7 @@ namespace MOGTOME.Windows;
 public class MainWindow : Window, IDisposable
 {
     private readonly AethertekUI.Dalamud.MaterialWindowMotion windowMotion = new();
+    private bool materialBackdropStylePushed;
     private static readonly string CurrentVersion = typeof(MainWindow).Assembly.GetName().Version?.ToString() ?? "0.0.0.0";
     private readonly Plugin plugin;
     private Vector2? pendingWindowPosition;
@@ -101,11 +102,26 @@ public class MainWindow : Window, IDisposable
             pendingWindowPosition = null;
             pendingPositionConditionReset = true;
         }
+        if (MogtomePresentation.HasMaterial)
+        {
+            ImGui.PushStyleColor(ImGuiCol.WindowBg, Vector4.Zero);
+            materialBackdropStylePushed = true;
+        }
         windowMotion.Prepare(this, reducedMotion: false, roundedCorners: true);
     }
 
     public override void PostDraw()
-        { windowMotion.Restore(this); }
+    {
+        windowMotion.Restore(this);
+        ReleaseMaterialBackdropStyle();
+    }
+
+    private void ReleaseMaterialBackdropStyle()
+    {
+        if (!materialBackdropStylePushed) return;
+        ImGui.PopStyleColor();
+        materialBackdropStylePushed = false;
+    }
 
     private void StartFromMain()
     {
@@ -121,6 +137,8 @@ public class MainWindow : Window, IDisposable
 
     public override void Draw()
     {
+        ReleaseMaterialBackdropStyle();
+        MaterialSkin.Backdrop();
         windowMotion.DrawChrome();
         if (AethertekUI.MaterialTheme.Current.IsLcars) AethertekUI.MaterialLcars.Header(string.Empty);
         var config = plugin.Configuration;
@@ -209,7 +227,7 @@ public class MainWindow : Window, IDisposable
         UiLayout.Panel(() =>
         {
             Heading("Main_MainWindowSettings");
-            CardSeparator();
+            if (!MogtomePresentation.HasMaterial) CardSeparator();
             if (MaterialTheme.Current.IsLcars) plugin.Appearance.DrawLcarsMainPreferences();
             var useAdsExperimental = config.UseAdsExperimental;
             if (UiLayout.Checkbox(Ui.L("Main_AIDutySolverADS"), ref useAdsExperimental)) ToggleAdsExperimental(useAdsExperimental);
@@ -348,6 +366,12 @@ public class MainWindow : Window, IDisposable
 
     private void Heading(string key)
     {
+        if (MogtomePresentation.HasMaterial && (key is "Main_PartySummary" or "Main_MainWindowSettings" or "Main_DutyInformation"))
+        {
+            using var font = plugin.Appearance.Font(MogtomeFontRole.CompactHeading);
+            DrawCard(() => MaterialSkin.Heading(Ui.T(key), key == "Main_PartySummary" ? 2 : key == "Main_MainWindowSettings" ? 0 : 1));
+            return;
+        }
         if (MaterialTheme.Current.IsLcars)
         {
             using var font = plugin.Appearance.Font(MogtomeFontRole.CompactHeading);
@@ -433,7 +457,7 @@ public class MainWindow : Window, IDisposable
         var config = plugin.Configuration;
         var state = plugin.State;
         Heading("Main_DutyInformation");
-        CardSeparator();
+        if (!MogtomePresentation.HasMaterial) CardSeparator();
         Field(Ui.T("Main_DutyCurrent"), (state.DutyCounter < config.PraetoriumThreshold ? Ui.Duty(1044) : Ui.Duty(1048)).Render());
         Field(Ui.T("Main_DutyCounter"), Ui.T("Main_CounterValue", state.DutyCounter, config.PraetoriumThreshold));
         Field(Ui.T("Main_DailyDecuHeading"), state.DecumanaCounter.ToString(Ui.Culture));
@@ -477,7 +501,7 @@ public class MainWindow : Window, IDisposable
         using var rows = new MaterialStyleScope();
         rows.Style(ImGuiStyleVar.ItemSpacing, new Vector2(ImGui.GetStyle().ItemSpacing.X, (MogtomePresentation.Compact ? 6 : 6.5f) * ImGuiHelpers.GlobalScale));
         Heading("Main_PartySummary");
-        CardSeparator();
+        if (!MogtomePresentation.HasMaterial) CardSeparator();
         if (Plugin.PartyList.Length == 0) UiLayout.Wrapped(Ui.T("Main_NoParty"));
         var memberIndex = 0;
         foreach (var member in Plugin.PartyList)

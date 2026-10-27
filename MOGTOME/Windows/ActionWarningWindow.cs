@@ -4,12 +4,15 @@ using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Windowing;
 using Dalamud.Interface.Utility;
+using MOGTOME.UiDesign;
+using AethertekUI;
 
 namespace MOGTOME.Windows;
 
 public sealed class ActionWarningWindow : Window, IDisposable
 {
     private readonly AethertekUI.Dalamud.MaterialWindowMotion windowMotion = new();
+    private bool materialBackdropStylePushed;
     private readonly Plugin? plugin;
     private UiText warningTitle = Ui.M("Warning_Title");
     private UiText warningMessage = string.Empty;
@@ -71,14 +74,32 @@ public sealed class ActionWarningWindow : Window, IDisposable
     {
         WindowName = warningTitle.Render() + "###MOGTOMEActionWarning";
         ImGui.SetNextWindowSize(new Vector2(560f * ImGuiHelpers.GlobalScale, 0));
+        if (MogtomePresentation.HasMaterial)
+        {
+            ImGui.PushStyleColor(ImGuiCol.WindowBg, Vector4.Zero);
+            materialBackdropStylePushed = true;
+        }
         windowMotion.Prepare(this, reducedMotion: false, roundedCorners: true);
     }
 
     public override void PostDraw()
-        { windowMotion.Restore(this); }
+    {
+        windowMotion.Restore(this);
+        if (materialBackdropStylePushed)
+        {
+            ImGui.PopStyleColor();
+            materialBackdropStylePushed = false;
+        }
+    }
 
     public override void Draw()
     {
+        if (materialBackdropStylePushed)
+        {
+            ImGui.PopStyleColor();
+            materialBackdropStylePushed = false;
+        }
+        MaterialSkin.Backdrop();
         windowMotion.DrawChrome();
         if (AethertekUI.MaterialTheme.Current.IsLcars) AethertekUI.MaterialLcars.Header(WindowName.Split("##", 2)[0]);
         var scale = AethertekUI.MaterialTheme.Metrics.Scale;

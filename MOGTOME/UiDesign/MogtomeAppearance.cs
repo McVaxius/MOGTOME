@@ -353,15 +353,19 @@ internal sealed class MogtomeAppearance : IDisposable
                 prepareDecorations: fontStatusDecorations.Prepare);
             try
             {
-                if (ImGui.Begin("MOGTOME##MogtomeFontStatus", ImGuiWindowFlags.AlwaysAutoResize))
+                bool statusVisible;
+                using (MaterialSkin.BackdropStyle())
+                    statusVisible = ImGui.Begin("MOGTOME##MogtomeFontStatus", ImGuiWindowFlags.AlwaysAutoResize);
+                if (statusVisible)
                 {
+                    MaterialSkin.Backdrop();
                     fontStatusDecorations.Paint();
                     var loading = fonts.LoadException is null && !fontIssueLogged;
                     if (Ui.Language == UiLanguage.Hindi)
                     {
                         ImGui.TextWrapped(loading ? "Loading Hindi UI fonts..." : "Hindi UI fonts are unavailable. See the plugin log.");
                         ImGui.BeginDisabled(!plugin.CanSelectUiLanguage);
-                        if (!loading && ImGui.Button("Use English"))
+                        if (!loading && UiLayout.Button("Use English"))
                         {
                             plugin.Configuration.UiLanguage = UiLanguage.English;
                             plugin.ConfigManager.SaveCurrentAccount();
@@ -399,7 +403,7 @@ internal sealed class MogtomeAppearance : IDisposable
         style.Color(ImGuiCol.FrameBgActive, MaterialColor.Layer(colors.SurfaceContainerHigh, colors.OnSurface, .14f));
         using var body = fonts.Push(MogtomeFontRole.Body);
         using var chrome = MaterialWindowChrome.Push();
-        using var nativeButtons = MaterialLcars.NativeButtonStyle();
+        using var nativeButtons = MaterialSkin.NativeButtonStyle();
         foreach (var owner in windows.Windows.OfType<Window>())
         {
             if (!titleBars.TryGetValue(owner, out var titleBar))
@@ -544,7 +548,17 @@ internal sealed class MogtomeAppearance : IDisposable
         var changed = MaterialAppearanceSelector.DrawColors(id, ref colorDraft, ref accentDraft,
             new(Ui.T("Ui_Color"), Ui.T("Language_Label"), Ui.T("Ui_Teal"), Ui.T("Ui_Blue"), Ui.T("Ui_Pink"), Ui.T("Ui_CustomRgb")),
             new(Ui.T("Auto"), Ui.T("Picker"), Ui.T("Default"), Ui.T("Background, controls and text follow your theme."), Ui.T("Theme colour"), Ui.T("Choose each colour independently."), Ui.T("Background"), Ui.T("Controls"), Ui.T("Text"), Ui.T("Aa  Preview text"), Ui.T("Control"), Ui.T("Switch to Picker to set each colour yourself."), Ui.T("Switch back to Auto to use the automatic theme."))
-            { Lcars = Ui.T("LCARS"), LcarsHelp = Ui.T("LCARS panels, bars and controls") }, plugin.Configuration.UiCompact ? 298 : 316);
+            {
+                Lcars = Ui.T("LCARS"), LcarsHelp = Ui.T("LCARS panels, bars and controls"),
+                LcarsBar1 = Ui.T("LCARS bar 1"), LcarsBar2 = Ui.T("LCARS bar 2"), LcarsBar3 = Ui.T("LCARS bar 3"),
+                Glassmorphism = Ui.T("Glassmorphism"), Spatial = Ui.T("Spatial"), Cyberpunk = Ui.T("Cyberpunk"),
+                Reset = Ui.T("Reset"), ResetColors = Ui.T("Reset colours"),
+                Animation = Ui.T("Animation"), AnimationSpeed = Ui.T("Animation speed (0.1–10x; default 1x)"),
+                WaveColors = Ui.T("Wave colours"), GlassWave1 = Ui.T("Wave colour 1"),
+                GlassWave2 = Ui.T("Wave colour 2"), GlassWave3 = Ui.T("Wave colour 3"), ResetWaveColors = Ui.T("Reset wave colours"),
+            },
+            new MaterialColorSettings(), MaterialColorSettings.Rgb(MogtomePresentation.ReferenceAccent),
+            plugin.Configuration.UiCompact ? 298 : 316);
         if (!changed) return false;
         config.UiColors = colorDraft;
         config.UiAccentRgb = MaterialColorSettings.ToRgb(accentDraft);
@@ -683,7 +697,8 @@ internal sealed class MogtomeAppearance : IDisposable
         ImGui.BeginDisabled(!plugin.CanSelectUiLanguage);
         try
         {
-            foreach (var mode in new[] { MaterialColorMode.Auto, MaterialColorMode.Picker, MaterialColorMode.Lcars })
+            foreach (var mode in new[] { MaterialColorMode.Auto, MaterialColorMode.Picker, MaterialColorMode.Lcars,
+                MaterialColorMode.Glassmorphism, MaterialColorMode.Spatial, MaterialColorMode.Cyberpunk })
             {
                 var caption = mode == MaterialColorMode.Lcars ? "LCARS" : mode.ToString();
                 if (mode != MaterialColorMode.Auto)

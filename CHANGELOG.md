@@ -1,3 +1,10 @@
+2026-10-26 - 4.0.0.4 shared appearance materials
+
+- Add Glassmorphism, Spatial and Cyberpunk alongside Auto, Picker and LCARS, with distinct window, panel and control materials.
+- Add independent palettes, per-colour and palette resets, four LCARS colour roles, and Glass animation/speed/wave-colour controls. Preserve the original automatic gold palette and font definitions.
+- Apply materials across existing owners and popups while retaining native controls, account saving, privacy, activity and automation behavior; translate the new controls in all fifteen catalogs.
+- Pin the release workflow to the published compatible AethertekUI revision.
+
 2026-10-23 - LCARS appearance (unreleased)
 
 - Add LCARS after Auto and Picker, with segmented window rails, inset framed panels and outlined native actions across Main, Settings, Stats, Shop, activity and warning windows. Retain Advanced before Window appearance and the existing compact boolean.

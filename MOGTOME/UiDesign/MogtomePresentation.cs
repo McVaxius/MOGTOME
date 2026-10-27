@@ -9,6 +9,8 @@ internal enum MogtomeFontRole { Body, Strong, Title, Heading, CompactTitle, Comp
 
 internal static class MogtomePresentation
 {
+    internal static bool HasMaterial => MaterialTheme.Current.IsGlassmorphism || MaterialTheme.Current.IsSpatial || MaterialTheme.Current.IsCyberpunk;
+
     // Approved 1672x941 regular: Main (16,22)-(1244,918), header109;
     // content (39,148)-(1221,898), navigation74, status112, actions55;
     // paired duty/party cards260, settings122, debug44, gaps12/18.

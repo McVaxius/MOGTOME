@@ -17,6 +17,7 @@ namespace MOGTOME.Windows;
 public sealed class KeyboundBrawlerWindow : Window, IDisposable
 {
     private readonly AethertekUI.Dalamud.MaterialWindowMotion windowMotion = new();
+    private bool materialBackdropStylePushed;
     private readonly Plugin plugin;
     private readonly EventShopTargetEditor shopEditor;
     private bool layoutSizeApplied;
@@ -36,13 +37,32 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
         // Apply the approved shop-sized layout once; subsequent user resizes survive reopening.
         SizeCondition = layoutSizeApplied ? ImGuiCond.FirstUseEver : ImGuiCond.Always;
         layoutSizeApplied = true;
+        if (MogtomePresentation.HasMaterial)
+        {
+            ImGui.PushStyleColor(ImGuiCol.WindowBg, Vector4.Zero);
+            materialBackdropStylePushed = true;
+        }
         windowMotion.Prepare(this, reducedMotion: false, roundedCorners: true);
     }
 
-    public override void PostDraw() => windowMotion.Restore(this);
+    public override void PostDraw()
+    {
+        windowMotion.Restore(this);
+        if (materialBackdropStylePushed)
+        {
+            ImGui.PopStyleColor();
+            materialBackdropStylePushed = false;
+        }
+    }
 
     public override void Draw()
     {
+        if (materialBackdropStylePushed)
+        {
+            ImGui.PopStyleColor();
+            materialBackdropStylePushed = false;
+        }
+        MaterialSkin.Backdrop();
         windowMotion.DrawChrome();
         if (AethertekUI.MaterialTheme.Current.IsLcars) AethertekUI.MaterialLcars.Header(string.Empty);
         using var controls = MaterialControls.Push(MogtomePresentation.Compact

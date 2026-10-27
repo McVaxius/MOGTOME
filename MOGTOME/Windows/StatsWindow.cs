@@ -9,12 +9,15 @@ using Dalamud.Bindings.ImGui;
 using Dalamud.Plugin.Services;
 using MOGTOME.Models;
 using MOGTOME.Services;
+using MOGTOME.UiDesign;
+using AethertekUI;
 
 namespace MOGTOME.Windows;
 
 public class StatsWindow : Window, IDisposable
 {
     private readonly AethertekUI.Dalamud.MaterialWindowMotion windowMotion = new();
+    private bool materialBackdropStylePushed;
     private enum MainTab { Summary, Detailed }
     private enum DetailedSubTab { JobPerformance, PlayerStats, RecentRuns, Trends }
 
@@ -59,14 +62,32 @@ public class StatsWindow : Window, IDisposable
             pendingWindowPosition = null;
             pendingPositionConditionReset = true;
         }
+        if (MogtomePresentation.HasMaterial)
+        {
+            ImGui.PushStyleColor(ImGuiCol.WindowBg, Vector4.Zero);
+            materialBackdropStylePushed = true;
+        }
         windowMotion.Prepare(this, reducedMotion: false, roundedCorners: true);
     }
 
     public override void PostDraw()
-        { windowMotion.Restore(this); }
+    {
+        windowMotion.Restore(this);
+        if (materialBackdropStylePushed)
+        {
+            ImGui.PopStyleColor();
+            materialBackdropStylePushed = false;
+        }
+    }
 
     public override void Draw()
     {
+        if (materialBackdropStylePushed)
+        {
+            ImGui.PopStyleColor();
+            materialBackdropStylePushed = false;
+        }
+        MaterialSkin.Backdrop();
         windowMotion.DrawChrome();
         if (AethertekUI.MaterialTheme.Current.IsLcars) AethertekUI.MaterialLcars.Header(WindowName.Split("##", 2)[0]);
         // Auto-refresh every 10 seconds
@@ -88,7 +109,8 @@ public class StatsWindow : Window, IDisposable
         var state = plugin.State;
 
         ImGui.PushTextWrapPos(0);
-        AethertekUI.MaterialText.TextColored(AethertekUI.MaterialTheme.Current.Colors.Primary, Ui.T("Stats_DutyStatistics"));
+        if (MogtomePresentation.HasMaterial) MaterialSkin.Heading(Ui.T("Stats_DutyStatistics"));
+        else AethertekUI.MaterialText.TextColored(AethertekUI.MaterialTheme.Current.Colors.Primary, Ui.T("Stats_DutyStatistics"));
         ImGui.PopTextWrapPos();
         var krangleEnabled = plugin.Configuration.KrangleNames;
         var krangleText = krangleEnabled ? Ui.T("Main_UnKrangle") : Ui.T("Stats_KrangleNames");
@@ -575,8 +597,12 @@ public class StatsWindow : Window, IDisposable
 
     private void DrawJobPerformance()
     {
-        UiLayout.Wrapped(Ui.T("Stats_JobPerformance"));
-        ImGui.Separator();
+        if (MogtomePresentation.HasMaterial) MaterialSkin.Heading(Ui.T("Stats_JobPerformance"));
+        else
+        {
+            UiLayout.Wrapped(Ui.T("Stats_JobPerformance"));
+            ImGui.Separator();
+        }
         
         if (!plugin.Configuration.EnableDetailedTracking || plugin.RunHistoryService.RunHistory.Count == 0)
         {
@@ -606,7 +632,14 @@ public class StatsWindow : Window, IDisposable
         var style = ImGui.GetStyle(); var wrapWidth = Math.Max(1, width - style.WindowPadding.X * 2 - style.ChildBorderSize * 2);
         var height = MathF.Ceiling(style.WindowPadding.Y * 2 + rows.Sum(row => AethertekUI.MaterialText.Measure(row, false, wrapWidth).Y + style.ItemSpacing.Y) + 1 + style.ItemSpacing.Y + 2 * scale);
         UiLayout.SameLineIfFits(width);
+        if (MogtomePresentation.HasMaterial)
+        {
+            var origin = ImGui.GetCursorScreenPos();
+            MaterialSkin.PanelFrame(origin, origin + new Vector2(width, height));
+            ImGui.PushStyleColor(ImGuiCol.ChildBg, Vector4.Zero);
+        }
         ImGui.BeginChild($"JobCard_{jobId}", new Vector2(width, height), true);
+        if (MogtomePresentation.HasMaterial) ImGui.PopStyleColor();
         ImGui.PushTextWrapPos(0);
         
         // Job header with role
@@ -630,8 +663,12 @@ public class StatsWindow : Window, IDisposable
 
     private void DrawPlayerStatistics()
     {
-        UiLayout.Wrapped(Ui.T("Stats_PlayerStatistics"));
-        ImGui.Separator();
+        if (MogtomePresentation.HasMaterial) MaterialSkin.Heading(Ui.T("Stats_PlayerStatistics"));
+        else
+        {
+            UiLayout.Wrapped(Ui.T("Stats_PlayerStatistics"));
+            ImGui.Separator();
+        }
         
         if (!plugin.Configuration.EnableDetailedTracking || plugin.RunHistoryService.RunHistory.Count == 0)
         {
@@ -662,7 +699,14 @@ public class StatsWindow : Window, IDisposable
             Ui.T("Stats_Job2", GetJobName(stats.MostPlayedJob)), Ui.T("Stats_Mogtomes", stats.TotalMogtomes) });
         var style = ImGui.GetStyle(); var wrapWidth = Math.Max(1, width - style.WindowPadding.X * 2 - style.ChildBorderSize * 2);
         var height = MathF.Ceiling(style.WindowPadding.Y * 2 + rows.Sum(row => AethertekUI.MaterialText.Measure(row, false, wrapWidth).Y + style.ItemSpacing.Y) + 1 + style.ItemSpacing.Y + 2 * scale);
+        if (MogtomePresentation.HasMaterial)
+        {
+            var origin = ImGui.GetCursorScreenPos();
+            MaterialSkin.PanelFrame(origin, origin + new Vector2(width, height));
+            ImGui.PushStyleColor(ImGuiCol.ChildBg, Vector4.Zero);
+        }
         ImGui.BeginChild($"PlayerCard_{playerId}", new Vector2(width, height), true);
+        if (MogtomePresentation.HasMaterial) ImGui.PopStyleColor();
         ImGui.PushTextWrapPos(0);
         
         AethertekUI.MaterialText.Text(string.Create(Ui.Culture, $"{displayName}"));
@@ -684,8 +728,12 @@ public class StatsWindow : Window, IDisposable
 
     private void DrawRecentRuns()
     {
-        UiLayout.Wrapped(Ui.T("Stats_RecentRuns"));
-        ImGui.Separator();
+        if (MogtomePresentation.HasMaterial) MaterialSkin.Heading(Ui.T("Stats_RecentRuns"));
+        else
+        {
+            UiLayout.Wrapped(Ui.T("Stats_RecentRuns"));
+            ImGui.Separator();
+        }
         
         // Auto-refresh every 10 seconds if window is open
         if (DateTime.Now - lastRefresh > TimeSpan.FromSeconds(REFRESH_INTERVAL_SECONDS))
@@ -813,8 +861,12 @@ public class StatsWindow : Window, IDisposable
 
     private void DrawPerformanceTrends()
     {
-        UiLayout.Wrapped(Ui.T("Stats_PerformanceTrends"));
-        ImGui.Separator();
+        if (MogtomePresentation.HasMaterial) MaterialSkin.Heading(Ui.T("Stats_PerformanceTrends"));
+        else
+        {
+            UiLayout.Wrapped(Ui.T("Stats_PerformanceTrends"));
+            ImGui.Separator();
+        }
         
         if (!plugin.Configuration.EnableDetailedTracking || plugin.RunHistoryService.RunHistory.Count == 0)
         {

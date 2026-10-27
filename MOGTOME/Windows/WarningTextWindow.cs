@@ -3,12 +3,15 @@ using System;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Windowing;
+using MOGTOME.UiDesign;
+using AethertekUI;
 
 namespace MOGTOME.Windows;
 
 public sealed class WarningTextWindow : Window, IDisposable
 {
     private readonly AethertekUI.Dalamud.MaterialWindowMotion windowMotion = new();
+    private bool materialBackdropStylePushed;
     public const int CurrentWarningVersion = 0;
 
     private static readonly UiText[] WarningLines =
@@ -94,14 +97,32 @@ public sealed class WarningTextWindow : Window, IDisposable
     public override void PreDraw()
     {
         WindowName = Ui.T("Window_MOGTOMEWarningText") + "###MOGTOMEWarningText";
+        if (MogtomePresentation.HasMaterial)
+        {
+            ImGui.PushStyleColor(ImGuiCol.WindowBg, Vector4.Zero);
+            materialBackdropStylePushed = true;
+        }
         windowMotion.Prepare(this, reducedMotion: false, roundedCorners: true);
     }
 
     public override void PostDraw()
-        { windowMotion.Restore(this); }
+    {
+        windowMotion.Restore(this);
+        if (materialBackdropStylePushed)
+        {
+            ImGui.PopStyleColor();
+            materialBackdropStylePushed = false;
+        }
+    }
 
     public override void Draw()
     {
+        if (materialBackdropStylePushed)
+        {
+            ImGui.PopStyleColor();
+            materialBackdropStylePushed = false;
+        }
+        MaterialSkin.Backdrop();
         windowMotion.DrawChrome();
         if (AethertekUI.MaterialTheme.Current.IsLcars) AethertekUI.MaterialLcars.Header(WindowName.Split("##", 2)[0]);
         if (ImGui.IsWindowAppearing())
