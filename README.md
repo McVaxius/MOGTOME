@@ -180,6 +180,9 @@ plays, leaves through Results and repeats. Either enabled limit stops further
 registration; shop-on-finish then runs the existing MGC shopper after returning.
 There is no manual queue or result-return step in this loop.
 `/kbb` alone opens the settings panel; it does not press Start.
+Start also accepts an already-open KBB registration panel in Keybound Square.
+It waits for the dialog to finish loading, then submits the observed registration
+callback once, without requiring another registrar interaction.
 
 **Typing speed (WPM)** is account-configurable from 10–300 WPM and defaults to
 **80 WPM** (five characters per word). Character delays vary by ±20%, with

@@ -28,10 +28,11 @@ public sealed class KeyboundLoopTests
     {
         internal KeyboundLoopFrame Frame = new(KeyboundEventLoop.Lobby, false, false, false, false, false, false, false, false, false);
         internal int Registers, Commences, Leaves, Approaches, Cancels, Heartbeats, Cleanups;
+        internal bool RegisterAccepted = true;
         public KeyboundLoopFrame Read() => Frame;
         public bool EnsureLobby() => true;
         public bool ApproachRegistrar() { Approaches++; return true; }
-        public bool Register() { Registers++; return true; }
+        public bool Register() { Registers++; return RegisterAccepted; }
         public bool Commence() { Commences++; return true; }
         public bool LeaveResults() { Leaves++; return true; }
         public void KeepActive() => Heartbeats++;
@@ -62,6 +63,35 @@ public sealed class KeyboundLoopTests
         f.Tick(0);
         Assert.Equal(0, f.Game.Registers + f.Game.Approaches);
         Assert.Equal("KB_WaitPartyRole", f.Loop.Status.Key);
+    }
+
+    [Fact]
+    public void StartingWithVisibleRegistrationWaitsForReadinessThenSubmitsOnceWithoutNpcInteraction()
+    {
+        using var f = new Fixture();
+        f.Game.Frame = f.Game.Frame with { Entry = true, EntryReady = false };
+        f.Tick(0); f.Tick(100);
+        Assert.True(f.Loop.IsActive);
+        Assert.Equal(0, f.Game.Registers + f.Game.Approaches);
+        f.Game.Frame = f.Game.Frame with { EntryReady = true };
+        f.Tick(200); f.Tick(300);
+        Assert.True(f.Loop.IsActive);
+        Assert.Equal(1, f.Game.Registers);
+        Assert.Equal(0, f.Game.Approaches);
+    }
+
+    [Fact]
+    public void RejectedRegistrationStopsWithoutReplayingItsCallback()
+    {
+        using var f = new Fixture();
+        f.Game.RegisterAccepted = false;
+        f.Game.Frame = f.Game.Frame with { Entry = true };
+        f.Tick(0); f.Tick(100);
+        Assert.False(f.Loop.IsActive);
+        Assert.False(f.Typer.IsRunning);
+        Assert.Equal("BV_UiMismatch", f.Typer.Status.Key);
+        Assert.Equal(1, f.Game.Registers);
+        Assert.Equal(0, f.Game.Commences + f.Game.Approaches);
     }
 
     [Theory]
