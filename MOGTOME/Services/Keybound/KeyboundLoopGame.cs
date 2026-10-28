@@ -40,11 +40,20 @@ internal sealed unsafe class KeyboundLoopGame(Plugin plugin) : IKeyboundLoopGame
         var entryDialog = Addon("KTGEnterDialogue");
         var pop = (AddonContentsFinderConfirm*)Addon("ContentsFinderConfirm");
         var results = Addon("KTGResult");
-        return new(territory, Plugin.Condition[ConditionFlag.BetweenAreas] || Plugin.Condition[ConditionFlag.BetweenAreas51],
+        return new(territory, Plugin.Condition[ConditionFlag.BetweenAreas] || Plugin.Condition[ConditionFlag.BetweenAreas51] ||
+                Plugin.ClientState.IsLoggedIn && Plugin.ObjectTable.LocalPlayer == null,
             Plugin.Condition[ConditionFlag.InDutyQueue], owned, Visible("ContentsFinderConfirm"), popped,
             Visible("KTGEnterDialogue"), results != null, results != null && ButtonReady(results->GetComponentButtonById(48)),
             Plugin.Condition[ConditionFlag.BoundByDuty] && territory != KeyboundEventLoop.Arena, BlundervilleGameAdapter.Role(), entryDialog != null,
-            pop != null && ButtonReady(pop->CommenceButton) && queue != null && queue->PoppedQueueEntry.Id != 0);
+            pop != null && ButtonReady(pop->CommenceButton) && queue != null && queue->PoppedQueueEntry.Id != 0,
+            PartyReturned());
+    }
+    private static bool PartyReturned()
+    {
+        // Match DutyQueueService's existing wait for members still in the preceding duty.
+        for (var index = 0; index < Plugin.PartyList.Length; index++)
+            if (Plugin.PartyList[index]?.Territory.RowId == KeyboundEventLoop.Arena) return false;
+        return true;
     }
     public bool EnsureLobby()
     {

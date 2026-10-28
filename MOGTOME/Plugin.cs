@@ -468,12 +468,13 @@ public sealed class Plugin : IDalamudPlugin
                 Configuration.KeyboundBrawler.PurchaseReviewRequired || Configuration.Blunderville.PurchaseReviewRequired || Configuration.MoogleShop.PurchaseReviewRequired,
             ClientState.IsLoggedIn ? KeyboundBrawlerService.ReadTerritoryIntendedUse() : null,
             ClientState.TerritoryType,
-            Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas] || Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas51]);
+            Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas] || Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas51] ||
+                ClientState.IsLoggedIn && ObjectTable.LocalPlayer == null);
 
     private void UpdateKeyboundBrawler()
     {
         if (keyboundSessionSettings != null && !KeyboundSessionMatches())
-        { KeyboundLoop.Stop(); KeyboundBrawler.Stop(); ReleaseKeyboundSession(); }
+        { KeyboundLoop.Stop(); KeyboundBrawler.StopWithReason("BV_SessionChanged"); ReleaseKeyboundSession(); }
         UpdateKeyboundBrawlerAdmission();
         uint? wallet = KeyboundBrawlerShop.TryWallet(out var currentWallet) ? currentWallet : null;
         KeyboundBrawler.FinishIfLimitMet(wallet);
@@ -1119,6 +1120,7 @@ public sealed class Plugin : IDalamudPlugin
     private void OnDutyStarted(uint territoryId)
     {
         Log.Information($"[Plugin] DutyStarted event: territory={territoryId}");
+        if (KeyboundSessionMatches()) KeyboundLoop.ObserveDutyStarted(territoryId, Environment.TickCount64);
         // The engine validates live territory/CFC before binding its attempt.
     }
 

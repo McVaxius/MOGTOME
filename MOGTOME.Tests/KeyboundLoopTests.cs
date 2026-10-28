@@ -157,6 +157,58 @@ public sealed class KeyboundLoopTests
     }
 
     [Fact]
+    public void LatePartyReturnDefersLeaderRegistrationAndNativeNextDutyRearmsAMemberWithoutALobbyUpdate()
+    {
+        using (var leader = new Fixture())
+        {
+            leader.Game.Frame = leader.Game.Frame with { Entry = true, PartyReturned = false };
+            leader.Tick(0); leader.Tick(30_000);
+            Assert.True(leader.Loop.IsActive);
+            Assert.Equal(0, leader.Game.Registers + leader.Game.Approaches);
+            leader.Game.Frame = leader.Game.Frame with { PartyReturned = true };
+            leader.Tick(30_100);
+            Assert.Equal(1, leader.Game.Registers);
+            leader.Game.Frame = leader.Game.Frame with { Entry = false, Queued = true, QueueMatches = true };
+            leader.Tick(30_200);
+            Assert.Equal(1, leader.Game.Registers);
+        }
+        using var member = new Fixture(role: MOGTOME.Models.KeyboundPartyRole.Member);
+        member.Input.Visible = false;
+        member.Game.Frame = new(KeyboundEventLoop.Arena, false, false, false, false, false, false, false, false, false,
+            MOGTOME.Models.BlundervilleRole.Member);
+        member.Tick(0);
+        member.Game.Frame = member.Game.Frame with { Results = true, ResultsReady = true };
+        member.Tick(100); member.Tick(2100);
+        Assert.Equal(1, member.Typer.CompletedRuns);
+        Assert.Equal(1, member.Game.Leaves);
+        member.Game.Frame = member.Game.Frame with { Territory = KeyboundEventLoop.Lobby, Transitioning = true, Results = false };
+        member.Tick(2200); // No stable lobby update: the leader's next queue is already entering.
+        member.Typer.Observe(false, false, 23, KeyboundEventLoop.Lobby, transitioning: true);
+        member.Loop.Update(2250); member.Typer.Update(null, 2250);
+        Assert.True(member.Loop.IsActive);
+        Assert.True(member.Typer.IsRunning); // A missing local player during loading is suspended, not a failed session.
+        member.Loop.ObserveDutyStarted(KeyboundEventLoop.Arena, 2300);
+        member.Input.Visible = member.Input.AutoEcho = true;
+        member.Game.Frame = member.Game.Frame with { Territory = KeyboundEventLoop.Arena, Transitioning = false };
+        member.Tick(2400);
+        Assert.True(member.Loop.IsActive);
+        Assert.True(member.Typer.IsRunning);
+        Assert.Equal("a", member.Input.Sent);
+        Assert.Equal(4, member.Game.Heartbeats);
+        Assert.Equal(1, member.Typer.CompletedRuns);
+        member.Loop.ObserveDutyStarted(KeyboundEventLoop.Arena, 2401); // Same active round is not rearmed again.
+        member.Game.Frame = member.Game.Frame with { Results = true, ResultsReady = true };
+        member.Tick(2500); member.Tick(4500);
+        Assert.Equal(2, member.Typer.CompletedRuns);
+        Assert.Equal(2, member.Game.Leaves);
+        Assert.Equal(0, member.Game.Registers + member.Game.Approaches + member.Game.Cancels);
+        member.Loop.Stop(); member.Typer.Stop();
+        member.Loop.ObserveDutyStarted(KeyboundEventLoop.Arena, 5000);
+        Assert.False(member.Loop.IsActive);
+        Assert.False(member.Typer.IsRunning);
+    }
+
+    [Fact]
     public void SelectedLeaderCannotInitiateAQueueWhileActuallyAPartyMember()
     {
         using var f = new Fixture();

@@ -6,7 +6,7 @@ namespace MOGTOME.Services.Keybound;
 
 internal readonly record struct KeyboundLoopFrame(uint Territory, bool Transitioning, bool Queued,
     bool QueueMatches, bool Pop, bool PopMatches, bool Entry, bool Results, bool ResultsReady, bool OtherDuty,
-    BlundervilleRole PartyRole = BlundervilleRole.Solo, bool EntryReady = true, bool PopReady = true);
+    BlundervilleRole PartyRole = BlundervilleRole.Solo, bool EntryReady = true, bool PopReady = true, bool PartyReturned = true);
 
 internal interface IKeyboundLoopGame
 {
@@ -117,6 +117,8 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
             // from their current territory; waiting must never start travel or touch the registrar.
             if (partyRole == KeyboundPartyRole.Member)
             { Status = Ui.M("BV_MemberWait"); return; }
+            if (!state.PartyReturned)
+            { Status = Ui.M("BV_WaitEntry"); return; }
             Status = Ui.M("KB_Queueing");
             if (!game.EnsureLobby()) return;
             if (state.Entry)
@@ -133,6 +135,19 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
             Fail("BV_ActionFailed");
             Plugin.Log?.Warning(ex, "[MOGTOME][KBB] event loop failed");
         }
+    }
+    internal void ObserveDutyStarted(uint territory, long now)
+    {
+        if (!active || territory != Arena || !resultSubmitted) return;
+        if (StopAfterCurrentRoundArmed || typer.Finished)
+        { Stop(); typer.Stop(); Status = Ui.M("KB_Stopped"); return; }
+        // A fast party queue can carry a returning member straight through loading into
+        // the next arena without an update in the lobby. The native start proves a new round.
+        entered = true;
+        registered = commenced = resultSubmitted = resultsSeen = false;
+        stageStarted = now;
+        typer.ObserveNewRound(Arena);
+        Plugin.Log?.Information("[MOGTOME][KBB] New duty after results; cleared the previous round's return state.");
     }
     internal void StopAfterCurrentRound()
     {

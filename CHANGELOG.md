@@ -1,3 +1,8 @@
+2026-10-28 - 4.2.0.1 Keybound late party return
+
+- Wait for every visible party member to leave the previous KBB arena before the leader approaches/submits registration, following the existing main duty queue's member-territory check. A late member no longer causes an early registration request that leaves the loop waiting on its consumed submission.
+- Treat a logged-in client with no local player as still transitioning, even when the area's loading flags have already cleared. Use the next native KBB duty-start event to clear the previous results/typing state when a returning client passes through loading without a stable lobby update. Preserve run counts, configured limits, manual stops and foreign-duty rejection. Log controller stop reasons and normal limit completion so future stops are distinguishable. Compiled marker kbb-focus-20261028-08 awaits native verification.
+
 2026-10-28 - Keybound party admission and titlebar follow-up (unversioned)
 
 - Keep party members active while the leader queues. Members wait for a verified KBB pop without treating their empty or stale local registration list as another duty. Wait for populated duty-pop identity and button readiness before accepting or rejecting a pop; retain foreign-pop and foreign-territory rejection. Add a bounded event-loop stop reason for failures.

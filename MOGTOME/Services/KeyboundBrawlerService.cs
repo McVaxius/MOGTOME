@@ -39,7 +39,7 @@ public sealed class KeyboundBrawlerService : IDisposable
 
     public KeyboundBrawlerService() : this(new KeyboundInput())
     {
-        Plugin.Log?.Information("[MOGTOME][KBB] Loaded kbb-focus-20261028-07; passive until Start.");
+        Plugin.Log?.Information("[MOGTOME][KBB] Loaded kbb-focus-20261028-08; passive until Start.");
     }
     internal KeyboundBrawlerService(IKeyboundInput input, Func<int, int, int>? drawDelay = null)
     { this.input = input; this.drawDelay = drawDelay; }
@@ -98,7 +98,7 @@ public sealed class KeyboundBrawlerService : IDisposable
         ResetTyping();
         IsRunning = true;
         Status = Ui.M("KB_Queueing");
-        Plugin.Log?.Information("[MOGTOME][KBB] Started kbb-focus-20261028-07; mode={Mode}, role={Role}, wpm={Wpm}, runLimit={RunLimit}, walletTarget={WalletTarget}",
+        Plugin.Log?.Information("[MOGTOME][KBB] Started kbb-focus-20261028-08; mode={Mode}, role={Role}, wpm={Wpm}, runLimit={RunLimit}, walletTarget={WalletTarget}",
             settings.PlayMode, settings.PartyRole, settings.TypingWpm, runLimit, walletTarget?.ToString() ?? "off");
         return true;
     }
@@ -123,6 +123,18 @@ public sealed class KeyboundBrawlerService : IDisposable
         completedRound = false;
     }
 
+    internal void ObserveNewRound(uint admittedTerritory)
+    {
+        if (!IsRunning || StopRequested || admittedTerritory != KeyboundEventLoop.Arena) return;
+        ReleaseKey(); ResetTyping();
+        roundTerritory = admittedTerritory;
+        roundSeen = true; completedRound = false;
+        castWatch.Reset(); barrierMemory.Clear(); input.Reset(); inputIdentity = 0;
+        recentlySubmitted = demotedPhrase = null;
+        repeatStreak = focusAttempts = wakeAttempts = 0;
+        focusRetryAt = nextWakeAt = wakePaceUntil = demotedUntil = 0;
+    }
+
     internal void Update(uint? wallet, long now)
     {
         if (Interlocked.Exchange(ref stopRequested, 0) != 0) Stop();
@@ -132,7 +144,7 @@ public sealed class KeyboundBrawlerService : IDisposable
         try
         {
             if (suspended && !busy) { ReleaseKey(); ResetTyping(); return; }
-            if (!ready || busy) { Stop(); Status = UnavailableReason; return; }
+            if (!ready || busy) { StopWithReason(UnavailableReason.Key!); return; }
             if (!inEvent && roundSeen)
             {
                 roundSeen = completedRound = false;
@@ -140,7 +152,7 @@ public sealed class KeyboundBrawlerService : IDisposable
                 barrierMemory.Clear(); input.Reset();
                 ResetTyping();
             }
-            if (walletTarget.HasValue && !wallet.HasValue) { Stop(); Status = Ui.M("KB_NoWallet"); return; }
+            if (walletTarget.HasValue && !wallet.HasValue) { StopWithReason("KB_NoWallet"); return; }
             if ((!roundSeen || completedRound) && (runLimit > 0 && CompletedRuns >= runLimit ||
                 walletTarget.HasValue && wallet >= walletTarget))
             { Finish(); return; }
@@ -204,7 +216,7 @@ public sealed class KeyboundBrawlerService : IDisposable
                     submissionPending = false;
                 }
                 else if (now >= echoDeadline)
-                { Stop(); Status = Ui.M("KB_InputStalled"); return; }
+                { StopWithReason("KB_InputStalled"); return; }
                 else return;
             }
             if (now < nextAction || now < wakePaceUntil) return;
@@ -292,14 +304,24 @@ public sealed class KeyboundBrawlerService : IDisposable
         submissionPending = false;
         nextAction = 0;
     }
-    private void FailInput() { Stop(); Status = Ui.M("KB_InputStalled"); }
-    private void Finish() { Stop(); Finished = true; Status = Ui.M("KB_Finished", CompletedRuns); }
+    private void FailInput() => StopWithReason("KB_InputStalled");
+    private void Finish()
+    {
+        Plugin.Log?.Information("[MOGTOME][KBB] Session limit reached; completedRuns={Runs}; runLimit={Limit}; walletTarget={Target}",
+            CompletedRuns, runLimit, walletTarget?.ToString() ?? "off");
+        Stop(); Finished = true; Status = Ui.M("KB_Finished", CompletedRuns);
+    }
     internal void FinishIfLimitMet(uint? wallet)
     {
         if (IsRunning && ready && !busy && (!roundSeen || completedRound) && (runLimit > 0 && CompletedRuns >= runLimit ||
             walletTarget.HasValue && wallet.HasValue && wallet >= walletTarget)) Finish();
     }
-    internal void StopWithReason(string key) { Stop(); Status = Ui.M(key); }
+    internal void StopWithReason(string key)
+    {
+        Plugin.Log?.Warning("[MOGTOME][KBB] Controller stopped; reason={Reason}; territory={Territory}; completedRuns={Runs}; awaitingEcho={Echo}; inputVisible={Visible}; focused={Focused}",
+            key, territory, CompletedRuns, expectedText != null, snapshot.InputVisible, snapshot.InputFocused);
+        Stop(); Status = Ui.M(key);
+    }
     public void RequestStop() => Interlocked.Exchange(ref stopRequested, 1);
     public void Stop()
     {
