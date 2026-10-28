@@ -2521,4 +2521,8 @@ Kayıtlı miktarları yenilemek için depoları açın.</value></data>
   <data name="KB_PartyMember" xml:space="preserve"><value>Üye</value></data>
   <data name="KB_ThrowerSpeed" xml:space="preserve"><value>Kaybeden hızı: {0} WPM (kazananın yarısı)</value></data>
   <data name="KB_WaitPartyRole" xml:space="preserve"><value>Seçilen rolün mevcut grupla eşleşmesi bekleniyor.</value></data>
+  <data name="KB_StopAfterNext" xml:space="preserve"><value>Bu turdan sonra durdur</value></data>
+  <data name="KB_StopAfterNextHelp" xml:space="preserve"><value>Mevcut turu tamamlayıp çık, ardından dur. Tur dışındayken hemen dur.</value></data>
+  <data name="KB_StopAfterNextArmed" xml:space="preserve"><value>Mevcut turdan sonra duracak.</value></data>
+  <data name="KB_TitleStatus" xml:space="preserve"><value>MGC {0}/{1} · Tur {2}</value></data>
 </root>

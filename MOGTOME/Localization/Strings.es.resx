@@ -2371,4 +2371,8 @@ Abre los almacenes para actualizar las cantidades registradas.</value></data>
   <data name="KB_PartyMember" xml:space="preserve"><value>Miembro</value></data>
   <data name="KB_ThrowerSpeed" xml:space="preserve"><value>Velocidad Perdedor: {0} PPM (mitad del Ganador)</value></data>
   <data name="KB_WaitPartyRole" xml:space="preserve"><value>Esperando que el rol elegido coincida con el grupo actual.</value></data>
+  <data name="KB_StopAfterNext" xml:space="preserve"><value>Parar tras esta ronda</value></data>
+  <data name="KB_StopAfterNextHelp" xml:space="preserve"><value>Completa la ronda actual y sal, luego detente. Fuera de una ronda, detente inmediatamente.</value></data>
+  <data name="KB_StopAfterNextArmed" xml:space="preserve"><value>Se detendrá tras la ronda actual.</value></data>
+  <data name="KB_TitleStatus" xml:space="preserve"><value>MGC {0}/{1} · Rondas {2}</value></data>
 </root>

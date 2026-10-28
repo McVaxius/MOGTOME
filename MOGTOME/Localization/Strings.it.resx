@@ -2371,4 +2371,8 @@ Apri i depositi per aggiornare le quantità registrate.</value></data>
   <data name="KB_PartyMember" xml:space="preserve"><value>Membro</value></data>
   <data name="KB_ThrowerSpeed" xml:space="preserve"><value>Velocità Perdente: {0} PPM (metà del Vincente)</value></data>
   <data name="KB_WaitPartyRole" xml:space="preserve"><value>In attesa del ruolo selezionato nel gruppo attuale.</value></data>
+  <data name="KB_StopAfterNext" xml:space="preserve"><value>Ferma dopo questo round</value></data>
+  <data name="KB_StopAfterNextHelp" xml:space="preserve"><value>Completa il round attuale ed esci, poi fermati. Fuori da un round, fermati subito.</value></data>
+  <data name="KB_StopAfterNextArmed" xml:space="preserve"><value>Si fermerà dopo il round attuale.</value></data>
+  <data name="KB_TitleStatus" xml:space="preserve"><value>MGC {0}/{1} · Round {2}</value></data>
 </root>

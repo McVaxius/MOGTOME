@@ -2521,4 +2521,8 @@ Abra os depósitos para atualizar as quantidades registradas.</value></data>
   <data name="KB_PartyMember" xml:space="preserve"><value>Membro</value></data>
   <data name="KB_ThrowerSpeed" xml:space="preserve"><value>Velocidade Perdedor: {0} PPM (metade do Vencedor)</value></data>
   <data name="KB_WaitPartyRole" xml:space="preserve"><value>Aguardando a função escolhida corresponder ao grupo atual.</value></data>
+  <data name="KB_StopAfterNext" xml:space="preserve"><value>Parar após esta rodada</value></data>
+  <data name="KB_StopAfterNextHelp" xml:space="preserve"><value>Conclua a rodada atual e saia, depois pare. Fora de uma rodada, pare imediatamente.</value></data>
+  <data name="KB_StopAfterNextArmed" xml:space="preserve"><value>Vai parar após a rodada atual.</value></data>
+  <data name="KB_TitleStatus" xml:space="preserve"><value>MGC {0}/{1} · Rodadas {2}</value></data>
 </root>

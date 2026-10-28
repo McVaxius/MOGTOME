@@ -44,7 +44,7 @@ internal sealed unsafe class KeyboundLoopGame(Plugin plugin) : IKeyboundLoopGame
             Plugin.Condition[ConditionFlag.InDutyQueue], owned, Visible("ContentsFinderConfirm"), popped,
             Visible("KTGEnterDialogue"), results != null, results != null && ButtonReady(results->GetComponentButtonById(48)),
             Plugin.Condition[ConditionFlag.BoundByDuty] && territory != KeyboundEventLoop.Arena, BlundervilleGameAdapter.Role(), entryDialog != null,
-            pop != null && ButtonReady(pop->CommenceButton));
+            pop != null && ButtonReady(pop->CommenceButton) && queue != null && queue->PoppedQueueEntry.Id != 0);
     }
     public bool EnsureLobby()
     {

@@ -2521,4 +2521,8 @@ Buka penyimpanan untuk memperbarui jumlah tercatat.</value></data>
   <data name="KB_PartyMember" xml:space="preserve"><value>Anggota</value></data>
   <data name="KB_ThrowerSpeed" xml:space="preserve"><value>Kecepatan pengalah: {0} WPM (setengah pemenang)</value></data>
   <data name="KB_WaitPartyRole" xml:space="preserve"><value>Menunggu peran pilihan sesuai dengan grup saat ini.</value></data>
+  <data name="KB_StopAfterNext" xml:space="preserve"><value>Berhenti setelah ronde ini</value></data>
+  <data name="KB_StopAfterNextHelp" xml:space="preserve"><value>Selesaikan ronde saat ini dan keluar, lalu berhenti. Di luar ronde, langsung berhenti.</value></data>
+  <data name="KB_StopAfterNextArmed" xml:space="preserve"><value>Akan berhenti setelah ronde saat ini.</value></data>
+  <data name="KB_TitleStatus" xml:space="preserve"><value>MGC {0}/{1} · Ronde {2}</value></data>
 </root>

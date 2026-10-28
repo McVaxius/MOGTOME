@@ -2521,4 +2521,8 @@ Otwórz magazyny, aby odświeżyć zapisane ilości.</value></data>
   <data name="KB_PartyMember" xml:space="preserve"><value>Członek</value></data>
   <data name="KB_ThrowerSpeed" xml:space="preserve"><value>Szybkość przegrywającego: {0} WPM (połowa zwycięzcy)</value></data>
   <data name="KB_WaitPartyRole" xml:space="preserve"><value>Oczekiwanie na wybraną rolę w bieżącej grupie.</value></data>
+  <data name="KB_StopAfterNext" xml:space="preserve"><value>Zatrzymaj po tej rundzie</value></data>
+  <data name="KB_StopAfterNextHelp" xml:space="preserve"><value>Dokończ bieżącą rundę i wyjdź, a następnie zatrzymaj. Poza rundą zatrzymaj natychmiast.</value></data>
+  <data name="KB_StopAfterNextArmed" xml:space="preserve"><value>Zatrzymanie po bieżącej rundzie.</value></data>
+  <data name="KB_TitleStatus" xml:space="preserve"><value>MGC {0}/{1} · Rundy {2}</value></data>
 </root>

@@ -1,3 +1,8 @@
+2026-10-28 - Keybound party admission and titlebar follow-up (unversioned)
+
+- Keep party members active while the leader queues. Members wait for a verified KBB pop without treating their empty or stale local registration list as another duty. Wait for populated duty-pop identity and button readiness before accepting or rejecting a pop; retain foreign-pop and foreign-territory rejection. Add a bounded event-loop stop reason for failures.
+- Add Start and Stop after next to the Keybound titlebar. Stop after next finishes and exits the current arena round, then stops without starting another round or shopping; outside the arena it stops immediately. Show current/goal MGC and completed runs for the current Start session. Preserve version 4.1.1.0; compiled marker kbb-focus-20261028-07 awaits native party verification.
+
 2026-10-28 - Keybound focus and inactivity follow-up (unversioned)
 
 - Restore the input component's active state after native focus selection, matching the upstream focus path. Use the observed text-input routing to admit typing; remove the tentative generic component flag requirement while retaining enabled, visibility, chat ownership and Letterlock checks.

@@ -39,7 +39,7 @@ public sealed class KeyboundBrawlerService : IDisposable
 
     public KeyboundBrawlerService() : this(new KeyboundInput())
     {
-        Plugin.Log?.Information("[MOGTOME][KBB] Loaded kbb-focus-20261028-06; passive until Start.");
+        Plugin.Log?.Information("[MOGTOME][KBB] Loaded kbb-focus-20261028-07; passive until Start.");
     }
     internal KeyboundBrawlerService(IKeyboundInput input, Func<int, int, int>? drawDelay = null)
     { this.input = input; this.drawDelay = drawDelay; }
@@ -51,6 +51,7 @@ public sealed class KeyboundBrawlerService : IDisposable
     internal bool CanContinueSession => !disposed && !busy && (ready || suspended) && !StopRequested;
     internal bool OwnsInput => IsRunning || heldKey.HasValue;
     public int CompletedRuns { get; private set; }
+    internal uint? WalletTarget => walletTarget;
     public int SubmittedPhrases { get; private set; }
     public bool Finished { get; private set; }
     internal bool SuppressGameplay { get; set; }
@@ -97,7 +98,7 @@ public sealed class KeyboundBrawlerService : IDisposable
         ResetTyping();
         IsRunning = true;
         Status = Ui.M("KB_Queueing");
-        Plugin.Log?.Information("[MOGTOME][KBB] Started kbb-focus-20261028-06; mode={Mode}, role={Role}, wpm={Wpm}, runLimit={RunLimit}, walletTarget={WalletTarget}",
+        Plugin.Log?.Information("[MOGTOME][KBB] Started kbb-focus-20261028-07; mode={Mode}, role={Role}, wpm={Wpm}, runLimit={RunLimit}, walletTarget={WalletTarget}",
             settings.PlayMode, settings.PartyRole, settings.TypingWpm, runLimit, walletTarget?.ToString() ?? "off");
         return true;
     }

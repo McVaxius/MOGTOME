@@ -2371,4 +2371,8 @@ Path: {0}
   <data name="KB_PartyMember" xml:space="preserve"><value>Участник</value></data>
   <data name="KB_ThrowerSpeed" xml:space="preserve"><value>Скорость проигрывающего: {0} слов/мин (половина скорости победителя)</value></data>
   <data name="KB_WaitPartyRole" xml:space="preserve"><value>Ожидание выбранной роли в текущей группе.</value></data>
+  <data name="KB_StopAfterNext" xml:space="preserve"><value>Остановить после этого раунда</value></data>
+  <data name="KB_StopAfterNextHelp" xml:space="preserve"><value>Завершить текущий раунд и выйти, затем остановиться. Вне раунда остановиться сразу.</value></data>
+  <data name="KB_StopAfterNextArmed" xml:space="preserve"><value>Остановка после текущего раунда.</value></data>
+  <data name="KB_TitleStatus" xml:space="preserve"><value>MGC {0}/{1} · Раундов {2}</value></data>
 </root>

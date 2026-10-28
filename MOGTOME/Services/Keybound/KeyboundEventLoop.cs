@@ -30,10 +30,12 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
     private KeyboundPartyRole partyRole;
     internal UiText Status { get; private set; } = Ui.M("BV_Idle");
     internal bool IsActive => active;
+    internal bool StopAfterCurrentRoundArmed { get; private set; }
     internal void Start(long now, KeyboundPartyRole role = KeyboundPartyRole.Leader)
     {
         partyRole = role;
         active = true; entered = registered = commenced = resultSubmitted = resultsSeen = false;
+        StopAfterCurrentRoundArmed = false;
         stageStarted = now;
         Status = Ui.M("KB_Queueing");
     }
@@ -46,7 +48,10 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
             if (typer.StopRequested || !typer.CanContinueSession || !typer.IsRunning && !typer.Finished) { Stop(); return; }
             var state = game.Read();
             if (state.Transitioning) return;
-            if (state.OtherDuty || state.Queued && !state.QueueMatches || state.Pop && !state.PopMatches)
+            // Only the registering client owns the local queued-entry list. Party members can
+            // have empty or stale entries; they wait for a positively identified KBB pop instead.
+            if (state.OtherDuty || state.Queued && !state.QueueMatches && partyRole != KeyboundPartyRole.Member ||
+                state.Pop && state.PopReady && !state.PopMatches)
             { Fail("KB_AutomationBusy"); return; }
             if (state.Territory == Arena)
             {
@@ -83,6 +88,11 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
                 if (!resultSubmitted) { Fail("BV_UiMismatch"); return; }
                 entered = registered = commenced = resultSubmitted = resultsSeen = false;
                 stageStarted = now;
+                if (StopAfterCurrentRoundArmed)
+                {
+                    Stop(); typer.Stop(); Status = Ui.M("KB_Stopped");
+                    return;
+                }
             }
             if (typer.Finished) { active = false; game.StopMovement(); return; }
             if (now - stageStarted > (registered || state.Queued || partyRole == KeyboundPartyRole.Member ? 600_000 : 180_000)) { Fail("BV_Timeout"); return; }
@@ -124,10 +134,26 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
             Plugin.Log?.Warning(ex, "[MOGTOME][KBB] event loop failed");
         }
     }
-    private void Fail(string key) { Stop(); typer.StopWithReason(key); Status = Ui.M(key); }
+    internal void StopAfterCurrentRound()
+    {
+        if (active && game.Read().Territory == Arena)
+        {
+            if (!StopAfterCurrentRoundArmed)
+                Plugin.Log?.Information("[MOGTOME][KBB] Stop after current round armed.");
+            StopAfterCurrentRoundArmed = true;
+            return;
+        }
+        Stop(); typer.Stop(); Status = Ui.M("KB_Stopped");
+    }
+    private void Fail(string key)
+    {
+        Plugin.Log?.Warning("[MOGTOME][KBB] event loop stopped; reason={Reason}; role={Role}", key, partyRole);
+        Stop(); typer.StopWithReason(key); Status = Ui.M(key);
+    }
     internal void Stop()
     {
         active = false;
+        StopAfterCurrentRoundArmed = false;
         typer.SuppressGameplay = false;
         try { if (partyRole == KeyboundPartyRole.Leader && (registered || commenced)) game.CancelQueue(); }
         catch (Exception ex) { Plugin.Log?.Warning(ex, "[MOGTOME][KBB] owned queue cancellation failed"); }

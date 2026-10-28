@@ -2365,4 +2365,8 @@ Ouvrir les stockages pour actualiser les quantités enregistrées.</value></data
   <data name="KB_PartyMember" xml:space="preserve"><value>Membre</value></data>
   <data name="KB_ThrowerSpeed" xml:space="preserve"><value>Vitesse Perdant : {0} mots/min (moitié du Gagnant)</value></data>
   <data name="KB_WaitPartyRole" xml:space="preserve"><value>En attente du rôle sélectionné dans le groupe actuel.</value></data>
+  <data name="KB_StopAfterNext" xml:space="preserve"><value>Arrêter après cette manche</value></data>
+  <data name="KB_StopAfterNextHelp" xml:space="preserve"><value>Terminer la manche actuelle et sortir, puis arrêter. Hors manche, arrêter immédiatement.</value></data>
+  <data name="KB_StopAfterNextArmed" xml:space="preserve"><value>Arrêt après la manche actuelle.</value></data>
+  <data name="KB_TitleStatus" xml:space="preserve"><value>MGC {0}/{1} · Manches {2}</value></data>
 </root>

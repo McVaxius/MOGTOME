@@ -2371,4 +2371,8 @@ Path: {0}
   <data name="KB_PartyMember" xml:space="preserve"><value>队员</value></data>
   <data name="KB_ThrowerSpeed" xml:space="preserve"><value>低速参与者速度：{0} WPM（胜利者的一半）</value></data>
   <data name="KB_WaitPartyRole" xml:space="preserve"><value>等待当前队伍角色与所选角色一致。</value></data>
+  <data name="KB_StopAfterNext" xml:space="preserve"><value>本轮结束后停止</value></data>
+  <data name="KB_StopAfterNextHelp" xml:space="preserve"><value>完成当前轮次并退出后停止。未在轮次中时立即停止。</value></data>
+  <data name="KB_StopAfterNextArmed" xml:space="preserve"><value>将在当前轮次结束后停止。</value></data>
+  <data name="KB_TitleStatus" xml:space="preserve"><value>MGC {0}/{1} · 已完成 {2} 轮</value></data>
 </root>

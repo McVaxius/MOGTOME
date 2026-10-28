@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using AethertekUI;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Windowing;
 using Lumina.Excel.Sheets;
@@ -29,11 +30,34 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
         Size = new Vector2(1000, 880);
         SizeCondition = ImGuiCond.FirstUseEver;
         SizeConstraints = new WindowSizeConstraints { MinimumSize = new(560, 520), MaximumSize = new(1500, 1500) };
+        TitleBarButtons.Add(new()
+        {
+            Icon = FontAwesomeIcon.Play, Priority = -20, IconOffset = new(2, 1),
+            Click = button => { if (button == ImGuiMouseButton.Left && plugin.KeyboundBrawler.CanStart) plugin.StartKeyboundBrawler(); },
+            ShowTooltip = () => UiLayout.SetTooltip(Ui.T("Main_Start")),
+        });
+        TitleBarButtons.Add(new()
+        {
+            Icon = FontAwesomeIcon.Clock, Priority = -30, IconOffset = new(2, 1),
+            Click = button => { if (button == ImGuiMouseButton.Left) plugin.StopKeyboundAfterCurrentRound(); },
+            ShowTooltip = () => UiLayout.SetTooltip(Ui.T(plugin.KeyboundLoop.StopAfterCurrentRoundArmed
+                ? "KB_StopAfterNextArmed" : "KB_StopAfterNext") + "\n" + Ui.T("KB_StopAfterNextHelp")),
+        });
     }
 
     public override void PreDraw()
     {
-        WindowName = Ui.T("KB_Title") + "###MogtomeKeyboundBrawler";
+        var settings = plugin.Configuration.KeyboundBrawler;
+        var goal = plugin.KeyboundLoop.IsActive || plugin.KeyboundBrawler.IsRunning
+            ? plugin.KeyboundBrawler.WalletTarget : settings.WalletTargetEnabled ? (uint?)Math.Max(0, settings.WalletTarget) : null;
+        var wallet = KeyboundBrawlerShop.TryWallet(out var balance) ? balance.ToString("N0") : "?";
+        WindowName = Ui.T("KB_Title") + " | " + Ui.T("KB_TitleStatus", wallet, goal?.ToString("N0") ?? "—",
+            plugin.KeyboundBrawler.CompletedRuns) + "###MogtomeKeyboundBrawler";
+        SizeConstraints = new WindowSizeConstraints
+        {
+            MinimumSize = new(Math.Max(560, UiLayout.TitleMinimumWidth(this) / Math.Max(.01f, ImGuiHelpers.GlobalScale)), 520),
+            MaximumSize = new(1500, 1500),
+        };
         // Apply the approved shop-sized layout once; subsequent user resizes survive reopening.
         SizeCondition = layoutSizeApplied ? ImGuiCond.FirstUseEver : ImGuiCond.Always;
         layoutSizeApplied = true;

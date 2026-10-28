@@ -2537,4 +2537,8 @@ Retainer और अन्य भंडारण: {3}
   <data name="KB_PartyMember" xml:space="preserve"><value>सदस्य</value></data>
   <data name="KB_ThrowerSpeed" xml:space="preserve"><value>धीमे खिलाड़ी की गति: {0} WPM (विजेता की आधी)</value></data>
   <data name="KB_WaitPartyRole" xml:space="preserve"><value>चुनी गई भूमिका के वर्तमान पार्टी से मेल खाने की प्रतीक्षा।</value></data>
+  <data name="KB_StopAfterNext" xml:space="preserve"><value>वर्तमान राउंड के बाद रोकें</value></data>
+  <data name="KB_StopAfterNextHelp" xml:space="preserve"><value>चालू राउंड पूरा करके बाहर निकलें, फिर रुकें। राउंड के बाहर होने पर तुरंत रुकें।</value></data>
+  <data name="KB_StopAfterNextArmed" xml:space="preserve"><value>वर्तमान राउंड के बाद रुक जाएगा।</value></data>
+  <data name="KB_TitleStatus" xml:space="preserve"><value>MGC {0}/{1} · राउंड {2}</value></data>
 </root>

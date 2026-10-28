@@ -434,6 +434,18 @@ public sealed class Plugin : IDalamudPlugin
         });
     }
 
+    public void StopKeyboundAfterCurrentRound()
+    {
+        if (IsKeyboundStartQueued) { StopKeyboundBrawler(); StopKeyboundShop(); return; }
+        var generation = keyboundStartGeneration;
+        GameHelpers.QueueFrameworkAction("Keybound Brawler", "Stop after current round", TimeSpan.Zero, () =>
+        {
+            if (generation != keyboundStartGeneration) return;
+            KeyboundLoop.StopAfterCurrentRound();
+            if (!KeyboundLoop.IsActive) { ReleaseKeyboundSession(); StopKeyboundShop(); }
+        });
+    }
+
     private void ReleaseKeyboundSession()
     {
         keyboundSessionSettings = null;

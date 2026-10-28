@@ -2371,4 +2371,8 @@ DictionaryPaths와 PathSelectionsByPath를 비교합니다.
   <data name="KB_PartyMember" xml:space="preserve"><value>멤버</value></data>
   <data name="KB_ThrowerSpeed" xml:space="preserve"><value>저속 참가자 속도: {0} WPM (승리자의 절반)</value></data>
   <data name="KB_WaitPartyRole" xml:space="preserve"><value>현재 파티에서 선택한 역할이 될 때까지 대기합니다.</value></data>
+  <data name="KB_StopAfterNext" xml:space="preserve"><value>현재 라운드 후 중지</value></data>
+  <data name="KB_StopAfterNextHelp" xml:space="preserve"><value>현재 라운드를 마치고 퇴장한 뒤 중지합니다. 라운드 밖에서는 즉시 중지합니다.</value></data>
+  <data name="KB_StopAfterNextArmed" xml:space="preserve"><value>현재 라운드가 끝나면 중지합니다.</value></data>
+  <data name="KB_TitleStatus" xml:space="preserve"><value>MGC {0}/{1} · 완료 {2}회</value></data>
 </root>

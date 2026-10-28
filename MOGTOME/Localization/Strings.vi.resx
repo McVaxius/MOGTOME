@@ -2521,4 +2521,8 @@ Mở kho để cập nhật số lượng đã ghi.</value></data>
   <data name="KB_PartyMember" xml:space="preserve"><value>Thành viên</value></data>
   <data name="KB_ThrowerSpeed" xml:space="preserve"><value>Tốc độ người nhường: {0} WPM (nửa người thắng)</value></data>
   <data name="KB_WaitPartyRole" xml:space="preserve"><value>Đợi vai trò đã chọn khớp với tổ đội hiện tại.</value></data>
+  <data name="KB_StopAfterNext" xml:space="preserve"><value>Dừng sau vòng này</value></data>
+  <data name="KB_StopAfterNextHelp" xml:space="preserve"><value>Hoàn thành vòng hiện tại và thoát, sau đó dừng. Ngoài vòng đấu, dừng ngay lập tức.</value></data>
+  <data name="KB_StopAfterNextArmed" xml:space="preserve"><value>Sẽ dừng sau vòng hiện tại.</value></data>
+  <data name="KB_TitleStatus" xml:space="preserve"><value>MGC {0}/{1} · Số vòng {2}</value></data>
 </root>

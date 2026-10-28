@@ -16,7 +16,7 @@ public sealed class KeyboundLoopTests
             Typer = new(Input, (_, _) => 0);
             Loop = new(Game, Typer);
             Typer.Observe(true, false, 23, KeyboundEventLoop.Lobby);
-            Assert.True(Typer.Start(new() { WalletTargetEnabled = false, RunLimitEnabled = limit > 0, RunLimit = limit }));
+            Assert.True(Typer.Start(new() { PartyRole = role, WalletTargetEnabled = false, RunLimitEnabled = limit > 0, RunLimit = limit }));
             Loop.Start(0, role);
         }
         internal void Tick(long now)
@@ -90,6 +90,70 @@ public sealed class KeyboundLoopTests
             Assert.Equal(2, f.Game.Commences);
         }
         Assert.Equal(0, f.Game.Registers + f.Game.Approaches + f.Game.LobbyTrips + f.Game.Cancels);
+    }
+
+    [Fact]
+    public void PartyQueueAdmissionKeepsTypingAndActivityAliveAndStopAfterNextFinishesOnlyTheCurrentRound()
+    {
+        foreach (var role in new[] { MOGTOME.Models.KeyboundPartyRole.Leader, MOGTOME.Models.KeyboundPartyRole.Member })
+        {
+            using var f = new Fixture(role: role);
+            f.Input.AutoEcho = true;
+            f.Game.Frame = f.Game.Frame with
+            {
+                PartyRole = role == MOGTOME.Models.KeyboundPartyRole.Member
+                    ? MOGTOME.Models.BlundervilleRole.Member : MOGTOME.Models.BlundervilleRole.Leader,
+                Queued = true, QueueMatches = role == MOGTOME.Models.KeyboundPartyRole.Leader,
+            };
+            f.Tick(0); // Party members have no authoritative local registration entries.
+            Assert.True(f.Loop.IsActive);
+            Assert.True(f.Typer.IsRunning);
+            Assert.Equal(0, f.Game.Registers + f.Game.Approaches + f.Game.Cancels);
+            f.Game.Frame = f.Game.Frame with { Pop = true, PopReady = false, PopMatches = false };
+            f.Tick(100); // The addon can appear before its popped-content identity is populated.
+            Assert.True(f.Loop.IsActive);
+            Assert.Equal(0, f.Game.Commences);
+            f.Game.Frame = f.Game.Frame with { PopReady = true, PopMatches = true };
+            f.Tick(200);
+            Assert.Equal(1, f.Game.Commences);
+            f.Game.Frame = new(KeyboundEventLoop.Arena, false, false, false, false, false, false, false, false, false);
+            f.Tick(300);
+            Assert.Equal("a", f.Input.Sent);
+            Assert.Equal(1, f.Game.Heartbeats);
+            f.Loop.StopAfterCurrentRound();
+            Assert.True(f.Loop.StopAfterCurrentRoundArmed);
+            f.Input.Visible = false;
+            f.Tick(30_300);
+            Assert.True(f.Typer.IsRunning);
+            Assert.Equal(2, f.Game.Heartbeats);
+            Assert.Equal(0, f.Game.Leaves);
+            f.Game.Frame = f.Game.Frame with { Results = true, ResultsReady = true };
+            f.Tick(30_400); f.Tick(32_400);
+            Assert.Equal(1, f.Game.Leaves);
+            Assert.Equal(1, f.Typer.CompletedRuns);
+            f.Game.Frame = f.Game.Frame with { Territory = KeyboundEventLoop.Lobby, Results = false, Entry = true };
+            f.Tick(32_500);
+            Assert.False(f.Loop.IsActive);
+            Assert.False(f.Typer.IsRunning);
+            Assert.False(f.Typer.Finished); // A manual stop must not hand off to automatic shopping.
+            Assert.False(f.Loop.StopAfterCurrentRoundArmed);
+            Assert.Equal(0, f.Game.Registers);
+        }
+        using var outside = new Fixture(role: MOGTOME.Models.KeyboundPartyRole.Member);
+        outside.Loop.StopAfterCurrentRound();
+        Assert.False(outside.Loop.IsActive);
+        Assert.False(outside.Typer.IsRunning);
+        Assert.Equal(0, outside.Game.Leaves + outside.Game.Registers + outside.Game.Cancels);
+
+        using var foreign = new Fixture(role: MOGTOME.Models.KeyboundPartyRole.Member);
+        foreign.Game.Frame = foreign.Game.Frame with
+        {
+            PartyRole = MOGTOME.Models.BlundervilleRole.Member, Queued = true, QueueMatches = false,
+            Pop = true, PopReady = true, PopMatches = false,
+        };
+        foreign.Tick(0);
+        Assert.False(foreign.Loop.IsActive);
+        Assert.Equal(0, foreign.Game.Commences + foreign.Game.Registers + foreign.Game.Cancels);
     }
 
     [Fact]

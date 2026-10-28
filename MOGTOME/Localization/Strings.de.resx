@@ -2365,4 +2365,8 @@ Lager öffnen, um erfasste Mengen zu aktualisieren.</value></data>
   <data name="KB_PartyMember" xml:space="preserve"><value>Mitglied</value></data>
   <data name="KB_ThrowerSpeed" xml:space="preserve"><value>Verlierertempo: {0} WPM (halbes Gewinnertempo)</value></data>
   <data name="KB_WaitPartyRole" xml:space="preserve"><value>Warte auf die gewählte Rolle in der aktuellen Gruppe.</value></data>
+  <data name="KB_StopAfterNext" xml:space="preserve"><value>Nach dieser Runde stoppen</value></data>
+  <data name="KB_StopAfterNextHelp" xml:space="preserve"><value>Die aktuelle Runde beenden und verlassen, dann stoppen. Außerhalb einer Runde sofort stoppen.</value></data>
+  <data name="KB_StopAfterNextArmed" xml:space="preserve"><value>Stoppt nach der aktuellen Runde.</value></data>
+  <data name="KB_TitleStatus" xml:space="preserve"><value>MGC {0}/{1} · Runden {2}</value></data>
 </root>
