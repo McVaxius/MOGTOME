@@ -26,6 +26,7 @@ public sealed class KeyboundBrawlerService : IDisposable
     private nint inputIdentity;
     private bool submissionPending;
     private int repeatStreak;
+    private int focusAttempts;
     private float streakSignature;
     private string? demotedPhrase;
     private long demotedUntil;
@@ -82,6 +83,7 @@ public sealed class KeyboundBrawlerService : IDisposable
         recentlySubmitted = null;
         castWatch.Reset();
         repeatStreak = 0; demotedPhrase = null;
+        focusRetryAt = 0; focusAttempts = 0;
         ResetTyping();
         IsRunning = true;
         Status = Ui.M("KB_Queueing");
@@ -123,7 +125,7 @@ public sealed class KeyboundBrawlerService : IDisposable
             { ReleaseKey(); ResetTyping(); Status = Ui.M("KB_Queueing"); return; }
             input.Read(snapshot);
             if (!snapshot.InputVisible)
-            { ReleaseKey(); ResetTyping(); Status = Ui.M("KB_WaitInput"); return; }
+            { ReleaseKey(); ResetTyping(); focusAttempts = 0; Status = Ui.M("KB_WaitInput"); return; }
             if (roundTerritory != territory)
             {
                 roundTerritory = territory;
@@ -135,16 +137,21 @@ public sealed class KeyboundBrawlerService : IDisposable
                 ReleaseKey(); ResetTyping();
                 inputIdentity = snapshot.InputIdentity;
             }
+            castWatch.Update(snapshot, now);
+            if (castWatch.Holding)
+            { ReleaseKey(); echoDeadline = now + 750; Status = Ui.M("KB_CastHold"); return; }
             if (!snapshot.InputFocused)
             {
                 ReleaseKey(); ResetTyping(); Status = Ui.M("KB_WaitInput");
                 if (!snapshot.OtherInputFocused && now >= focusRetryAt)
-                { input.Focus(); focusRetryAt = now + 150; }
+                {
+                    input.Focus(); focusRetryAt = now + 150;
+                    if (snapshot.PhraseCount > 0 && ++focusAttempts == 20)
+                        Plugin.Log?.Warning("[MOGTOME][KBB] Input is visible but text entry has not activated after 20 focus attempts; no characters sent to an unconfirmed target.");
+                }
                 return;
             }
-            castWatch.Update(snapshot, now);
-            if (castWatch.Holding)
-            { echoDeadline = now + 750; Status = Ui.M("KB_CastHold"); return; }
+            focusAttempts = 0;
             if (heldKey.HasValue) return;
             if (expectedText != null)
             {

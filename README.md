@@ -179,6 +179,7 @@ Square, approaches the registrar, registers, accepts the matching KBB entry,
 plays, leaves through Results and repeats. Either enabled limit stops further
 registration; shop-on-finish then runs the existing MGC shopper after returning.
 There is no manual queue or result-return step in this loop.
+`/kbb` alone opens the settings panel; it does not press Start.
 
 **Typing speed (WPM)** is account-configurable from 10–300 WPM and defaults to
 **80 WPM** (five characters per word). Character delays vary by ±20%, with
@@ -197,7 +198,11 @@ Barrier phrases and interruptible casts have priority. Smart targeting favours
 shorter words with four or more phrases visible. A repeated phrase with no enemy
 HP/interrupt-counter change yields to other words after three attempts. The
 client's own Cursed Gaze name identifies Letterlock; input is held near its cast
-completion. Other text inputs retain focus. The dedicated KBB 60-second idle counter and duty-activity timers are refreshed
+completion. After a stun or level transition, focus recovery restores the KBB
+window/component and activates its registered input mouse handler if needed;
+the pointing hand alone does not authorize typing. Characters wait for the
+native text-entry target to be active. Other text inputs retain focus, and
+recovery also waits through Letterlock. The dedicated KBB 60-second idle counter and duty-activity timers are refreshed
 on sent input and every 30 seconds while this arena session is owned, without
 adding keys during mechanics. The native input agent, HUD and KTGInput addon must
 all identify the same active surface before that counter can be touched.

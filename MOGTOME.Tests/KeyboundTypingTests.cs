@@ -81,6 +81,60 @@ public sealed class KeyboundTypingTests
     }
 
     [Fact]
+    public void StunAndRebuiltInputResumeFromNativeTextWithoutReplayingOrTypingIntoChat()
+    {
+        var input = new FakeInput("word") { AutoEcho = true };
+        using var service = Arm(input);
+        service.Update(null, 0);
+        Assert.Equal("w", input.Sent);
+        input.Visible = false;
+        input.Focused = false;
+        service.Update(null, 100);
+        input.Visible = true;
+        input.Other = true;
+        input.Configure = s => s.InputIdentity = 456;
+        service.Update(null, 200);
+        Assert.Equal(0, input.FocusAttempts);
+        Assert.Equal("w", input.Sent);
+        input.Other = false;
+        service.Update(null, 300);
+        service.Update(null, 450); // Accepted focus attempts alone never authorize characters.
+        Assert.Equal(2, input.FocusAttempts);
+        Assert.Equal("w", input.Sent);
+        input.Focused = true;
+        service.Update(null, 600);
+        Assert.Equal("wo", input.Sent);
+        Assert.True(service.IsRunning);
+    }
+
+    [Fact]
+    public void FocusRecoveryWaitsThroughLetterlockBeforeActivatingTheBar()
+    {
+        var input = new FakeInput("word") { Focused = false };
+        var progress = 0.5f;
+        input.Configure = s =>
+        {
+            s.CastCount = 1; s.CastAddons[0] = 123; s.CastNames[0] = "";
+            s.CastProgress[0] = progress;
+        };
+        using var service = Arm(input);
+        service.Update(null, 100);
+        Assert.Equal(1, input.FocusAttempts);
+        progress = 0.98f;
+        service.Update(null, 300);
+        service.Update(null, 500);
+        Assert.Equal(1, input.FocusAttempts);
+        Assert.Empty(input.Sent);
+        Assert.Equal("KB_CastHold", service.Status.Key);
+        input.Configure = null;
+        service.Update(null, 700);
+        Assert.Equal(2, input.FocusAttempts);
+        input.Focused = true;
+        service.Update(null, 900);
+        Assert.Equal("w", input.Sent);
+    }
+
+    [Fact]
     public void StopReleasesOnlyOwnedKeyAndNeverEscapeOrResume()
     {
         var input = new FakeInput("a") { Text = "a" };

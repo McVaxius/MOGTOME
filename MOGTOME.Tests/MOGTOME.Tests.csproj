@@ -18,7 +18,7 @@
     <None Update="GameTextFixtures.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Dalamud;Dalamud.Common;Dalamud.Bindings.ImGui;FFXIVClientStructs;Lumina;Lumina.Excel;Serilog;Newtonsoft.Json">
+    <Reference Include="Dalamud;Dalamud.Common;Dalamud.Bindings.ImGui;FFXIVClientStructs;InteropGenerator.Runtime;Lumina;Lumina.Excel;Serilog;Newtonsoft.Json">
       <HintPath Condition="'$(DALAMUD_HOME)' == ''">$(appdata)\XIVLauncher\addon\Hooks\dev\%(Identity).dll</HintPath>
       <HintPath Condition="'$(DALAMUD_HOME)' != ''">$(DALAMUD_HOME)/%(Identity).dll</HintPath>
       <Private>true</Private>

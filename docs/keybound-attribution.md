@@ -55,3 +55,15 @@ The KBB-specific idle-counter guard uses the published AgentKTGInput layout
 and the current KTGInput addon ID before writing. General input timer resets
 also correspond to XeldarAlz commit 5886dbd2748486f76e483316ce37a9039c01e706.
 No claim of live AFK-expulsion prevention is made without a loaded-client run.
+
+## Focus recovery
+
+The pointing-hand report exposed the shared focus-only limitation. The follow-up
+restores addon and component focus with cursor navigation disabled, as in the
+reference's updated focus path, then dispatches only a registered mouse event
+belonging to the KBB text input. This activates entry through the native input
+handler without guessing a callback or sending a wake character to another text
+box. The controller still requires observed active text routing before typing.
+The FFXIVClientStructs AtkUnitBase, AtkComponentInputBase, AtkEvent and AtkEventData
+contracts were cross-checked. Native recovery after stun/level changes remains
+subject to loaded-client verification.
