@@ -47,11 +47,15 @@ Native registration and result layout cross-checked against AtmoOmen's published
 FFXIVClientStructs.Expansion KTGEnterDialogue and KTGResult definitions. MOGTOME
 uses the live-reported registration callback (`KTGEnterDialogue`, update state
 true, one Int 0) and the current localized Leave button's registered event,
-without adding that package or invoking its private methods. A ready registration
-dialog in the Square can be used even if it was opened before Start; it does not
+without adding that package or invoking its private methods. Leader/Solo can use a ready registration
+dialog in the Square even if it was opened before Start; it does not
 depend on a cached NPC target or a button event found in the addon's node list. The Square
 entry prompt comes from Warp row 131633. Only duty 1095, arena 1359, lobby 1360
 and the identified registrar/gatekeeper are automated.
+
+Premade members wait in their current territory and accept only the matching
+group queue pop. They do not travel to the Square, submit its registration
+callback or cancel the party queue. Only Leader/Solo takes the registrar route.
 
 The KBB-specific idle-counter guard uses the published AgentKTGInput layout
 (agent 398, IdleSeconds at 80) and verifies its HUD pointer against agent 397

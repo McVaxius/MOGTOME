@@ -8,7 +8,6 @@ public sealed class KeyboundRegistrationTests
     [Theory]
     [InlineData((int)BlundervilleRole.Solo)]
     [InlineData((int)BlundervilleRole.Leader)]
-    [InlineData((int)BlundervilleRole.Member)]
     public void ReadyOpenDialogUsesCapturedCallbackWithOneIntZeroAndNoPriorNpcTarget(int role)
     {
         var calls = 0;
@@ -30,6 +29,7 @@ public sealed class KeyboundRegistrationTests
     [InlineData(0u, true, (int)BlundervilleRole.Solo)]
     [InlineData(KeyboundEventLoop.Lobby, false, (int)BlundervilleRole.Solo)]
     [InlineData(KeyboundEventLoop.Lobby, true, (int)BlundervilleRole.Unknown)]
+    [InlineData(KeyboundEventLoop.Lobby, true, (int)BlundervilleRole.Member)]
     public void UnreadyForeignOrUnknownRoleContextCannotSendRegistration(uint territory, bool ready, int role)
     {
         var calls = 0;

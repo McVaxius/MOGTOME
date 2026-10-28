@@ -106,7 +106,7 @@ internal sealed unsafe class KeyboundLoopGame(Plugin plugin) : IKeyboundLoopGame
         // This dedicated ready dialog identifies the action even when it was open before Start or
         // the game cleared the NPC target. Party-role admission remains owned by the event loop.
         => territory == KeyboundEventLoop.Lobby && entryReady &&
-            role is Models.BlundervilleRole.Solo or Models.BlundervilleRole.Leader or Models.BlundervilleRole.Member &&
+            role is Models.BlundervilleRole.Solo or Models.BlundervilleRole.Leader &&
             callback("KTGEnterDialogue", true, [0]);
     public bool Commence()
     {
