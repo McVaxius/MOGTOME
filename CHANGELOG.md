@@ -1,3 +1,12 @@
+2026-10-28 - 4.0.0.6 complete Keybound event loop
+
+- Add automatic travel to Keybound Square, identified-registrar registration, matching KBB entry acceptance, validated Results exit and repeat registration. Stop at either configured limit and hand off to the MGC shop after return. Cancel only owned queues/movement on Stop; never abandon active gameplay.
+- Add saved Winner/Thrower and Party leader/Member choices. Thrower uses exactly half the configured Winner WPM; members accept matching premade participation/entry and never initiate/cancel the group queue.
+- Incorporate XeldarAlz v1.2 combat reading and priorities: actual barrier-band phrases, interrupt counters, localized Cursed Gaze hold, smart shortest-word selection on crowded screens and demotion after three repeats without progress. Preserve configurable 80 WPM pacing and chat focus protection.
+- Reset the dedicated KBB 60-second input-agent idle counter and native activity timers only for a matching owned arena/input-agent/HUD/addon session. Pulse on sent input and every 30 seconds, without extra keystrokes during Letterlock. Treat game-edited input as acknowledgement without replaying keys. Add translated automatic-loop states and update attribution.
+- Pair with ADS 2.0.0.10, whose activity policy excludes the KBB arena and Square before duty/menu automation.
+- Review and test registration/entry/result/repeat/limit/Stop/foreign-queue cases and combat decisions. Native loop and activity/purchase effects still require live-client validation. Bump 4.0.0.5 to 4.0.0.6.
+
 2026-10-28 - 4.0.0.5 Keybound native auto typing
 
 - Enable Start/Stop and `/kbb start` with the reference project's KTGInput/KTGEWord reader, native input permission and focus checks, exact text echo, word selection, owned key release and visible failure status. Retain client-language phrases independently of UI language.

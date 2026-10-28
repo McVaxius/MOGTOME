@@ -2,9 +2,14 @@ using System.Collections.Generic;
 
 namespace MOGTOME.Models;
 
+public enum KeyboundPlayMode { Winner, Thrower }
+public enum KeyboundPartyRole { Leader, Member }
+
 /// <summary>Account-owned farming preparation and independent MGC shopping settings.</summary>
 public sealed class KeyboundBrawlerSettings
 {
+    public KeyboundPlayMode PlayMode { get; set; }
+    public KeyboundPartyRole PartyRole { get; set; }
     public int TypingWpm { get; set; } = 80;
     public bool RunLimitEnabled { get; set; }
     public int RunLimit { get; set; } = 1;

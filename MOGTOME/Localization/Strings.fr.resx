@@ -2353,4 +2353,16 @@ Ouvrir les stockages pour actualiser les quantités enregistrées.</value></data
   <data name="KB_Finished" xml:space="preserve"><value>Limite atteinte · {0} parties terminées.</value></data>
   <data name="KB_TypingSpeed" xml:space="preserve"><value>Vitesse de saisie (mots/min)</value></data>
   <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>80 mots/min par défaut ; 10–300. Variation de ±20 % et pauses avant les phrases et Entrée. Au prochain démarrage.</value></data>
+  <data name="KB_Queueing" xml:space="preserve"><value>Trajet vers Keybound Square et inscription.</value></data>
+  <data name="KB_Returning" xml:space="preserve"><value>Résultats et retour pour une nouvelle partie.</value></data>
+  <data name="KB_CastHold" xml:space="preserve"><value>Saisie suspendue pendant une incantation ennemie.</value></data>
+  <data name="KB_AutoLoopHelp" xml:space="preserve"><value>Démarrer gère le trajet, l’inscription, le jeu, les résultats et les répétitions jusqu’à la limite, puis les achats si activés.</value></data>
+  <data name="KB_PlayMode" xml:space="preserve"><value>Mode de jeu</value></data>
+  <data name="KB_Winner" xml:space="preserve"><value>Gagnant</value></data>
+  <data name="KB_Thrower" xml:space="preserve"><value>Perdant</value></data>
+  <data name="KB_PartyRole" xml:space="preserve"><value>Rôle du groupe</value></data>
+  <data name="KB_PartyLeader" xml:space="preserve"><value>Chef / Solo</value></data>
+  <data name="KB_PartyMember" xml:space="preserve"><value>Membre</value></data>
+  <data name="KB_ThrowerSpeed" xml:space="preserve"><value>Vitesse Perdant : {0} mots/min (moitié du Gagnant)</value></data>
+  <data name="KB_WaitPartyRole" xml:space="preserve"><value>En attente du rôle sélectionné dans le groupe actuel.</value></data>
 </root>

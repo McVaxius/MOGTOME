@@ -34,7 +34,7 @@ public sealed class KeyboundTypingTests
         Assert.Equal(new[] { GameKey.Enter }, input.Up);
         Assert.Equal(0, service.CompletedRuns);
         service.Update(null, 800);
-        Assert.Equal("Été!", input.Sent); // Death-animation phrase suppressed.
+        Assert.Equal("Été!É", input.Sent); // A still-living enemy can need several acknowledged hits.
     }
 
     [Fact]
@@ -177,12 +177,14 @@ public sealed class KeyboundTypingTests
         Assert.Equal(new[] { GameKey.Enter }, input.Up);
     }
 
-    [Fact]
-    public void TransitionSuspendsInputWithoutDisarmingManualEntry()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void TransitionSuspendsInputWithoutDisarmingAutomaticEntry(bool playerAvailable)
     {
         var input = new FakeInput("ab");
         using var service = Arm(input);
-        service.Observe(true, false, 65, 900, transitioning: true);
+        service.Observe(playerAvailable, false, 65, 900, transitioning: true);
         service.Update(null, 0);
         Assert.True(service.IsRunning);
         Assert.Empty(input.Sent);
@@ -271,10 +273,48 @@ public sealed class KeyboundTypingTests
         Assert.InRange(new KeyboundTypingPace(wpm).WordsPerMinute, 10, 300);
     }
 
+    [Fact]
+    public void GameEditedEchoDoesNotReplayTheLastCharacter()
+    {
+        var input = new FakeInput("abc");
+        using var service = Arm(input);
+        service.Update(null, 0);
+        Assert.Equal("a", input.Sent);
+        input.Text = "ab"; // Native game edit overtook the expected one-character echo.
+        service.Update(null, 100);
+        Assert.Equal("ac", input.Sent);
+        Assert.True(service.IsRunning);
+    }
+
+    [Fact]
+    public void ThreeAcknowledgedHitsWithoutProgressYieldToAnotherPhrase()
+    {
+        var input = new FakeInput("a", "b") { AutoEcho = true, Configure = snapshot => snapshot.PhraseOnBarrier[0] = true };
+        using var service = Arm(input);
+        for (var now = 0; now < 1200; now += 50) service.Update(null, now);
+        Assert.StartsWith("aaa", input.Sent);
+        Assert.Contains("b", input.Sent);
+        Assert.True(service.IsRunning);
+    }
+
+    [Theory]
+    [InlineData(80)]
+    [InlineData(10)]
+    [InlineData(81)]
+    [InlineData(300)]
+    public void ThrowerUsesExactlyHalfTheConfiguredWinnerRate(int winnerWpm)
+    {
+        var winner = new KeyboundTypingPace(winnerWpm, (min, max) => min);
+        var thrower = new KeyboundTypingPace(winnerWpm, (min, max) => min, halfSpeed: true);
+        Assert.Equal(winner.EffectiveWordsPerMinute / 2, thrower.EffectiveWordsPerMinute);
+        Assert.InRange(thrower.CharacterDelay(), winner.CharacterDelay() * 2 - 1, winner.CharacterDelay() * 2 + 1);
+    }
+
     internal sealed class FakeInput(params string[] phrases) : IKeyboundInput
     {
         internal string Text = "", Sent = "";
-        internal bool Visible = true, Focused = true, Other, ReleaseSucceeds = true;
+        internal bool Visible = true, Focused = true, Other, ReleaseSucceeds = true, AutoEcho;
+        internal Action<BattleSnapshot>? Configure;
         internal int FocusAttempts;
         internal readonly List<GameKey> Down = [], Up = [];
         public void Read(BattleSnapshot snapshot)
@@ -282,11 +322,12 @@ public sealed class KeyboundTypingTests
             snapshot.Clear(); snapshot.InputVisible = Visible; snapshot.InputIdentity = 123;
             snapshot.InputFocused = Focused; snapshot.OtherInputFocused = Other; snapshot.InputText = Text;
             snapshot.PhraseCount = phrases.Length;
-            for (var i = 0; i < phrases.Length; i++) { snapshot.Phrases[i] = phrases[i]; snapshot.PhraseScreenY[i] = i; }
+            for (var i = 0; i < phrases.Length; i++) { snapshot.Phrases[i] = phrases[i]; snapshot.PhraseScreenY[i] = i; snapshot.PhraseCast[i] = BattleSnapshot.NoCast; snapshot.PhraseGauge[i] = BattleSnapshot.NoGauge; }
+            Configure?.Invoke(snapshot);
         }
         public bool Focus() { FocusAttempts++; return true; }
-        public bool Character(char value) { Sent += value; return true; }
-        public bool KeyDown(GameKey key) { Down.Add(key); return true; }
+        public bool Character(char value) { Sent += value; if (AutoEcho) Text += value; return true; }
+        public bool KeyDown(GameKey key) { Down.Add(key); if (AutoEcho && key == GameKey.Enter) Text = ""; return true; }
         public bool KeyUp(GameKey key) { if (!ReleaseSucceeds) return false; Up.Add(key); return true; }
     }
 }

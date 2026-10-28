@@ -2359,4 +2359,16 @@ Abre los almacenes para actualizar las cantidades registradas.</value></data>
   <data name="KB_Finished" xml:space="preserve"><value>Límite alcanzado · {0} partidas completadas.</value></data>
   <data name="KB_TypingSpeed" xml:space="preserve"><value>Velocidad de escritura (PPM)</value></data>
   <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>80 PPM por defecto; 10–300. Ritmo variable ±20 % y pausas antes de frases y Enter. Se aplica al siguiente inicio.</value></data>
+  <data name="KB_Queueing" xml:space="preserve"><value>Viajando a Keybound Square e inscribiéndose.</value></data>
+  <data name="KB_Returning" xml:space="preserve"><value>Recogiendo resultados y volviendo a la cola.</value></data>
+  <data name="KB_CastHold" xml:space="preserve"><value>Entrada pausada por un lanzamiento enemigo.</value></data>
+  <data name="KB_AutoLoopHelp" xml:space="preserve"><value>Iniciar automatiza viaje, inscripción, juego, salida de resultados y repeticiones hasta el límite, y después compras si están activadas.</value></data>
+  <data name="KB_PlayMode" xml:space="preserve"><value>Modo de juego</value></data>
+  <data name="KB_Winner" xml:space="preserve"><value>Ganador</value></data>
+  <data name="KB_Thrower" xml:space="preserve"><value>Perdedor</value></data>
+  <data name="KB_PartyRole" xml:space="preserve"><value>Rol del grupo</value></data>
+  <data name="KB_PartyLeader" xml:space="preserve"><value>Líder / Solo</value></data>
+  <data name="KB_PartyMember" xml:space="preserve"><value>Miembro</value></data>
+  <data name="KB_ThrowerSpeed" xml:space="preserve"><value>Velocidad Perdedor: {0} PPM (mitad del Ganador)</value></data>
+  <data name="KB_WaitPartyRole" xml:space="preserve"><value>Esperando que el rol elegido coincida con el grupo actual.</value></data>
 </root>

@@ -2353,4 +2353,16 @@ Lager öffnen, um erfasste Mengen zu aktualisieren.</value></data>
   <data name="KB_Finished" xml:space="preserve"><value>Limit erreicht · {0} Spiele abgeschlossen.</value></data>
   <data name="KB_TypingSpeed" xml:space="preserve"><value>Tippgeschwindigkeit (WPM)</value></data>
   <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>Standard 80 WPM; 10–300. ±20 % Tastenabstand und Pausen vor Texten und Enter. Ab dem nächsten Start.</value></data>
+  <data name="KB_Queueing" xml:space="preserve"><value>Reise zum Keybound-Platz und Anmeldung.</value></data>
+  <data name="KB_Returning" xml:space="preserve"><value>Ergebnisse abholen und zur Anmeldung zurückkehren.</value></data>
+  <data name="KB_CastHold" xml:space="preserve"><value>Eingabe während eines gegnerischen Zaubers angehalten.</value></data>
+  <data name="KB_AutoLoopHelp" xml:space="preserve"><value>Start übernimmt Reise, Anmeldung, Spiel, Ergebnisabschluss und Wiederholungen bis zum Limit, danach optional Einkäufe.</value></data>
+  <data name="KB_PlayMode" xml:space="preserve"><value>Spielmodus</value></data>
+  <data name="KB_Winner" xml:space="preserve"><value>Gewinner</value></data>
+  <data name="KB_Thrower" xml:space="preserve"><value>Verlierer</value></data>
+  <data name="KB_PartyRole" xml:space="preserve"><value>Gruppenrolle</value></data>
+  <data name="KB_PartyLeader" xml:space="preserve"><value>Leitung / Solo</value></data>
+  <data name="KB_PartyMember" xml:space="preserve"><value>Mitglied</value></data>
+  <data name="KB_ThrowerSpeed" xml:space="preserve"><value>Verlierertempo: {0} WPM (halbes Gewinnertempo)</value></data>
+  <data name="KB_WaitPartyRole" xml:space="preserve"><value>Warte auf die gewählte Rolle in der aktuellen Gruppe.</value></data>
 </root>

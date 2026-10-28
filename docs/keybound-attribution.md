@@ -4,12 +4,13 @@ Based on Auto Keybound Brawler by XeldarAlz
 https://github.com/XeldarAlz/FFXIV-AutoKeyboundBrawler
 
 Copyright (c) 2026 Xeldar Alz. Licensed under AGPL-3.0-or-later.
-Reference revision: eddc7e8ad3df5957e5267191c715b448ca8dbd90.
+Reference revision: 872fbebca745d4b63500bb680bf7fae1e8a9e884.
 
 MOGTOME adapts the native phrase reader, snapshot, UTF-8 text cache and Windows
 keyboard message route under Services/Keybound. Its controller integrates account
 ownership, action cancellation, exact input echo, native input permission checks,
-confirmed duty-completion limits and the existing MGC shopper. No reference
+confirmed duty/result limits, barrier/interrupt priorities, named Cursed Gaze guard,
+repeat-without-progress detection and the existing MGC shopper. No reference
 branding, icon or identity is reused. MOGTOME is independently maintained.
 
 ## Original notice
@@ -39,3 +40,18 @@ author with the line
 in its README or project page, and on its About or credits screen if it has
 one. It must not present itself as the original work, or as written,
 maintained or endorsed by the original author.
+
+## Automatic event contracts
+
+Native registration and result layout cross-checked against AtmoOmen's published
+FFXIVClientStructs.Expansion KTGEnterDialogue and KTGResult definitions. MOGTOME
+uses current localized Register/Leave labels and their actual registered button
+events, without adding that package or invoking its private methods. The Square
+entry prompt comes from Warp row 131633. Only duty 1095, arena 1359, lobby 1360
+and the identified registrar/gatekeeper are automated.
+
+The KBB-specific idle-counter guard uses the published AgentKTGInput layout
+(agent 398, IdleSeconds at 80) and verifies its HUD pointer against agent 397
+and the current KTGInput addon ID before writing. General input timer resets
+also correspond to XeldarAlz commit 5886dbd2748486f76e483316ce37a9039c01e706.
+No claim of live AFK-expulsion prevention is made without a loaded-client run.

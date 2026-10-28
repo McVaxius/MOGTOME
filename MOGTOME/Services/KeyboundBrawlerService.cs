@@ -9,21 +9,26 @@ using TerritoryKind = FFXIVClientStructs.FFXIV.Client.Enums.TerritoryIntendedUse
 
 namespace MOGTOME.Services;
 
-/// <summary>Explicitly armed native KBB typing. Queueing and result dismissal remain manual.</summary>
+/// <summary>Native KBB typing controller, owned by the automatic event loop.</summary>
 public sealed class KeyboundBrawlerService : IDisposable
 {
     private readonly IKeyboundInput input;
     private readonly BattleSnapshot snapshot = new();
+    private readonly CastWatch castWatch = new();
     private readonly Func<int, int, int>? drawDelay;
     private KeyboundTypingPace pace = new(80);
     private bool disposed, ready, busy, suspended, inEvent, roundSeen, completedRound;
     private uint territory, roundTerritory;
     private int stopRequested;
-    private string? target, expectedText, recentlySubmitted;
-    private long echoDeadline, nextAction, releaseAt, skipUntil, focusRetryAt;
+    private string? target, expectedText, previousText, recentlySubmitted;
+    private long echoDeadline, nextAction, releaseAt, focusRetryAt;
     private GameKey? heldKey;
     private nint inputIdentity;
     private bool submissionPending;
+    private int repeatStreak;
+    private float streakSignature;
+    private string? demotedPhrase;
+    private long demotedUntil;
     private int runLimit;
     private uint? walletTarget;
 
@@ -34,10 +39,13 @@ public sealed class KeyboundBrawlerService : IDisposable
     public UiText UnavailableReason { get; private set; } = Ui.M("KB_ProfileUnavailable");
     public bool CanStart => ready && !busy && !suspended && !disposed && !IsRunning && heldKey == null;
     public bool IsRunning { get; private set; }
+    internal bool StopRequested => Volatile.Read(ref stopRequested) != 0;
+    internal bool CanContinueSession => !disposed && !busy && (ready || suspended) && !StopRequested;
     internal bool OwnsInput => IsRunning || heldKey.HasValue;
     public int CompletedRuns { get; private set; }
     public int SubmittedPhrases { get; private set; }
     public bool Finished { get; private set; }
+    internal bool SuppressGameplay { get; set; }
 
     internal void Observe(bool ready, bool conflictingAutomation, uint? intendedUse, uint territoryId = 0, bool transitioning = false)
     {
@@ -47,7 +55,7 @@ public sealed class KeyboundBrawlerService : IDisposable
         inEvent = intendedUse == (uint)TerritoryKind.KeyboundBrawler;
         territory = territoryId;
         UnavailableReason = Ui.M(!this.ready || suspended ? "KB_ProfileUnavailable"
-            : busy ? "KB_AutomationBusy" : "KB_ManualQueue");
+            : busy ? "KB_AutomationBusy" : "KB_Queueing");
     }
 
     internal static uint? ReadTerritoryIntendedUse()
@@ -65,16 +73,18 @@ public sealed class KeyboundBrawlerService : IDisposable
     {
         if (!CanStart) { if (!IsRunning) Status = UnavailableReason; return false; }
         Interlocked.Exchange(ref stopRequested, 0);
-        pace = new(settings.TypingWpm, drawDelay);
+        pace = new(settings.TypingWpm, drawDelay, settings.PlayMode == KeyboundPlayMode.Thrower);
         runLimit = settings.RunLimitEnabled ? Math.Max(1, settings.RunLimit) : 0;
         walletTarget = settings.WalletTargetEnabled ? (uint)Math.Max(0, settings.WalletTarget) : null;
         CompletedRuns = SubmittedPhrases = 0;
         roundSeen = completedRound = Finished = false;
         roundTerritory = 0;
         recentlySubmitted = null;
+        castWatch.Reset();
+        repeatStreak = 0; demotedPhrase = null;
         ResetTyping();
         IsRunning = true;
-        Status = Ui.M("KB_ManualQueue");
+        Status = Ui.M("KB_Queueing");
         return true;
     }
 
@@ -96,8 +106,8 @@ public sealed class KeyboundBrawlerService : IDisposable
         if (!IsRunning) return;
         try
         {
+            if (suspended && !busy) { ReleaseKey(); ResetTyping(); return; }
             if (!ready || busy) { Stop(); Status = UnavailableReason; return; }
-            if (suspended) { ReleaseKey(); ResetTyping(); return; }
             if (!inEvent && roundSeen)
             {
                 roundSeen = completedRound = false;
@@ -108,8 +118,9 @@ public sealed class KeyboundBrawlerService : IDisposable
             if ((!roundSeen || completedRound) && (runLimit > 0 && CompletedRuns >= runLimit ||
                 walletTarget.HasValue && wallet >= walletTarget))
             { Finish(); return; }
+            if (SuppressGameplay) { ReleaseKey(); ResetTyping(); return; }
             if (!inEvent || completedRound)
-            { ReleaseKey(); ResetTyping(); Status = Ui.M("KB_ManualQueue"); return; }
+            { ReleaseKey(); ResetTyping(); Status = Ui.M("KB_Queueing"); return; }
             input.Read(snapshot);
             if (!snapshot.InputVisible)
             { ReleaseKey(); ResetTyping(); Status = Ui.M("KB_WaitInput"); return; }
@@ -131,6 +142,9 @@ public sealed class KeyboundBrawlerService : IDisposable
                 { input.Focus(); focusRetryAt = now + 150; }
                 return;
             }
+            castWatch.Update(snapshot, now);
+            if (castWatch.Holding)
+            { echoDeadline = now + 750; Status = Ui.M("KB_CastHold"); return; }
             if (heldKey.HasValue) return;
             if (expectedText != null)
             {
@@ -139,20 +153,25 @@ public sealed class KeyboundBrawlerService : IDisposable
                     expectedText = null;
                     if (submissionPending) { SubmittedPhrases++; submissionPending = false; }
                 }
+                else if (snapshot.InputText != previousText)
+                {
+                    // The game can edit/clear the bar when an enemy dies or a phrase is rejected.
+                    // Treat the edit as acknowledgement, re-read the target, and never replay the key.
+                    expectedText = target = null;
+                    submissionPending = false;
+                }
                 else if (now >= echoDeadline)
                 { Stop(); Status = Ui.M("KB_InputStalled"); return; }
                 else return;
             }
             if (now < nextAction) return;
-            if (target == null || !snapshot.Phrases.Take(snapshot.PhraseCount).Any(p =>
-                p.Equals(target, StringComparison.OrdinalIgnoreCase) || target.EndsWith(p, StringComparison.OrdinalIgnoreCase)))
+            var rules = new TargetRules(TargetOrder.Smart, 4, now < demotedUntil ? demotedPhrase : null);
+            var current = target == null ? TargetPicker.NotShown : TargetPicker.IndexOf(snapshot, target);
+            var best = TargetPicker.Choose(snapshot, snapshot.InputText, rules);
+            if (current == TargetPicker.NotShown || best != TargetPicker.NotShown && TargetPicker.Rank(snapshot, best, rules) > TargetPicker.Rank(snapshot, current, rules))
             {
-                target = Enumerable.Range(0, snapshot.PhraseCount)
-                    .Where(i => now >= skipUntil || !snapshot.Phrases[i].Equals(recentlySubmitted, StringComparison.OrdinalIgnoreCase))
-                    .OrderByDescending(i => snapshot.InputText.Length > 0 && snapshot.Phrases[i].StartsWith(snapshot.InputText, StringComparison.OrdinalIgnoreCase))
-                    .ThenByDescending(i => snapshot.PhraseScreenY[i]).ThenBy(i => snapshot.Phrases[i].Length)
-                    .Select(i => snapshot.Phrases[i]).FirstOrDefault();
-                if (target != null)
+                target = best == TargetPicker.NotShown ? null : snapshot.Phrases[best];
+                if (target != null && !target.Equals(recentlySubmitted, StringComparison.OrdinalIgnoreCase))
                 { var reaction = pace.ReactionDelay(); nextAction = now + reaction; if (reaction > 0) return; }
             }
             if (string.IsNullOrEmpty(target)) { Status = Ui.M("KB_WaitInput"); return; }
@@ -161,7 +180,12 @@ public sealed class KeyboundBrawlerService : IDisposable
             if (text.Equals(target, StringComparison.OrdinalIgnoreCase))
             {
                 if (!Press(GameKey.Enter, now)) { FailInput(); return; }
-                recentlySubmitted = target; skipUntil = now + 900;
+                var index = TargetPicker.IndexOf(snapshot, target);
+                var signature = index < 0 ? 0 : snapshot.ProgressSignature(index);
+                repeatStreak = target.Equals(recentlySubmitted, StringComparison.OrdinalIgnoreCase) && MathF.Abs(signature - streakSignature) < 0.5f ? repeatStreak + 1 : 1;
+                streakSignature = signature;
+                if (repeatStreak >= 3) { demotedPhrase = target; demotedUntil = now + 4000; repeatStreak = 0; }
+                recentlySubmitted = target;
                 target = null; submissionPending = true;
                 Expect(string.Empty, now); nextAction = now + 160;
             }
@@ -191,7 +215,7 @@ public sealed class KeyboundBrawlerService : IDisposable
         }
     }
 
-    private void Expect(string text, long now) { expectedText = text; echoDeadline = now + 750; }
+    private void Expect(string text, long now) { previousText = snapshot.InputText; expectedText = text; echoDeadline = now + 750; }
     private bool Press(GameKey key, long now)
     {
         if (!input.KeyDown(key)) return false;
@@ -204,13 +228,19 @@ public sealed class KeyboundBrawlerService : IDisposable
     }
     private void ResetTyping()
     {
-        target = expectedText = null;
+        target = expectedText = previousText = null;
         inputIdentity = 0;
         submissionPending = false;
         nextAction = 0;
     }
     private void FailInput() { Stop(); Status = Ui.M("KB_InputStalled"); }
     private void Finish() { Stop(); Finished = true; Status = Ui.M("KB_Finished", CompletedRuns); }
+    internal void FinishIfLimitMet(uint? wallet)
+    {
+        if (IsRunning && ready && !busy && (!roundSeen || completedRound) && (runLimit > 0 && CompletedRuns >= runLimit ||
+            walletTarget.HasValue && wallet.HasValue && wallet >= walletTarget)) Finish();
+    }
+    internal void StopWithReason(string key) { Stop(); Status = Ui.M(key); }
     public void RequestStop() => Interlocked.Exchange(ref stopRequested, 1);
     public void Stop()
     {
@@ -219,6 +249,7 @@ public sealed class KeyboundBrawlerService : IDisposable
         ReleaseKey(); ResetTyping();
         roundSeen = completedRound = false;
         recentlySubmitted = null;
+        castWatch.Reset();
         Status = Ui.M("KB_Stopped");
     }
     public void Dispose() { Stop(); disposed = true; }

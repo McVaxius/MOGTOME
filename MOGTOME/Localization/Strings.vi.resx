@@ -2509,4 +2509,16 @@ Mở kho để cập nhật số lượng đã ghi.</value></data>
   <data name="KB_Finished" xml:space="preserve"><value>Đạt giới hạn · {0} trận hoàn tất.</value></data>
   <data name="KB_TypingSpeed" xml:space="preserve"><value>Tốc độ gõ (WPM)</value></data>
   <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>Mặc định 80 WPM; 10–300. Nhịp phím dao động ±20%, nghỉ trước cụm từ và Enter. Áp dụng lần Bắt đầu tiếp theo.</value></data>
+  <data name="KB_Queueing" xml:space="preserve"><value>Đang đến Keybound Square và đăng ký.</value></data>
+  <data name="KB_Returning" xml:space="preserve"><value>Nhận kết quả rồi quay lại xếp hàng.</value></data>
+  <data name="KB_CastHold" xml:space="preserve"><value>Tạm dừng nhập khi địch niệm phép.</value></data>
+  <data name="KB_AutoLoopHelp" xml:space="preserve"><value>Bắt đầu tự di chuyển, đăng ký, chơi, rời kết quả và lặp đến giới hạn, rồi mua nếu bật.</value></data>
+  <data name="KB_PlayMode" xml:space="preserve"><value>Chế độ chơi</value></data>
+  <data name="KB_Winner" xml:space="preserve"><value>Người thắng</value></data>
+  <data name="KB_Thrower" xml:space="preserve"><value>Người nhường</value></data>
+  <data name="KB_PartyRole" xml:space="preserve"><value>Vai trò tổ đội</value></data>
+  <data name="KB_PartyLeader" xml:space="preserve"><value>Trưởng nhóm / Solo</value></data>
+  <data name="KB_PartyMember" xml:space="preserve"><value>Thành viên</value></data>
+  <data name="KB_ThrowerSpeed" xml:space="preserve"><value>Tốc độ người nhường: {0} WPM (nửa người thắng)</value></data>
+  <data name="KB_WaitPartyRole" xml:space="preserve"><value>Đợi vai trò đã chọn khớp với tổ đội hiện tại.</value></data>
 </root>

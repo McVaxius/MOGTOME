@@ -190,11 +190,11 @@ internal sealed class MogtomeAppearance : IDisposable
         else if (owner is KeyboundBrawlerWindow)
         {
             var shop = plugin.KeyboundShop;
-            active = shop.IsRunning || plugin.IsKeyboundShopActionQueued || plugin.KeyboundBrawler.IsRunning || plugin.IsKeyboundStartQueued;
+            active = shop.IsRunning || plugin.IsKeyboundShopActionQueued || plugin.KeyboundLoop.IsActive || plugin.KeyboundBrawler.IsRunning || plugin.IsKeyboundStartQueued;
             blocked = !active && shop.Status.Key is not ("BV_Idle" or "BV_ShopDone" or "BV_Stopped");
-            state = Ui.T(plugin.KeyboundBrawler.IsRunning || plugin.IsKeyboundStartQueued ? "Main_Running" : active ? "Ui_TitlebarBuying" : blocked ? "Ui_TitlebarBlocked"
+            state = Ui.T(plugin.KeyboundLoop.IsActive || plugin.KeyboundBrawler.IsRunning || plugin.IsKeyboundStartQueued ? "Main_Running" : active ? "Ui_TitlebarBuying" : blocked ? "Ui_TitlebarBlocked"
                 : shop.Status.Key == "BV_Stopped" ? "Main_Stopped" : "BV_Idle");
-            detail = plugin.KeyboundBrawler.IsRunning ? plugin.KeyboundBrawler.Status.Render() : shop.Status.Render();
+            detail = plugin.KeyboundLoop.IsActive ? plugin.KeyboundLoop.Status.Render() : plugin.KeyboundBrawler.IsRunning ? plugin.KeyboundBrawler.Status.Render() : shop.Status.Render();
             var walletKnown = KeyboundBrawlerShop.TryWallet(out var wallet);
             fields.Add($"MGC {(walletKnown ? wallet.ToString(Ui.Culture) : "—")}");
         }

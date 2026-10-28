@@ -2509,4 +2509,16 @@ Abra os depósitos para atualizar as quantidades registradas.</value></data>
   <data name="KB_Finished" xml:space="preserve"><value>Limite atingido · {0} partidas concluídas.</value></data>
   <data name="KB_TypingSpeed" xml:space="preserve"><value>Velocidade de digitação (PPM)</value></data>
   <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>Padrão 80 PPM; 10–300. Ritmo variável ±20% e pausas antes de frases e Enter. No próximo início.</value></data>
+  <data name="KB_Queueing" xml:space="preserve"><value>Viajando até Keybound Square e registrando.</value></data>
+  <data name="KB_Returning" xml:space="preserve"><value>Coletando resultados e voltando à fila.</value></data>
+  <data name="KB_CastHold" xml:space="preserve"><value>Entrada pausada durante conjuração inimiga.</value></data>
+  <data name="KB_AutoLoopHelp" xml:space="preserve"><value>Iniciar automatiza viagem, registro, jogo, saída dos resultados e repetições até o limite, depois compras se ativadas.</value></data>
+  <data name="KB_PlayMode" xml:space="preserve"><value>Modo de jogo</value></data>
+  <data name="KB_Winner" xml:space="preserve"><value>Vencedor</value></data>
+  <data name="KB_Thrower" xml:space="preserve"><value>Perdedor</value></data>
+  <data name="KB_PartyRole" xml:space="preserve"><value>Função no grupo</value></data>
+  <data name="KB_PartyLeader" xml:space="preserve"><value>Líder / Solo</value></data>
+  <data name="KB_PartyMember" xml:space="preserve"><value>Membro</value></data>
+  <data name="KB_ThrowerSpeed" xml:space="preserve"><value>Velocidade Perdedor: {0} PPM (metade do Vencedor)</value></data>
+  <data name="KB_WaitPartyRole" xml:space="preserve"><value>Aguardando a função escolhida corresponder ao grupo atual.</value></data>
 </root>
