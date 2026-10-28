@@ -2359,4 +2359,16 @@ Path: {0}
   <data name="KB_Finished" xml:space="preserve"><value>Лимит достигнут · завершено игр: {0}.</value></data>
   <data name="KB_TypingSpeed" xml:space="preserve"><value>Скорость ввода (слов/мин)</value></data>
   <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>По умолчанию 80; диапазон 10–300. Разброс интервалов ±20%, паузы перед фразами и Enter. Со следующего старта.</value></data>
+  <data name="KB_Queueing" xml:space="preserve"><value>Переход в Keybound Square и регистрация.</value></data>
+  <data name="KB_Returning" xml:space="preserve"><value>Получение результатов и возврат в очередь.</value></data>
+  <data name="KB_CastHold" xml:space="preserve"><value>Ввод приостановлен из-за заклинания врага.</value></data>
+  <data name="KB_AutoLoopHelp" xml:space="preserve"><value>Старт автоматизирует путь, регистрацию, игру, выход из результатов и повторы до лимита, затем покупки, если включены.</value></data>
+  <data name="KB_PlayMode" xml:space="preserve"><value>Режим игры</value></data>
+  <data name="KB_Winner" xml:space="preserve"><value>Победитель</value></data>
+  <data name="KB_Thrower" xml:space="preserve"><value>Проигрывающий</value></data>
+  <data name="KB_PartyRole" xml:space="preserve"><value>Роль в группе</value></data>
+  <data name="KB_PartyLeader" xml:space="preserve"><value>Лидер / Соло</value></data>
+  <data name="KB_PartyMember" xml:space="preserve"><value>Участник</value></data>
+  <data name="KB_ThrowerSpeed" xml:space="preserve"><value>Скорость проигрывающего: {0} слов/мин (половина скорости победителя)</value></data>
+  <data name="KB_WaitPartyRole" xml:space="preserve"><value>Ожидание выбранной роли в текущей группе.</value></data>
 </root>

@@ -2359,4 +2359,16 @@ DictionaryPaths와 PathSelectionsByPath를 비교합니다.
   <data name="KB_Finished" xml:space="preserve"><value>목표 도달 · {0}게임 완료.</value></data>
   <data name="KB_TypingSpeed" xml:space="preserve"><value>입력 속도(WPM)</value></data>
   <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>기본 80 WPM, 범위 10–300. 입력 간격 ±20% 변동 및 문구와 Enter 전 일시 정지. 다음 시작부터 적용.</value></data>
+  <data name="KB_Queueing" xml:space="preserve"><value>Keybound Square 이동 및 참가 신청 중.</value></data>
+  <data name="KB_Returning" xml:space="preserve"><value>결과 수령 후 재신청을 위해 복귀 중.</value></data>
+  <data name="KB_CastHold" xml:space="preserve"><value>적 시전으로 입력을 일시 중지합니다.</value></data>
+  <data name="KB_AutoLoopHelp" xml:space="preserve"><value>시작은 이동, 신청, 플레이, 결과 나가기를 목표까지 자동 반복하고 설정에 따라 구매합니다.</value></data>
+  <data name="KB_PlayMode" xml:space="preserve"><value>플레이 모드</value></data>
+  <data name="KB_Winner" xml:space="preserve"><value>승리자</value></data>
+  <data name="KB_Thrower" xml:space="preserve"><value>저속 참가자</value></data>
+  <data name="KB_PartyRole" xml:space="preserve"><value>파티 역할</value></data>
+  <data name="KB_PartyLeader" xml:space="preserve"><value>리더 / 솔로</value></data>
+  <data name="KB_PartyMember" xml:space="preserve"><value>멤버</value></data>
+  <data name="KB_ThrowerSpeed" xml:space="preserve"><value>저속 참가자 속도: {0} WPM (승리자의 절반)</value></data>
+  <data name="KB_WaitPartyRole" xml:space="preserve"><value>현재 파티에서 선택한 역할이 될 때까지 대기합니다.</value></data>
 </root>

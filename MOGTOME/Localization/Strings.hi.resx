@@ -2525,4 +2525,16 @@ Retainer और अन्य भंडारण: {3}
   <data name="KB_Finished" xml:space="preserve"><value>सीमा पूरी · {0} खेल पूरे।</value></data>
   <data name="KB_TypingSpeed" xml:space="preserve"><value>टाइपिंग गति (WPM)</value></data>
   <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>डिफ़ॉल्ट 80 WPM; सीमा 10–300। कुंजियों के बीच ±20% अंतर और वाक्यांश तथा Enter से पहले विराम। अगले प्रारंभ पर लागू।</value></data>
+  <data name="KB_Queueing" xml:space="preserve"><value>Keybound Square की यात्रा और पंजीकरण जारी।</value></data>
+  <data name="KB_Returning" xml:space="preserve"><value>परिणाम लेकर दोबारा कतार में लौट रहे हैं।</value></data>
+  <data name="KB_CastHold" xml:space="preserve"><value>शत्रु के मंत्र के दौरान इनपुट रोका गया।</value></data>
+  <data name="KB_AutoLoopHelp" xml:space="preserve"><value>प्रारंभ यात्रा, पंजीकरण, खेल, परिणामों से बाहर आना और सीमा तक दोहराना स्वचालित करता है, फिर सक्षम होने पर खरीदारी।</value></data>
+  <data name="KB_PlayMode" xml:space="preserve"><value>खेल मोड</value></data>
+  <data name="KB_Winner" xml:space="preserve"><value>विजेता</value></data>
+  <data name="KB_Thrower" xml:space="preserve"><value>धीमा खिलाड़ी</value></data>
+  <data name="KB_PartyRole" xml:space="preserve"><value>पार्टी भूमिका</value></data>
+  <data name="KB_PartyLeader" xml:space="preserve"><value>नेता / अकेले</value></data>
+  <data name="KB_PartyMember" xml:space="preserve"><value>सदस्य</value></data>
+  <data name="KB_ThrowerSpeed" xml:space="preserve"><value>धीमे खिलाड़ी की गति: {0} WPM (विजेता की आधी)</value></data>
+  <data name="KB_WaitPartyRole" xml:space="preserve"><value>चुनी गई भूमिका के वर्तमान पार्टी से मेल खाने की प्रतीक्षा।</value></data>
 </root>

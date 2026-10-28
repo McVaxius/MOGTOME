@@ -2509,4 +2509,16 @@ Kayıtlı miktarları yenilemek için depoları açın.</value></data>
   <data name="KB_Finished" xml:space="preserve"><value>Sınıra ulaşıldı · {0} oyun tamamlandı.</value></data>
   <data name="KB_TypingSpeed" xml:space="preserve"><value>Yazma hızı (WPM)</value></data>
   <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>Varsayılan 80 WPM; 10–300. Tuş aralıkları ±%20 değişir; ifade ve Enter öncesi duraklar. Sonraki Başlat’ta uygulanır.</value></data>
+  <data name="KB_Queueing" xml:space="preserve"><value>Keybound Square’a gidiliyor ve kayıt yapılıyor.</value></data>
+  <data name="KB_Returning" xml:space="preserve"><value>Sonuçlar alınıyor ve sıraya dönülüyor.</value></data>
+  <data name="KB_CastHold" xml:space="preserve"><value>Düşman büyüsü sırasında giriş duraklatıldı.</value></data>
+  <data name="KB_AutoLoopHelp" xml:space="preserve"><value>Başlat; yolculuk, kayıt, oyun, sonuçtan çıkış ve sınıra kadar tekrarı, ardından etkinse alışverişi otomatik yapar.</value></data>
+  <data name="KB_PlayMode" xml:space="preserve"><value>Oyun modu</value></data>
+  <data name="KB_Winner" xml:space="preserve"><value>Kazanan</value></data>
+  <data name="KB_Thrower" xml:space="preserve"><value>Kaybeden</value></data>
+  <data name="KB_PartyRole" xml:space="preserve"><value>Grup rolü</value></data>
+  <data name="KB_PartyLeader" xml:space="preserve"><value>Lider / Solo</value></data>
+  <data name="KB_PartyMember" xml:space="preserve"><value>Üye</value></data>
+  <data name="KB_ThrowerSpeed" xml:space="preserve"><value>Kaybeden hızı: {0} WPM (kazananın yarısı)</value></data>
+  <data name="KB_WaitPartyRole" xml:space="preserve"><value>Seçilen rolün mevcut grupla eşleşmesi bekleniyor.</value></data>
 </root>

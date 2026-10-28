@@ -2509,4 +2509,16 @@ Otwórz magazyny, aby odświeżyć zapisane ilości.</value></data>
   <data name="KB_Finished" xml:space="preserve"><value>Osiągnięto limit · ukończone gry: {0}.</value></data>
   <data name="KB_TypingSpeed" xml:space="preserve"><value>Szybkość pisania (WPM)</value></data>
   <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>Domyślnie 80 WPM; 10–300. Odstępy zmienne ±20%, pauzy przed frazami i Enter. Od następnego Startu.</value></data>
+  <data name="KB_Queueing" xml:space="preserve"><value>Podróż do Keybound Square i rejestracja.</value></data>
+  <data name="KB_Returning" xml:space="preserve"><value>Odbiór wyników i powrót do kolejki.</value></data>
+  <data name="KB_CastHold" xml:space="preserve"><value>Wstrzymanie wpisywania podczas czaru wroga.</value></data>
+  <data name="KB_AutoLoopHelp" xml:space="preserve"><value>Start automatyzuje podróż, rejestrację, grę, wyjście z wyników i powtórki do limitu, następnie opcjonalne zakupy.</value></data>
+  <data name="KB_PlayMode" xml:space="preserve"><value>Tryb gry</value></data>
+  <data name="KB_Winner" xml:space="preserve"><value>Zwycięzca</value></data>
+  <data name="KB_Thrower" xml:space="preserve"><value>Przegrywający</value></data>
+  <data name="KB_PartyRole" xml:space="preserve"><value>Rola w grupie</value></data>
+  <data name="KB_PartyLeader" xml:space="preserve"><value>Lider / Solo</value></data>
+  <data name="KB_PartyMember" xml:space="preserve"><value>Członek</value></data>
+  <data name="KB_ThrowerSpeed" xml:space="preserve"><value>Szybkość przegrywającego: {0} WPM (połowa zwycięzcy)</value></data>
+  <data name="KB_WaitPartyRole" xml:space="preserve"><value>Oczekiwanie na wybraną rolę w bieżącej grupie.</value></data>
 </root>

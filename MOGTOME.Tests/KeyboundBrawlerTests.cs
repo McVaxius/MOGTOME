@@ -59,6 +59,8 @@ public sealed class KeyboundBrawlerTests
         config.KeyboundBrawler.PurchaseTargets[52323] = 2;
         config.KeyboundBrawler.PurchaseTargets[KeyboundBrawlerShop.CofferItemId] = 3;
         config.KeyboundBrawler.TypingWpm = 60;
+        config.KeyboundBrawler.PlayMode = KeyboundPlayMode.Thrower;
+        config.KeyboundBrawler.PartyRole = KeyboundPartyRole.Member;
         config.KeyboundBrawler.RunLimitEnabled = true;
         config.KeyboundBrawler.RunLimit = 5;
         config.KeyboundBrawler.WalletTargetEnabled = false;
@@ -74,6 +76,8 @@ public sealed class KeyboundBrawlerTests
         Assert.Equal(3, restored.KeyboundBrawler.PurchaseTargets[KeyboundBrawlerShop.CofferItemId]);
         Assert.Equal(2, restored.KeyboundBrawler.PurchaseTargets.Count);
         Assert.Equal(60, restored.KeyboundBrawler.TypingWpm);
+        Assert.Equal(KeyboundPlayMode.Thrower, restored.KeyboundBrawler.PlayMode);
+        Assert.Equal(KeyboundPartyRole.Member, restored.KeyboundBrawler.PartyRole);
         Assert.True(restored.KeyboundBrawler.RunLimitEnabled);
         Assert.Equal(5, restored.KeyboundBrawler.RunLimit);
         Assert.False(restored.KeyboundBrawler.WalletTargetEnabled);
@@ -114,7 +118,7 @@ public sealed class KeyboundBrawlerTests
     [Fact]
     public void PreparationLabelsRenderInEveryLanguageAndTheNavigationIconIsEmbedded()
     {
-        var labels = new[] { "KB_Help", "KB_ManualQueue", "KB_WaitInput", "KB_InputStalled", "KB_WalletTarget", "KB_TargetCurrency", "KB_NoCatalog" };
+        var labels = new[] { "KB_Help", "KB_AutoLoopHelp", "KB_WaitInput", "KB_InputStalled", "KB_WalletTarget", "KB_TargetCurrency", "KB_NoCatalog" };
         foreach (var language in Enum.GetValues<UiLanguage>())
         {
             foreach (var key in labels)

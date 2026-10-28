@@ -2359,4 +2359,16 @@ Path: {0}
   <data name="KB_Finished" xml:space="preserve"><value>已达上限 · 已完成{0}局。</value></data>
   <data name="KB_TypingSpeed" xml:space="preserve"><value>输入速度（WPM）</value></data>
   <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>默认80 WPM，范围10–300。按键间隔±20%浮动，短语开始和回车前停顿。下次开始时生效。</value></data>
+  <data name="KB_Queueing" xml:space="preserve"><value>正在前往Keybound Square并报名。</value></data>
+  <data name="KB_Returning" xml:space="preserve"><value>正在结算并返回重新报名。</value></data>
+  <data name="KB_CastHold" xml:space="preserve"><value>敌方施法期间暂停输入。</value></data>
+  <data name="KB_AutoLoopHelp" xml:space="preserve"><value>开始后自动移动、报名、游玩、退出结算并重复，达到上限后按设置购物。</value></data>
+  <data name="KB_PlayMode" xml:space="preserve"><value>游玩模式</value></data>
+  <data name="KB_Winner" xml:space="preserve"><value>胜利者</value></data>
+  <data name="KB_Thrower" xml:space="preserve"><value>低速参与者</value></data>
+  <data name="KB_PartyRole" xml:space="preserve"><value>队伍角色</value></data>
+  <data name="KB_PartyLeader" xml:space="preserve"><value>队长 / 单人</value></data>
+  <data name="KB_PartyMember" xml:space="preserve"><value>队员</value></data>
+  <data name="KB_ThrowerSpeed" xml:space="preserve"><value>低速参与者速度：{0} WPM（胜利者的一半）</value></data>
+  <data name="KB_WaitPartyRole" xml:space="preserve"><value>等待当前队伍角色与所选角色一致。</value></data>
 </root>

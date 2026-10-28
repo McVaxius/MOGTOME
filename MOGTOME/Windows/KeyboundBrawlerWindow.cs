@@ -71,18 +71,18 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
         ImGui.Separator();
         var hasWallet = KeyboundBrawlerShop.TryWallet(out var wallet);
         DrawActions(hasWallet ? wallet : null);
-        UiLayout.Wrapped(Ui.T("KB_ManualQueue"));
+        UiLayout.Wrapped(Ui.T("KB_AutoLoopHelp"));
         var settings = plugin.Configuration.KeyboundBrawler;
         if (settings.PurchaseReviewRequired)
         {
             UiLayout.Wrapped(Ui.T("Shop_ReviewRequired"));
-            ImGui.BeginDisabled(!plugin.KeyboundShop.Ready || plugin.KeyboundShop.IsRunning || plugin.IsKeyboundShopActionQueued || plugin.KeyboundBrawler.IsRunning || plugin.IsKeyboundStartQueued);
+            ImGui.BeginDisabled(!plugin.KeyboundShop.Ready || plugin.KeyboundShop.IsRunning || plugin.IsKeyboundShopActionQueued || plugin.KeyboundLoop.IsActive || plugin.KeyboundBrawler.IsRunning || plugin.IsKeyboundStartQueued);
             if (UiLayout.Button(Ui.L("Shop_Reviewed")))
                 GameHelpers.QueueFrameworkAction("Keybound shop", "Review purchase", TimeSpan.Zero,
                     plugin.KeyboundShop.AcknowledgePurchaseReview);
             ImGui.EndDisabled();
         }
-        ImGui.BeginDisabled(!plugin.CanSelectUiLanguage || plugin.KeyboundShop.IsRunning || plugin.IsKeyboundShopActionQueued || plugin.KeyboundBrawler.IsRunning || plugin.IsKeyboundStartQueued);
+        ImGui.BeginDisabled(!plugin.CanSelectUiLanguage || plugin.KeyboundShop.IsRunning || plugin.IsKeyboundShopActionQueued || plugin.KeyboundLoop.IsActive || plugin.KeyboundBrawler.IsRunning || plugin.IsKeyboundStartQueued);
         var changed = DrawSettings(settings);
         ImGui.Separator();
         changed |= shopEditor.DrawKeybound(settings, KeyboundBrawlerShop.Catalog, hasWallet ? wallet : null);
@@ -113,7 +113,7 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
         var stocks = plugin.XaDatabase.ReadStocks(settings.PurchaseTargets.Keys);
         var cost = BlundervilleProgress.TotalMgf(settings.PurchaseTargets, catalog,
             id => plugin.XaDatabase.TryCount(id, stocks.GetValueOrDefault(id), out var count) ? count : null, out var costKnown);
-        var conflicts = plugin.KeyboundBrawler.IsRunning || plugin.IsKeyboundStartQueued || plugin.Engine?.IsRunning == true || plugin.IsEngineStartQueued ||
+        var conflicts = plugin.KeyboundLoop.IsActive || plugin.KeyboundBrawler.IsRunning || plugin.IsKeyboundStartQueued || plugin.Engine?.IsRunning == true || plugin.IsEngineStartQueued ||
             plugin.Blunderville.IsRunning || plugin.IsBlundervilleActionQueued ||
             plugin.MoogleShop.IsRunning || plugin.IsMoogleShopActionQueued;
         var buyReady = service.Ready && !service.IsRunning && !plugin.IsKeyboundShopActionQueued && !conflicts &&
@@ -122,9 +122,9 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
         var actionsWidth = labels.Sum(s => MaterialText.Measure(s).X + ImGui.GetStyle().FramePadding.X * 2) +
             ImGui.GetStyle().ItemSpacing.X * 3 + 8 * ImGuiHelpers.GlobalScale;
         var walletWidth = MaterialText.Measure(Ui.T("KB_Wallet", "999,999,999")).X + 28 * ImGuiHelpers.GlobalScale;
-        var status = plugin.KeyboundBrawler.IsRunning || plugin.IsKeyboundStartQueued ||
+        var status = plugin.KeyboundLoop.IsActive || plugin.KeyboundBrawler.IsRunning || plugin.IsKeyboundStartQueued ||
             service.Status.Key == "BV_Idle" && plugin.KeyboundBrawler.Status.Key != "KB_Idle"
-            ? plugin.KeyboundBrawler.Status.Render() : service.Status.Render();
+            ? (plugin.KeyboundLoop.IsActive ? plugin.KeyboundLoop.Status.Render() : plugin.KeyboundBrawler.Status.Render()) : service.Status.Render();
         if (UiLayout.AvailableWidth >= actionsWidth + walletWidth + 100 * ImGuiHelpers.GlobalScale &&
             ImGui.BeginTable("###KeyboundActions", 3, ImGuiTableFlags.SizingFixedFit))
         {
@@ -157,12 +157,12 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
 
     private void DrawActionButtons(bool buyReady)
     {
-        ImGui.BeginDisabled(!plugin.KeyboundBrawler.CanStart);
+        ImGui.BeginDisabled(!plugin.KeyboundBrawler.CanStart || plugin.KeyboundLoop.IsActive || plugin.IsKeyboundStartQueued);
         if (UiLayout.Button(Ui.L("Main_Start"))) plugin.StartKeyboundBrawler();
         ImGui.EndDisabled();
         if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) UiLayout.SetTooltip(plugin.KeyboundBrawler.UnavailableReason.Render());
         UiLayout.SameLineIfFits(MaterialText.Measure(Ui.T("Main_Stop")).X + 24 * ImGuiHelpers.GlobalScale);
-        ImGui.BeginDisabled(!plugin.KeyboundShop.IsRunning && !plugin.IsKeyboundShopActionQueued && !plugin.KeyboundBrawler.IsRunning && !plugin.IsKeyboundStartQueued && !plugin.KeyboundBrawler.Finished);
+        ImGui.BeginDisabled(!plugin.KeyboundShop.IsRunning && !plugin.IsKeyboundShopActionQueued && !plugin.KeyboundLoop.IsActive && !plugin.KeyboundBrawler.IsRunning && !plugin.IsKeyboundStartQueued && !plugin.KeyboundBrawler.Finished);
         if (UiLayout.Button(Ui.L("Main_Stop"))) { plugin.StopKeyboundBrawler(); plugin.StopKeyboundShop(); }
         ImGui.EndDisabled();
         UiLayout.SameLineIfFits(MaterialText.Measure(Ui.T("BV_Buy")).X + 24 * ImGuiHelpers.GlobalScale);
@@ -172,7 +172,7 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
         if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
             UiLayout.SetTooltip(Ui.T("Shop_Help"));
         UiLayout.SameLineIfFits(MaterialText.Measure(Ui.T("Shop_Refresh")).X + 24 * ImGuiHelpers.GlobalScale);
-        ImGui.BeginDisabled(!plugin.CanSelectUiLanguage || plugin.KeyboundShop.IsRunning || plugin.IsKeyboundShopActionQueued || plugin.KeyboundBrawler.IsRunning || plugin.IsKeyboundStartQueued);
+        ImGui.BeginDisabled(!plugin.CanSelectUiLanguage || plugin.KeyboundShop.IsRunning || plugin.IsKeyboundShopActionQueued || plugin.KeyboundLoop.IsActive || plugin.KeyboundBrawler.IsRunning || plugin.IsKeyboundStartQueued);
         if (UiLayout.Button(Ui.L("Shop_Refresh"))) plugin.RefreshKeyboundShop();
         ImGui.EndDisabled();
     }
@@ -224,13 +224,25 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
             { settings.EndingLocation = endings[selected]; changed = true; }
         }
         finally { ImGui.EndTable(); }
-        UiLayout.SingleLine(Ui.T("KB_TypingSpeed"));
+        var mode = (int)settings.PlayMode;
+        ImGui.SetNextItemWidth(Math.Min(UiLayout.AvailableWidth, 180 * ImGuiHelpers.GlobalScale));
+        if (UiLayout.Combo(Ui.L("KB_PlayMode") + "###KeyboundPlayMode", ref mode,
+            [Ui.T("KB_Winner"), Ui.T("KB_Thrower")], 2))
+        { settings.PlayMode = (KeyboundPlayMode)mode; changed = true; }
+        UiLayout.SameLineIfFits(240 * ImGuiHelpers.GlobalScale);
+        var role = (int)settings.PartyRole;
+        ImGui.SetNextItemWidth(Math.Min(UiLayout.AvailableWidth, 180 * ImGuiHelpers.GlobalScale));
+        if (UiLayout.Combo(Ui.L("KB_PartyRole") + "###KeyboundPartyRole", ref role,
+            [Ui.T("KB_PartyLeader"), Ui.T("KB_PartyMember")], 2))
+        { settings.PartyRole = (KeyboundPartyRole)role; changed = true; }
+        UiLayout.SingleLine(Ui.T("KB_Winner") + " · " + Ui.T("KB_TypingSpeed"));
         UiLayout.SameLineIfFits(120 * ImGuiHelpers.GlobalScale);
         ImGui.SetNextItemWidth(Math.Min(UiLayout.AvailableWidth, 120 * ImGuiHelpers.GlobalScale));
         var wpm = settings.TypingWpm;
         if (UiLayout.InputIntLabel("###KeyboundTypingWpm", ref wpm))
         { settings.TypingWpm = Math.Clamp(wpm, 10, 300); changed = true; }
         if (ImGui.IsItemHovered()) UiLayout.SetTooltip(Ui.T("KB_TypingSpeedHelp"));
+        UiLayout.TextDisabled(Ui.T("KB_ThrowerSpeed", (Math.Clamp(settings.TypingWpm, 10, 300) / 2d).ToString("0.#", Ui.Culture)));
         UiLayout.TextDisabled(Ui.T("KB_FinishRule"));
         return changed;
     }

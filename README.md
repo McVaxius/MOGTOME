@@ -173,27 +173,49 @@ An uncertain purchase persists a review hold; check bags and MGC before clearing
 it with the review action. The native purchase and travel paths still need live
 event verification.
 
-**Start enables native auto typing.** Use Start or `/kbb start`, then manually
-queue at the Keybound Registrar and accept entry. During the game MOGTOME reads
-`KTGEWord` phrases and types into the enabled, focused `KTGInput` bar. It waits for
-each exact text echo and the submitted input to clear. **Typing speed (WPM)** is
-account-configurable from 10–300 WPM and defaults to **80 WPM** (five characters
-per word). Character delays vary by ±20%, with 200–450 ms reaction pauses and
-120–280 ms pauses before Enter. Speed changes apply on the next Start. Chat and other text inputs
-keep their focus. Disabled input (including Letterlock) receives no keys.
+**Start runs the full event loop.** Use Start or `/kbb start`. With Keybound
+Brawler unlocked, MOGTOME uses Lifestream/vnavmesh as needed to reach Keybound
+Square, approaches the registrar, registers, accepts the matching KBB entry,
+plays, leaves through Results and repeats. Either enabled limit stops further
+registration; shop-on-finish then runs the existing MGC shopper after returning.
+There is no manual queue or result-return step in this loop.
 
-Queueing, accepting entry, and dismissing results/returning remain manual; the
-reference implementation does not establish those callback contracts. A run is
-counted only when Dalamud reports DutyCompleted for the KBB territory actually
-played in this session. Hiding the input bar never counts a run. At a configured
-limit, shop-on-finish waits for your return outside the duty, then attempts the
-existing MGC shopper; the trader must be loaded nearby. With no enabled limits,
-auto typing waits for your next manually queued game until Stop.
+**Typing speed (WPM)** is account-configurable from 10–300 WPM and defaults to
+**80 WPM** (five characters per word). Character delays vary by ±20%, with
+200–450 ms reaction pauses and 120–280 ms pauses before Enter. Speed changes apply
+on the next Start. Each native text echo is checked before further input.
 
-Stop, logout, account/character or game-language changes cancel the session and
-release owned Enter/Backspace input. Nothing starts merely by opening this window
-or loading saved settings. Native input, completion-event delivery and shopping
-still require a live-client acceptance run.
+Choose **Winner** or **Thrower** and **Party leader / Solo** or **Member**.
+Thrower always uses half the configured Winner WPM (80 → 40; odd values retain
+half-speed pacing). Both modes keep the combat/mechanic guards. Leaders initiate
+registration/requeue; members only confirm the group's KBB participation/entry
+and play. Members never initiate or cancel the group queue. A selected leader
+role waits if the character is currently a party member. Choices save per account
+and are captured at Start.
+
+Barrier phrases and interruptible casts have priority. Smart targeting favours
+shorter words with four or more phrases visible. A repeated phrase with no enemy
+HP/interrupt-counter change yields to other words after three attempts. The
+client's own Cursed Gaze name identifies Letterlock; input is held near its cast
+completion. Other text inputs retain focus. The dedicated KBB 60-second idle counter and duty-activity timers are refreshed
+on sent input and every 30 seconds while this arena session is owned, without
+adding keys during mechanics. The native input agent, HUD and KTGInput addon must
+all identify the same active surface before that counter can be touched.
+
+Only the KBB registration, queue pop, arena and result screen are acted on. A
+validated result or matching duty-completion event counts a played round once;
+vanished input or an unexplained departure does not. Stop cancels future owned
+queueing/movement and releases held keys; it never abandons an active game.
+Logout, account/character or game-language changes cancel the session. Opening
+the window or loading saved settings starts nothing.
+
+Use **ADS 2.0.0.10 or later** with this release: its KBB activity exclusion
+prevents ADS duty/menu handling from interfering with the event's own Results
+flow. Other plugins that independently auto-leave duties also need their KBB
+handling disabled.
+
+The complete loop, AFK prevention and purchases require a live-client acceptance
+run; automated tests validate controller behavior and adapter compilation.
 
 Based on Auto Keybound Brawler by XeldarAlz
 https://github.com/XeldarAlz/FFXIV-AutoKeyboundBrawler

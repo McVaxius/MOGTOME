@@ -2359,4 +2359,16 @@ Open storage to refresh recorded quantities.</value></data>
   <data name="KB_Finished" xml:space="preserve"><value>Limit reached · {0} games completed.</value></data>
   <data name="KB_TypingSpeed" xml:space="preserve"><value>Typing speed (WPM)</value></data>
   <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>Default 80 WPM; 10–300 WPM. Vary character timing by ±20% and pause before phrases and Enter. Applies on next Start.</value></data>
+  <data name="KB_Queueing" xml:space="preserve"><value>Travelling to Keybound Square and registering.</value></data>
+  <data name="KB_Returning" xml:space="preserve"><value>Collecting results and returning to requeue.</value></data>
+  <data name="KB_CastHold" xml:space="preserve"><value>Holding input for an enemy cast.</value></data>
+  <data name="KB_AutoLoopHelp" xml:space="preserve"><value>Start automatically travels, registers, plays, leaves results and repeats until a limit is reached, then shops if enabled.</value></data>
+  <data name="KB_PlayMode" xml:space="preserve"><value>Play mode</value></data>
+  <data name="KB_Winner" xml:space="preserve"><value>Winner</value></data>
+  <data name="KB_Thrower" xml:space="preserve"><value>Thrower</value></data>
+  <data name="KB_PartyRole" xml:space="preserve"><value>Party role</value></data>
+  <data name="KB_PartyLeader" xml:space="preserve"><value>Party leader / Solo</value></data>
+  <data name="KB_PartyMember" xml:space="preserve"><value>Member</value></data>
+  <data name="KB_ThrowerSpeed" xml:space="preserve"><value>Thrower speed: {0} WPM (half Winner speed)</value></data>
+  <data name="KB_WaitPartyRole" xml:space="preserve"><value>Waiting for the selected party role to match the current party.</value></data>
 </root>

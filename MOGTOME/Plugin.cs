@@ -18,6 +18,7 @@ using Dalamud.Plugin.Services;
 using MOGTOME.IPC;
 using MOGTOME.Models;
 using MOGTOME.Services;
+using MOGTOME.Services.Keybound;
 using MOGTOME.Windows;
 
 namespace MOGTOME;
@@ -96,6 +97,7 @@ public sealed class Plugin : IDalamudPlugin
     public BlundervilleService Blunderville { get; private set; }
     public MoogleShopService MoogleShop { get; private set; }
     public KeyboundBrawlerService KeyboundBrawler { get; private set; }
+    internal KeyboundEventLoop KeyboundLoop { get; private set; }
     public KeyboundBrawlerShopService KeyboundShop { get; private set; }
     private int keyboundShopActionGeneration;
     public bool IsKeyboundShopActionQueued { get; private set; }
@@ -106,7 +108,7 @@ public sealed class Plugin : IDalamudPlugin
     private ulong keyboundSessionCharacter;
     private Dalamud.Game.ClientLanguage keyboundSessionLanguage;
     private bool keyboundFinishPending;
-    internal bool KeyboundShopOwnsAutomation => KeyboundBrawler?.OwnsInput == true || IsKeyboundStartQueued || keyboundFinishPending ||
+    internal bool KeyboundShopOwnsAutomation => KeyboundLoop?.IsActive == true || KeyboundBrawler?.OwnsInput == true || IsKeyboundStartQueued || keyboundFinishPending ||
         KeyboundShop?.HoldAutomaticDialogs == true ||
         IsKeyboundShopActionQueued || ConfigManager?.GetActiveConfig()?.KeyboundBrawler?.PurchaseReviewRequired == true;
     private int moogleShopActionGeneration;
@@ -202,6 +204,7 @@ public sealed class Plugin : IDalamudPlugin
         Blunderville = new BlundervilleService(this);
         MoogleShop = new MoogleShopService(this);
         KeyboundBrawler = new KeyboundBrawlerService();
+        KeyboundLoop = new(new KeyboundLoopGame(this), KeyboundBrawler);
         KeyboundShop = new KeyboundBrawlerShopService(this);
 
         Appearance = new(this);
@@ -274,6 +277,7 @@ public sealed class Plugin : IDalamudPlugin
         MoogleShop.Dispose();
         ++keyboundStartGeneration;
         IsKeyboundStartQueued = keyboundFinishPending = false;
+        KeyboundLoop.Stop();
         KeyboundBrawler.Dispose();
         Blunderville.Dispose();
         CancelQueuedEngineStart();
@@ -357,7 +361,7 @@ public sealed class Plugin : IDalamudPlugin
 
     public void RequestKeyboundShopBuy()
     {
-        if (KeyboundBrawler.OwnsInput || IsKeyboundStartQueued || keyboundFinishPending || IsKeyboundShopActionQueued || KeyboundShop.IsRunning || IsEngineStartQueued || Engine?.IsRunning == true ||
+        if (KeyboundLoop.IsActive || KeyboundBrawler.OwnsInput || IsKeyboundStartQueued || keyboundFinishPending || IsKeyboundShopActionQueued || KeyboundShop.IsRunning || IsEngineStartQueued || Engine?.IsRunning == true ||
             Engine?.IsStartupPending == true || MoogleShop.IsRunning || IsMoogleShopActionQueued ||
             Blunderville.IsRunning || IsBlundervilleActionQueued || !KeyboundShop.Ready) return;
         var selected = Configuration.KeyboundBrawler;
@@ -392,7 +396,7 @@ public sealed class Plugin : IDalamudPlugin
 
     public void StartKeyboundBrawler()
     {
-        if (IsKeyboundStartQueued || KeyboundBrawler.IsRunning || keyboundFinishPending) return;
+        if (IsKeyboundStartQueued || KeyboundBrawler.IsRunning || KeyboundLoop.IsActive || keyboundFinishPending) return;
         var selected = ConfigManager.GetActiveConfig()?.KeyboundBrawler;
         if (selected == null) return;
         var account = ConfigManager.CurrentAccountId;
@@ -407,6 +411,7 @@ public sealed class Plugin : IDalamudPlugin
                 !ReferenceEquals(selected, Configuration.KeyboundBrawler)) return;
             UpdateKeyboundBrawlerAdmission();
             if (!KeyboundBrawler.Start(selected)) return;
+            KeyboundLoop.Start(Environment.TickCount64, selected.PartyRole);
             keyboundSessionSettings = selected;
             keyboundSessionAccount = account;
             keyboundSessionCharacter = character;
@@ -423,6 +428,7 @@ public sealed class Plugin : IDalamudPlugin
         KeyboundBrawler.RequestStop();
         GameHelpers.QueueFrameworkAction("Keybound Brawler", "Stop", TimeSpan.Zero, () =>
         {
+            KeyboundLoop.Stop();
             KeyboundBrawler.Stop();
             ReleaseKeyboundSession();
         });
@@ -455,14 +461,17 @@ public sealed class Plugin : IDalamudPlugin
     private void UpdateKeyboundBrawler()
     {
         if (keyboundSessionSettings != null && !KeyboundSessionMatches())
-        { KeyboundBrawler.Stop(); ReleaseKeyboundSession(); }
+        { KeyboundLoop.Stop(); KeyboundBrawler.Stop(); ReleaseKeyboundSession(); }
         UpdateKeyboundBrawlerAdmission();
-        KeyboundBrawler.Update(KeyboundBrawlerShop.TryWallet(out var wallet) ? wallet : null, Environment.TickCount64);
+        uint? wallet = KeyboundBrawlerShop.TryWallet(out var currentWallet) ? currentWallet : null;
+        KeyboundBrawler.FinishIfLimitMet(wallet);
+        KeyboundLoop.Update(Environment.TickCount64);
+        KeyboundBrawler.Update(wallet, Environment.TickCount64);
         if (keyboundSessionSettings == null) return;
         if (KeyboundBrawler.Finished && keyboundSessionSettings.ShopWhenFinished)
         {
             keyboundFinishPending = true;
-            // The game/player owns result dismissal and return. Do not abandon an active duty.
+            // Results are left through their native Leave button; hand off only after return.
             if (Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BoundByDuty] ||
                 Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.InDutyQueue] ||
                 Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas] ||
@@ -471,7 +480,7 @@ public sealed class Plugin : IDalamudPlugin
             ReleaseKeyboundSession();
             RequestKeyboundShopBuy();
         }
-        else if (!KeyboundBrawler.IsRunning) ReleaseKeyboundSession();
+        else if (!KeyboundBrawler.IsRunning && !KeyboundLoop.IsActive) ReleaseKeyboundSession();
     }
 
     public void OpenMoogleShop()
@@ -769,7 +778,7 @@ public sealed class Plugin : IDalamudPlugin
 
     public bool StopEngine(string? reason = null)
     {
-        var stoppedKeybound = KeyboundBrawler?.IsRunning == true || IsKeyboundStartQueued || keyboundFinishPending;
+        var stoppedKeybound = KeyboundLoop?.IsActive == true || KeyboundBrawler?.IsRunning == true || IsKeyboundStartQueued || keyboundFinishPending;
         StopKeyboundBrawler();
         var stoppedKeyboundShop = KeyboundShop?.IsRunning == true || IsKeyboundShopActionQueued;
         StopKeyboundShop();
