@@ -89,17 +89,19 @@ internal static unsafe class KeyboundUi
         }
 
         var ours = module->AtkModule.TextInput.TargetTextInputEventInterface == &textInput->AtkTextInputEventInterface;
-        snapshot.InputFocused = ours;
+        snapshot.InputFocused = ours && textInput->IsActive;
         snapshot.OtherInputFocused = !ours;
     }
 
-    // Does what a mouse press on the input bar does: focusing its collision node makes the text
-    // input the module's typing target again.
+    // Cursor navigation can select the bar without activating text entry, particularly after a
+    // stun or level change. Restore addon/component focus, then use the input's own mouse handler
+    // if it still has not become the typing target. Never send a wake key to an unconfirmed target.
     public static bool FocusInput()
     {
         var unitManager = RaptureAtkUnitManager.Instance();
         var stage = AtkStage.Instance();
-        if (unitManager == null || stage == null || stage->AtkInputManager == null)
+        var module = RaptureAtkModule.Instance();
+        if (unitManager == null || stage == null || stage->AtkInputManager == null || module == null)
         {
             return false;
         }
@@ -111,12 +113,68 @@ internal static unsafe class KeyboundUi
         }
 
         var textInput = FindTextInput(addon);
-        if (textInput == null || textInput->CollisionNode == null || !textInput->Enabled || (textInput->ComponentFlags & 2) == 0)
+        if (!CanActivate(textInput) || module->IsTextInputActive() &&
+            module->AtkModule.TextInput.TargetTextInputEventInterface != &textInput->AtkTextInputEventInterface)
         {
             return false;
         }
 
-        return stage->AtkInputManager->SetFocus(&textInput->CollisionNode->AtkResNode, addon, 0);
+        var collision = &textInput->CollisionNode->AtkResNode;
+        addon->Focus();
+        // false avoids parking the controller's pointing hand on the bar as a substitute for entry.
+        addon->SetFocusNode(collision, false, 0);
+        addon->SetComponentFocusNode((AtkComponentBase*)textInput);
+        stage->AtkInputManager->SetFocus(collision, addon, 0);
+        if (textInput->IsActive && module->IsTextInputActive() &&
+            module->AtkModule.TextInput.TargetTextInputEventInterface == &textInput->AtkTextInputEventInterface)
+            return true;
+        if (module->IsTextInputActive() &&
+            module->AtkModule.TextInput.TargetTextInputEventInterface != &textInput->AtkTextInputEventInterface)
+            return false;
+
+        // A true dispatch result is only an attempt. The controller still waits for ReadFocus to
+        // observe the active input and the exact routing target on a later framework update.
+        return ClickInput(textInput);
+    }
+
+    private static bool CanActivate(AtkComponentTextInput* input)
+        => input != null && input->CollisionNode != null && input->Enabled &&
+            (input->ComponentFlags & 2) != 0 && IsShown((AtkResNode*)input->OwnerNode) &&
+            IsShown(&input->CollisionNode->AtkResNode);
+
+    internal static bool ClickInput(AtkComponentTextInput* input)
+    {
+        if (!CanActivate(input)) return false;
+        var listener = (AtkEventListener*)input;
+        var collision = &input->CollisionNode->AtkResNode;
+        return ClickInputNode(collision, listener) || ClickInputNode((AtkResNode*)input->OwnerNode, listener);
+    }
+
+    internal static bool ClickInputNode(AtkResNode* node, AtkEventListener* listener)
+    {
+        if (node == null || listener == null || listener->VirtualTable == null || listener->VirtualTable->ReceiveEvent == null) return false;
+        // Use the real registration, including its parameter and receiver. Do not guess a callback
+        // number or dispatch an addon/foreign component's event. Bound malformed linked lists.
+        for (var pass = 0; pass < 2; pass++)
+        {
+            var wanted = pass == 0 ? AtkEventType.MouseDown : AtkEventType.MouseClick;
+            var count = 0;
+            for (var registered = node->AtkEventManager.Event; registered != null && count++ < 64; registered = registered->NextEvent)
+            {
+                if (registered->State.EventType != wanted || registered->Listener != listener ||
+                    registered->Param > int.MaxValue || registered->State.StateFlags.HasFlag(AtkEventStateFlags.IsGlobalEvent)) continue;
+                var click = *registered;
+                var center = CenterOf(node, out _);
+                if (!float.IsFinite(center.X) || !float.IsFinite(center.Y) ||
+                    center.X < short.MinValue || center.X > short.MaxValue || center.Y < short.MinValue || center.Y > short.MaxValue) return false;
+                var data = new AtkEventData();
+                data.MouseData.PosX = (short)center.X;
+                data.MouseData.PosY = (short)center.Y;
+                click.Listener->ReceiveEvent(click.State.EventType, (int)click.Param, &click, &data);
+                return true;
+            }
+        }
+        return false;
     }
 
     private static AtkComponentTextInput* FindTextInput(AtkUnitBase* addon)

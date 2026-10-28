@@ -1,3 +1,10 @@
+2026-10-28 - 4.0.0.7 Keybound input activation recovery
+
+- Recover text entry after stun/level transitions by restoring addon/component focus and dispatching the KBB input's own registered mouse handler when selection alone does not activate it. Keep controller cursor focus off and wait for active native routing before typing.
+- Recheck other text-input ownership at dispatch, respect disabled/hidden inputs, and suspend recovery during Letterlock. Log a bounded warning if visible phrases still cannot regain entry.
+- Clarify that `/kbb` opens settings; Start or `/kbb start` starts the complete automatic loop. Keep configurable Winner speed and half-speed Thrower behavior.
+- Add native mouse-dispatch and stun/chat/Letterlock recovery regressions. Live recovery still requires an in-game test. Bump all plugin/repository metadata from 4.0.0.6 to 4.0.0.7.
+
 2026-10-28 - 4.0.0.6 complete Keybound event loop
 
 - Add automatic travel to Keybound Square, identified-registrar registration, matching KBB entry acceptance, validated Results exit and repeat registration. Stop at either configured limit and hand off to the MGC shop after return. Cancel only owned queues/movement on Stop; never abandon active gameplay.
