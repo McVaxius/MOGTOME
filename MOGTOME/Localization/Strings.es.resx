@@ -2352,4 +2352,11 @@ Abre los almacenes para actualizar las cantidades registradas.</value></data>
   <data name="Wave colour 2" xml:space="preserve"><value>Color de onda 2</value></data>
   <data name="Wave colour 3" xml:space="preserve"><value>Color de onda 3</value></data>
   <data name="Reset wave colours" xml:space="preserve"><value>Restablecer colores de las ondas</value></data>
+  <data name="KB_ManualQueue" xml:space="preserve"><value>Escritura automática: inscríbete, acepta la entrada y sal de los resultados manualmente.</value></data>
+  <data name="KB_WaitInput" xml:space="preserve"><value>Esperando la entrada KBB habilitada; el chat conserva el foco.</value></data>
+  <data name="KB_InputStalled" xml:space="preserve"><value>Entrada no confirmada. Detenido; pulsa Iniciar para reintentar.</value></data>
+  <data name="KB_Typing" xml:space="preserve"><value>Escribiendo · {0} partidas completadas · {1} frases enviadas</value></data>
+  <data name="KB_Finished" xml:space="preserve"><value>Límite alcanzado · {0} partidas completadas.</value></data>
+  <data name="KB_TypingSpeed" xml:space="preserve"><value>Velocidad de escritura (PPM)</value></data>
+  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>80 PPM por defecto; 10–300. Ritmo variable ±20 % y pausas antes de frases y Enter. Se aplica al siguiente inicio.</value></data>
 </root>

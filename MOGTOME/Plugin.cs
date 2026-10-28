@@ -99,7 +99,15 @@ public sealed class Plugin : IDalamudPlugin
     public KeyboundBrawlerShopService KeyboundShop { get; private set; }
     private int keyboundShopActionGeneration;
     public bool IsKeyboundShopActionQueued { get; private set; }
-    internal bool KeyboundShopOwnsAutomation => KeyboundShop?.HoldAutomaticDialogs == true ||
+    public bool IsKeyboundStartQueued { get; private set; }
+    private int keyboundStartGeneration;
+    private KeyboundBrawlerSettings? keyboundSessionSettings;
+    private string? keyboundSessionAccount;
+    private ulong keyboundSessionCharacter;
+    private Dalamud.Game.ClientLanguage keyboundSessionLanguage;
+    private bool keyboundFinishPending;
+    internal bool KeyboundShopOwnsAutomation => KeyboundBrawler?.OwnsInput == true || IsKeyboundStartQueued || keyboundFinishPending ||
+        KeyboundShop?.HoldAutomaticDialogs == true ||
         IsKeyboundShopActionQueued || ConfigManager?.GetActiveConfig()?.KeyboundBrawler?.PurchaseReviewRequired == true;
     private int moogleShopActionGeneration;
     public bool IsMoogleShopActionQueued { get; private set; }
@@ -264,6 +272,8 @@ public sealed class Plugin : IDalamudPlugin
         IsKeyboundShopActionQueued = false;
         KeyboundShop.Dispose();
         MoogleShop.Dispose();
+        ++keyboundStartGeneration;
+        IsKeyboundStartQueued = keyboundFinishPending = false;
         KeyboundBrawler.Dispose();
         Blunderville.Dispose();
         CancelQueuedEngineStart();
@@ -339,7 +349,7 @@ public sealed class Plugin : IDalamudPlugin
         else if (parts.Length == 2 && parts[1].Equals("buy", StringComparison.OrdinalIgnoreCase)) RequestKeyboundShopBuy();
         else if (parts.Length == 2 && parts[1].Equals("refresh", StringComparison.OrdinalIgnoreCase)) RefreshKeyboundShop();
         else if (parts.Length == 2 && parts[1].Equals("stop", StringComparison.OrdinalIgnoreCase))
-        { KeyboundBrawler.Stop(); StopKeyboundShop(); }
+        { StopKeyboundBrawler(); StopKeyboundShop(); }
         return true;
     }
 
@@ -347,7 +357,7 @@ public sealed class Plugin : IDalamudPlugin
 
     public void RequestKeyboundShopBuy()
     {
-        if (IsKeyboundShopActionQueued || KeyboundShop.IsRunning || IsEngineStartQueued || Engine?.IsRunning == true ||
+        if (KeyboundBrawler.OwnsInput || IsKeyboundStartQueued || keyboundFinishPending || IsKeyboundShopActionQueued || KeyboundShop.IsRunning || IsEngineStartQueued || Engine?.IsRunning == true ||
             Engine?.IsStartupPending == true || MoogleShop.IsRunning || IsMoogleShopActionQueued ||
             Blunderville.IsRunning || IsBlundervilleActionQueued || !KeyboundShop.Ready) return;
         var selected = Configuration.KeyboundBrawler;
@@ -382,19 +392,87 @@ public sealed class Plugin : IDalamudPlugin
 
     public void StartKeyboundBrawler()
     {
-        // Admission remains closed even through commands. No framework/game action is queued.
-        UpdateKeyboundBrawler();
-        KeyboundBrawler.Start();
+        if (IsKeyboundStartQueued || KeyboundBrawler.IsRunning || keyboundFinishPending) return;
+        var selected = ConfigManager.GetActiveConfig()?.KeyboundBrawler;
+        if (selected == null) return;
+        var account = ConfigManager.CurrentAccountId;
+        var character = PlayerState.ContentId;
+        var generation = ++keyboundStartGeneration;
+        IsKeyboundStartQueued = true;
+        GameHelpers.QueueFrameworkAction("Keybound Brawler", "Start", TimeSpan.Zero, () =>
+        {
+            if (generation != keyboundStartGeneration) return;
+            IsKeyboundStartQueued = false;
+            if (!ClientState.IsLoggedIn || account != ConfigManager.CurrentAccountId || character != PlayerState.ContentId ||
+                !ReferenceEquals(selected, Configuration.KeyboundBrawler)) return;
+            UpdateKeyboundBrawlerAdmission();
+            if (!KeyboundBrawler.Start(selected)) return;
+            keyboundSessionSettings = selected;
+            keyboundSessionAccount = account;
+            keyboundSessionCharacter = character;
+            keyboundSessionLanguage = ClientState.ClientLanguage;
+            YesAlreadyIPC.Pause();
+        });
     }
 
+    public void StopKeyboundBrawler()
+    {
+        ++keyboundStartGeneration;
+        IsKeyboundStartQueued = keyboundFinishPending = false;
+        if (KeyboundBrawler == null) return;
+        KeyboundBrawler.RequestStop();
+        GameHelpers.QueueFrameworkAction("Keybound Brawler", "Stop", TimeSpan.Zero, () =>
+        {
+            KeyboundBrawler.Stop();
+            ReleaseKeyboundSession();
+        });
+    }
+
+    private void ReleaseKeyboundSession()
+    {
+        keyboundSessionSettings = null;
+        keyboundFinishPending = false;
+        if (!KeyboundShopOwnsAutomation && !Blunderville.IsRunning && !MoogleShop.IsRunning && Engine?.IsRunning != true &&
+            !Configuration.Blunderville.PurchaseReviewRequired && !Configuration.MoogleShop.PurchaseReviewRequired)
+            YesAlreadyIPC.Unpause();
+    }
+
+    private bool KeyboundSessionMatches() => ClientState.IsLoggedIn &&
+        ReferenceEquals(keyboundSessionSettings, ConfigManager.GetActiveConfig()?.KeyboundBrawler) &&
+        keyboundSessionAccount == ConfigManager.CurrentAccountId && keyboundSessionCharacter == PlayerState.ContentId &&
+        keyboundSessionLanguage == ClientState.ClientLanguage;
+
+    private void UpdateKeyboundBrawlerAdmission()
+        => KeyboundBrawler.Observe(CanSelectUiLanguage && ClientState.IsLoggedIn && PlayerState.ContentId != 0 && ObjectTable.LocalPlayer != null &&
+                !Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.LoggingOut],
+            Engine?.IsRunning == true || Engine?.IsStartupPending == true || IsEngineStartQueued || Blunderville.IsRunning || IsBlundervilleActionQueued ||
+                MoogleShop.IsRunning || IsMoogleShopActionQueued || KeyboundShop.HoldAutomaticDialogs || IsKeyboundShopActionQueued ||
+                Configuration.KeyboundBrawler.PurchaseReviewRequired || Configuration.Blunderville.PurchaseReviewRequired || Configuration.MoogleShop.PurchaseReviewRequired,
+            ClientState.IsLoggedIn ? KeyboundBrawlerService.ReadTerritoryIntendedUse() : null,
+            ClientState.TerritoryType,
+            Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas] || Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas51]);
+
     private void UpdateKeyboundBrawler()
-        => KeyboundBrawler.Observe(CanSelectUiLanguage && ObjectTable.LocalPlayer != null &&
-                !Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.LoggingOut] &&
-                !Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas] &&
-                !Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas51],
-            Engine?.IsRunning == true || IsEngineStartQueued || Blunderville.IsRunning || IsBlundervilleActionQueued ||
-                MoogleShop.IsRunning || IsMoogleShopActionQueued || KeyboundShopOwnsAutomation,
-            ClientState.IsLoggedIn ? KeyboundBrawlerService.ReadTerritoryIntendedUse() : null);
+    {
+        if (keyboundSessionSettings != null && !KeyboundSessionMatches())
+        { KeyboundBrawler.Stop(); ReleaseKeyboundSession(); }
+        UpdateKeyboundBrawlerAdmission();
+        KeyboundBrawler.Update(KeyboundBrawlerShop.TryWallet(out var wallet) ? wallet : null, Environment.TickCount64);
+        if (keyboundSessionSettings == null) return;
+        if (KeyboundBrawler.Finished && keyboundSessionSettings.ShopWhenFinished)
+        {
+            keyboundFinishPending = true;
+            // The game/player owns result dismissal and return. Do not abandon an active duty.
+            if (Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BoundByDuty] ||
+                Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.InDutyQueue] ||
+                Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas] ||
+                Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas51] ||
+                KeyboundBrawlerService.ReadTerritoryIntendedUse() == 65 || KeyboundBrawler.OwnsInput) return;
+            ReleaseKeyboundSession();
+            RequestKeyboundShopBuy();
+        }
+        else if (!KeyboundBrawler.IsRunning) ReleaseKeyboundSession();
+    }
 
     public void OpenMoogleShop()
     {
@@ -691,6 +769,8 @@ public sealed class Plugin : IDalamudPlugin
 
     public bool StopEngine(string? reason = null)
     {
+        var stoppedKeybound = KeyboundBrawler?.IsRunning == true || IsKeyboundStartQueued || keyboundFinishPending;
+        StopKeyboundBrawler();
         var stoppedKeyboundShop = KeyboundShop?.IsRunning == true || IsKeyboundShopActionQueued;
         StopKeyboundShop();
         var stoppedBlunderville = Blunderville?.IsRunning == true || IsBlundervilleActionQueued;
@@ -698,7 +778,7 @@ public sealed class Plugin : IDalamudPlugin
         StopMoogleShop();
         StopBlunderville();
         UiText stopReason = reason == null ? Ui.M("Engine_ManualStop") : (UiText)reason;
-        var stopped = IsEngineStartQueued || stoppedBlunderville || stoppedShop || stoppedKeyboundShop;
+        var stopped = IsEngineStartQueued || stoppedBlunderville || stoppedShop || stoppedKeyboundShop || stoppedKeybound;
         CancelQueuedEngineStart();
         if (Engine?.IsRunning == true)
         {
@@ -1027,6 +1107,7 @@ public sealed class Plugin : IDalamudPlugin
     private void OnDutyCompleted(uint territoryId)
     {
         Log.Information($"[Plugin] DutyCompleted event: territory={territoryId}");
+        if (KeyboundSessionMatches()) KeyboundBrawler.ObserveCompletion(territoryId);
         
         // DutyTracker will handle time calculation and call RecordRun() after calculation
         // This ensures we have the correct completion time before recording

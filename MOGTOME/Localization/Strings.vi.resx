@@ -2502,4 +2502,11 @@ Mở kho để cập nhật số lượng đã ghi.</value></data>
   <data name="Wave colour 2" xml:space="preserve"><value>Màu sóng 2</value></data>
   <data name="Wave colour 3" xml:space="preserve"><value>Màu sóng 3</value></data>
   <data name="Reset wave colours" xml:space="preserve"><value>Đặt lại màu sóng</value></data>
+  <data name="KB_ManualQueue" xml:space="preserve"><value>Tự gõ: xếp hàng, xác nhận vào và rời màn kết quả thủ công.</value></data>
+  <data name="KB_WaitInput" xml:space="preserve"><value>Đợi KBB cho phép nhập; chat giữ tiêu điểm.</value></data>
+  <data name="KB_InputStalled" xml:space="preserve"><value>Không xác nhận được đầu vào. Đã dừng; nhấn Bắt đầu để thử lại.</value></data>
+  <data name="KB_Typing" xml:space="preserve"><value>Đang gõ · {0} trận hoàn tất · {1} cụm từ đã gửi</value></data>
+  <data name="KB_Finished" xml:space="preserve"><value>Đạt giới hạn · {0} trận hoàn tất.</value></data>
+  <data name="KB_TypingSpeed" xml:space="preserve"><value>Tốc độ gõ (WPM)</value></data>
+  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>Mặc định 80 WPM; 10–300. Nhịp phím dao động ±20%, nghỉ trước cụm từ và Enter. Áp dụng lần Bắt đầu tiếp theo.</value></data>
 </root>

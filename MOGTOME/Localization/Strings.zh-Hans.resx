@@ -2352,4 +2352,11 @@ Path: {0}
   <data name="Wave colour 2" xml:space="preserve"><value>波纹颜色 2</value></data>
   <data name="Wave colour 3" xml:space="preserve"><value>波纹颜色 3</value></data>
   <data name="Reset wave colours" xml:space="preserve"><value>重置波纹颜色</value></data>
+  <data name="KB_ManualQueue" xml:space="preserve"><value>自动输入：请手动排队、确认进入，并从结算界面返回。</value></data>
+  <data name="KB_WaitInput" xml:space="preserve"><value>等待KBB输入启用；聊天保持焦点。</value></data>
+  <data name="KB_InputStalled" xml:space="preserve"><value>未确认输入。已停止；点击开始重试。</value></data>
+  <data name="KB_Typing" xml:space="preserve"><value>输入中 · 已完成{0}局 · 已提交{1}条短语</value></data>
+  <data name="KB_Finished" xml:space="preserve"><value>已达上限 · 已完成{0}局。</value></data>
+  <data name="KB_TypingSpeed" xml:space="preserve"><value>输入速度（WPM）</value></data>
+  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>默认80 WPM，范围10–300。按键间隔±20%浮动，短语开始和回车前停顿。下次开始时生效。</value></data>
 </root>

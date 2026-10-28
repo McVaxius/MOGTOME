@@ -2346,4 +2346,11 @@ DictionaryPathsとPathSelectionsByPathを比較します。
   <data name="Wave colour 2" xml:space="preserve"><value>波の色 2</value></data>
   <data name="Wave colour 3" xml:space="preserve"><value>波の色 3</value></data>
   <data name="Reset wave colours" xml:space="preserve"><value>波の色をリセット</value></data>
+  <data name="KB_ManualQueue" xml:space="preserve"><value>自動入力：申請、突入承認、リザルトからの退出は手動で行ってください。</value></data>
+  <data name="KB_WaitInput" xml:space="preserve"><value>KBBの入力有効化を待機中。チャットのフォーカスは維持します。</value></data>
+  <data name="KB_InputStalled" xml:space="preserve"><value>入力を確認できず停止しました。開始で再試行できます。</value></data>
+  <data name="KB_Typing" xml:space="preserve"><value>入力中 · {0}ゲーム完了 · {1}フレーズ送信</value></data>
+  <data name="KB_Finished" xml:space="preserve"><value>上限に到達 · {0}ゲーム完了。</value></data>
+  <data name="KB_TypingSpeed" xml:space="preserve"><value>入力速度（WPM）</value></data>
+  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>初期値80 WPM、範囲10～300。入力間隔を±20%変動させ、フレーズとEnterの前に間を置きます。次の開始時に適用。</value></data>
 </root>

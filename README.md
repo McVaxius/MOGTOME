@@ -153,8 +153,8 @@ game shop linked to the MGC trader, cross-checked against the
 [official reward list](https://na.finalfantasyxiv.com/lodestone/special/keybound_brawler/).
 Targets can be prepared before the festival opens. Run limits, MGC wallet target,
 shop-on-finish and ending destination save separately in the current account;
-changing them does not start activity. The run limits and shop-on-finish choice
-are prepared for the pending event solver.
+changing them does not start activity. Either enabled limit stops typing after a confirmed game completion (or before
+the first game if the wallet target is already met).
 
 New configurations target one of each of the 19 non-coffer rewards, with the
 run limit disabled, the MGC wallet target enabled at **5,470 MGC**, and
@@ -162,7 +162,7 @@ shop-on-finish enabled. The coffer starts at zero; the ending destination is
 "Don't go anywhere." These are editable defaults; existing saved targets and
 preferences are retained. Preparing a new configuration starts nothing.
 
-**Buy works independently of the solver.** Be near the loaded MGC trader and
+**Buy also works independently of auto typing.** Be near the loaded MGC trader and
 use Buy, `/keybound buy` or `/kbb buy`. The shopper approaches that identified
 trader, validates its current shop/items/prices and festival eligibility, buys
 only missing quantities, and checks the exact item/MGC receipt after each
@@ -173,11 +173,32 @@ An uncertain purchase persists a review hold; check bags and MGC before clearing
 it with the review action. The native purchase and travel paths still need live
 event verification.
 
-Start and event entry/farming remain unavailable while the solver is pending.
-Opening the window never enters the event, sends input or starts another activity.
-No round state, score or reward is claimed. Basic play still requires a verified
-event screen, accepted input and round-end transition, followed by cancellation
-and input-release checks.
+**Start enables native auto typing.** Use Start or `/kbb start`, then manually
+queue at the Keybound Registrar and accept entry. During the game MOGTOME reads
+`KTGEWord` phrases and types into the enabled, focused `KTGInput` bar. It waits for
+each exact text echo and the submitted input to clear. **Typing speed (WPM)** is
+account-configurable from 10–300 WPM and defaults to **80 WPM** (five characters
+per word). Character delays vary by ±20%, with 200–450 ms reaction pauses and
+120–280 ms pauses before Enter. Speed changes apply on the next Start. Chat and other text inputs
+keep their focus. Disabled input (including Letterlock) receives no keys.
+
+Queueing, accepting entry, and dismissing results/returning remain manual; the
+reference implementation does not establish those callback contracts. A run is
+counted only when Dalamud reports DutyCompleted for the KBB territory actually
+played in this session. Hiding the input bar never counts a run. At a configured
+limit, shop-on-finish waits for your return outside the duty, then attempts the
+existing MGC shopper; the trader must be loaded nearby. With no enabled limits,
+auto typing waits for your next manually queued game until Stop.
+
+Stop, logout, account/character or game-language changes cancel the session and
+release owned Enter/Backspace input. Nothing starts merely by opening this window
+or loading saved settings. Native input, completion-event delivery and shopping
+still require a live-client acceptance run.
+
+Based on Auto Keybound Brawler by XeldarAlz
+https://github.com/XeldarAlz/FFXIV-AutoKeyboundBrawler
+
+See [source attribution and adaptation details](docs/keybound-attribution.md).
 
 The official event starts October 28, 2026 at 08:00 UTC. Its game help describes
 typing an enemy's displayed word and pressing Enter, with no keypresses during

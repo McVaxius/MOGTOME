@@ -2502,4 +2502,11 @@ Buka penyimpanan untuk memperbarui jumlah tercatat.</value></data>
   <data name="Wave colour 2" xml:space="preserve"><value>Warna gelombang 2</value></data>
   <data name="Wave colour 3" xml:space="preserve"><value>Warna gelombang 3</value></data>
   <data name="Reset wave colours" xml:space="preserve"><value>Atur ulang warna gelombang</value></data>
+  <data name="KB_ManualQueue" xml:space="preserve"><value>Ketik otomatis: antre, terima masuk, dan tinggalkan hasil secara manual.</value></data>
+  <data name="KB_WaitInput" xml:space="preserve"><value>Menunggu input KBB aktif; chat mempertahankan fokus.</value></data>
+  <data name="KB_InputStalled" xml:space="preserve"><value>Input tidak terkonfirmasi. Berhenti; tekan Mulai untuk mencoba lagi.</value></data>
+  <data name="KB_Typing" xml:space="preserve"><value>Mengetik · {0} permainan selesai · {1} frasa terkirim</value></data>
+  <data name="KB_Finished" xml:space="preserve"><value>Batas tercapai · {0} permainan selesai.</value></data>
+  <data name="KB_TypingSpeed" xml:space="preserve"><value>Kecepatan mengetik (WPM)</value></data>
+  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>Bawaan 80 WPM; 10–300. Jeda tombol bervariasi ±20%, dengan jeda sebelum frasa dan Enter. Berlaku saat Mulai berikutnya.</value></data>
 </root>

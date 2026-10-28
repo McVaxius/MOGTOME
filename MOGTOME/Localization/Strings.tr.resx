@@ -2502,4 +2502,11 @@ Kayıtlı miktarları yenilemek için depoları açın.</value></data>
   <data name="Wave colour 2" xml:space="preserve"><value>Dalga rengi 2</value></data>
   <data name="Wave colour 3" xml:space="preserve"><value>Dalga rengi 3</value></data>
   <data name="Reset wave colours" xml:space="preserve"><value>Dalga renklerini sıfırla</value></data>
+  <data name="KB_ManualQueue" xml:space="preserve"><value>Otomatik yazma: sıraya girme, girişi onaylama ve sonuçlardan dönüş elle yapılır.</value></data>
+  <data name="KB_WaitInput" xml:space="preserve"><value>Etkin KBB girişi bekleniyor; sohbet odağı korunur.</value></data>
+  <data name="KB_InputStalled" xml:space="preserve"><value>Giriş doğrulanmadı. Durduruldu; yeniden denemek için Başlat’a basın.</value></data>
+  <data name="KB_Typing" xml:space="preserve"><value>Yazılıyor · {0} oyun tamamlandı · {1} ifade gönderildi</value></data>
+  <data name="KB_Finished" xml:space="preserve"><value>Sınıra ulaşıldı · {0} oyun tamamlandı.</value></data>
+  <data name="KB_TypingSpeed" xml:space="preserve"><value>Yazma hızı (WPM)</value></data>
+  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>Varsayılan 80 WPM; 10–300. Tuş aralıkları ±%20 değişir; ifade ve Enter öncesi duraklar. Sonraki Başlat’ta uygulanır.</value></data>
 </root>
