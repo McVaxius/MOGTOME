@@ -42,9 +42,9 @@ internal sealed unsafe class KeyboundLoopGame(Plugin plugin) : IKeyboundLoopGame
         var results = Addon("KTGResult");
         return new(territory, Plugin.Condition[ConditionFlag.BetweenAreas] || Plugin.Condition[ConditionFlag.BetweenAreas51],
             Plugin.Condition[ConditionFlag.InDutyQueue], owned, Visible("ContentsFinderConfirm"), popped,
-            Visible("KTGEnterDialogue"), results != null, results != null && results->AtkValuesCount >= 78 && FindButton(results, 17853, 0x30) != null,
+            Visible("KTGEnterDialogue"), results != null, results != null && ButtonReady(results->GetComponentButtonById(48)),
             Plugin.Condition[ConditionFlag.BoundByDuty] && territory != KeyboundEventLoop.Arena, BlundervilleGameAdapter.Role(), entryDialog != null,
-            pop != null && DutyPopButtonReady(pop->CommenceButton));
+            pop != null && ButtonReady(pop->CommenceButton));
     }
     public bool EnsureLobby()
     {
@@ -119,17 +119,24 @@ internal sealed unsafe class KeyboundLoopGame(Plugin plugin) : IKeyboundLoopGame
 
     internal static bool ClickDutyPopButton(bool matchingPop, AtkComponentButton* button)
     {
-        if (!matchingPop || !DutyPopButtonReady(button)) return false;
+        if (!matchingPop || !ButtonReady(button)) return false;
         var node = &button->OwnerNode->AtkResNode;
         // Use the actual native button and its registered receiver/parameter. Firing callback 8
         // only proved that a callback was dispatched; the FTP2 test still needed a manual Commence.
         return BlundervilleGameAdapter.ClickRegisteredButton(node);
     }
 
-    private static bool DutyPopButtonReady(AtkComponentButton* button)
+    private static bool ButtonReady(AtkComponentButton* button)
         => button != null && button->OwnerNode != null &&
            (button->OwnerNode->AtkResNode.NodeFlags & (NodeFlags.Visible | NodeFlags.Enabled)) == (NodeFlags.Visible | NodeFlags.Enabled);
-    public bool LeaveResults() => Plugin.ClientState.TerritoryType == KeyboundEventLoop.Arena && Click("KTGResult", 17853, 0x30);
+    public bool LeaveResults()
+    {
+        if (Plugin.ClientState.TerritoryType != KeyboundEventLoop.Arena) return false;
+        var results = Addon("KTGResult");
+        var dispatched = results != null && BlundervilleGameAdapter.ClickAddonButton(results, results->GetComponentButtonById(48));
+        Plugin.Log?.Information("[MOGTOME][KBB] Results exit button dispatched={Dispatched}", dispatched);
+        return dispatched;
+    }
     public void KeepActive() => KeyboundActivity.Pulse();
     public void CancelQueue()
     {
@@ -151,28 +158,5 @@ internal sealed unsafe class KeyboundLoopGame(Plugin plugin) : IKeyboundLoopGame
     {
         var addon = (AtkUnitBase*)Plugin.GameGui.GetAddonByName(name).Address;
         return addon != null && addon->IsReady && addon->IsVisible ? addon : null;
-    }
-    private static bool Click(string name, uint label, uint nodeId = 0)
-    {
-        var addon = Addon(name); var button = addon == null ? null : FindButton(addon, label, nodeId);
-        return button != null && BlundervilleGameAdapter.ClickRegisteredButton(&button->OwnerNode->AtkResNode);
-    }
-    private static AtkComponentButton* FindButton(AtkUnitBase* addon, uint label, uint nodeId)
-    {
-        var expected = Plugin.DataManager.GetExcelSheet<Addon>().GetRow(label).Text.ToString();
-        AtkComponentButton* match = null;
-        for (var i = 0; i < addon->UldManager.NodeListCount; i++)
-        {
-            var node = addon->UldManager.NodeList[i];
-            if (node == null || !node->IsVisible() || nodeId != 0 && node->NodeId != nodeId || (ushort)node->Type < 1000) continue;
-            var component = ((AtkComponentNode*)node)->Component;
-            if (component == null || component->GetComponentType() != ComponentType.Button) continue;
-            var button = (AtkComponentButton*)component;
-            if (button->OwnerNode == null || !button->IsEnabled || button->ButtonTextNode == null ||
-                !GameText.MatchesEvaluated(GameText.ReadVisibleText(button->ButtonTextNode->NodeText.AsSpan()), expected)) continue;
-            if (match != null) return null; // An ambiguous label is not an action route.
-            match = button;
-        }
-        return match;
     }
 }

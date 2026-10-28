@@ -60,7 +60,7 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
                     if (!resultsSeen) { resultsSeen = true; stageStarted = now; }
                     typer.SuppressGameplay = true;
                     Status = Ui.M("KB_Returning");
-                    if (state.ResultsReady && !resultSubmitted)
+                    if (state.ResultsReady && !resultSubmitted && now - stageStarted >= 2000)
                     {
                         typer.ObserveCompletion(Arena);
                         resultSubmitted = true; // Consume before native dispatch.
@@ -70,7 +70,11 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
                     }
                     if (now - stageStarted > 30_000) Fail("BV_Timeout");
                 }
-                else Status = typer.Status;
+                else
+                {
+                    typer.ObserveArenaEntry(Arena);
+                    Status = typer.Status;
+                }
                 return;
             }
             if (entered)

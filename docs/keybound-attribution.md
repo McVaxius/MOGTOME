@@ -61,6 +61,12 @@ depend on a cached NPC target or a button event found in the addon's node list. 
 entry prompt comes from Warp row 131633. Only duty 1095, arena 1359, lobby 1360
 and the identified registrar/gatekeeper are automated.
 
+The results follow-up uses upstream QueueWindows.PressLeave: ready KTGResult,
+native button 48 and ECommons ClickAddonButton's addon-receiver event path.
+The implementation uses the existing ClientStructs APIs without adding ECommons
+as a dependency. It waits briefly for results to settle and no longer requires
+an unrelated localized label or speculative result value count.
+
 Premade members wait in their current territory and accept only the matching
 group queue pop. They do not travel to the Square, submit its registration
 callback or cancel the party queue. Only Leader/Solo takes the registrar route.

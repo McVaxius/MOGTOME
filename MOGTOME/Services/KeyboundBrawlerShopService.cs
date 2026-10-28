@@ -134,7 +134,7 @@ public sealed class KeyboundBrawlerShopService : IDisposable
                 if (!confirmationCleanup && DialogVisible())
                 {
                     confirmationCleanup = true;
-                    if (!BlundervilleGameAdapter.CancelOwnedPurchase(settling)) { Fail("BV_UiMismatch"); return; }
+                    if (!BlundervilleGameAdapter.CancelOwnedPurchase(settling, KeyboundBrawlerShop.CurrencyItemId)) { Fail("BV_UiMismatch"); return; }
                 }
                 if (DialogVisible() || !BlundervilleGameAdapter.ShopReady(ownedAddon))
                 { if (DateTime.UtcNow - submitted > TimeSpan.FromSeconds(10)) Fail("BV_UiMismatch"); return; }
@@ -250,13 +250,15 @@ public sealed class KeyboundBrawlerShopService : IDisposable
         return false;
     }
 
-    private void VerifyPurchase(uint wallet)
+    private unsafe void VerifyPurchase(uint wallet)
     {
         var transaction = pending!;
         if (!BlundervilleGameAdapter.TryInventory(transaction.Offer.ItemId, out var count, out var capacity))
         { Fail("Shop_UncertainPurchase"); return; }
         if (transaction.Verify(count, wallet, SaveSession))
         {
+            Plugin.Log.Information("[MOGTOME][KeyboundShop] purchase verified; item={Item}; received={Quantity}; spent={Price}",
+                transaction.Offer.ItemId, transaction.Offer.ReceiveCount, transaction.Offer.Price);
             settling = transaction.Offer;
             pending = null;
             submitted = DateTime.UtcNow;
@@ -268,6 +270,39 @@ public sealed class KeyboundBrawlerShopService : IDisposable
             if (!OwnsTrader() || count != transaction.BeforeCount || wallet != transaction.BeforeWallet ||
                 capacity < transaction.Offer.ReceiveCount || !CheckEligibility(transaction.Offer))
             { Fail("Shop_UncertainPurchase"); return; }
+            if (ownedAddon == "ShopExchangeCurrency")
+            {
+                if (!BlundervilleGameAdapter.PreparePurchaseConfirmation(transaction.Offer, ownedAddon,
+                    KeyboundBrawlerShop.CurrencyItemId, out var ready, out var dialog, out var proceed, out var equipmentWarning))
+                { BlundervilleGameAdapter.LogPurchaseMismatch(transaction.Offer); Fail("Shop_UncertainPurchase"); return; }
+                if (equipmentWarning && transaction.EquipmentWarningSubmitted)
+                {
+                    if (DateTime.UtcNow - submitted > TimeSpan.FromSeconds(10)) Fail("Shop_UncertainPurchase");
+                    return; // Wait for this acknowledged warning to close; never submit its OK twice.
+                }
+                if (proceed != null && !proceed->IsChecked)
+                {
+                    if (!transaction.ProceedSubmitted && !transaction.AcknowledgeProceed(() =>
+                        BlundervilleGameAdapter.CheckPurchaseProceed(dialog, proceed)))
+                    { BlundervilleGameAdapter.LogPurchaseMismatch(transaction.Offer); Fail("Shop_UncertainPurchase"); return; }
+                    if (DateTime.UtcNow - submitted > TimeSpan.FromSeconds(10)) Fail("Shop_UncertainPurchase");
+                    return; // Observe the acknowledgement and enabled OK button on a later update.
+                }
+                if (!ready)
+                {
+                    if (DateTime.UtcNow - submitted > TimeSpan.FromSeconds(10)) Fail("Shop_UncertainPurchase");
+                    return;
+                }
+                if (equipmentWarning)
+                {
+                    if (!transaction.AcknowledgeEquipmentWarning(() => BlundervilleGameAdapter.ConfirmPurchase(
+                        transaction.Offer, ownedAddon, KeyboundBrawlerShop.CurrencyItemId, equipmentWarning: true)))
+                    { BlundervilleGameAdapter.LogPurchaseMismatch(transaction.Offer); Fail("Shop_UncertainPurchase"); return; }
+                    Plugin.Log.Information("[MOGTOME][KeyboundShop] equipment warning acknowledged; item={Item}; awaiting purchase receipt or confirmation",
+                        transaction.Offer.ItemId);
+                    return;
+                }
+            }
             var accepted = transaction.Confirm(() => ownedAddon == "ShopExchangeItem"
                 ? MoogleShopGameAdapter.Confirm(new(transaction.Offer.ShopId, transaction.Offer.ShopName,
                     transaction.Offer.ItemId, transaction.Offer.ReceiveCount, KeyboundBrawlerShop.CurrencyItemId,
@@ -334,7 +369,7 @@ public sealed class KeyboundBrawlerShopService : IDisposable
             ownedAddon = string.Empty;
             return;
         }
-        if (offer != null && !BlundervilleGameAdapter.CancelOwnedPurchase(offer))
+        if (offer != null && !BlundervilleGameAdapter.CancelOwnedPurchase(offer, KeyboundBrawlerShop.CurrencyItemId))
             throw new InvalidOperationException("Owned purchase could not be cancelled");
         BlundervilleGameAdapter.CloseOwnedShop(ownedAddon);
         ownedAddon = string.Empty;
@@ -403,6 +438,8 @@ internal sealed class KeyboundShopPurchase
     internal uint BeforeWallet { get; }
     internal bool Submitted { get; private set; }
     internal bool ConfirmationSubmitted { get; private set; }
+    internal bool ProceedSubmitted { get; private set; }
+    internal bool EquipmentWarningSubmitted { get; private set; }
     internal bool ReceiptAcknowledged { get; private set; }
     internal bool Submit(Action save, Func<bool> dispatch)
     {
@@ -416,6 +453,18 @@ internal sealed class KeyboundShopPurchase
     {
         if (!Submitted || ConfirmationSubmitted || ReceiptAcknowledged) return false;
         ConfirmationSubmitted = true;
+        return dispatch();
+    }
+    internal bool AcknowledgeProceed(Func<bool> dispatch)
+    {
+        if (!Submitted || ProceedSubmitted || ConfirmationSubmitted || ReceiptAcknowledged) return false;
+        ProceedSubmitted = true;
+        return dispatch();
+    }
+    internal bool AcknowledgeEquipmentWarning(Func<bool> dispatch)
+    {
+        if (!Submitted || EquipmentWarningSubmitted || ConfirmationSubmitted || ReceiptAcknowledged) return false;
+        EquipmentWarningSubmitted = true;
         return dispatch();
     }
     internal bool Verify(int count, uint wallet, Action save)

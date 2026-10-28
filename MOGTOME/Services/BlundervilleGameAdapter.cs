@@ -597,6 +597,42 @@ internal sealed unsafe class BlundervilleGameAdapter
         return true;
     }
 
+    internal static bool ClickAddonButton(AtkUnitBase* addon, AtkComponentButton* button)
+    {
+        if (addon == null || addon->AtkEventListener.VirtualTable == null ||
+            addon->AtkEventListener.VirtualTable->ReceiveEvent == null || button == null || button->OwnerNode == null) return false;
+        var node = &button->OwnerNode->AtkResNode;
+        if ((node->NodeFlags & (NodeFlags.Visible | NodeFlags.Enabled)) != (NodeFlags.Visible | NodeFlags.Enabled)) return false;
+        var registered = node->AtkEventManager.Event;
+        if (registered == null || registered->Param > int.MaxValue ||
+            registered->State.StateFlags.HasFlag(AtkEventStateFlags.IsGlobalEvent)) return false;
+        // Xeldar's QueueWindows uses ECommons ClickAddonButton: send the button's real event
+        // type and parameter to the containing addon, rather than guessing a callback number.
+        var click = *registered;
+        addon->ReceiveEvent(click.State.EventType, (int)click.Param, &click);
+        return true;
+    }
+
+    internal static bool CheckPurchaseProceed(AtkUnitBase* addon, AtkComponentCheckBox* checkbox)
+    {
+        if (addon == null || addon->AtkEventListener.VirtualTable == null ||
+            addon->AtkEventListener.VirtualTable->ReceiveEvent == null || checkbox == null || checkbox->OwnerNode == null) return false;
+        var node = &checkbox->OwnerNode->AtkResNode;
+        if ((node->NodeFlags & (NodeFlags.Visible | NodeFlags.Enabled)) != (NodeFlags.Visible | NodeFlags.Enabled)) return false;
+        if (checkbox->IsChecked) return true;
+        var registered = node->AtkEventManager.Event;
+        while (registered != null && registered->State.EventType != AtkEventType.ButtonClick) registered = registered->NextEvent;
+        if (registered == null || registered->Listener != &addon->AtkEventListener || registered->Param > int.MaxValue ||
+            registered->State.StateFlags.HasFlag(AtkEventStateFlags.IsGlobalEvent)) return false;
+        // Match the existing native checkbox path: update its component state before notifying
+        // the containing addon, whose handler enables OK from the checked state.
+        var click = *registered;
+        var data = new AtkEventData();
+        checkbox->SetChecked(true);
+        addon->ReceiveEvent(click.State.EventType, (int)click.Param, &click, &data);
+        return true;
+    }
+
     internal static void LogOfferMismatch(BlundervilleOffer offer, string addonName)
     {
         var agent = AgentShop.Instance();
@@ -631,6 +667,23 @@ internal sealed unsafe class BlundervilleGameAdapter
                 var yesno = (AddonSelectYesno*)addon;
                 if (yesno->PromptText != null)
                     Plugin.Log.Warning("[MOGTOME][BV] owned purchase prompt={Prompt}", GameText.ReadVisibleText(yesno->PromptText->NodeText.AsSpan()));
+                if (addon->AtkValuesCount == 13)
+                {
+                    var shop = (AtkUnitBase*)Plugin.GameGui.GetAddonByName("ShopExchangeCurrency").Address;
+                    var agent = AgentShop.Instance();
+                    var checkbox = yesno->ConfirmCheckBox;
+                    Plugin.Log.Warning("[MOGTOME][BV] equipment warning state; blockedShop={Blocked}; shop={Shop}; selectedRow={Row}; quantity={Quantity}; checkbox={Checkbox}; checked={Checked}; localizedWarningFound={Localized}",
+                        addon->BlockedParentId, shop == null ? 0 : shop->Id, agent == null ? -1 : agent->SelectedItemIndex,
+                        agent == null ? -1 : agent->SelectedItemStackSize, checkbox != null, checkbox != null && checkbox->IsChecked,
+                        EquipmentWarningText() != null);
+                    if (checkbox != null && checkbox->OwnerNode != null)
+                    {
+                        var count = 0;
+                        for (var evt = checkbox->OwnerNode->AtkResNode.AtkEventManager.Event; evt != null && count++ < 16; evt = evt->NextEvent)
+                            Plugin.Log.Warning("[MOGTOME][BV] Proceed event type={Type}; parameter={Parameter}; dialogReceiver={Receiver}",
+                                evt->State.EventType, evt->Param, evt->Listener == &addon->AtkEventListener);
+                    }
+                }
             }
             if (addon->AtkValues == null) continue;
             for (var i = 0; i < Math.Min(64, (int)addon->AtkValuesCount); i++)
@@ -639,21 +692,60 @@ internal sealed unsafe class BlundervilleGameAdapter
         }
     }
 
-    public static bool ConfirmPurchase(BlundervilleOffer offer, string ownedAddon, uint currencyItemId = MgfItemId)
+    public static bool ConfirmPurchase(BlundervilleOffer offer, string ownedAddon, uint currencyItemId = MgfItemId,
+        bool equipmentWarning = false)
     {
-        if (!TryValidateOffer(offer, out var currentAddon, out _, currencyItemId) || currentAddon != ownedAddon) return false;
+        if (!TryPurchaseConfirmation(offer, ownedAddon, currencyItemId, out var dialog, out var button, out var proceed, out var warning) ||
+            warning != equipmentWarning ||
+            dialog == null || button == null || proceed != null && !proceed->IsChecked) return false;
+        return ClickAddonButton(dialog, button);
+    }
+
+    internal static bool PreparePurchaseConfirmation(BlundervilleOffer offer, string ownedAddon, uint currencyItemId,
+        out bool ready, out AtkUnitBase* dialog, out AtkComponentCheckBox* proceed, out bool equipmentWarning)
+    {
+        ready = false;
+        if (!TryPurchaseConfirmation(offer, ownedAddon, currencyItemId, out dialog, out var button, out proceed, out equipmentWarning)) return false;
+        ready = dialog != null && button != null && button->OwnerNode != null && button->IsEnabled &&
+            (button->OwnerNode->AtkResNode.NodeFlags & NodeFlags.Visible) != 0 &&
+            (proceed == null || proceed->IsChecked);
+        return true;
+    }
+
+    private static bool TryPurchaseConfirmation(BlundervilleOffer offer, string ownedAddon, uint currencyItemId,
+        out AtkUnitBase* dialog, out AtkComponentButton* button, out AtkComponentCheckBox* proceed, out bool equipmentWarning)
+    {
+        dialog = null; button = null; proceed = null; equipmentWarning = false;
+        if (!TryValidateOffer(offer, out var currentAddon, out var row, currencyItemId) || currentAddon != ownedAddon) return false;
         if (Visible("SelectYesno"))
         {
             var addon = (AddonSelectYesno*)Plugin.GameGui.GetAddonByName("SelectYesno").Address;
-            if (addon == null || addon->PromptText == null || addon->AtkValues == null || addon->AtkValuesCount < 16 ||
-                addon->AtkValues[12].Type != AtkValueType.Int || !addon->CollectibleAtkValuesAvailable) return false;
-            var payload = addon->CollectibleTypedAtkValues;
-            if (payload->ItemId.Type != AtkValueType.UInt || payload->ItemId.UInt != offer.ItemId) return false;
+            if (addon != null && !addon->IsReady) return true;
+            if (addon == null || addon->PromptText == null || addon->AtkValues == null) return false;
             var prompt = GameText.ReadVisibleText(addon->PromptText->NodeText.AsSpan());
-            var numbers = Regex.Matches(prompt, @"[0-9](?:[0-9,.\u00A0\u202F]*[0-9])?");
-            var price = offer.Price.ToString(CultureInfo.InvariantCulture);
-            if (numbers.Count != 1 || new string(numbers[0].Value.Where(char.IsDigit).ToArray()) != price) return false;
-            return ClickSelectYesno(addon, yes: true);
+            if (addon->AtkValuesCount == 13)
+            {
+                var shop = (AtkUnitBase*)Plugin.GameGui.GetAddonByName(ownedAddon).Address;
+                equipmentWarning = EquipmentWarningMatches(addon, shop, AgentShop.Instance(), row, offer,
+                    prompt, EquipmentWarningText());
+                if (!equipmentWarning) return false;
+            }
+            else
+            {
+                if (addon->AtkValuesCount < 16 || addon->AtkValues[12].Type != AtkValueType.Int ||
+                    !addon->CollectibleAtkValuesAvailable) return false;
+                var payload = addon->CollectibleTypedAtkValues;
+                if (payload->ItemId.Type != AtkValueType.UInt || payload->ItemId.UInt != offer.ItemId) return false;
+                var numbers = Regex.Matches(prompt, @"[0-9](?:[0-9,.\u00A0\u202F]*[0-9])?");
+                var price = offer.Price.ToString(CultureInfo.InvariantCulture);
+                if (numbers.Count != 1 || new string(numbers[0].Value.Where(char.IsDigit).ToArray()) != price) return false;
+            }
+            dialog = (AtkUnitBase*)addon;
+            button = addon->YesButton;
+            var checkbox = addon->ConfirmCheckBox;
+            if (checkbox != null && checkbox->OwnerNode != null &&
+                (checkbox->OwnerNode->AtkResNode.NodeFlags & NodeFlags.Visible) != 0) proceed = checkbox;
+            return button != null;
         }
         var dialogName = ownedAddon == "ShopExchangeCurrency" ? "ShopExchangeCurrencyDialog" : "ShopExchangeItemDialog";
         if (!Visible(dialogName)) return false;
@@ -661,28 +753,59 @@ internal sealed unsafe class BlundervilleGameAdapter
         if (ownedAddon != "ShopExchangeCurrency") return false;
         // Revalidate the owned shop before accepting its quantity dialog. Each submission is one transaction.
         if (!TryValidateOffer(offer, out var addonName, out _, currencyItemId) || addonName != ownedAddon) return false;
-        var dialog = (AtkUnitBase*)Plugin.GameGui.GetAddonByName(dialogName).Address;
-        if (dialog == null || dialog->UldManager.NodeList == null) return false;
-        if (ownedAddon == "ShopExchangeCurrency")
+        dialog = (AtkUnitBase*)Plugin.GameGui.GetAddonByName(dialogName).Address;
+        if (dialog != null && !dialog->IsReady) { dialog = null; return true; }
+        if (dialog == null || dialog->UldManager.NodeList == null || dialog->UldManager.NodeListCount is 0 or > 256) return false;
+        var inputs = 0;
+        for (var index = 0; index < dialog->UldManager.NodeListCount; index++)
         {
-            if (dialog->UldManager.NodeListCount <= 8 || dialog->UldManager.NodeList[8] == null) return false;
-            var input = dialog->UldManager.NodeList[8]->GetAsAtkComponentNumericInput();
-            if (input == null || input->Value != offer.ReceiveCount) return false;
+            var node = dialog->UldManager.NodeList[index];
+            if (node == null) continue;
+            var input = node->GetAsAtkComponentNumericInput();
+            if (input != null && input->OwnerNode != null &&
+                (input->OwnerNode->AtkResNode.NodeFlags & NodeFlags.Visible) != 0)
+            {
+                if (input->Value != 1 || ++inputs > 1) return false;
+            }
+            var checkbox = node->GetAsAtkComponentCheckBox();
+            if (checkbox == null || checkbox->OwnerNode == null ||
+                (checkbox->OwnerNode->AtkResNode.NodeFlags & NodeFlags.Visible) == 0) continue;
+            // This owned quantity confirmation has a single optional Proceed acknowledgement.
+            // Multiple visible checkboxes are ambiguous and must not be toggled automatically.
+            if (proceed != null && proceed != checkbox) return false;
+            proceed = checkbox;
         }
-        var nodeId = ownedAddon == "ShopExchangeCurrency" ? 17u : 18u;
-        var button = dialog->GetComponentButtonById(nodeId);
-        if (button == null || !button->IsEnabled) return false;
-        var owner = button->AtkComponentBase.OwnerNode;
-        if (owner == null) return false;
-        var registered = owner->AtkResNode.AtkEventManager.Event;
-        while (registered != null && registered->State.EventType != AtkEventType.ButtonClick) registered = registered->NextEvent;
-        if (registered == null || registered->Listener == null || registered->Listener->VirtualTable == null ||
-            registered->Listener->VirtualTable->ReceiveEvent == null || registered->Param > int.MaxValue ||
-            registered->State.StateFlags.HasFlag(AtkEventStateFlags.IsGlobalEvent)) return false;
-        var click = *registered;
-        var data = new AtkEventData();
-        click.Listener->ReceiveEvent(click.State.EventType, (int)click.Param, &click, &data);
-        return true;
+        button = dialog->GetComponentButtonById(17);
+        return inputs == 1 && button != null && button->OwnerNode != null;
+    }
+
+    private static string? EquipmentWarningText()
+    {
+        // Resolve the static warning's identity in English, then use the client's native translation.
+        foreach (var row in Plugin.DataManager.GetExcelSheet<Addon>(ClientLanguage.English))
+            if (GameText.Normalize(row.Text.ToString()) is
+                "You will never be able to equip this item. Proceed with the transaction?" or
+                "You will never be able to equip this item.Proceed with the transaction?")
+                return Plugin.SeStringEvaluator.EvaluateFromAddon(row.RowId, language: Plugin.ClientState.ClientLanguage).ToString();
+        return null;
+    }
+
+    internal static bool EquipmentWarningMatches(AddonSelectYesno* addon, AtkUnitBase* shop, AgentShop* agent,
+        int row, BlundervilleOffer offer, string prompt, string? expectedPrompt)
+    {
+        // Standard equipment warnings have no item payload. Bind them to the blocked shop and
+        // its selected one-transaction row instead of reading collectible-only values 13..15.
+        if (addon == null || addon->AtkValues == null || addon->AtkValuesCount != 13 ||
+            addon->AtkValues[12].Type != AtkValueType.Int || addon->AtkValues[12].Int != 0 ||
+            shop == null || shop->Id == 0 || addon->BlockedParentId != shop->Id || agent == null ||
+            agent->ItemReceiveCount is < 1 or > 122 ||
+            row < 0 || row >= agent->ItemReceiveSpan.Length || agent->SelectedItemIndex != row ||
+            agent->SelectedItemStackSize != 1 ||
+            agent->ItemReceiveSpan[row].ItemId != offer.ItemId || agent->ItemReceiveSpan[row].ItemCount != offer.ReceiveCount ||
+            !GameText.MatchesEvaluated(prompt, expectedPrompt)) return false;
+        var checkbox = addon->ConfirmCheckBox;
+        return checkbox != null && checkbox->OwnerNode != null &&
+            (checkbox->OwnerNode->AtkResNode.NodeFlags & NodeFlags.Visible) != 0;
     }
 
     public static void CloseOwnedShop(string addonName)
@@ -691,10 +814,16 @@ internal sealed unsafe class BlundervilleGameAdapter
             if (!string.IsNullOrEmpty(name) && Visible(name)) Callback(name, -1);
     }
 
-    public static bool CancelOwnedPurchase(BlundervilleOffer offer)
+    public static bool CancelOwnedPurchase(BlundervilleOffer offer, uint currencyItemId = MgfItemId)
     {
         var addon = (AddonSelectYesno*)Plugin.GameGui.GetAddonByName("SelectYesno").Address;
         if (addon == null || !addon->IsVisible) return true;
+        if (addon->AtkValuesCount == 13)
+        {
+            if (!TryPurchaseConfirmation(offer, "ShopExchangeCurrency", currencyItemId,
+                out var dialog, out _, out _, out var warning) || !warning || dialog != (AtkUnitBase*)addon) return false;
+            return ClickAddonButton(dialog, addon->NoButton);
+        }
         if (addon->AtkValues == null || addon->AtkValuesCount < 16 || addon->AtkValues[12].Type != AtkValueType.Int ||
             !addon->CollectibleAtkValuesAvailable || addon->CollectibleTypedAtkValues->ItemId.Type != AtkValueType.UInt ||
             addon->CollectibleTypedAtkValues->ItemId.UInt != offer.ItemId) return false;

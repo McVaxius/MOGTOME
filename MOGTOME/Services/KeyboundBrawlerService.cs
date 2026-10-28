@@ -39,7 +39,7 @@ public sealed class KeyboundBrawlerService : IDisposable
 
     public KeyboundBrawlerService() : this(new KeyboundInput())
     {
-        Plugin.Log?.Information("[MOGTOME][KBB] Loaded kbb-focus-20261028-04; passive until Start.");
+        Plugin.Log?.Information("[MOGTOME][KBB] Loaded kbb-focus-20261028-06; passive until Start.");
     }
     internal KeyboundBrawlerService(IKeyboundInput input, Func<int, int, int>? drawDelay = null)
     { this.input = input; this.drawDelay = drawDelay; }
@@ -97,7 +97,7 @@ public sealed class KeyboundBrawlerService : IDisposable
         ResetTyping();
         IsRunning = true;
         Status = Ui.M("KB_Queueing");
-        Plugin.Log?.Information("[MOGTOME][KBB] Started kbb-focus-20261028-04; mode={Mode}, role={Role}, wpm={Wpm}, runLimit={RunLimit}, walletTarget={WalletTarget}",
+        Plugin.Log?.Information("[MOGTOME][KBB] Started kbb-focus-20261028-06; mode={Mode}, role={Role}, wpm={Wpm}, runLimit={RunLimit}, walletTarget={WalletTarget}",
             settings.PlayMode, settings.PartyRole, settings.TypingWpm, runLimit, walletTarget?.ToString() ?? "off");
         return true;
     }
@@ -109,7 +109,17 @@ public sealed class KeyboundBrawlerService : IDisposable
             completedTerritory == 0 || completedTerritory != roundTerritory || territory != completedTerritory) return;
         completedRound = true;
         CompletedRuns++;
+        Plugin.Log?.Information("[MOGTOME][KBB] Round completion recorded; completedRuns={Runs}", CompletedRuns);
         ResetTyping();
+    }
+
+    internal void ObserveArenaEntry(uint admittedTerritory)
+    {
+        if (!IsRunning || !ready || busy || !inEvent || admittedTerritory == 0 ||
+            territory != admittedTerritory || roundTerritory == admittedTerritory) return;
+        roundTerritory = admittedTerritory;
+        roundSeen = true;
+        completedRound = false;
     }
 
     internal void Update(uint? wallet, long now)

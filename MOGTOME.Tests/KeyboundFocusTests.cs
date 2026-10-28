@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using MOGTOME.Services.Keybound;
+using MOGTOME.Services;
 
 namespace MOGTOME.Tests;
 
@@ -45,6 +46,39 @@ public sealed unsafe class KeyboundFocusTests
     private static byte Visible(AtkResNode* node) => (byte)((node->NodeFlags & NodeFlags.Visible) != 0 ? 1 : 0);
 
     [ThreadStatic] private static int clicks, parameter, x, y;
+    [ThreadStatic] private static nint receivedBy;
+
+    [UnmanagedCallersOnly]
+    private static void ReceiveAddon(AtkEventListener* listener, AtkEventType type, int param, AtkEvent* evt, AtkEventData* data)
+    {
+        clicks++; parameter = param; receivedBy = (nint)listener;
+        evt->Param = 999;
+    }
+
+    [Fact]
+    public void ResultsButtonUsesTheContainingAddonAndTheNativeRegistrationWithoutRequiringATranslatedLabel()
+    {
+        clicks = 0;
+        var table = new AtkEventListener.AtkEventListenerVirtualTable { ReceiveEvent = &ReceiveAddon };
+        var addon = new AtkUnitBase { AtkEventListener = new AtkEventListener { VirtualTable = &table } };
+        var registration = new AtkEvent
+        {
+            Param = 42, State = new AtkEventState { EventType = AtkEventType.ButtonClick },
+        };
+        var owner = new AtkComponentNode();
+        owner.AtkResNode.NodeFlags = NodeFlags.Visible | NodeFlags.Enabled;
+        owner.AtkResNode.AtkEventManager.Event = &registration;
+        var button = new AtkComponentButton { OwnerNode = &owner };
+        Assert.True(BlundervilleGameAdapter.ClickAddonButton(&addon, &button));
+        Assert.Equal(1, clicks);
+        Assert.Equal((nint)(&addon.AtkEventListener), receivedBy);
+        Assert.Equal(42, parameter);
+        Assert.Equal(42u, registration.Param);
+        owner.AtkResNode.NodeFlags = NodeFlags.Visible;
+        Assert.False(BlundervilleGameAdapter.ClickAddonButton(&addon, &button));
+        Assert.False(BlundervilleGameAdapter.ClickAddonButton(null, &button));
+        Assert.Equal(1, clicks);
+    }
 
     [Fact]
     public void MatchingDutyPopUsesNativeButtonRegistrationAndRejectsForeignDisabledOrMissingButtons()

@@ -8,10 +8,12 @@ public sealed class KeyboundLoopTests
     private sealed class Fixture : IDisposable
     {
         internal readonly FakeGame Game = new();
-        internal readonly KeyboundBrawlerService Typer = new(new KeyboundTypingTests.FakeInput("a"), (_, _) => 0);
+        internal readonly KeyboundTypingTests.FakeInput Input = new("a");
+        internal readonly KeyboundBrawlerService Typer;
         internal readonly KeyboundEventLoop Loop;
         internal Fixture(int limit = 0, MOGTOME.Models.KeyboundPartyRole role = MOGTOME.Models.KeyboundPartyRole.Leader)
         {
+            Typer = new(Input, (_, _) => 0);
             Loop = new(Game, Typer);
             Typer.Observe(true, false, 23, KeyboundEventLoop.Lobby);
             Assert.True(Typer.Start(new() { WalletTargetEnabled = false, RunLimitEnabled = limit > 0, RunLimit = limit }));
@@ -73,18 +75,18 @@ public sealed class KeyboundLoopTests
         f.Game.Frame = new(KeyboundEventLoop.Arena, false, false, false, false, false, false, false, false, false,
             MOGTOME.Models.BlundervilleRole.Member);
         f.Tick(300);
-        f.Game.Frame = f.Game.Frame with { Results = true, ResultsReady = true }; f.Tick(400);
+        f.Game.Frame = f.Game.Frame with { Results = true, ResultsReady = true }; f.Tick(400); f.Tick(2400);
         Assert.Equal(1, f.Game.Leaves);
         Assert.Equal(1, f.Typer.CompletedRuns);
         f.Game.Frame = new(129, false, false, false, false, false, false, false, false, false,
             MOGTOME.Models.BlundervilleRole.Member);
-        f.Tick(500);
+        f.Tick(2500);
         Assert.Equal(limit == 0, f.Loop.IsActive);
         Assert.Equal(limit != 0, f.Typer.Finished);
         if (limit == 0)
         {
             Assert.Equal("BV_MemberWait", f.Loop.Status.Key);
-            f.Game.Frame = f.Game.Frame with { Pop = true, PopMatches = true }; f.Tick(600);
+            f.Game.Frame = f.Game.Frame with { Pop = true, PopMatches = true }; f.Tick(2600);
             Assert.Equal(2, f.Game.Commences);
         }
         Assert.Equal(0, f.Game.Registers + f.Game.Approaches + f.Game.LobbyTrips + f.Game.Cancels);
@@ -159,15 +161,15 @@ public sealed class KeyboundLoopTests
         f.Game.Frame = f.Game.Frame with { Transitioning = false }; f.Tick(700);
         Assert.True(f.Typer.IsRunning);
         Assert.Equal(1, f.Game.Heartbeats);
-        f.Game.Frame = f.Game.Frame with { Results = true, ResultsReady = true }; f.Tick(800); f.Tick(900);
+        f.Game.Frame = f.Game.Frame with { Results = true, ResultsReady = true }; f.Tick(800); f.Tick(900); f.Tick(2800);
         Assert.Equal(1, f.Game.Leaves);
         Assert.Equal(1, f.Typer.CompletedRuns);
-        f.Game.Frame = new(KeyboundEventLoop.Lobby, false, false, false, false, false, false, false, false, false); f.Tick(1000);
+        f.Game.Frame = new(KeyboundEventLoop.Lobby, false, false, false, false, false, false, false, false, false); f.Tick(3000);
         Assert.Equal(limit == 0, f.Loop.IsActive);
         Assert.Equal(limit != 0, f.Typer.Finished);
         if (limit == 0)
         {
-            f.Game.Frame = f.Game.Frame with { Entry = true }; f.Tick(1100);
+            f.Game.Frame = f.Game.Frame with { Entry = true }; f.Tick(3100);
             Assert.Equal(2, f.Game.Registers);
         }
         else Assert.Equal(1, f.Game.Registers);
@@ -185,6 +187,32 @@ public sealed class KeyboundLoopTests
         f.Game.Frame = f.Game.Frame with { PopReady = true };
         f.Tick(200); f.Tick(300);
         Assert.Equal(1, f.Game.Commences);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public void AdmittedRoundsCountAndLeaveResultsAtTheLimitEvenIfTheInputReaderNeverBecomesReady(int limit)
+    {
+        using var f = new Fixture(limit);
+        f.Input.Visible = false;
+        for (var round = 1; round <= limit; round++)
+        {
+            var start = round * 10_000L;
+            f.Game.Frame = new(KeyboundEventLoop.Arena, false, false, false, false, false, false, false, false, false);
+            f.Tick(start);
+            f.Game.Frame = f.Game.Frame with { Results = true, ResultsReady = true };
+            f.Tick(start + 100);
+            f.Tick(start + 2099);
+            Assert.Equal(round - 1, f.Game.Leaves);
+            f.Tick(start + 2100);
+            Assert.Equal(round, f.Game.Leaves);
+            Assert.Equal(round, f.Typer.CompletedRuns);
+            f.Game.Frame = new(KeyboundEventLoop.Lobby, false, false, false, false, false, false, false, false, false);
+            f.Tick(start + 2200);
+            Assert.Equal(round < limit, f.Loop.IsActive);
+        }
+        Assert.True(f.Typer.Finished);
     }
 
     [Fact]
