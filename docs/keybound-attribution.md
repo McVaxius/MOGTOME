@@ -45,8 +45,11 @@ maintained or endorsed by the original author.
 
 Native registration and result layout cross-checked against AtmoOmen's published
 FFXIVClientStructs.Expansion KTGEnterDialogue and KTGResult definitions. MOGTOME
-uses current localized Register/Leave labels and their actual registered button
-events, without adding that package or invoking its private methods. The Square
+uses the live-reported registration callback (`KTGEnterDialogue`, update state
+true, one Int 0) and the current localized Leave button's registered event,
+without adding that package or invoking its private methods. A ready registration
+dialog in the Square can be used even if it was opened before Start; it does not
+depend on a cached NPC target or a button event found in the addon's node list. The Square
 entry prompt comes from Warp row 131633. Only duty 1095, arena 1359, lobby 1360
 and the identified registrar/gatekeeper are automated.
 

@@ -17,7 +17,7 @@ internal sealed unsafe class KeyboundLoopGame(Plugin plugin) : IKeyboundLoopGame
 {
     private readonly BlundervilleGameAdapter interactions = new(plugin);
     private bool movement, travel, gateSubmitted;
-    private ulong gate, registrar;
+    private ulong gate;
     private long nextInteraction;
     private const uint Saucer = 144, Registrar = 1058751, Gatekeeper = 1058754, SquareWarp = 131633;
     private static bool Visible(string name) => BlundervilleGameAdapter.Visible(name);
@@ -37,11 +37,12 @@ internal sealed unsafe class KeyboundLoopGame(Plugin plugin) : IKeyboundLoopGame
         }
         var popped = queue != null && Matches(queue->PoppedQueueEntry);
         var territory = Plugin.ClientState.TerritoryType;
+        var entryDialog = Addon("KTGEnterDialogue");
         var results = Addon("KTGResult");
         return new(territory, Plugin.Condition[ConditionFlag.BetweenAreas] || Plugin.Condition[ConditionFlag.BetweenAreas51],
             Plugin.Condition[ConditionFlag.InDutyQueue], owned, Visible("ContentsFinderConfirm"), popped,
             Visible("KTGEnterDialogue"), results != null, results != null && results->AtkValuesCount >= 78 && FindButton(results, 17853, 0x30) != null,
-            Plugin.Condition[ConditionFlag.BoundByDuty] && territory != KeyboundEventLoop.Arena, BlundervilleGameAdapter.Role());
+            Plugin.Condition[ConditionFlag.BoundByDuty] && territory != KeyboundEventLoop.Arena, BlundervilleGameAdapter.Role(), entryDialog != null);
     }
     public bool EnsureLobby()
     {
@@ -76,15 +77,15 @@ internal sealed unsafe class KeyboundLoopGame(Plugin plugin) : IKeyboundLoopGame
             }
             return false;
         }
-        if (!gateSubmitted) Approach(Gatekeeper, ref gate);
+        if (!gateSubmitted) Approach(Gatekeeper);
         return false;
     }
     public bool ApproachRegistrar()
     {
         if (BlundervilleGameAdapter.Role() == Models.BlundervilleRole.Member) return false;
-        return Approach(Registrar, ref registrar);
+        return Approach(Registrar);
     }
-    private bool Approach(uint baseId, ref ulong ownedNpc)
+    private bool Approach(uint baseId)
     {
         if (Visible("SelectString") || Visible("SelectIconString") || Visible("Talk") || Visible("SelectYesno"))
             throw new InvalidOperationException("Unexpected dialog before KBB interaction");
@@ -92,15 +93,21 @@ internal sealed unsafe class KeyboundLoopGame(Plugin plugin) : IKeyboundLoopGame
         var npc = Plugin.ObjectTable.FirstOrDefault(value => value.ObjectKind == ObjectKind.EventNpc && value.BaseId == baseId);
         if (npc == null) return false;
         if (!interactions.ApproachAndInteract(npc, ref movement)) return false;
-        ownedNpc = npc.GameObjectId; nextInteraction = Environment.TickCount64 + 3000;
+        if (baseId == Gatekeeper) gate = npc.GameObjectId;
+        nextInteraction = Environment.TickCount64 + 3000;
         return true;
     }
-    public bool Register()
-    {
-        if (Plugin.ClientState.TerritoryType != KeyboundEventLoop.Lobby ||
-            BlundervilleGameAdapter.Role() != Models.BlundervilleRole.Member && (registrar == 0 || Plugin.TargetManager.Target?.GameObjectId != registrar)) return false;
-        return Click("KTGEnterDialogue", 17824);
-    }
+    public bool Register() => SubmitRegistration(Plugin.ClientState.TerritoryType,
+        Addon("KTGEnterDialogue") != null, BlundervilleGameAdapter.Role(), GameHelpers.TryFireAddonCallback);
+
+    internal static bool SubmitRegistration(uint territory, bool entryReady, Models.BlundervilleRole role,
+        Func<string, bool, object[], bool> callback)
+        // Observed registration capture: KTGEnterDialogue, update visibility 1, one Int value 0.
+        // This dedicated ready dialog identifies the action even when it was open before Start or
+        // the game cleared the NPC target. Party-role admission remains owned by the event loop.
+        => territory == KeyboundEventLoop.Lobby && entryReady &&
+            role is Models.BlundervilleRole.Solo or Models.BlundervilleRole.Leader or Models.BlundervilleRole.Member &&
+            callback("KTGEnterDialogue", true, [0]);
     public bool Commence()
     {
         var finder = ContentsFinder.Instance(); var queue = finder == null ? null : finder->GetQueueInfo();

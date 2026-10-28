@@ -1,3 +1,9 @@
+2026-10-28 - 4.0.0.8 Keybound registration callback
+
+- Fix the reported Unexpected game UI stop at the KBB registration panel. Use the observed KTGEnterDialogue callback with update enabled and one Int 0 instead of looking for a button event.
+- Accept the dedicated ready registration panel in Keybound Square even when it was opened before Start or the NPC target was cleared. Wait through dialog setup; retain actual party-role admission and consume registration before dispatch so it cannot repeat.
+- Add callback payload/context, pre-opened/unready dialog and rejected-dispatch regressions. Keep Winner/Thrower speed, party roles, focus recovery, results and AFK handling unchanged. Bump all plugin/repository metadata exactly one revision, 4.0.0.7 to 4.0.0.8. Native queue entry still needs an in-game retest.
+
 2026-10-28 - 4.0.0.7 Keybound input activation recovery
 
 - Recover text entry after stun/level transitions by restoring addon/component focus and dispatching the KBB input's own registered mouse handler when selection alone does not activate it. Keep controller cursor focus off and wait for active native routing before typing.

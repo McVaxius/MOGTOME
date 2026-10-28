@@ -5,7 +5,8 @@ using MOGTOME.Models;
 namespace MOGTOME.Services.Keybound;
 
 internal readonly record struct KeyboundLoopFrame(uint Territory, bool Transitioning, bool Queued,
-    bool QueueMatches, bool Pop, bool PopMatches, bool Entry, bool Results, bool ResultsReady, bool OtherDuty, BlundervilleRole PartyRole = BlundervilleRole.Solo);
+    bool QueueMatches, bool Pop, bool PopMatches, bool Entry, bool Results, bool ResultsReady, bool OtherDuty,
+    BlundervilleRole PartyRole = BlundervilleRole.Solo, bool EntryReady = true);
 
 internal interface IKeyboundLoopGame
 {
@@ -100,6 +101,7 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
             if (!game.EnsureLobby()) return;
             if (state.Entry)
             {
+                if (!state.EntryReady) return; // Visible during setup is not a rejected registration.
                 registered = true; stageStarted = now;
                 game.StopMovement();
                 if (!game.Register()) Fail("BV_UiMismatch");
