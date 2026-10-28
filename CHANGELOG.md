@@ -1,3 +1,10 @@
+2026-10-28 - 4.0.0.10 upstream KBB mechanics
+
+- Review XeldarAlz AutoKeyboundBrawler 1.4.2.0 (74857808beec411100fd5f1f7a410e231ff8c46d) and 1.4.3.0 (54e186d50e9ceb47386ae57f19eb8e2809e2190c). Adapt timed Letterlock holds past vanished cast bars, barrier phrase/spot memory, per-component cast/gauge reading with one enemy per cast, and 1.5-second stale-word exclusion. Add named controller/mouse idle timer resets inside the existing matched KBB activity guard; preserve histories and undocumented fields.
+- Add guarded, owned wake-key recovery for direct-chat/controller entry, preserving release through Stop and foreground changes. Require a ready field, visible words, no other text-input owner and no Letterlock hold; system key-down only targets a foreground game. Retain configurable Winner/half-speed Thrower pace and reading pauses.
+- Use Japanese hiragana word-sheet readings, omit only optional punctuation, and recall concealed phrases only under the noise overlay. Invalidate readings across client-language changes; retain the complete original typed target when displayed text is trimmed.
+- Preserve full event automation, registration callback, member waiting-in-place and scoped native AFK heartbeat. Update attribution and gameplay regressions; bump 4.0.0.9 to 4.0.0.10. Native focus, mechanics and party gameplay still require loaded-client validation.
+
 2026-10-28 - 4.0.0.9 Keybound members wait in place
 
 - Correct premade Member mode: wait in the current territory for the leader's matching KBB queue pop, then accept, play, leave Results and wait for the next queue. Members no longer travel to Keybound Square or submit registration; only Leader/Solo takes the registrar route.

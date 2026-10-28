@@ -19,6 +19,7 @@ internal static unsafe class KeyboundUi
     // for phrases too long for the large line.
     private const uint LargePhraseTextNodeId = 20;
     private const uint SmallPhraseTextNodeId = 22;
+    private const uint ObscuringOverlayNodeId = 10;
 
     // KTGEnemyCastBar.uld: node 3 is the "Interrupted!" label, node 4 the spell name, node 5 the hits
     // still needed to interrupt (drawn under the bar), node 6 the 128 px wide fill.
@@ -34,14 +35,14 @@ internal static unsafe class KeyboundUi
     private const float GaugeReachX = 90f;
     private const float GaugeReachAbove = 30f;
     private const float GaugeReachBelow = 150f;
-    private const float CastReach = 260f;
+    private const float CastReach = 450f;
 
     // Barrier phrases are drawn over the barrier band the input bar sits on, so a phrase without a
     // gauge only counts as one this close to the input bar; the boss at the far edge never does.
     private const float BarrierZoneAbove = 260f;
     private const float BarrierZoneBelow = 120f;
 
-    public static void Read(BattleSnapshot snapshot, TextSlotCache cache)
+    public static void Read(BattleSnapshot snapshot, TextSlotCache cache, PhraseMemory memory)
     {
         snapshot.Clear();
         var unitManager = RaptureAtkUnitManager.Instance();
@@ -51,7 +52,7 @@ internal static unsafe class KeyboundUi
         }
 
         ReadInput(unitManager, snapshot, cache);
-        ReadPhrases(unitManager, snapshot, cache);
+        ReadPhrases(unitManager, snapshot, cache, memory);
         ReadCasts(unitManager, snapshot, cache);
         ReadGauges(unitManager, snapshot);
         LinkPhrases(snapshot);
@@ -142,6 +143,18 @@ internal static unsafe class KeyboundUi
             (input->ComponentFlags & 2) != 0 && IsShown((AtkResNode*)input->OwnerNode) &&
             IsShown(&input->CollisionNode->AtkResNode);
 
+    internal static bool CanWakeInput()
+    {
+        var manager = RaptureAtkUnitManager.Instance();
+        var module = RaptureAtkModule.Instance();
+        if (manager == null || module == null) return false;
+        var addon = manager->GetAddonByName("KTGInput"u8, 1);
+        if (addon == null || !addon->IsReady || !addon->IsVisible) return false;
+        var input = FindTextInput(addon);
+        return CanActivate(input) && (!module->IsTextInputActive() ||
+            module->AtkModule.TextInput.TargetTextInputEventInterface == &input->AtkTextInputEventInterface);
+    }
+
     internal static bool ClickInput(AtkComponentTextInput* input)
     {
         if (!CanActivate(input)) return false;
@@ -192,7 +205,7 @@ internal static unsafe class KeyboundUi
         return null;
     }
 
-    private static void ReadPhrases(RaptureAtkUnitManager* unitManager, BattleSnapshot snapshot, TextSlotCache cache)
+    private static void ReadPhrases(RaptureAtkUnitManager* unitManager, BattleSnapshot snapshot, TextSlotCache cache, PhraseMemory memory)
     {
         Span<nint> seen = stackalloc nint[MaxAddonInstances];
         for (var instance = 1; instance <= MaxAddonInstances; instance++)
@@ -209,14 +222,14 @@ internal static unsafe class KeyboundUi
                 continue;
             }
 
-            if (!ReadAddonPhrases(addon, snapshot, cache))
+            if (!ReadAddonPhrases(addon, snapshot, cache, memory))
             {
                 return;
             }
         }
     }
 
-    private static bool ReadAddonPhrases(AtkUnitBase* addon, BattleSnapshot snapshot, TextSlotCache cache)
+    private static bool ReadAddonPhrases(AtkUnitBase* addon, BattleSnapshot snapshot, TextSlotCache cache, PhraseMemory memory)
     {
         var nodeCount = addon->UldManager.NodeListCount;
         for (var nodeIndex = 0; nodeIndex < nodeCount; nodeIndex++)
@@ -227,21 +240,43 @@ internal static unsafe class KeyboundUi
                 continue;
             }
 
+            var slot = snapshot.PhraseCount;
             var textNode = VisiblePhraseNode(component);
+            string? phrase;
+            if (textNode != null)
+            {
+                phrase = cache.Decode(slot, textNode->NodeText.AsSpan(), singleLine: true);
+                memory.Remember((nint)component, phrase);
+            }
+            else if (IsObscured(component))
+            {
+                textNode = HiddenPhraseNode(component);
+                phrase = textNode != null
+                    ? cache.Decode(slot, textNode->NodeText.AsSpan(), singleLine: true)
+                    : memory.Recall((nint)component);
+                if (textNode == null)
+                {
+                    textNode = component->GetTextNodeById(LargePhraseTextNodeId);
+                }
+            }
+            else
+            {
+                continue;
+            }
+
             if (textNode == null)
             {
                 continue;
             }
 
-            var slot = snapshot.PhraseCount;
-            var phrase = cache.Decode(slot, textNode->NodeText.AsSpan(), singleLine: true);
-            if (phrase.Length == 0)
+            if (string.IsNullOrEmpty(phrase))
             {
                 continue;
             }
 
             var center = CenterOf(&textNode->AtkResNode, out var scale);
             snapshot.Phrases[slot] = phrase;
+            snapshot.PhraseTyped[slot] = PhraseReadings.TypedForm(phrase);
             snapshot.PhraseScreenX[slot] = center.X;
             snapshot.PhraseScreenY[slot] = center.Y;
             snapshot.PhraseScale[slot] = scale;
@@ -254,6 +289,29 @@ internal static unsafe class KeyboundUi
 
         return true;
     }
+
+    // A phrase hidden by Cryptic Communications can still be typed. It is read from the hidden text
+    // node, or from what the box last showed, only while the noise overlay is up: a box between enemies
+    // or mid-animation hides its text too, and its old phrase must not come back.
+    private static bool IsObscured(AtkComponentBase* component)
+    {
+        var overlay = component->GetNodeById(ObscuringOverlayNodeId);
+        return overlay != null && IsShown(overlay);
+    }
+
+    private static AtkTextNode* HiddenPhraseNode(AtkComponentBase* component)
+    {
+        var large = component->GetTextNodeById(LargePhraseTextNodeId);
+        if (HoldsText(large))
+        {
+            return large;
+        }
+
+        var small = component->GetTextNodeById(SmallPhraseTextNodeId);
+        return HoldsText(small) ? small : null;
+    }
+
+    private static bool HoldsText(AtkTextNode* textNode) => textNode != null && !textNode->NodeText.AsSpan().IsEmpty;
 
     private static AtkTextNode* VisiblePhraseNode(AtkComponentBase* component)
     {
@@ -284,28 +342,38 @@ internal static unsafe class KeyboundUi
                 continue;
             }
 
-            var component = FirstComponent(addon);
-            var fill = component == null ? null : component->GetImageNodeById(CastFillImageNodeId);
-            if (fill == null || !IsShown(&fill->AtkResNode))
+            var nodeCount = addon->UldManager.NodeListCount;
+            for (var nodeIndex = 0; nodeIndex < nodeCount; nodeIndex++)
             {
-                continue;
-            }
-
-            var slot = snapshot.CastCount;
-            var center = CenterOf(&fill->AtkResNode, out _);
-            snapshot.CastAddons[slot] = (nint)addon;
-            snapshot.CastNames[slot] = ReadText(component->GetTextNodeById(CastNameTextNodeId), BattleSnapshot.FirstCastSlot + slot, cache);
-            snapshot.CastScreenX[slot] = center.X;
-            snapshot.CastScreenY[slot] = center.Y;
-            snapshot.CastProgress[slot] = Math.Clamp(fill->AtkResNode.Width * fill->AtkResNode.ScaleX / CastFillFullWidth, 0f, 1f);
-            snapshot.CastHits[slot] = ReadNumber(component->GetTextNodeById(CastHitsTextNodeId));
-            snapshot.CastInterrupted[slot] = IsShown(component->GetTextNodeById(CastInterruptedTextNodeId));
-            snapshot.CastCount++;
-            if (snapshot.CastCount == BattleSnapshot.MaxCasts)
-            {
-                return;
+                var component = ComponentOf(addon->UldManager.NodeList[nodeIndex]);
+                if (component != null && !ReadCast(component, snapshot, cache))
+                {
+                    return;
+                }
             }
         }
+    }
+
+    // One window may carry a cast bar per enemy, so every component with a fill counts as a cast.
+    private static bool ReadCast(AtkComponentBase* component, BattleSnapshot snapshot, TextSlotCache cache)
+    {
+        var fill = component->GetImageNodeById(CastFillImageNodeId);
+        if (fill == null || !IsShown(&fill->AtkResNode))
+        {
+            return true;
+        }
+
+        var slot = snapshot.CastCount;
+        var center = CenterOf(&fill->AtkResNode, out _);
+        snapshot.CastAddons[slot] = (nint)component;
+        snapshot.CastNames[slot] = ReadText(component->GetTextNodeById(CastNameTextNodeId), BattleSnapshot.FirstCastSlot + slot, cache);
+        snapshot.CastScreenX[slot] = center.X;
+        snapshot.CastScreenY[slot] = center.Y;
+        snapshot.CastProgress[slot] = Math.Clamp(fill->AtkResNode.Width * fill->AtkResNode.ScaleX / CastFillFullWidth, 0f, 1f);
+        snapshot.CastHits[slot] = ReadNumber(component->GetTextNodeById(CastHitsTextNodeId));
+        snapshot.CastInterrupted[slot] = IsShown(component->GetTextNodeById(CastInterruptedTextNodeId));
+        snapshot.CastCount++;
+        return snapshot.CastCount < BattleSnapshot.MaxCasts;
     }
 
     private static void ReadGauges(RaptureAtkUnitManager* unitManager, BattleSnapshot snapshot)
@@ -320,20 +388,31 @@ internal static unsafe class KeyboundUi
             }
 
             seen[instance - 1] = (nint)addon;
-            if (!addon->IsVisible || addon->RootNode == null)
+            if (!addon->IsVisible)
             {
                 continue;
             }
 
-            var slot = snapshot.GaugeCount;
-            var center = CenterOf(addon->RootNode, out _);
-            snapshot.GaugeScreenX[slot] = center.X;
-            snapshot.GaugeScreenY[slot] = center.Y;
-            snapshot.GaugeSignature[slot] = DrawnSignature(FirstComponent(addon));
-            snapshot.GaugeCount++;
-            if (snapshot.GaugeCount == BattleSnapshot.MaxGauges)
+            var nodeCount = addon->UldManager.NodeListCount;
+            for (var nodeIndex = 0; nodeIndex < nodeCount; nodeIndex++)
             {
-                return;
+                var node = addon->UldManager.NodeList[nodeIndex];
+                var component = ComponentOf(node);
+                if (component == null || !IsShown(node))
+                {
+                    continue;
+                }
+
+                var slot = snapshot.GaugeCount;
+                var center = CenterOf(node, out _);
+                snapshot.GaugeScreenX[slot] = center.X;
+                snapshot.GaugeScreenY[slot] = center.Y;
+                snapshot.GaugeSignature[slot] = DrawnSignature(component);
+                snapshot.GaugeCount++;
+                if (snapshot.GaugeCount == BattleSnapshot.MaxGauges)
+                {
+                    return;
+                }
             }
         }
     }
@@ -345,13 +424,56 @@ internal static unsafe class KeyboundUi
             var scale = snapshot.PhraseScale[phrase];
             snapshot.PhraseGauge[phrase] = GaugeUnder(snapshot, phrase, scale);
             snapshot.PhraseOnBarrier[phrase] = snapshot.GaugeCount > 0 && snapshot.PhraseGauge[phrase] == BattleSnapshot.NoGauge
-                && InBarrierZone(snapshot, phrase, scale);
-            snapshot.PhraseCast[phrase] = NearestCast(snapshot, phrase, scale);
+                && InBarrierZone(snapshot, phrase);
+            snapshot.PhraseCast[phrase] = BattleSnapshot.NoCast;
         }
+
+        for (var cast = 0; cast < snapshot.CastCount; cast++)
+        {
+            LinkCast(snapshot, cast);
+        }
+    }
+
+    // Each cast bar belongs to the one enemy it sits closest to, so a bar between two enemies never
+    // marks both of them as casting.
+    private static void LinkCast(BattleSnapshot snapshot, int cast)
+    {
+        var castPosition = new Vector2(snapshot.CastScreenX[cast], snapshot.CastScreenY[cast]);
+        var best = -1;
+        var bestDistance = float.MaxValue;
+        for (var phrase = 0; phrase < snapshot.PhraseCount; phrase++)
+        {
+            if (snapshot.PhraseOnBarrier[phrase])
+            {
+                continue;
+            }
+
+            var distance = Vector2.Distance(castPosition, new Vector2(snapshot.PhraseScreenX[phrase], snapshot.PhraseScreenY[phrase]));
+            if (distance <= CastReach * snapshot.PhraseScale[phrase] && distance < bestDistance)
+            {
+                best = phrase;
+                bestDistance = distance;
+            }
+        }
+
+        if (best >= 0 && (snapshot.PhraseCast[best] == BattleSnapshot.NoCast || IsCloser(snapshot, cast, snapshot.PhraseCast[best], best)))
+        {
+            snapshot.PhraseCast[best] = cast;
+        }
+    }
+
+    private static bool IsCloser(BattleSnapshot snapshot, int cast, int other, int phrase)
+    {
+        var phrasePosition = new Vector2(snapshot.PhraseScreenX[phrase], snapshot.PhraseScreenY[phrase]);
+        return Vector2.Distance(new Vector2(snapshot.CastScreenX[cast], snapshot.CastScreenY[cast]), phrasePosition)
+            < Vector2.Distance(new Vector2(snapshot.CastScreenX[other], snapshot.CastScreenY[other]), phrasePosition);
     }
 
     // Only judged while some enemy gauge is on screen, so a layout the reader cannot see gauges in
     // never turns every phrase into a barrier phrase.
+    internal static bool InBarrierZone(BattleSnapshot snapshot, int phrase)
+        => InBarrierZone(snapshot, phrase, snapshot.PhraseScale[phrase]);
+
     private static bool InBarrierZone(BattleSnapshot snapshot, int phrase, float scale)
     {
         if (!snapshot.InputVisible)
@@ -399,25 +521,6 @@ internal static unsafe class KeyboundUi
         }
 
         return signature;
-    }
-
-    private static int NearestCast(BattleSnapshot snapshot, int phrase, float scale)
-    {
-        var best = BattleSnapshot.NoCast;
-        var bestDistance = CastReach * scale;
-        for (var cast = 0; cast < snapshot.CastCount; cast++)
-        {
-            var distance = Vector2.Distance(
-                new Vector2(snapshot.CastScreenX[cast], snapshot.CastScreenY[cast]),
-                new Vector2(snapshot.PhraseScreenX[phrase], snapshot.PhraseScreenY[phrase]));
-            if (distance <= bestDistance)
-            {
-                best = cast;
-                bestDistance = distance;
-            }
-        }
-
-        return best;
     }
 
     private static string ReadText(AtkTextNode* textNode, int slot, TextSlotCache cache)

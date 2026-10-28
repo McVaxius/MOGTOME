@@ -34,7 +34,9 @@ public sealed class KeyboundTypingTests
         Assert.Equal(new[] { GameKey.Enter }, input.Up);
         Assert.Equal(0, service.CompletedRuns);
         service.Update(null, 800);
-        Assert.Equal("Été!É", input.Sent); // A still-living enemy can need several acknowledged hits.
+        Assert.Equal("Été!", input.Sent); // Retiring words remain visible briefly after submission.
+        service.Update(null, 2100);
+        Assert.Equal("Été!É", input.Sent);
     }
 
     [Fact]
@@ -62,6 +64,7 @@ public sealed class KeyboundTypingTests
         Assert.Empty(input.Sent);
         Assert.Empty(input.Down);
         Assert.Equal(0, input.FocusAttempts);
+        Assert.Empty(input.WakeDown);
         Assert.True(service.IsRunning);
     }
 
@@ -127,10 +130,10 @@ public sealed class KeyboundTypingTests
         Assert.Empty(input.Sent);
         Assert.Equal("KB_CastHold", service.Status.Key);
         input.Configure = null;
-        service.Update(null, 700);
+        service.Update(null, 1200);
         Assert.Equal(2, input.FocusAttempts);
         input.Focused = true;
-        service.Update(null, 900);
+        service.Update(null, 1400);
         Assert.Equal("w", input.Sent);
     }
 
@@ -341,12 +344,12 @@ public sealed class KeyboundTypingTests
     }
 
     [Fact]
-    public void ThreeAcknowledgedHitsWithoutProgressYieldToAnotherPhrase()
+    public void LingeringSubmittedWordsYieldToOtherPhrasesBeforeRetry()
     {
         var input = new FakeInput("a", "b") { AutoEcho = true, Configure = snapshot => snapshot.PhraseOnBarrier[0] = true };
         using var service = Arm(input);
-        for (var now = 0; now < 1200; now += 50) service.Update(null, now);
-        Assert.StartsWith("aaa", input.Sent);
+        for (var now = 0; now < 5500; now += 50) service.Update(null, now);
+        Assert.StartsWith("ab", input.Sent);
         Assert.Contains("b", input.Sent);
         Assert.True(service.IsRunning);
     }
@@ -367,10 +370,11 @@ public sealed class KeyboundTypingTests
     internal sealed class FakeInput(params string[] phrases) : IKeyboundInput
     {
         internal string Text = "", Sent = "";
-        internal bool Visible = true, Focused = true, Other, ReleaseSucceeds = true, AutoEcho;
+        internal bool Visible = true, Focused = true, Other, ReleaseSucceeds = true, AutoEcho, WakeAccepted;
         internal Action<BattleSnapshot>? Configure;
         internal int FocusAttempts;
         internal readonly List<GameKey> Down = [], Up = [];
+        internal readonly List<GameKey> WakeDown = [], WakeUp = [];
         public void Read(BattleSnapshot snapshot)
         {
             snapshot.Clear(); snapshot.InputVisible = Visible; snapshot.InputIdentity = 123;
@@ -383,5 +387,7 @@ public sealed class KeyboundTypingTests
         public bool Character(char value) { Sent += value; if (AutoEcho) Text += value; return true; }
         public bool KeyDown(GameKey key) { Down.Add(key); if (AutoEcho && key == GameKey.Enter) Text = ""; return true; }
         public bool KeyUp(GameKey key) { if (!ReleaseSucceeds) return false; Up.Add(key); return true; }
+        public bool WakeKeyDown(GameKey key) { if (!WakeAccepted) return false; WakeDown.Add(key); return true; }
+        public bool WakeKeyUp(GameKey key) { if (!ReleaseSucceeds) return false; WakeUp.Add(key); return true; }
     }
 }

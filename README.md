@@ -211,6 +211,18 @@ recovery also waits through Letterlock. The dedicated KBB 60-second idle counter
 on sent input and every 30 seconds while this arena session is owned, without
 adding keys during mechanics. The native input agent, HUD and KTGInput addon must
 all identify the same active surface before that counter can be touched.
+The same guarded pulse also refreshes named controller and mouse idle timers,
+following the controller-expulsion fix researched in upstream 1.4.3.0.
+
+Gameplay fixes adapted from XeldarAlz's 1.4.2.0 also keep cast holds after the
+bar disappears (Cursed Gaze: 3.5 seconds; other full casts: 0.8 seconds), remember
+successive barrier words when a charge gauge appears, and skip a submitted word
+for 1.5 seconds while its old label retires. Casts and HP gauges are read per
+component, and each cast is assigned to one enemy. Japanese clients use the
+word sheet's hiragana readings; optional punctuation is omitted. Cryptic
+Communications text is recalled only while its noise overlay is present.
+Focus recovery can use an owned wake key while the game is foreground, with
+chat/ImGui, Letterlock and disabled-input guards. Other applications retain focus.
 
 Only the KBB registration, queue pop, arena and result screen are acted on. A
 validated result or matching duty-completion event counts a played round once;

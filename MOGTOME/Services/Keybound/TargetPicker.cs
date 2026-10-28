@@ -1,5 +1,5 @@
 // Based on Auto Keybound Brawler by XeldarAlz (AGPL-3.0-or-later).
-// Copyright (c) 2026 Xeldar Alz. See docs/keybound-attribution.md.
+// Copyright (c) 2026 Xeldar Alz. Adapted for MOGTOME; see docs/keybound-attribution.md.
 using System;
 using System.Collections.Generic;
 
@@ -13,7 +13,7 @@ public enum TargetOrder : byte
     ShortestFirst,
 }
 
-internal readonly record struct TargetRules(TargetOrder Order, int CrowdedAt, string? Demoted);
+internal readonly record struct TargetRules(TargetOrder Order, int CrowdedAt, string? Demoted, string? Skipped = null);
 
 internal static class TargetPicker
 {
@@ -23,8 +23,9 @@ internal static class TargetPicker
 
     private const int RankDemoted = -1;
     private const int RankNormal = 0;
-    private const int RankInterrupt = 1;
-    private const int RankBarrier = 2;
+    private const int RankCasting = 1;
+    private const int RankInterrupt = 2;
+    private const int RankBarrier = 3;
 
     // In case the game trims typed letters off the enemy's phrase, a phrase that is now only the
     // untyped tail of the target still counts as the target being on screen.
@@ -42,9 +43,10 @@ internal static class TargetPicker
         return NotShown;
     }
 
-    // Barrier phrases charge the shield that blocks a Barrier Buster, and a spell that can be
-    // interrupted only stops if its enemy keeps getting hit, so both outrank everything else. A phrase
-    // that kept being typed without any visible effect steps behind all of them for a while.
+    // Barrier phrases charge the shield that blocks a Barrier Buster, a spell that can be interrupted
+    // only stops if its enemy keeps getting hit, and any other caster is about to land something, so
+    // all three outrank plain enemies. A phrase that kept being typed without any visible effect steps
+    // behind all of them for a while.
     public static int Rank(BattleSnapshot snapshot, int index, in TargetRules rules)
     {
         if (rules.Demoted != null && snapshot.Phrases[index].Equals(rules.Demoted, StringComparison.OrdinalIgnoreCase))
@@ -57,7 +59,12 @@ internal static class TargetPicker
             return RankBarrier;
         }
 
-        return snapshot.IsInterruptible(index) ? RankInterrupt : RankNormal;
+        if (snapshot.IsInterruptible(index))
+        {
+            return RankInterrupt;
+        }
+
+        return snapshot.IsCasting(index) ? RankCasting : RankNormal;
     }
 
     public static bool IsPriority(BattleSnapshot snapshot, int index, in TargetRules rules) => Rank(snapshot, index, rules) > RankNormal;
@@ -72,6 +79,11 @@ internal static class TargetPicker
         var bestIndex = NotShown;
         for (var index = 0; index < snapshot.PhraseCount; index++)
         {
+            if (rules.Skipped != null && snapshot.Phrases[index].Equals(rules.Skipped, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
             if (bestIndex == NotShown || IsBetter(snapshot, input, rules, shortestFirst, index, bestIndex))
             {
                 bestIndex = index;
@@ -96,7 +108,7 @@ internal static class TargetPicker
             return continues;
         }
 
-        if (rank == RankInterrupt)
+        if (rank is RankInterrupt or RankCasting)
         {
             var progress = snapshot.CastProgress[snapshot.PhraseCast[index]];
             var bestProgress = snapshot.CastProgress[snapshot.PhraseCast[bestIndex]];
@@ -106,8 +118,8 @@ internal static class TargetPicker
             }
         }
 
-        var length = snapshot.Phrases[index].Length;
-        var bestLength = snapshot.Phrases[bestIndex].Length;
+        var length = snapshot.TypedPhrase(index).Length;
+        var bestLength = snapshot.TypedPhrase(bestIndex).Length;
         if (shortestFirst && length != bestLength)
         {
             return length < bestLength;
@@ -124,5 +136,5 @@ internal static class TargetPicker
     }
 
     private static bool Continues(BattleSnapshot snapshot, string input, int index)
-        => input.Length > 0 && snapshot.Phrases[index].StartsWith(input, StringComparison.OrdinalIgnoreCase);
+        => input.Length > 0 && snapshot.TypedPhrase(index).StartsWith(input, StringComparison.OrdinalIgnoreCase);
 }

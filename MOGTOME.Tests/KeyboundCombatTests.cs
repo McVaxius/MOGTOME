@@ -43,16 +43,20 @@ public sealed class KeyboundCombatTests
     }
 
     [Fact]
-    public void CursedGazeHoldsFrom95PercentAndReleasesWhenGoneWhileOtherSpellsNeverHold()
+    public void CursedGazeAndOtherFullCastsHoldPastTheirVanishedBars()
     {
         var s = Board("a"); s.CastCount = 1; s.CastAddons[0] = 123; s.CastNames[0] = "Cursed Gaze";
         var watch = new CastWatch(name => name == "Cursed Gaze");
         s.CastProgress[0] = 0.5f; watch.Update(s, 100); Assert.False(watch.Holding);
         s.CastProgress[0] = 0.95f; watch.Update(s, 200); Assert.True(watch.Holding);
         watch.Update(s, 2000); Assert.True(watch.Holding);
-        s.CastCount = 0; watch.Update(s, 2100); Assert.False(watch.Holding);
-        s.CastCount = 1; s.CastNames[0] = "Fire"; s.CastProgress[0] = 1;
-        watch.Update(s, 2200); Assert.False(watch.Holding);
+        s.CastCount = 0; watch.Update(s, 2100); Assert.True(watch.Holding);
+        watch.Update(s, 3700); Assert.False(watch.Holding);
+        s.CastCount = 1; s.CastNames[0] = "Fire"; s.CastProgress[0] = 0.5f;
+        watch.Update(s, 3800); Assert.False(watch.Holding);
+        s.CastProgress[0] = 0.98f; watch.Update(s, 3900); Assert.True(watch.Holding);
+        s.CastCount = 0; watch.Update(s, 4000); Assert.True(watch.Holding);
+        watch.Update(s, 4700); Assert.False(watch.Holding);
     }
 
     [Fact]

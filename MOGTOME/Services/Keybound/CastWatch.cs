@@ -1,32 +1,43 @@
 // Based on Auto Keybound Brawler by XeldarAlz (AGPL-3.0-or-later).
-// Copyright (c) 2026 Xeldar Alz. See docs/keybound-attribution.md.
+// Copyright (c) 2026 Xeldar Alz. Adapted for MOGTOME; see docs/keybound-attribution.md.
 using System;
 using System.Collections.Generic;
 
 
 namespace MOGTOME.Services.Keybound;
 
-// Letterlock punishes any key pressed between a full cast bar and the attack landing. Spells known to
-// be Letterlock (Cursed Gaze) hold the typer from a nearly full bar until the cast is gone; a cast whose
-// name cannot be read is treated the same way for a shorter while; every other named cast never holds.
+// Letterlock punishes any key pressed from a full cast bar until the attack glows. The bar itself is
+// gone the moment it fills, so the hold runs on a clock started when the bar is nearly full, not on the
+// bar being visible: Cursed Gaze holds long enough to cover the glow, any other cast a moment.
 internal sealed class CastWatch(Func<string, bool>? isLetterlock = null)
 {
     private const nint Free = 0;
 
-    private readonly nint[] addons = new nint[BattleSnapshot.MaxCasts];
+    private readonly nint[] castIds = new nint[BattleSnapshot.MaxCasts];
     private readonly string[] spells = new string[BattleSnapshot.MaxCasts];
     private readonly bool[] sawFilling = new bool[BattleSnapshot.MaxCasts];
-    private readonly long[] fullSince = new long[BattleSnapshot.MaxCasts];
+    private readonly bool[] completed = new bool[BattleSnapshot.MaxCasts];
     private readonly bool[] seenThisFrame = new bool[BattleSnapshot.MaxCasts];
+
+    private long holdFrom;
+    private long holdUntil;
+    private string holdSpell = string.Empty;
 
     public bool Holding { get; private set; }
     public string HoldingSpell { get; private set; } = string.Empty;
+    public string LastCompletedSpell { get; private set; } = string.Empty;
+    public long LastCompletedAt { get; private set; }
+
+    // How much of the current hold is still to run, from 1 when it starts to 0 when keys are free again.
+    public float HoldRemaining(long now)
+    {
+        var span = holdUntil - holdFrom;
+        return span <= 0 ? 0f : Math.Clamp((holdUntil - now) / (float)span, 0f, 1f);
+    }
 
     public void Update(BattleSnapshot snapshot, long now)
     {
         Array.Clear(seenThisFrame);
-        Holding = false;
-        HoldingSpell = string.Empty;
         for (var cast = 0; cast < snapshot.CastCount; cast++)
         {
             var slot = SlotFor(snapshot, cast);
@@ -36,85 +47,102 @@ internal sealed class CastWatch(Func<string, bool>? isLetterlock = null)
             }
 
             seenThisFrame[slot] = true;
-            if (!snapshot.CastInterrupted[cast] && ShouldHold(slot, snapshot.CastProgress[cast], now))
+            if (!snapshot.CastInterrupted[cast])
             {
-                Holding = true;
-                HoldingSpell = spells[slot];
+                Track(slot, snapshot.CastProgress[cast], now);
             }
         }
 
-        for (var slot = 0; slot < addons.Length; slot++)
+        for (var slot = 0; slot < castIds.Length; slot++)
         {
             if (!seenThisFrame[slot])
             {
                 Release(slot);
             }
         }
+
+        Holding = now < holdUntil;
+        HoldingSpell = Holding ? holdSpell : string.Empty;
     }
 
     public void Reset()
     {
-        for (var slot = 0; slot < addons.Length; slot++)
+        for (var slot = 0; slot < castIds.Length; slot++)
         {
             Release(slot);
         }
 
+        holdFrom = 0;
+        holdUntil = 0;
+        holdSpell = string.Empty;
         Holding = false;
         HoldingSpell = string.Empty;
     }
 
-    private bool ShouldHold(int slot, float progress, long now)
+    private void Track(int slot, float progress, long now)
     {
         var spell = spells[slot];
         var letterlock = (isLetterlock ?? LetterlockSpells.Matches)(spell);
-        if (!letterlock && spell.Length > 0)
-        {
-            return false;
-        }
-
-        var full = letterlock ? 0.95f : 0.97f;
         if (progress < 0.9f)
         {
             sawFilling[slot] = true;
         }
 
         // A known Letterlock bar that never reads as filling has a fill the reader cannot measure, so
-        // the whole cast is held rather than risking the lockout.
-        var reachedFull = progress >= full && sawFilling[slot];
-        if (!reachedFull && !(letterlock && !sawFilling[slot]))
+        // the whole cast and the time after it are held rather than risking the lockout.
+        var unreadableLetterlock = letterlock && !sawFilling[slot];
+        var full = letterlock ? 0.95f : 0.97f;
+        if (!unreadableLetterlock && (progress < full || !sawFilling[slot]))
         {
-            fullSince[slot] = 0;
-            return false;
+            return;
         }
 
-        if (fullSince[slot] == 0)
+        var duration = letterlock ? 3500 : 800;
+        if (unreadableLetterlock || !completed[slot])
         {
-            fullSince[slot] = now;
-
+            HoldFor(spell, now, now + duration);
         }
 
-        var limit = letterlock ? 6_000 : 3_000;
-        return now - fullSince[slot] < limit;
+        if (completed[slot])
+        {
+            return;
+        }
+
+        completed[slot] = true;
+        LastCompletedSpell = spell;
+        LastCompletedAt = now;
+    }
+
+    private void HoldFor(string spell, long now, long until)
+    {
+        if (until <= holdUntil)
+        {
+            return;
+        }
+
+        holdFrom = now;
+        holdUntil = until;
+        holdSpell = spell;
     }
 
     private int SlotFor(BattleSnapshot snapshot, int cast)
     {
-        var addon = snapshot.CastAddons[cast];
+        var id = snapshot.CastAddons[cast];
         var spell = snapshot.CastNames[cast];
         var free = -1;
-        for (var slot = 0; slot < addons.Length; slot++)
+        for (var slot = 0; slot < castIds.Length; slot++)
         {
-            if (addons[slot] == addon)
+            if (castIds[slot] == id)
             {
                 if (!string.Equals(spells[slot], spell, StringComparison.Ordinal))
                 {
-                    Claim(slot, addon, snapshot, cast);
+                    Claim(slot, id, snapshot, cast);
                 }
 
                 return slot;
             }
 
-            if (free < 0 && addons[slot] == Free)
+            if (free < 0 && castIds[slot] == Free)
             {
                 free = slot;
             }
@@ -122,32 +150,27 @@ internal sealed class CastWatch(Func<string, bool>? isLetterlock = null)
 
         if (free >= 0)
         {
-            Claim(free, addon, snapshot, cast);
+            Claim(free, id, snapshot, cast);
         }
 
         return free;
     }
 
-    private void Claim(int slot, nint addon, BattleSnapshot snapshot, int cast)
+    private void Claim(int slot, nint id, BattleSnapshot snapshot, int cast)
     {
-        addons[slot] = addon;
+        castIds[slot] = id;
         spells[slot] = snapshot.CastNames[cast];
         sawFilling[slot] = false;
-        fullSince[slot] = 0;
+        completed[slot] = false;
 
-        var spell = spells[slot].Length > 0 ? spells[slot] : "an unnamed spell";
-        var hits = snapshot.CastHits[cast];
-        var note = (isLetterlock ?? LetterlockSpells.Matches)(spells[slot]) ? " (Letterlock: keys stop when it completes)"
-            : hits > 0 ? $" (interrupt with {hits} hits)"
-            : string.Empty;
 
     }
 
     private void Release(int slot)
     {
-        addons[slot] = Free;
+        castIds[slot] = Free;
         spells[slot] = string.Empty;
         sawFilling[slot] = false;
-        fullSince[slot] = 0;
+        completed[slot] = false;
     }
 }
