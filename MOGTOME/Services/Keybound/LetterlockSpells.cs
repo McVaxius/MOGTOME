@@ -10,9 +10,9 @@ namespace MOGTOME.Services.Keybound;
 // the names their Action rows carry in that same language.
 internal static class LetterlockSpells
 {
-    // Action 49529, Cursed Gaze: any key pressed between its full cast bar and the gaze landing
-    // locks the player's inputs.
-    private static readonly uint[] actionIds = [49529];
+    // Cursed Gaze and both Dynamic Sensory Jammer actions share the Letterlock key hold.
+    // Cross-checked against XeldarAlz 9e8153252de88217ac4309cafc6b0cdbfefcca15.
+    private static readonly uint[] actionIds = [49529, 49532, 49702];
 
     private static string[]? names;
     private static Dalamud.Game.ClientLanguage? language;

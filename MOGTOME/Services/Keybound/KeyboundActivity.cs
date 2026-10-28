@@ -9,6 +9,9 @@ namespace MOGTOME.Services.Keybound;
 /// <summary>KBB has a separate 60-second input-agent idle counter; ordinary AFK timers alone are insufficient.</summary>
 internal static unsafe class KeyboundActivity
 {
+    private static bool reportedMatch, reportedMismatch;
+    private static int samples;
+    private static long sampleAt;
     // Published native layouts: AtmoOmen/FFXIVClientStructs.Expansion, AgentKTGInput and AgentKTGHud.
     [StructLayout(LayoutKind.Explicit, Size = 96)]
     private struct KtgInput
@@ -16,17 +19,27 @@ internal static unsafe class KeyboundActivity
         [FieldOffset(0)] internal AgentInterface Agent;
         [FieldOffset(40)] internal KtgHud* Hud;
         [FieldOffset(80)] internal float IdleSeconds;
+        [FieldOffset(84)] internal float KeyHoldSeconds;
     }
     [StructLayout(LayoutKind.Explicit, Size = 752)]
     private struct KtgHud
     {
         [FieldOffset(0)] internal AgentInterface Agent;
         [FieldOffset(640)] internal uint InputAddonId;
+        [FieldOffset(673)] internal bool IsShown;
+        [FieldOffset(674)] internal bool HasDirector;
     }
-    internal static bool Matches(uint territory, bool inputActive, bool hudActive, bool hudMatches,
+    internal static bool Matches(uint territory, bool hudShown, bool hasDirector, bool hudMatches,
         uint expectedAddon, uint actualAddon, float idle)
-        => territory == KeyboundEventLoop.Arena && inputActive && hudActive && hudMatches && expectedAddon != 0 &&
+        => territory == KeyboundEventLoop.Arena && hudShown && hasDirector && hudMatches && expectedAddon != 0 &&
            expectedAddon == actualAddon && float.IsFinite(idle) && idle >= 0 && idle <= 120;
+
+    internal static void BeginSession()
+    {
+        reportedMatch = reportedMismatch = false;
+        samples = 0;
+        sampleAt = 0;
+    }
 
     internal static void Pulse()
     {
@@ -36,23 +49,56 @@ internal static unsafe class KeyboundActivity
         if (module == null || addon == null || !addon->IsVisible || !addon->IsReady) return;
         var input = (KtgInput*)module->GetAgentByInternalId((AgentId)398);
         var hud = (KtgHud*)module->GetAgentByInternalId((AgentId)397);
-        if (input == null || hud == null || !Matches(Plugin.ClientState.TerritoryType,
-            input->Agent.IsAgentActive(), hud->Agent.IsAgentActive(), input->Hud == hud,
-            hud->InputAddonId, addon->Id, input->IdleSeconds)) return;
-        input->IdleSeconds = 0;
+        if (input == null || hud == null) return;
+        if (!Matches(Plugin.ClientState.TerritoryType,
+            hud->IsShown, hud->HasDirector, input->Hud == hud,
+            hud->InputAddonId, addon->Id, input->IdleSeconds))
+        {
+            if (!reportedMismatch)
+            {
+                reportedMismatch = true;
+                Plugin.Log?.Warning("[MOGTOME][KBB] Activity guard blocked: shown={Shown}, director={Director}, sameHud={SameHud}, sameAddon={SameAddon}, idle={Idle}",
+                    hud->IsShown, hud->HasDirector, input->Hud == hud, hud->InputAddonId == addon->Id, input->IdleSeconds);
+            }
+            return;
+        }
+        if (!reportedMatch)
+        {
+            reportedMatch = true;
+            Plugin.Log?.Information("[MOGTOME][KBB] Activity guard matched; refreshing the native idle float each owned arena update.");
+        }
         var timers = InputTimerModule.Instance();
-        if (timers == null || timers->TerritoryTypeId != KeyboundEventLoop.Arena) return;
+        var now = Environment.TickCount64;
+        if (timers != null && samples < 2 && now >= sampleAt)
+        {
+            samples++;
+            sampleAt = now + 30_000;
+            Plugin.Log?.Information("[MOGTOME][KBB] Activity sample {Sample}/2 BEFORE reset: idle={Idle}, keyHold={KeyHold}, moduleTerritory={Territory}, input={Input}, content={Content}, afk={Afk}",
+                samples, input->IdleSeconds, input->KeyHoldSeconds, timers->TerritoryTypeId,
+                timers->InputTimer, timers->ContentInputTimer, timers->AfkTimer);
+        }
+        // Match upstream's eight-byte clear at 0x50, expressed as its two published float fields.
+        // The current client territory and matched HUD/addon already scope this operation to KBB.
+        input->IdleSeconds = input->KeyHoldSeconds = 0;
+        ResetInputTimers(timers);
+    }
+
+    internal static void ResetInputTimers(InputTimerModule* timers)
+    {
+        if (timers == null) return;
+        // The module's cached territory is not an additional admission condition in upstream.
+        // Skipping here leaves posted-key gameplay exposed to the general duty inactivity check.
         timers->ContentInputTimer = timers->InputTimer = 0;
-        if (timers->AfkTimer >= 0) timers->AfkTimer = 0;
+        timers->AfkTimer = 0;
         ResetTimers(timers->ControllerInputTimers);
         ResetTimers(timers->MouseInputTimers);
     }
 
     // Upstream 1.4.3 also identified named controller/mouse counters. Keep these writes inside the
-    // same matched arena/agent/HUD/addon and timer-territory guard; preserve history and unknown fields.
+    // same matched arena/HUD/addon guard; preserve history and unknown fields.
     internal static void ResetTimers(Span<InputTimerModule.InputTimerData> timers)
     {
         for (var i = 0; i < timers.Length; i++)
-            if (float.IsFinite(timers[i].Timer) && timers[i].Timer >= 0) timers[i].Timer = 0;
+            timers[i].Timer = 0;
     }
 }

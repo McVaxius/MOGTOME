@@ -180,17 +180,40 @@ public sealed class KeyboundUpstreamMechanicsTests
     }
 
     [Theory]
-    [InlineData(0f, true)]
-    [InlineData(42f, true)]
-    [InlineData(-1f, false)]
-    [InlineData(float.NaN, false)]
-    [InlineData(float.PositiveInfinity, false)]
-    public void NamedControllerMouseTimerResetsPreserveHistoriesAndInvalidSentinels(float value, bool reset)
+    [InlineData(0f)]
+    [InlineData(42f)]
+    [InlineData(-1f)]
+    [InlineData(float.NaN)]
+    [InlineData(float.PositiveInfinity)]
+    public void NamedControllerMouseTimerResetsMatchUpstreamAndPreserveHistories(float value)
     {
         var timers = new[] { new FFXIVClientStructs.FFXIV.Client.UI.Misc.InputTimerModule.InputTimerData
             { Timer = value, HistoryIndex = 3, TotalHistoryTime = 12 } };
         KeyboundActivity.ResetTimers(timers);
-        Assert.Equal(reset ? 0 : value, timers[0].Timer);
+        Assert.Equal(0, timers[0].Timer);
         Assert.Equal(3, timers[0].HistoryIndex); Assert.Equal(12, timers[0].TotalHistoryTime);
+    }
+
+    [Fact]
+    public unsafe void OwnedArenaActivityResetsGeneralDutyTimersEvenWhenTheModuleHasAnotherCachedTerritory()
+    {
+        var timers = new FFXIVClientStructs.FFXIV.Client.UI.Misc.InputTimerModule
+        {
+            TerritoryTypeId = 144, InputTimer = 210, ContentInputTimer = 210, AfkTimer = 210,
+            Status = 7, InstanceContentAfkTimeLimit = 180,
+        };
+        timers.ControllerInputTimers[0].Timer = 210;
+        timers.ControllerInputTimers[0].HistoryIndex = 3;
+        timers.MouseInputTimers[0].Timer = 210;
+        KeyboundActivity.ResetInputTimers(&timers);
+        Assert.Equal(0, timers.InputTimer);
+        Assert.Equal(0, timers.ContentInputTimer);
+        Assert.Equal(0, timers.AfkTimer);
+        Assert.Equal(0, timers.ControllerInputTimers[0].Timer);
+        Assert.Equal(0, timers.MouseInputTimers[0].Timer);
+        Assert.Equal(3, timers.ControllerInputTimers[0].HistoryIndex);
+        Assert.Equal(144, timers.TerritoryTypeId);
+        Assert.Equal(7, timers.Status);
+        Assert.Equal(180, timers.InstanceContentAfkTimeLimit);
     }
 }

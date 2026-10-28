@@ -67,7 +67,7 @@ internal static unsafe class KeyboundUi
         }
 
         var textInput = FindTextInput(addon);
-        if (textInput == null || !textInput->Enabled || (textInput->ComponentFlags & 2) == 0 || !IsShown((AtkResNode*)textInput->OwnerNode))
+        if (textInput == null || textInput->OwnerNode == null || !textInput->Enabled || !IsShown((AtkResNode*)textInput->OwnerNode))
         {
             return;
         }
@@ -90,7 +90,7 @@ internal static unsafe class KeyboundUi
         }
 
         var ours = module->AtkModule.TextInput.TargetTextInputEventInterface == &textInput->AtkTextInputEventInterface;
-        snapshot.InputFocused = ours && textInput->IsActive;
+        snapshot.InputFocused = ours;
         snapshot.OtherInputFocused = !ours;
     }
 
@@ -126,7 +126,10 @@ internal static unsafe class KeyboundUi
         addon->SetFocusNode(collision, false, 0);
         addon->SetComponentFocusNode((AtkComponentBase*)textInput);
         stage->AtkInputManager->SetFocus(collision, addon, 0);
-        if (textInput->IsActive && module->IsTextInputActive() &&
+        // Match the native activation step used by upstream; selecting the collision node alone
+        // leaves the field inactive after a stun or level transition. Routing is still read back.
+        textInput->IsActive = true;
+        if (module->IsTextInputActive() &&
             module->AtkModule.TextInput.TargetTextInputEventInterface == &textInput->AtkTextInputEventInterface)
             return true;
         if (module->IsTextInputActive() &&
@@ -138,10 +141,24 @@ internal static unsafe class KeyboundUi
         return ClickInput(textInput);
     }
 
-    private static bool CanActivate(AtkComponentTextInput* input)
-        => input != null && input->CollisionNode != null && input->Enabled &&
-            (input->ComponentFlags & 2) != 0 && IsShown((AtkResNode*)input->OwnerNode) &&
+    internal static bool CanActivate(AtkComponentTextInput* input)
+        => input != null && input->CollisionNode != null && input->OwnerNode != null && input->Enabled &&
+            IsShown((AtkResNode*)input->OwnerNode) &&
             IsShown(&input->CollisionNode->AtkResNode);
+
+    internal static bool LogInputState(BattleSnapshot snapshot)
+    {
+        var manager = RaptureAtkUnitManager.Instance();
+        if (manager == null) return false;
+        var addon = manager->GetAddonByName("KTGInput"u8, 1);
+        if (addon == null || !addon->IsReady || !addon->IsVisible) return false;
+        var input = FindTextInput(addon);
+        Plugin.Log?.Information("[MOGTOME][KBB] Native input: component={Component}, enabled={Enabled}, flags={Flags}, active={Active}, readable={Readable}, focused={Focused}, otherInput={OtherInput}, phrases={Phrases}",
+            input != null, input != null && input->Enabled, input == null ? 0u : input->ComponentFlags,
+            input != null && input->IsActive, snapshot.InputVisible, snapshot.InputFocused,
+            snapshot.OtherInputFocused, snapshot.PhraseCount);
+        return true;
+    }
 
     internal static bool CanWakeInput()
     {

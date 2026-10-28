@@ -16,13 +16,15 @@ internal sealed class KeyboundInput : IKeyboundInput
 {
     private readonly TextSlotCache cache = new(BattleSnapshot.TextSlotCount);
     private readonly PhraseMemory memory = new();
-    public void Reset() => memory.Clear();
+    private bool inputLogged;
+    public void Reset() { memory.Clear(); inputLogged = false; }
     private static bool UiTextInput => !Dalamud.Bindings.ImGui.ImGui.GetCurrentContext().IsNull &&
         Dalamud.Bindings.ImGui.ImGui.GetIO().WantTextInput;
     public void Read(BattleSnapshot snapshot)
     {
         KeyboundUi.Read(snapshot, cache, memory);
         if (UiTextInput) { snapshot.InputFocused = false; snapshot.OtherInputFocused = true; }
+        if (!inputLogged) inputLogged = KeyboundUi.LogInputState(snapshot);
     }
     public bool Focus() => !UiTextInput && KeyboundUi.FocusInput();
     public bool WakeKeyDown(GameKey key)

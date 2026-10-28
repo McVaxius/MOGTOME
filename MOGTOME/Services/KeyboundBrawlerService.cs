@@ -37,7 +37,10 @@ public sealed class KeyboundBrawlerService : IDisposable
     private int runLimit;
     private uint? walletTarget;
 
-    public KeyboundBrawlerService() : this(new KeyboundInput()) { }
+    public KeyboundBrawlerService() : this(new KeyboundInput())
+    {
+        Plugin.Log?.Information("[MOGTOME][KBB] Loaded kbb-focus-20261028-04; passive until Start.");
+    }
     internal KeyboundBrawlerService(IKeyboundInput input, Func<int, int, int>? drawDelay = null)
     { this.input = input; this.drawDelay = drawDelay; }
     public UiText Status { get; private set; } = Ui.M("KB_Idle");
@@ -87,12 +90,15 @@ public sealed class KeyboundBrawlerService : IDisposable
         recentlySubmitted = null;
         castWatch.Reset();
         barrierMemory.Clear(); input.Reset(); inputIdentity = 0;
+        KeyboundActivity.BeginSession();
         repeatStreak = 0; demotedPhrase = null;
         focusRetryAt = 0; focusAttempts = 0;
         wakeAttempts = 0; nextWakeAt = wakePaceUntil = 0;
         ResetTyping();
         IsRunning = true;
         Status = Ui.M("KB_Queueing");
+        Plugin.Log?.Information("[MOGTOME][KBB] Started kbb-focus-20261028-04; mode={Mode}, role={Role}, wpm={Wpm}, runLimit={RunLimit}, walletTarget={WalletTarget}",
+            settings.PlayMode, settings.PartyRole, settings.TypingWpm, runLimit, walletTarget?.ToString() ?? "off");
         return true;
     }
 
@@ -172,7 +178,12 @@ public sealed class KeyboundBrawlerService : IDisposable
                 if (snapshot.InputText == expectedText)
                 {
                     expectedText = null;
-                    if (submissionPending) { SubmittedPhrases++; submissionPending = false; }
+                    if (submissionPending)
+                    {
+                        SubmittedPhrases++; submissionPending = false;
+                        if (SubmittedPhrases == 1)
+                            Plugin.Log?.Information("[MOGTOME][KBB] First submitted phrase received the native clear echo.");
+                    }
                 }
                 else if (snapshot.InputText != previousText)
                 {

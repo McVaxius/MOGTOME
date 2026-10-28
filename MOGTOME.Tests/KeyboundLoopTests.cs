@@ -174,6 +174,20 @@ public sealed class KeyboundLoopTests
     }
 
     [Fact]
+    public void MatchingPopWaitsForTheCommenceButtonBeforeConsumingItsSingleDispatch()
+    {
+        using var f = new Fixture();
+        f.Game.Frame = f.Game.Frame with { Pop = true, PopMatches = true, PopReady = false };
+        f.Tick(0); f.Tick(100);
+        Assert.True(f.Loop.IsActive);
+        Assert.Equal(0, f.Game.Commences);
+        Assert.Equal(0, f.Game.Cancels);
+        f.Game.Frame = f.Game.Frame with { PopReady = true };
+        f.Tick(200); f.Tick(300);
+        Assert.Equal(1, f.Game.Commences);
+    }
+
+    [Fact]
     public void UnrelatedQueueIsNeverAcceptedCancelledOrOverwritten()
     {
         using var f = new Fixture();
@@ -196,15 +210,15 @@ public sealed class KeyboundLoopTests
     }
 
     [Fact]
-    public void AfkActivityIsScopedToArenaAndThrottledWithoutTypingKeys()
+    public void AfkActivityContinuesEveryOwnedArenaUpdateEvenWhileInputIsUnavailable()
     {
         using var f = new Fixture();
         f.Tick(0); Assert.Equal(0, f.Game.Heartbeats);
         f.Game.Frame = f.Game.Frame with { Territory = KeyboundEventLoop.Arena };
         f.Tick(100); f.Tick(200); f.Tick(30_100);
-        Assert.Equal(2, f.Game.Heartbeats);
+        Assert.Equal(3, f.Game.Heartbeats);
         f.Loop.Stop(); f.Tick(60_100);
-        Assert.Equal(2, f.Game.Heartbeats);
+        Assert.Equal(3, f.Game.Heartbeats);
     }
 
     [Fact]

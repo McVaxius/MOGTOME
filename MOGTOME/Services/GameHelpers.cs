@@ -305,8 +305,10 @@ public static class GameHelpers
                 return false;
             }
 
-            ts->InteractWithObject(gameObject, true);
-            Plugin.Log.Information($"[MOGTOME][INTERACT] Successfully interacted with {obj.Name.TextValue}");
+            // Match the established VERMAXION interaction path: the extra client line-of-sight
+            // check can reject reachable NPCs behind counters even after navigation reaches them.
+            ts->InteractWithObject(gameObject, false);
+            Plugin.Log.Information($"[MOGTOME][INTERACT] Interaction requested with {obj.Name.TextValue}");
             return true;
         }
         catch (Exception ex)

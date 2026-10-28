@@ -208,7 +208,7 @@ window/component and activates its registered input mouse handler if needed;
 the pointing hand alone does not authorize typing. Characters wait for the
 native text-entry target to be active. Other text inputs retain focus, and
 recovery also waits through Letterlock. The dedicated KBB 60-second idle counter and duty-activity timers are refreshed
-on sent input and every 30 seconds while this arena session is owned, without
+on sent input and each framework update while this arena session is owned, without
 adding keys during mechanics. The native input agent, HUD and KTGInput addon must
 all identify the same active surface before that counter can be touched.
 The same guarded pulse also refreshes named controller and mouse idle timers,

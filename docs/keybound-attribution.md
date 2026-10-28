@@ -9,6 +9,10 @@ Follow-up mechanics reviewed and adapted from upstream 1.4.2.0 at
 74857808beec411100fd5f1f7a410e231ff8c46d (2026-10-28).
 Also reviewed 1.4.3.0 at 54e186d50e9ceb47386ae57f19eb8e2809e2190c,
 including named controller/mouse timer handling from 339ac49c5c6f8694b718feb831fcc90369bb53c0.
+Further input/idle/Letterlock behavior reviewed directly against upstream
+03289bb7edff3f7bb5a44080f4e520074cd25b6e (1.5.1.0), including
+9e8153252de88217ac4309cafc6b0cdbfefcca15. Direct submission, the word-map
+reader and upstream retry/queue machinery are not part of this follow-up.
 
 MOGTOME adapts the native phrase reader, snapshot, UTF-8 text cache and Windows
 keyboard message route under Services/Keybound. Its controller integrates account
@@ -66,12 +70,19 @@ The KBB-specific idle-counter guard uses the published AgentKTGInput layout
 and the current KTGInput addon ID before writing. General input timer resets
 also correspond to XeldarAlz commit 5886dbd2748486f76e483316ce37a9039c01e706.
 No claim of live AFK-expulsion prevention is made without a loaded-client run.
+The native guard uses AgentKTGHud.IsShown (673) and HasDirector (674), not the
+input agent's generic activation virtual. The owned event loop refreshes it
+each arena update. After the failed FTP2 acceptance test, MOGTOME matches the
+upstream eight-byte clear through Expansion's two named floats at 80 (idle)
+and 84 (key hold). General timers are reset inside that arena/HUD/addon guard
+without requiring the timer module's separate cached territory to match.
 
 ## Focus recovery
 
 The pointing-hand report exposed the shared focus-only limitation. The follow-up
 restores addon and component focus with cursor navigation disabled, as in the
-reference's updated focus path, then dispatches only a registered mouse event
+reference's updated focus path, including setting the input's IsActive flag,
+then dispatches only a registered mouse event
 belonging to the KBB text input. This activates entry through the native input
 handler without guessing a callback or sending a wake character to another text
 box. The controller still requires observed active text routing before typing.
@@ -98,6 +109,6 @@ to it. Key-up remains owned through Stop and foreground changes. Non-Latin
 phrases use Space to wake and continue from the observed input text. Existing
 Letterlock/input-disable guards, WPM/Thrower pace, dedicated KBB idle-counter
 heartbeat, registration callback and Leader/Member queue policies remain in force.
-The 1.4.3 controller/mouse timer extension runs only inside MOGTOME's matched
-arena/agent/HUD/addon and timer-territory guard. Only finite nonnegative named
-Timer fields are reset; histories, status and undocumented offsets are retained.
+The controller/mouse timer extension runs only inside MOGTOME's matched
+arena/HUD/addon guard. As in upstream 1.5.1.0, every named Timer field is reset;
+histories, status, configured time limits and undocumented offsets are retained.

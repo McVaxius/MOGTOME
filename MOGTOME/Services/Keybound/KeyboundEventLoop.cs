@@ -6,7 +6,7 @@ namespace MOGTOME.Services.Keybound;
 
 internal readonly record struct KeyboundLoopFrame(uint Territory, bool Transitioning, bool Queued,
     bool QueueMatches, bool Pop, bool PopMatches, bool Entry, bool Results, bool ResultsReady, bool OtherDuty,
-    BlundervilleRole PartyRole = BlundervilleRole.Solo, bool EntryReady = true);
+    BlundervilleRole PartyRole = BlundervilleRole.Solo, bool EntryReady = true, bool PopReady = true);
 
 internal interface IKeyboundLoopGame
 {
@@ -26,7 +26,7 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
 {
     internal const uint Arena = 1359, Lobby = 1360, Duty = 1095;
     private bool active, entered, registered, commenced, resultSubmitted, resultsSeen;
-    private long stageStarted, heartbeatAt;
+    private long stageStarted;
     private KeyboundPartyRole partyRole;
     internal UiText Status { get; private set; } = Ui.M("BV_Idle");
     internal bool IsActive => active;
@@ -34,7 +34,7 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
     {
         partyRole = role;
         active = true; entered = registered = commenced = resultSubmitted = resultsSeen = false;
-        stageStarted = now; heartbeatAt = now;
+        stageStarted = now;
         Status = Ui.M("KB_Queueing");
     }
     internal void Update(long now)
@@ -52,8 +52,9 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
             {
                 if (!entered) { entered = true; stageStarted = now; }
                 if (now - stageStarted > 1_800_000) { Fail("BV_Timeout"); return; }
-                if (now >= heartbeatAt)
-                { game.KeepActive(); heartbeatAt = now + 30_000; }
+                // Posted keys and focus attempts do not reset the event's own idle counter.
+                // Refresh during every owned arena update, including input/cast/wave waits.
+                game.KeepActive();
                 if (state.Results)
                 {
                     if (!resultsSeen) { resultsSeen = true; stageStarted = now; }
@@ -88,6 +89,7 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
             { Status = Ui.M("KB_WaitPartyRole"); return; }
             if (state.Pop)
             {
+                if (!state.PopReady) { Status = Ui.M("BV_WaitEntry"); return; }
                 if (!commenced)
                 {
                     commenced = true;

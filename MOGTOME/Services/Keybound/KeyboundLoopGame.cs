@@ -38,11 +38,13 @@ internal sealed unsafe class KeyboundLoopGame(Plugin plugin) : IKeyboundLoopGame
         var popped = queue != null && Matches(queue->PoppedQueueEntry);
         var territory = Plugin.ClientState.TerritoryType;
         var entryDialog = Addon("KTGEnterDialogue");
+        var pop = (AddonContentsFinderConfirm*)Addon("ContentsFinderConfirm");
         var results = Addon("KTGResult");
         return new(territory, Plugin.Condition[ConditionFlag.BetweenAreas] || Plugin.Condition[ConditionFlag.BetweenAreas51],
             Plugin.Condition[ConditionFlag.InDutyQueue], owned, Visible("ContentsFinderConfirm"), popped,
             Visible("KTGEnterDialogue"), results != null, results != null && results->AtkValuesCount >= 78 && FindButton(results, 17853, 0x30) != null,
-            Plugin.Condition[ConditionFlag.BoundByDuty] && territory != KeyboundEventLoop.Arena, BlundervilleGameAdapter.Role(), entryDialog != null);
+            Plugin.Condition[ConditionFlag.BoundByDuty] && territory != KeyboundEventLoop.Arena, BlundervilleGameAdapter.Role(), entryDialog != null,
+            pop != null && DutyPopButtonReady(pop->CommenceButton));
     }
     public bool EnsureLobby()
     {
@@ -111,15 +113,33 @@ internal sealed unsafe class KeyboundLoopGame(Plugin plugin) : IKeyboundLoopGame
     public bool Commence()
     {
         var finder = ContentsFinder.Instance(); var queue = finder == null ? null : finder->GetQueueInfo();
-        return queue != null && Matches(queue->PoppedQueueEntry) && BlundervilleGameAdapter.Callback("ContentsFinderConfirm", 8);
+        var pop = (AddonContentsFinderConfirm*)Addon("ContentsFinderConfirm");
+        return pop != null && ClickDutyPopButton(queue != null && Matches(queue->PoppedQueueEntry), pop->CommenceButton);
     }
+
+    internal static bool ClickDutyPopButton(bool matchingPop, AtkComponentButton* button)
+    {
+        if (!matchingPop || !DutyPopButtonReady(button)) return false;
+        var node = &button->OwnerNode->AtkResNode;
+        // Use the actual native button and its registered receiver/parameter. Firing callback 8
+        // only proved that a callback was dispatched; the FTP2 test still needed a manual Commence.
+        return BlundervilleGameAdapter.ClickRegisteredButton(node);
+    }
+
+    private static bool DutyPopButtonReady(AtkComponentButton* button)
+        => button != null && button->OwnerNode != null &&
+           (button->OwnerNode->AtkResNode.NodeFlags & (NodeFlags.Visible | NodeFlags.Enabled)) == (NodeFlags.Visible | NodeFlags.Enabled);
     public bool LeaveResults() => Plugin.ClientState.TerritoryType == KeyboundEventLoop.Arena && Click("KTGResult", 17853, 0x30);
     public void KeepActive() => KeyboundActivity.Pulse();
     public void CancelQueue()
     {
         var frame = Read();
         if (frame.PartyRole == Models.BlundervilleRole.Member) return;
-        if (frame.Pop && frame.PopMatches) BlundervilleGameAdapter.Callback("ContentsFinderConfirm", 9);
+        if (frame.Pop && frame.PopMatches)
+        {
+            var pop = (AddonContentsFinderConfirm*)Addon("ContentsFinderConfirm");
+            if (pop != null) ClickDutyPopButton(true, pop->WithdrawButton);
+        }
         else if (frame.Queued && frame.QueueMatches) ContentsFinder.Instance()->GetQueueInfo()->CancelQueue();
     }
     public void StopMovement()

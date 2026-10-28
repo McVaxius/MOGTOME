@@ -1,3 +1,12 @@
+2026-10-28 - Keybound focus and inactivity follow-up (unversioned)
+
+- Restore the input component's active state after native focus selection, matching the upstream focus path. Use the observed text-input routing to admit typing; remove the tentative generic component flag requirement while retaining enabled, visibility, chat ownership and Letterlock checks.
+- Refresh event activity every owned arena update, including focus/cast/wave waits. Use the HUD's published shown/director fields and exact input-addon identity. Match XeldarAlz 1.5.1.0's complete reset: clear both native idle/key-hold floats and all named general input/AFK/controller/mouse timers without the extra cached-territory veto; preserve histories, limits, status and unknown fields.
+- Include both Dynamic Sensory Jammer actions in the localized Letterlock guard. Add bounded native-input/activity diagnostics, two pre-reset timer samples per attempt, a first-submission echo marker and compiled marker kbb-focus-20261028-03.
+- Replace duty-pop callback numbers 8/9 with the typed native Commence/Withdraw buttons and their registered events. Wait for the Commence button to become ready before consuming its single dispatch; retain matching-queue and visible/enabled-button admission.
+- Follow VERMAXION's existing native interaction helper by disabling the optional client line-of-sight check, fixing repeated "cannot see target" registrar requests after navigation. Describe dispatch as an interaction request rather than confirmed success. This follow-up is held for the next build (marker kbb-focus-20261028-04) while FTP1 tests marker 03.
+- Regress input admission, continuous owned-arena activity, general timer resets and duty-pop readiness/dispatch in the existing Keybound tests. FTP1 typing failed; FTP2 required manual Commence and was expelled despite reported working typing. These are failed live acceptance results. Inactivity prevention remains unverified; the next selected target is FTP1. Keep release version 4.0.0.10.
+
 2026-10-28 - 4.0.0.10 upstream KBB mechanics
 
 - Review XeldarAlz AutoKeyboundBrawler 1.4.2.0 (74857808beec411100fd5f1f7a410e231ff8c46d) and 1.4.3.0 (54e186d50e9ceb47386ae57f19eb8e2809e2190c). Adapt timed Letterlock holds past vanished cast bars, barrier phrase/spot memory, per-component cast/gauge reading with one enemy per cast, and 1.5-second stale-word exclusion. Add named controller/mouse idle timer resets inside the existing matched KBB activity guard; preserve histories and undocumented fields.

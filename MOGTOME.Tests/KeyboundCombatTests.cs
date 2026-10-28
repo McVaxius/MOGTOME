@@ -79,7 +79,7 @@ public sealed class KeyboundCombatTests
     [InlineData(1359u, true, true, true, 0u, 0u, 30f, false)]
     [InlineData(1359u, true, true, true, 50u, 50u, -1f, false)]
     [InlineData(1359u, true, true, true, 50u, 50u, float.NaN, false)]
-    public void DedicatedIdleCounterRequiresMatchingActiveKbbAgentHudAndAddon(uint territory, bool input,
-        bool hud, bool sameHud, uint expected, uint actual, float idle, bool allowed)
-        => Assert.Equal(allowed, KeyboundActivity.Matches(territory, input, hud, sameHud, expected, actual, idle));
+    public void DedicatedIdleCounterRequiresShownHudWithDirectorAndMatchingInputAddon(uint territory, bool shown,
+        bool director, bool sameHud, uint expected, uint actual, float idle, bool allowed)
+        => Assert.Equal(allowed, KeyboundActivity.Matches(territory, shown, director, sameHud, expected, actual, idle));
 }
