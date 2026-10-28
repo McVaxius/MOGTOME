@@ -2352,4 +2352,11 @@ Path: {0}
   <data name="Wave colour 2" xml:space="preserve"><value>Цвет волны 2</value></data>
   <data name="Wave colour 3" xml:space="preserve"><value>Цвет волны 3</value></data>
   <data name="Reset wave colours" xml:space="preserve"><value>Сбросить цвета волн</value></data>
+  <data name="KB_ManualQueue" xml:space="preserve"><value>Автоввод: регистрация, подтверждение входа и выход из результатов вручную.</value></data>
+  <data name="KB_WaitInput" xml:space="preserve"><value>Ожидание доступного ввода KBB; фокус чата сохраняется.</value></data>
+  <data name="KB_InputStalled" xml:space="preserve"><value>Ввод не подтверждён. Остановлено; нажмите «Старт» для повтора.</value></data>
+  <data name="KB_Typing" xml:space="preserve"><value>Ввод · завершено игр: {0} · отправлено фраз: {1}</value></data>
+  <data name="KB_Finished" xml:space="preserve"><value>Лимит достигнут · завершено игр: {0}.</value></data>
+  <data name="KB_TypingSpeed" xml:space="preserve"><value>Скорость ввода (слов/мин)</value></data>
+  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>По умолчанию 80; диапазон 10–300. Разброс интервалов ±20%, паузы перед фразами и Enter. Со следующего старта.</value></data>
 </root>

@@ -2352,4 +2352,11 @@ Open storage to refresh recorded quantities.</value></data>
   <data name="Wave colour 2" xml:space="preserve"><value>Wave colour 2</value></data>
   <data name="Wave colour 3" xml:space="preserve"><value>Wave colour 3</value></data>
   <data name="Reset wave colours" xml:space="preserve"><value>Reset wave colours</value></data>
+  <data name="KB_ManualQueue" xml:space="preserve"><value>Auto typing: queue, accept entry and return from results manually.</value></data>
+  <data name="KB_WaitInput" xml:space="preserve"><value>Waiting for enabled KBB input; chat keeps its focus.</value></data>
+  <data name="KB_InputStalled" xml:space="preserve"><value>Input was not acknowledged. Stopped; press Start to retry.</value></data>
+  <data name="KB_Typing" xml:space="preserve"><value>Typing · {0} games completed · {1} phrases submitted</value></data>
+  <data name="KB_Finished" xml:space="preserve"><value>Limit reached · {0} games completed.</value></data>
+  <data name="KB_TypingSpeed" xml:space="preserve"><value>Typing speed (WPM)</value></data>
+  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>Default 80 WPM; 10–300 WPM. Vary character timing by ±20% and pause before phrases and Enter. Applies on next Start.</value></data>
 </root>

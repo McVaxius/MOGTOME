@@ -57,7 +57,7 @@ public sealed class KeyboundBrawlerShopService : IDisposable
 
     public bool Buy()
     {
-        if (!Plugin.Framework.IsInFrameworkUpdateThread || Volatile.Read(ref stopRequested) != 0 || !Ready || running || plugin.IsEngineStartQueued ||
+        if (!Plugin.Framework.IsInFrameworkUpdateThread || Volatile.Read(ref stopRequested) != 0 || !Ready || running || plugin.KeyboundBrawler.OwnsInput || plugin.IsKeyboundStartQueued || plugin.IsEngineStartQueued ||
             plugin.Engine.IsRunning || plugin.Engine.IsStartupPending || plugin.MoogleShop.IsRunning ||
             plugin.IsMoogleShopActionQueued || plugin.Blunderville.IsRunning || plugin.IsBlundervilleActionQueued)
             return Reject("BV_Unavailable");

@@ -9,66 +9,39 @@ namespace MOGTOME.Tests;
 public sealed class KeyboundBrawlerTests
 {
     [Theory]
-    [InlineData(false, false, null, "KB_ProfileUnavailable")]
-    [InlineData(false, true, 65u, "KB_ProfileUnavailable")]
-    [InlineData(true, true, 65u, "KB_AutomationBusy")]
-    [InlineData(true, false, null, "KB_OutsideEvent")]
-    [InlineData(true, false, 0u, "KB_OutsideEvent")]
-    [InlineData(true, false, 64u, "KB_OutsideEvent")]
-    [InlineData(true, false, 65u, "KB_GameplayUnverified")]
-    [InlineData(true, false, 66u, "KB_OutsideEvent")]
-    public void AdmissionRejectsEveryUnverifiedStateEvenInsideTheNativeTerritoryCategory(
-        bool ready, bool busy, uint? intendedUse, string reason)
+    [InlineData(false, false, "KB_ProfileUnavailable")]
+    [InlineData(false, true, "KB_ProfileUnavailable")]
+    [InlineData(true, true, "KB_AutomationBusy")]
+    public void AdmissionRequiresAnAvailableProfileAndNoOtherOwner(bool ready, bool busy, string reason)
     {
         using var service = new KeyboundBrawlerService();
-        service.Observe(ready, busy, intendedUse);
-        Assert.Equal(reason, service.UnavailableReason.Key);
+        service.Observe(ready, busy, 65);
         Assert.False(service.CanStart);
         Assert.False(service.Start());
-        Assert.False(service.IsRunning);
         Assert.Equal(reason, service.Status.Key);
     }
 
     [Fact]
-    public void StopDepartureReentryAndDisposalNeverArmOrResumeARound()
+    public void StartArmsForManualQueueAndStopDisposalNeverResume()
     {
         var service = new KeyboundBrawlerService();
-        service.Observe(true, false, (uint)TerritoryIntendedUse.KeyboundBrawler);
-        Assert.False(service.Start());
+        service.Observe(true, false, null);
+        Assert.True(service.CanStart);
+        Assert.True(service.Start());
         service.Stop();
-        Assert.Equal("KB_Stopped", service.Status.Key);
-        service.Observe(false, false, null); // Logout or transition.
-        service.Observe(true, true, 65); // Another owner.
-        service.Observe(true, false, 65); // Re-entry must not start.
-        Assert.False(service.IsRunning);
-        Assert.False(service.CanStart);
-        Assert.Equal("KB_Stopped", service.Status.Key);
-        service.Dispose();
         service.Observe(true, false, 65);
-        Assert.Equal("KB_ProfileUnavailable", service.UnavailableReason.Key);
+        Assert.False(service.IsRunning);
+        service.Dispose();
         Assert.False(service.Start());
         Assert.False(service.IsRunning);
-    }
-
-    [Fact]
-    public void NativeSymbolIsATerritoryCategoryAndStatusRendersInEveryUiLanguage()
-    {
-        Assert.Equal("FFXIVClientStructs", typeof(TerritoryIntendedUse).Assembly.GetName().Name);
         Assert.Equal(65u, (uint)TerritoryIntendedUse.KeyboundBrawler);
-        using var service = new KeyboundBrawlerService();
-        service.Observe(true, false, 65);
-        service.Start();
-        foreach (var language in Enum.GetValues<UiLanguage>())
-        {
-            Assert.False(string.IsNullOrWhiteSpace(service.Status.Render(language)));
-            Assert.NotEqual("KB_GameplayUnverified", service.Status.Render(language));
-        }
     }
 
     [Fact]
     public void ShopPreparationRoundTripsSeparatelyFromBlundervilleAndOrdinaryDuties()
     {
         var config = JsonSerializer.Deserialize<Configuration>("{\"DutyCounter\":42,\"MaxRuns\":99}")!;
+        Assert.Equal(80, config.KeyboundBrawler.TypingWpm);
         Assert.False(config.KeyboundBrawler.RunLimitEnabled);
         Assert.Equal(1, config.KeyboundBrawler.RunLimit);
         Assert.True(config.KeyboundBrawler.WalletTargetEnabled);
@@ -85,6 +58,7 @@ public sealed class KeyboundBrawlerTests
         config.KeyboundBrawler.PurchaseTargets.Clear();
         config.KeyboundBrawler.PurchaseTargets[52323] = 2;
         config.KeyboundBrawler.PurchaseTargets[KeyboundBrawlerShop.CofferItemId] = 3;
+        config.KeyboundBrawler.TypingWpm = 60;
         config.KeyboundBrawler.RunLimitEnabled = true;
         config.KeyboundBrawler.RunLimit = 5;
         config.KeyboundBrawler.WalletTargetEnabled = false;
@@ -99,6 +73,7 @@ public sealed class KeyboundBrawlerTests
         Assert.Equal(2, restored.KeyboundBrawler.PurchaseTargets[52323]);
         Assert.Equal(3, restored.KeyboundBrawler.PurchaseTargets[KeyboundBrawlerShop.CofferItemId]);
         Assert.Equal(2, restored.KeyboundBrawler.PurchaseTargets.Count);
+        Assert.Equal(60, restored.KeyboundBrawler.TypingWpm);
         Assert.True(restored.KeyboundBrawler.RunLimitEnabled);
         Assert.Equal(5, restored.KeyboundBrawler.RunLimit);
         Assert.False(restored.KeyboundBrawler.WalletTargetEnabled);
@@ -111,7 +86,7 @@ public sealed class KeyboundBrawlerTests
         Assert.Empty(JsonSerializer.Deserialize<Configuration>(JsonSerializer.Serialize(config))!.KeyboundBrawler.PurchaseTargets);
         using var service = new KeyboundBrawlerService();
         service.Observe(true, false, 65);
-        Assert.False(service.Start()); // Saved farming/shopping choices must not arm the pending feature.
+        Assert.False(service.IsRunning); // Loading settings alone never arms input.
     }
 
     [Fact]
@@ -139,7 +114,7 @@ public sealed class KeyboundBrawlerTests
     [Fact]
     public void PreparationLabelsRenderInEveryLanguageAndTheNavigationIconIsEmbedded()
     {
-        var labels = new[] { "KB_Help", "KB_ShopPending", "KB_WalletTarget", "KB_TargetCurrency", "KB_NoCatalog" };
+        var labels = new[] { "KB_Help", "KB_ManualQueue", "KB_WaitInput", "KB_InputStalled", "KB_WalletTarget", "KB_TargetCurrency", "KB_NoCatalog" };
         foreach (var language in Enum.GetValues<UiLanguage>())
         {
             foreach (var key in labels)

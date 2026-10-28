@@ -5,6 +5,7 @@ namespace MOGTOME.Models;
 /// <summary>Account-owned farming preparation and independent MGC shopping settings.</summary>
 public sealed class KeyboundBrawlerSettings
 {
+    public int TypingWpm { get; set; } = 80;
     public bool RunLimitEnabled { get; set; }
     public int RunLimit { get; set; } = 1;
     public bool WalletTargetEnabled { get; set; } = true;

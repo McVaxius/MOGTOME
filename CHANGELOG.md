@@ -1,3 +1,11 @@
+2026-10-28 - 4.0.0.5 Keybound native auto typing
+
+- Enable Start/Stop and `/kbb start` with the reference project's KTGInput/KTGEWord reader, native input permission and focus checks, exact text echo, word selection, owned key release and visible failure status. Retain client-language phrases independently of UI language.
+- Integrate framework-thread cancellation, account/character/language ownership, other activity guards, confirmed-duty run limits, wallet targets and shop-on-finish after manual return. Queueing, entry acceptance and result dismissal remain manual because the reference has no verified callbacks for them.
+- Add saved account typing speed, default 80 WPM, configurable from 10–300 WPM with ±20% character timing variation and phrase/submit pauses.
+- Preserve shop targets and existing defaults. Bump version metadata and repository links from 4.0.0.4 to 4.0.0.5. Credit XeldarAlz and retain the adapted source license.
+- Validate native-adapter compilation and automated controller tests. Live game input, completion delivery and the purchase/travel route remain unverified.
+
 2026-10-26 - 4.0.0.4 shared appearance materials
 
 - Add Glassmorphism, Spatial and Cyberpunk alongside Auto, Picker and LCARS, with distinct window, panel and control materials.
