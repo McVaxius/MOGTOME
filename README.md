@@ -180,7 +180,7 @@ plays, leaves through Results and repeats. Either enabled limit stops further
 registration; shop-on-finish then runs the existing MGC shopper after returning.
 There is no manual queue or result-return step in this loop.
 `/kbb` alone opens the settings panel; it does not press Start.
-Start also accepts an already-open KBB registration panel in Keybound Square.
+Leader/Solo Start also accepts an already-open KBB registration panel in Keybound Square.
 It waits for the dialog to finish loading, then submits the observed registration
 callback once, without requiring another registrar interaction.
 
@@ -192,8 +192,10 @@ on the next Start. Each native text echo is checked before further input.
 Choose **Winner** or **Thrower** and **Party leader / Solo** or **Member**.
 Thrower always uses half the configured Winner WPM (80 → 40; odd values retain
 half-speed pacing). Both modes keep the combat/mechanic guards. Leaders initiate
-registration/requeue; members only confirm the group's KBB participation/entry
-and play. Members never initiate or cancel the group queue. A selected leader
+registration/requeue from Keybound Square. Members wait in their current
+territory, accept only the group's matching KBB queue pop, play, leave Results
+and wait for the leader's next queue. While waiting for entry, members do not
+travel to the Square or submit registration, and never initiate or cancel the group queue. A selected leader
 role waits if the character is currently a party member. Choices save per account
 and are captured at Start.
 

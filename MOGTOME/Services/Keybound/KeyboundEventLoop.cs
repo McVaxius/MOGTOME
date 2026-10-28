@@ -97,6 +97,10 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
                 Status = Ui.M("BV_WaitEntry"); return;
             }
             if (state.Queued || registered || commenced) { Status = Ui.M("BV_WaitEntry"); return; }
+            // Only the leader registers in the Square. Members can receive the matching group pop
+            // from their current territory; waiting must never start travel or touch the registrar.
+            if (partyRole == KeyboundPartyRole.Member)
+            { Status = Ui.M("BV_MemberWait"); return; }
             Status = Ui.M("KB_Queueing");
             if (!game.EnsureLobby()) return;
             if (state.Entry)
@@ -106,8 +110,7 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
                 game.StopMovement();
                 if (!game.Register()) Fail("BV_UiMismatch");
             }
-            else if (partyRole == KeyboundPartyRole.Leader) game.ApproachRegistrar();
-            else Status = Ui.M("BV_MemberWait");
+            else game.ApproachRegistrar();
         }
         catch (Exception ex)
         {

@@ -27,10 +27,10 @@ public sealed class KeyboundLoopTests
     private sealed class FakeGame : IKeyboundLoopGame
     {
         internal KeyboundLoopFrame Frame = new(KeyboundEventLoop.Lobby, false, false, false, false, false, false, false, false, false);
-        internal int Registers, Commences, Leaves, Approaches, Cancels, Heartbeats, Cleanups;
+        internal int Registers, Commences, Leaves, Approaches, Cancels, Heartbeats, Cleanups, LobbyTrips;
         internal bool RegisterAccepted = true;
         public KeyboundLoopFrame Read() => Frame;
-        public bool EnsureLobby() => true;
+        public bool EnsureLobby() { LobbyTrips++; return true; }
         public bool ApproachRegistrar() { Approaches++; return true; }
         public bool Register() { Registers++; return RegisterAccepted; }
         public bool Commence() { Commences++; return true; }
@@ -40,19 +40,54 @@ public sealed class KeyboundLoopTests
         public void StopMovement() => Cleanups++;
     }
 
-    [Fact]
-    public void PremadeMemberConfirmsParticipationAndEntryWithoutInitiatingOrCancellingGroupQueue()
+    [Theory]
+    [InlineData(129u)]
+    [InlineData(KeyboundEventLoop.Lobby)]
+    public void PremadeMemberWaitsInPlaceAndAcceptsEntryWithoutTravelRegistrationOrQueueCancellation(uint territory)
     {
         using var f = new Fixture(role: MOGTOME.Models.KeyboundPartyRole.Member);
-        f.Game.Frame = f.Game.Frame with { PartyRole = MOGTOME.Models.BlundervilleRole.Member };
+        f.Game.Frame = f.Game.Frame with { Territory = territory, PartyRole = MOGTOME.Models.BlundervilleRole.Member };
         f.Tick(0); Assert.Equal(0, f.Game.Approaches);
+        Assert.Equal("BV_MemberWait", f.Loop.Status.Key);
         f.Game.Frame = f.Game.Frame with { Entry = true }; f.Tick(100);
-        Assert.Equal(1, f.Game.Registers); // Confirmation shown by the group's registrar flow.
+        Assert.Equal(0, f.Game.Registers);
         f.Game.Frame = f.Game.Frame with { Entry = false, Pop = true, PopMatches = true }; f.Tick(200);
         Assert.Equal(1, f.Game.Commences);
         f.Loop.Stop();
         Assert.Equal(0, f.Game.Cancels);
         Assert.Equal(0, f.Game.Approaches);
+        Assert.Equal(0, f.Game.LobbyTrips);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    public void MemberCompletesRoundReturnsToOriginalTerritoryAndWaitsForLeaderUntilLimit(int limit)
+    {
+        using var f = new Fixture(limit, MOGTOME.Models.KeyboundPartyRole.Member);
+        f.Game.Frame = f.Game.Frame with { Territory = 129, PartyRole = MOGTOME.Models.BlundervilleRole.Member };
+        f.Tick(0);
+        f.Game.Frame = f.Game.Frame with { Queued = true, QueueMatches = true }; f.Tick(100);
+        f.Game.Frame = f.Game.Frame with { Pop = true, PopMatches = true }; f.Tick(200);
+        Assert.Equal(1, f.Game.Commences);
+        f.Game.Frame = new(KeyboundEventLoop.Arena, false, false, false, false, false, false, false, false, false,
+            MOGTOME.Models.BlundervilleRole.Member);
+        f.Tick(300);
+        f.Game.Frame = f.Game.Frame with { Results = true, ResultsReady = true }; f.Tick(400);
+        Assert.Equal(1, f.Game.Leaves);
+        Assert.Equal(1, f.Typer.CompletedRuns);
+        f.Game.Frame = new(129, false, false, false, false, false, false, false, false, false,
+            MOGTOME.Models.BlundervilleRole.Member);
+        f.Tick(500);
+        Assert.Equal(limit == 0, f.Loop.IsActive);
+        Assert.Equal(limit != 0, f.Typer.Finished);
+        if (limit == 0)
+        {
+            Assert.Equal("BV_MemberWait", f.Loop.Status.Key);
+            f.Game.Frame = f.Game.Frame with { Pop = true, PopMatches = true }; f.Tick(600);
+            Assert.Equal(2, f.Game.Commences);
+        }
+        Assert.Equal(0, f.Game.Registers + f.Game.Approaches + f.Game.LobbyTrips + f.Game.Cancels);
     }
 
     [Fact]
@@ -63,6 +98,20 @@ public sealed class KeyboundLoopTests
         f.Tick(0);
         Assert.Equal(0, f.Game.Registers + f.Game.Approaches);
         Assert.Equal("KB_WaitPartyRole", f.Loop.Status.Key);
+    }
+
+    [Fact]
+    public void MemberOutsideTheSquareRejectsUnrelatedQueuePopWithoutTravelOrCancellation()
+    {
+        using var f = new Fixture(role: MOGTOME.Models.KeyboundPartyRole.Member);
+        f.Game.Frame = f.Game.Frame with
+        {
+            Territory = 129, PartyRole = MOGTOME.Models.BlundervilleRole.Member,
+            Pop = true, PopMatches = false,
+        };
+        f.Tick(0);
+        Assert.False(f.Loop.IsActive);
+        Assert.Equal(0, f.Game.Commences + f.Game.Registers + f.Game.Approaches + f.Game.LobbyTrips + f.Game.Cancels);
     }
 
     [Fact]

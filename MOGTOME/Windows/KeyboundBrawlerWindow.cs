@@ -71,8 +71,8 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
         ImGui.Separator();
         var hasWallet = KeyboundBrawlerShop.TryWallet(out var wallet);
         DrawActions(hasWallet ? wallet : null);
-        UiLayout.Wrapped(Ui.T("KB_AutoLoopHelp"));
         var settings = plugin.Configuration.KeyboundBrawler;
+        UiLayout.Wrapped(Ui.T(settings.PartyRole == KeyboundPartyRole.Member ? "BV_MemberWait" : "KB_AutoLoopHelp"));
         if (settings.PurchaseReviewRequired)
         {
             UiLayout.Wrapped(Ui.T("Shop_ReviewRequired"));

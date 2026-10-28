@@ -1,3 +1,9 @@
+2026-10-28 - 4.0.0.9 Keybound members wait in place
+
+- Correct premade Member mode: wait in the current territory for the leader's matching KBB queue pop, then accept, play, leave Results and wait for the next queue. Members no longer travel to Keybound Square or submit registration; only Leader/Solo takes the registrar route.
+- Restrict the direct registration callback to an actual solo player or party leader. Show the existing translated waiting-in-place help for Member mode. Keep limits, party-role admission, Stop and foreign-queue protections.
+- Add member entry from outside the Square, return/repeat/limit and registration rejection coverage. Preserve the registration callback fix from 4.0.0.8 and bump all version/repository fields exactly one revision to 4.0.0.9. Live premade entry still needs an in-game test.
+
 2026-10-28 - 4.0.0.8 Keybound registration callback
 
 - Fix the reported Unexpected game UI stop at the KBB registration panel. Use the observed KTGEnterDialogue callback with update enabled and one Int 0 instead of looking for a button event.
