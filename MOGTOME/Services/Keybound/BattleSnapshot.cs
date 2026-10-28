@@ -16,6 +16,7 @@ internal sealed class BattleSnapshot
     public const int NoGauge = -1;
 
     public readonly string[] Phrases = new string[MaxPhrases];
+    public readonly string[] PhraseTyped = new string[MaxPhrases];
     public readonly float[] PhraseScreenX = new float[MaxPhrases];
     public readonly float[] PhraseScreenY = new float[MaxPhrases];
     public readonly float[] PhraseScale = new float[MaxPhrases];
@@ -45,6 +46,9 @@ internal sealed class BattleSnapshot
     public bool OtherInputFocused;
     public string InputText = string.Empty;
 
+    public string TypedPhrase(int index) => PhraseTyped[index] ?? Phrases[index];
+    public bool IsCasting(int phrase) => PhraseCast[phrase] != NoCast && !CastInterrupted[PhraseCast[phrase]];
+
     // Any change in how the enemy's HP gauge is drawn after a hit means the hit landed, whichever of
     // its nodes carries the fill.
     public float ProgressSignature(int phrase)
@@ -63,6 +67,7 @@ internal sealed class BattleSnapshot
 
     public void Clear()
     {
+        Array.Clear(PhraseTyped);
         PhraseCount = 0;
         CastCount = 0;
         GaugeCount = 0;

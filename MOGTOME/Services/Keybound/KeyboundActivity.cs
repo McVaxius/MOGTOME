@@ -44,5 +44,15 @@ internal static unsafe class KeyboundActivity
         if (timers == null || timers->TerritoryTypeId != KeyboundEventLoop.Arena) return;
         timers->ContentInputTimer = timers->InputTimer = 0;
         if (timers->AfkTimer >= 0) timers->AfkTimer = 0;
+        ResetTimers(timers->ControllerInputTimers);
+        ResetTimers(timers->MouseInputTimers);
+    }
+
+    // Upstream 1.4.3 also identified named controller/mouse counters. Keep these writes inside the
+    // same matched arena/agent/HUD/addon and timer-territory guard; preserve history and unknown fields.
+    internal static void ResetTimers(Span<InputTimerModule.InputTimerData> timers)
+    {
+        for (var i = 0; i < timers.Length; i++)
+            if (float.IsFinite(timers[i].Timer) && timers[i].Timer >= 0) timers[i].Timer = 0;
     }
 }

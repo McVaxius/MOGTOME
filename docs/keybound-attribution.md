@@ -5,6 +5,10 @@ https://github.com/XeldarAlz/FFXIV-AutoKeyboundBrawler
 
 Copyright (c) 2026 Xeldar Alz. Licensed under AGPL-3.0-or-later.
 Reference revision: 872fbebca745d4b63500bb680bf7fae1e8a9e884.
+Follow-up mechanics reviewed and adapted from upstream 1.4.2.0 at
+74857808beec411100fd5f1f7a410e231ff8c46d (2026-10-28).
+Also reviewed 1.4.3.0 at 54e186d50e9ceb47386ae57f19eb8e2809e2190c,
+including named controller/mouse timer handling from 339ac49c5c6f8694b718feb831fcc90369bb53c0.
 
 MOGTOME adapts the native phrase reader, snapshot, UTF-8 text cache and Windows
 keyboard message route under Services/Keybound. Its controller integrates account
@@ -74,3 +78,26 @@ box. The controller still requires observed active text routing before typing.
 The FFXIVClientStructs AtkUnitBase, AtkComponentInputBase, AtkEvent and AtkEventData
 contracts were cross-checked. Native recovery after stun/level changes remains
 subject to loaded-client verification.
+
+## Upstream 1.4.2 mechanics
+
+The follow-up adapts timed cast holds (3.5 seconds for Cursed Gaze, 0.8 seconds
+for other full casts, persisting after the bar disappears), barrier phrase/spot
+memory, all-component cast and gauge scanning with one enemy per cast, a
+1.5-second recently-submitted-word exclusion, and phrase readings/optional
+punctuation. Japanese readings come from KTGTypeWordTextData columns 0/1 in the
+client language; language changes invalidate the reading cache. Concealed text
+is recalled only when the Cryptic Communications noise overlay is visible.
+
+MOGTOME keeps its own account/session ownership, native focus activation and
+input-echo controller. If entry still needs waking, an owned and paced physical
+key is used only with a ready KBB field, visible phrases, no other text-input
+owner and no cast hold. System key-down requires the game in the foreground;
+only a detached window belonging to the same game process can return foreground
+to it. Key-up remains owned through Stop and foreground changes. Non-Latin
+phrases use Space to wake and continue from the observed input text. Existing
+Letterlock/input-disable guards, WPM/Thrower pace, dedicated KBB idle-counter
+heartbeat, registration callback and Leader/Member queue policies remain in force.
+The 1.4.3 controller/mouse timer extension runs only inside MOGTOME's matched
+arena/agent/HUD/addon and timer-territory guard. Only finite nonnegative named
+Timer fields are reset; histories, status and undocumented offsets are retained.
