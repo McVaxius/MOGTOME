@@ -2358,7 +2358,9 @@ Path: {0}
   <data name="KB_Typing" xml:space="preserve"><value>输入中 · 已完成{0}局 · 已提交{1}条短语</value></data>
   <data name="KB_Finished" xml:space="preserve"><value>已达上限 · 已完成{0}局。</value></data>
   <data name="KB_TypingSpeed" xml:space="preserve"><value>输入速度（WPM）</value></data>
-  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>默认80 WPM，范围10–300。按键间隔±20%浮动，短语开始和回车前停顿。下次开始时生效。</value></data>
+  <data name="KB_Stage12TypingSpeed" xml:space="preserve"><value>第1/2阶段输入速度（WPM）</value></data>
+  <data name="KB_Stage3TypingSpeed" xml:space="preserve"><value>第3阶段输入速度（WPM）</value></data>
+  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>第1/2阶段共用一个速度，第3阶段单独设置。两者默认均为80 WPM，范围5–300，调整步长0.5。按所选WPM的2倍速度尝试输入；固定停顿和游戏等待时间可能使实测速度降低。更改在下次开始时生效。</value></data>
   <data name="KB_Queueing" xml:space="preserve"><value>正在前往Keybound Square并报名。</value></data>
   <data name="KB_Returning" xml:space="preserve"><value>正在结算并返回重新报名。</value></data>
   <data name="KB_CastHold" xml:space="preserve"><value>敌方施法期间暂停输入。</value></data>

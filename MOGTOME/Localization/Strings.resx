@@ -2358,7 +2358,9 @@ Open storage to refresh recorded quantities.</value></data>
   <data name="KB_Typing" xml:space="preserve"><value>Typing · {0} games completed · {1} phrases submitted</value></data>
   <data name="KB_Finished" xml:space="preserve"><value>Limit reached · {0} games completed.</value></data>
   <data name="KB_TypingSpeed" xml:space="preserve"><value>Typing speed (WPM)</value></data>
-  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>Default 80 WPM; 10–300 WPM. Vary character timing by ±20% and pause before phrases and Enter. Applies on next Start.</value></data>
+  <data name="KB_Stage12TypingSpeed" xml:space="preserve"><value>Stages 1/2 typing speed (WPM)</value></data>
+  <data name="KB_Stage3TypingSpeed" xml:space="preserve"><value>Stage 3 typing speed (WPM)</value></data>
+  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>Stages 1/2 share one speed; stage 3 has its own. Default 80 WPM each; range 5–300, step 0.5. Input is attempted at 2× the selected WPM; fixed pauses and game waits can lower measured speed. Changes apply on next Start.</value></data>
   <data name="KB_Queueing" xml:space="preserve"><value>Travelling to Keybound Square and registering.</value></data>
   <data name="KB_Returning" xml:space="preserve"><value>Collecting results and returning to requeue.</value></data>
   <data name="KB_CastHold" xml:space="preserve"><value>Holding input for an enemy cast.</value></data>

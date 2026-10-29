@@ -2508,7 +2508,9 @@ Mở kho để cập nhật số lượng đã ghi.</value></data>
   <data name="KB_Typing" xml:space="preserve"><value>Đang gõ · {0} trận hoàn tất · {1} cụm từ đã gửi</value></data>
   <data name="KB_Finished" xml:space="preserve"><value>Đạt giới hạn · {0} trận hoàn tất.</value></data>
   <data name="KB_TypingSpeed" xml:space="preserve"><value>Tốc độ gõ (WPM)</value></data>
-  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>Mặc định 80 WPM; 10–300. Nhịp phím dao động ±20%, nghỉ trước cụm từ và Enter. Áp dụng lần Bắt đầu tiếp theo.</value></data>
+  <data name="KB_Stage12TypingSpeed" xml:space="preserve"><value>Tốc độ gõ giai đoạn 1/2 (WPM)</value></data>
+  <data name="KB_Stage3TypingSpeed" xml:space="preserve"><value>Tốc độ gõ giai đoạn 3 (WPM)</value></data>
+  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>Giai đoạn 1/2 dùng chung một tốc độ; giai đoạn 3 có tốc độ riêng. Mặc định mỗi tốc độ là 80 WPM; phạm vi 5–300, bước chỉnh 0,5. Việc nhập được thử ở mức 2× WPM đã chọn; các khoảng nghỉ cố định và thời gian chờ của trò chơi có thể làm tốc độ đo được thấp hơn. Thay đổi áp dụng ở lần Bắt đầu tiếp theo.</value></data>
   <data name="KB_Queueing" xml:space="preserve"><value>Đang đến Keybound Square và đăng ký.</value></data>
   <data name="KB_Returning" xml:space="preserve"><value>Nhận kết quả rồi quay lại xếp hàng.</value></data>
   <data name="KB_CastHold" xml:space="preserve"><value>Tạm dừng nhập khi địch niệm phép.</value></data>

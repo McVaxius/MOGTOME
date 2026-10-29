@@ -2358,7 +2358,9 @@ Abre los almacenes para actualizar las cantidades registradas.</value></data>
   <data name="KB_Typing" xml:space="preserve"><value>Escribiendo · {0} partidas completadas · {1} frases enviadas</value></data>
   <data name="KB_Finished" xml:space="preserve"><value>Límite alcanzado · {0} partidas completadas.</value></data>
   <data name="KB_TypingSpeed" xml:space="preserve"><value>Velocidad de escritura (PPM)</value></data>
-  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>80 PPM por defecto; 10–300. Ritmo variable ±20 % y pausas antes de frases y Enter. Se aplica al siguiente inicio.</value></data>
+  <data name="KB_Stage12TypingSpeed" xml:space="preserve"><value>Velocidad de escritura en fases 1/2 (PPM)</value></data>
+  <data name="KB_Stage3TypingSpeed" xml:space="preserve"><value>Velocidad de escritura en fase 3 (PPM)</value></data>
+  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>Las fases 1/2 comparten una velocidad; la fase 3 tiene la suya. 80 PPM por defecto en ambas; intervalo 5–300, pasos de 0,5. Se intenta introducir texto al doble de las PPM elegidas; las pausas fijas y las esperas del juego pueden reducir la velocidad medida. Los cambios se aplican al siguiente inicio.</value></data>
   <data name="KB_Queueing" xml:space="preserve"><value>Viajando a Keybound Square e inscribiéndose.</value></data>
   <data name="KB_Returning" xml:space="preserve"><value>Recogiendo resultados y volviendo a la cola.</value></data>
   <data name="KB_CastHold" xml:space="preserve"><value>Entrada pausada por un lanzamiento enemigo.</value></data>

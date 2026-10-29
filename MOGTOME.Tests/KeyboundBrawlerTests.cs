@@ -41,7 +41,8 @@ public sealed class KeyboundBrawlerTests
     public void ShopPreparationRoundTripsSeparatelyFromBlundervilleAndOrdinaryDuties()
     {
         var config = JsonSerializer.Deserialize<Configuration>("{\"DutyCounter\":42,\"MaxRuns\":99}")!;
-        Assert.Equal(80, config.KeyboundBrawler.TypingWpm);
+        Assert.Equal(80, config.KeyboundBrawler.Stage12TypingWpm);
+        Assert.Equal(80, config.KeyboundBrawler.Stage3TypingWpm);
         Assert.False(config.KeyboundBrawler.RunLimitEnabled);
         Assert.Equal(1, config.KeyboundBrawler.RunLimit);
         Assert.True(config.KeyboundBrawler.WalletTargetEnabled);
@@ -58,8 +59,8 @@ public sealed class KeyboundBrawlerTests
         config.KeyboundBrawler.PurchaseTargets.Clear();
         config.KeyboundBrawler.PurchaseTargets[52323] = 2;
         config.KeyboundBrawler.PurchaseTargets[KeyboundBrawlerShop.CofferItemId] = 3;
-        config.KeyboundBrawler.TypingWpm = 60;
-        config.KeyboundBrawler.PlayMode = KeyboundPlayMode.Thrower;
+        config.KeyboundBrawler.Stage12TypingWpm = 30.5;
+        config.KeyboundBrawler.Stage3TypingWpm = 120;
         config.KeyboundBrawler.PartyRole = KeyboundPartyRole.Member;
         config.KeyboundBrawler.RunLimitEnabled = true;
         config.KeyboundBrawler.RunLimit = 5;
@@ -75,8 +76,8 @@ public sealed class KeyboundBrawlerTests
         Assert.Equal(2, restored.KeyboundBrawler.PurchaseTargets[52323]);
         Assert.Equal(3, restored.KeyboundBrawler.PurchaseTargets[KeyboundBrawlerShop.CofferItemId]);
         Assert.Equal(2, restored.KeyboundBrawler.PurchaseTargets.Count);
-        Assert.Equal(60, restored.KeyboundBrawler.TypingWpm);
-        Assert.Equal(KeyboundPlayMode.Thrower, restored.KeyboundBrawler.PlayMode);
+        Assert.Equal(30.5, restored.KeyboundBrawler.Stage12TypingWpm);
+        Assert.Equal(120, restored.KeyboundBrawler.Stage3TypingWpm);
         Assert.Equal(KeyboundPartyRole.Member, restored.KeyboundBrawler.PartyRole);
         Assert.True(restored.KeyboundBrawler.RunLimitEnabled);
         Assert.Equal(5, restored.KeyboundBrawler.RunLimit);
@@ -91,6 +92,53 @@ public sealed class KeyboundBrawlerTests
         using var service = new KeyboundBrawlerService();
         service.Observe(true, false, 65);
         Assert.False(service.IsRunning); // Loading settings alone never arms input.
+    }
+
+    [Theory]
+    [InlineData("{}", 80)]
+    [InlineData("{\"TypingWpm\":61}", 61)]
+    [InlineData("{\"TypingWpm\":61,\"PlayMode\":0}", 61)]
+    [InlineData("{\"TypingWpm\":61,\"PlayMode\":1}", 30.5)]
+    [InlineData("{\"PlayMode\":1,\"TypingWpm\":10}", 5)]
+    [InlineData("{\"TypingWpm\":999,\"PlayMode\":1}", 150)]
+    [InlineData("{\"TypingWpm\":0,\"PlayMode\":1}", 5)]
+    public void LegacySettingsRetainSelectedSpeedInBothStagesAndSaveWithoutTheRemovedMode(string json, double expected)
+    {
+        var config = JsonSerializer.Deserialize<Configuration>("{\"KeyboundBrawler\":" + json + "}",
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+        Assert.Equal(expected, config.KeyboundBrawler.Stage12TypingWpm);
+        Assert.Equal(expected, config.KeyboundBrawler.Stage3TypingWpm);
+        var saved = JsonSerializer.Serialize(config);
+        using var document = JsonDocument.Parse(saved);
+        var settings = document.RootElement.GetProperty("KeyboundBrawler");
+        Assert.False(settings.TryGetProperty("PlayMode", out _));
+        Assert.False(settings.TryGetProperty("TypingWpm", out _));
+        var restored = JsonSerializer.Deserialize<Configuration>(saved)!;
+        Assert.Equal(expected, restored.KeyboundBrawler.Stage12TypingWpm);
+        Assert.Equal(expected, restored.KeyboundBrawler.Stage3TypingWpm);
+    }
+
+    [Theory]
+    [InlineData("{\"Stage12TypingWpm\":25.5,\"Stage3TypingWpm\":150,\"TypingWpm\":80,\"PlayMode\":1}")]
+    [InlineData("{\"PlayMode\":1,\"TypingWpm\":80,\"Stage3TypingWpm\":150,\"Stage12TypingWpm\":25.5}")]
+    public void ExplicitStageSettingsWinOverLegacyFieldsRegardlessOfJsonOrder(string json)
+    {
+        var settings = JsonSerializer.Deserialize<KeyboundBrawlerSettings>(json)!;
+        Assert.Equal(25.5, settings.Stage12TypingWpm);
+        Assert.Equal(150, settings.Stage3TypingWpm);
+    }
+
+    [Theory]
+    [InlineData("{\"Stage12TypingWpm\":25.5,\"TypingWpm\":61,\"PlayMode\":1}", 25.5, 30.5)]
+    [InlineData("{\"TypingWpm\":61,\"PlayMode\":1,\"Stage3TypingWpm\":150}", 30.5, 150)]
+    [InlineData("{\"Stage12TypingWpm\":0,\"Stage3TypingWpm\":999}", 5, 300)]
+    [InlineData("{\"typingwpm\":61,\"playmode\":1}", 30.5, 30.5)]
+    public void MissingStageUsesLegacySpeedAndNewValuesUseTheirOwnBounds(string json, double stage12, double stage3)
+    {
+        var settings = JsonSerializer.Deserialize<KeyboundBrawlerSettings>(json,
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+        Assert.Equal(stage12, settings.Stage12TypingWpm);
+        Assert.Equal(stage3, settings.Stage3TypingWpm);
     }
 
     [Fact]
@@ -118,7 +166,7 @@ public sealed class KeyboundBrawlerTests
     [Fact]
     public void PreparationLabelsRenderInEveryLanguageAndTheNavigationIconIsEmbedded()
     {
-        var labels = new[] { "KB_Help", "KB_AutoLoopHelp", "KB_WaitInput", "KB_InputStalled", "KB_WalletTarget", "KB_TargetCurrency", "KB_NoCatalog" };
+        var labels = new[] { "KB_Help", "KB_AutoLoopHelp", "KB_WaitInput", "KB_InputStalled", "KB_WalletTarget", "KB_TargetCurrency", "KB_NoCatalog", "KB_Stage12TypingSpeed", "KB_Stage3TypingSpeed", "KB_TypingSpeedHelp" };
         foreach (var language in Enum.GetValues<UiLanguage>())
         {
             foreach (var key in labels)

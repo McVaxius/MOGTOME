@@ -2508,7 +2508,9 @@ Otwórz magazyny, aby odświeżyć zapisane ilości.</value></data>
   <data name="KB_Typing" xml:space="preserve"><value>Pisanie · ukończone gry: {0} · wysłane frazy: {1}</value></data>
   <data name="KB_Finished" xml:space="preserve"><value>Osiągnięto limit · ukończone gry: {0}.</value></data>
   <data name="KB_TypingSpeed" xml:space="preserve"><value>Szybkość pisania (WPM)</value></data>
-  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>Domyślnie 80 WPM; 10–300. Odstępy zmienne ±20%, pauzy przed frazami i Enter. Od następnego Startu.</value></data>
+  <data name="KB_Stage12TypingSpeed" xml:space="preserve"><value>Szybkość pisania w etapach 1/2 (sł./min)</value></data>
+  <data name="KB_Stage3TypingSpeed" xml:space="preserve"><value>Szybkość pisania w etapie 3 (sł./min)</value></data>
+  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>Etapy 1/2 korzystają ze wspólnej szybkości, a etap 3 ma osobną. Domyślnie po 80 sł./min; zakres 5–300, krok 0,5. Próby wprowadzania odbywają się z dwukrotnością wybranej szybkości; stałe przerwy i oczekiwanie na grę mogą obniżyć zmierzoną szybkość. Zmiany obowiązują od następnego uruchomienia.</value></data>
   <data name="KB_Queueing" xml:space="preserve"><value>Podróż do Keybound Square i rejestracja.</value></data>
   <data name="KB_Returning" xml:space="preserve"><value>Odbiór wyników i powrót do kolejki.</value></data>
   <data name="KB_CastHold" xml:space="preserve"><value>Wstrzymanie wpisywania podczas czaru wroga.</value></data>

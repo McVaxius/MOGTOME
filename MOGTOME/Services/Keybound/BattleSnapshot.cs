@@ -39,6 +39,7 @@ internal sealed class BattleSnapshot
     public int PhraseCount;
     public int CastCount;
     public int GaugeCount;
+    public int Stage;
     public bool InputVisible;
     public nint InputIdentity;
     public float InputScreenY;
@@ -71,6 +72,7 @@ internal sealed class BattleSnapshot
         PhraseCount = 0;
         CastCount = 0;
         GaugeCount = 0;
+        Stage = 0;
         InputVisible = false;
         InputIdentity = 0;
         InputFocused = false;

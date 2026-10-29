@@ -2352,7 +2352,9 @@ Ouvrir les stockages pour actualiser les quantités enregistrées.</value></data
   <data name="KB_Typing" xml:space="preserve"><value>Saisie · {0} parties terminées · {1} phrases envoyées</value></data>
   <data name="KB_Finished" xml:space="preserve"><value>Limite atteinte · {0} parties terminées.</value></data>
   <data name="KB_TypingSpeed" xml:space="preserve"><value>Vitesse de saisie (mots/min)</value></data>
-  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>80 mots/min par défaut ; 10–300. Variation de ±20 % et pauses avant les phrases et Entrée. Au prochain démarrage.</value></data>
+  <data name="KB_Stage12TypingSpeed" xml:space="preserve"><value>Vitesse de saisie des étapes 1/2 (mots/min)</value></data>
+  <data name="KB_Stage3TypingSpeed" xml:space="preserve"><value>Vitesse de saisie de l’étape 3 (mots/min)</value></data>
+  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>Les étapes 1/2 partagent une vitesse ; l’étape 3 a la sienne. Par défaut, 80 mots/min chacune ; plage de 5 à 300, par pas de 0,5. La saisie est tentée à 2× la vitesse choisie ; les pauses fixes et les attentes du jeu peuvent réduire la vitesse mesurée. Les changements s’appliquent au prochain démarrage.</value></data>
   <data name="KB_Queueing" xml:space="preserve"><value>Trajet vers Keybound Square et inscription.</value></data>
   <data name="KB_Returning" xml:space="preserve"><value>Résultats et retour pour une nouvelle partie.</value></data>
   <data name="KB_CastHold" xml:space="preserve"><value>Saisie suspendue pendant une incantation ennemie.</value></data>

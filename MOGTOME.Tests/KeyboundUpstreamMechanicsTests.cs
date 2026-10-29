@@ -130,16 +130,16 @@ public sealed class KeyboundUpstreamMechanicsTests
     }
 
     [Fact]
-    public void RepeatedWakeKeysRespectEvenTheSlowestHalfSpeedThrowerPace()
+    public void RepeatedWakeKeysRespectTheSlowestDoubledConfiguredPace()
     {
         var input = new KeyboundTypingTests.FakeInput("word") { Focused = false, WakeAccepted = true };
         using var service = new KeyboundBrawlerService(input, (_, max) => max - 1);
         service.Observe(true, false, 65, KeyboundEventLoop.Arena);
-        Assert.True(service.Start(new() { WalletTargetEnabled = false, TypingWpm = 10, PlayMode = KeyboundPlayMode.Thrower }));
+        Assert.True(service.Start(new() { WalletTargetEnabled = false, Stage12TypingWpm = 5 }));
         service.Update(null, 0); service.Update(null, 150); service.Update(null, 185);
-        for (var now = 300; now <= 3000; now += 150) service.Update(null, now);
+        for (var now = 300; now <= 1500; now += 150) service.Update(null, now);
         Assert.Single(input.WakeDown);
-        service.Update(null, 3150); Assert.Equal(2, input.WakeDown.Count);
+        service.Update(null, 1650); Assert.Equal(2, input.WakeDown.Count);
     }
 
     [Fact]

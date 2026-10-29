@@ -2508,7 +2508,9 @@ Buka penyimpanan untuk memperbarui jumlah tercatat.</value></data>
   <data name="KB_Typing" xml:space="preserve"><value>Mengetik · {0} permainan selesai · {1} frasa terkirim</value></data>
   <data name="KB_Finished" xml:space="preserve"><value>Batas tercapai · {0} permainan selesai.</value></data>
   <data name="KB_TypingSpeed" xml:space="preserve"><value>Kecepatan mengetik (WPM)</value></data>
-  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>Bawaan 80 WPM; 10–300. Jeda tombol bervariasi ±20%, dengan jeda sebelum frasa dan Enter. Berlaku saat Mulai berikutnya.</value></data>
+  <data name="KB_Stage12TypingSpeed" xml:space="preserve"><value>Kecepatan mengetik tahap 1/2 (WPM)</value></data>
+  <data name="KB_Stage3TypingSpeed" xml:space="preserve"><value>Kecepatan mengetik tahap 3 (WPM)</value></data>
+  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>Tahap 1/2 memakai kecepatan yang sama; tahap 3 memiliki kecepatan tersendiri. Nilai awal masing-masing 80 WPM; rentang 5–300, langkah 0,5. Input dicoba pada 2× WPM yang dipilih; jeda tetap dan waktu tunggu dalam game dapat menurunkan kecepatan terukur. Perubahan berlaku saat Mulai berikutnya.</value></data>
   <data name="KB_Queueing" xml:space="preserve"><value>Menuju Keybound Square dan mendaftar.</value></data>
   <data name="KB_Returning" xml:space="preserve"><value>Mengambil hasil dan kembali mengantre.</value></data>
   <data name="KB_CastHold" xml:space="preserve"><value>Input ditahan saat musuh merapal.</value></data>

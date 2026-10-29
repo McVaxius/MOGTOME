@@ -2508,7 +2508,9 @@ Kayıtlı miktarları yenilemek için depoları açın.</value></data>
   <data name="KB_Typing" xml:space="preserve"><value>Yazılıyor · {0} oyun tamamlandı · {1} ifade gönderildi</value></data>
   <data name="KB_Finished" xml:space="preserve"><value>Sınıra ulaşıldı · {0} oyun tamamlandı.</value></data>
   <data name="KB_TypingSpeed" xml:space="preserve"><value>Yazma hızı (WPM)</value></data>
-  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>Varsayılan 80 WPM; 10–300. Tuş aralıkları ±%20 değişir; ifade ve Enter öncesi duraklar. Sonraki Başlat’ta uygulanır.</value></data>
+  <data name="KB_Stage12TypingSpeed" xml:space="preserve"><value>1/2. aşama yazma hızı (WPM)</value></data>
+  <data name="KB_Stage3TypingSpeed" xml:space="preserve"><value>3. aşama yazma hızı (WPM)</value></data>
+  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>1/2. aşamalar aynı hızı kullanır; 3. aşamanın hızı ayrıdır. İkisinin de varsayılanı 80 WPM; aralık 5–300, adım 0,5. Giriş, seçilen WPM’nin 2 katı hızla denenir; sabit duraklamalar ve oyun içi beklemeler ölçülen hızı düşürebilir. Değişiklikler sonraki Başlat’ta uygulanır.</value></data>
   <data name="KB_Queueing" xml:space="preserve"><value>Keybound Square’a gidiliyor ve kayıt yapılıyor.</value></data>
   <data name="KB_Returning" xml:space="preserve"><value>Sonuçlar alınıyor ve sıraya dönülüyor.</value></data>
   <data name="KB_CastHold" xml:space="preserve"><value>Düşman büyüsü sırasında giriş duraklatıldı.</value></data>

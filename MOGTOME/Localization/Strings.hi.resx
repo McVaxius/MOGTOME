@@ -2524,7 +2524,9 @@ Retainer और अन्य भंडारण: {3}
   <data name="KB_Typing" xml:space="preserve"><value>टाइपिंग · {0} खेल पूरे · {1} वाक्यांश भेजे</value></data>
   <data name="KB_Finished" xml:space="preserve"><value>सीमा पूरी · {0} खेल पूरे।</value></data>
   <data name="KB_TypingSpeed" xml:space="preserve"><value>टाइपिंग गति (WPM)</value></data>
-  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>डिफ़ॉल्ट 80 WPM; सीमा 10–300। कुंजियों के बीच ±20% अंतर और वाक्यांश तथा Enter से पहले विराम। अगले प्रारंभ पर लागू।</value></data>
+  <data name="KB_Stage12TypingSpeed" xml:space="preserve"><value>चरण 1/2 की टाइपिंग गति (WPM)</value></data>
+  <data name="KB_Stage3TypingSpeed" xml:space="preserve"><value>चरण 3 की टाइपिंग गति (WPM)</value></data>
+  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>चरण 1/2 की गति एक समान है; चरण 3 की गति अलग है। दोनों का डिफ़ॉल्ट 80 WPM है; सीमा 5–300 और समायोजन का अंतर 0.5 है। चुने गए WPM की दोगुनी गति से इनपुट का प्रयास होता है; निश्चित विराम और खेल में प्रतीक्षा के कारण मापी गई गति कम हो सकती है। बदलाव अगले प्रारंभ पर लागू होते हैं।</value></data>
   <data name="KB_Queueing" xml:space="preserve"><value>Keybound Square की यात्रा और पंजीकरण जारी।</value></data>
   <data name="KB_Returning" xml:space="preserve"><value>परिणाम लेकर दोबारा कतार में लौट रहे हैं।</value></data>
   <data name="KB_CastHold" xml:space="preserve"><value>शत्रु के मंत्र के दौरान इनपुट रोका गया।</value></data>

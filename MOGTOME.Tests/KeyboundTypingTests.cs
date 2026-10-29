@@ -291,43 +291,62 @@ public sealed class KeyboundTypingTests
     }
 
     [Fact]
-    public void Configured80WpmUses150MsCharacterPaceWithReactionAndSubmitPauses()
+    public void Configured80WpmAttempts75MsCharactersWithUnchangedReactionAndSubmitPauses()
     {
         var input = new FakeInput("abc");
         using var service = new KeyboundBrawlerService(input, (minimum, maximum) => (minimum + maximum - 1) / 2);
         service.Observe(true, false, 65, 900);
-        Assert.True(service.Start(new() { TypingWpm = 80, WalletTargetEnabled = false }));
+        Assert.True(service.Start(new() { Stage12TypingWpm = 80, WalletTargetEnabled = false }));
         service.Update(null, 0);
         service.Update(null, 324);
         Assert.Empty(input.Sent);
         service.Update(null, 325);
         Assert.Equal("a", input.Sent);
         input.Text = "a";
-        service.Update(null, 474);
+        service.Update(null, 399);
         Assert.Equal("a", input.Sent);
-        service.Update(null, 475);
+        service.Update(null, 400);
         Assert.Equal("ab", input.Sent);
         input.Text = "ab";
-        service.Update(null, 625);
+        service.Update(null, 474);
+        Assert.Equal("ab", input.Sent);
+        service.Update(null, 475);
         Assert.Equal("abc", input.Sent);
         input.Text = "abc";
-        service.Update(null, 824);
+        service.Update(null, 674);
         Assert.Empty(input.Down);
-        service.Update(null, 825);
+        service.Update(null, 675);
         Assert.Equal(new[] { GameKey.Enter }, input.Down);
+        input.Text = "";
+        service.Update(null, 709);
+        Assert.Empty(input.Up);
+        Assert.Equal(0, service.SubmittedPhrases);
+        service.Update(null, 710);
+        Assert.Equal(new[] { GameKey.Enter }, input.Up);
+        Assert.Equal(1, service.SubmittedPhrases);
     }
 
     [Theory]
-    [InlineData(80, 120, 180)]
-    [InlineData(40, 240, 360)]
-    [InlineData(160, 60, 90)]
-    [InlineData(0, 960, 1440)]
-    [InlineData(int.MaxValue, 32, 48)]
-    public void CharacterTimingVariesWithin20PercentOfConfiguredWpm(int wpm, int minimum, int maximum)
+    [InlineData(80d, 80d, 60, 90)]
+    [InlineData(40d, 40d, 120, 180)]
+    [InlineData(160d, 160d, 30, 45)]
+    [InlineData(30.5d, 30.5d, 157, 236)]
+    [InlineData(10d, 10d, 480, 720)]
+    [InlineData(5d, 5d, 960, 1440)]
+    [InlineData(300d, 300d, 16, 24)]
+    [InlineData(0d, 5d, 960, 1440)]
+    [InlineData(double.MinValue, 5d, 960, 1440)]
+    [InlineData(double.MaxValue, 300d, 16, 24)]
+    [InlineData(double.NaN, 80d, 60, 90)]
+    [InlineData(double.NegativeInfinity, 80d, 60, 90)]
+    [InlineData(double.PositiveInfinity, 80d, 60, 90)]
+    public void CharacterTimingVariesWithin20PercentOfDoubledClampedWpm(double wpm, double clampedWpm, int minimum, int maximum)
     {
         Assert.Equal(minimum, new KeyboundTypingPace(wpm, (min, max) => min).CharacterDelay());
         Assert.Equal(maximum, new KeyboundTypingPace(wpm, (min, max) => max - 1).CharacterDelay());
-        Assert.InRange(new KeyboundTypingPace(wpm).WordsPerMinute, 10, 300);
+        var pace = new KeyboundTypingPace(wpm);
+        Assert.Equal(clampedWpm, pace.WordsPerMinute);
+        Assert.Equal(clampedWpm * 2d, pace.EffectiveWordsPerMinute);
     }
 
     [Fact]
@@ -354,17 +373,15 @@ public sealed class KeyboundTypingTests
         Assert.True(service.IsRunning);
     }
 
-    [Theory]
-    [InlineData(80)]
-    [InlineData(10)]
-    [InlineData(81)]
-    [InlineData(300)]
-    public void ThrowerUsesExactlyHalfTheConfiguredWinnerRate(int winnerWpm)
+    [Fact]
+    public void ReactionAndSubmitDelayBoundsStayUnchanged()
     {
-        var winner = new KeyboundTypingPace(winnerWpm, (min, max) => min);
-        var thrower = new KeyboundTypingPace(winnerWpm, (min, max) => min, halfSpeed: true);
-        Assert.Equal(winner.EffectiveWordsPerMinute / 2, thrower.EffectiveWordsPerMinute);
-        Assert.InRange(thrower.CharacterDelay(), winner.CharacterDelay() * 2 - 1, winner.CharacterDelay() * 2 + 1);
+        var minimum = new KeyboundTypingPace(80, (min, _) => min);
+        var maximum = new KeyboundTypingPace(80, (_, max) => max - 1);
+        Assert.Equal(200, minimum.ReactionDelay());
+        Assert.Equal(450, maximum.ReactionDelay());
+        Assert.Equal(120, minimum.SubmitDelay());
+        Assert.Equal(280, maximum.SubmitDelay());
     }
 
     internal sealed class FakeInput(params string[] phrases) : IKeyboundInput

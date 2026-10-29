@@ -113,8 +113,26 @@ owner and no cast hold. System key-down requires the game in the foreground;
 only a detached window belonging to the same game process can return foreground
 to it. Key-up remains owned through Stop and foreground changes. Non-Latin
 phrases use Space to wake and continue from the observed input text. Existing
-Letterlock/input-disable guards, WPM/Thrower pace, dedicated KBB idle-counter
+Letterlock/input-disable guards, configurable stage pacing, dedicated KBB idle-counter
 heartbeat, registration callback and Leader/Member queue policies remain in force.
 The controller/mouse timer extension runs only inside MOGTOME's matched
 arena/HUD/addon guard. As in upstream 1.5.1.0, every named Timer field is reset;
 histories, status, configured time limits and undocumented offsets are retained.
+## Stage-specific pacing
+
+The native phase observation uses the published
+[InstanceContentKeyboundBrawler layout](https://github.com/AtmoOmen/FFXIVClientStructs.Expansion/blob/433c6def4d14f9e09c4ef8c9a8c4366453fc64eb/FFXIVClientStructs.Expansion/FFXIV/Client/Game/InstanceContent/InstanceContentKeyboundBrawler.cs)
+at revision 433c6def4d14f9e09c4ef8c9a8c4366453fc64eb. GamePhase at 8176
+identifies active play (4–6), and PhaseImageIndex at 8180 is 0–2, selecting the
+stage artwork 1620–1622. The input agent's documented UpdateScreenImage consumes
+that director value. MOGTOME reads the current director after checking its native
+content type and the existing arena/HUD/input-addon ownership guard. It avoids
+the input agent's last-displayed image cache, which can lag native initialization.
+No Expansion dependency, native method call or new signature is added.
+
+The snapshot resets an unavailable stage to unknown; unknown and stages 1–2 use
+the first configured pace, while stage 3 uses the second. Both choices are captured
+on Start. Winner/Thrower is removed from active behavior; legacy effective speed
+is retained in both saved stage settings. The fixed attempted-rate multiplier is
+applied once inside the pace calculation. Host stage timing and actual delivered
+throughput remain subject to native verification.

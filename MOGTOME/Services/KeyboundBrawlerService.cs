@@ -18,6 +18,7 @@ public sealed class KeyboundBrawlerService : IDisposable
     private readonly BarrierMemory barrierMemory = new();
     private readonly Func<int, int, int>? drawDelay;
     private KeyboundTypingPace pace = new(80);
+    private KeyboundTypingPace stage12Pace = new(80), stage3Pace = new(80);
     private bool disposed, ready, busy, suspended, inEvent, roundSeen, completedRound;
     private uint territory, roundTerritory;
     private int stopRequested;
@@ -82,7 +83,9 @@ public sealed class KeyboundBrawlerService : IDisposable
     {
         if (!CanStart) { if (!IsRunning) Status = UnavailableReason; return false; }
         Interlocked.Exchange(ref stopRequested, 0);
-        pace = new(settings.TypingWpm, drawDelay, settings.PlayMode == KeyboundPlayMode.Thrower);
+        stage12Pace = new(settings.Stage12TypingWpm, drawDelay);
+        stage3Pace = new(settings.Stage3TypingWpm, drawDelay);
+        pace = stage12Pace;
         runLimit = settings.RunLimitEnabled ? Math.Max(1, settings.RunLimit) : 0;
         walletTarget = settings.WalletTargetEnabled ? (uint)Math.Max(0, settings.WalletTarget) : null;
         CompletedRuns = SubmittedPhrases = 0;
@@ -98,8 +101,8 @@ public sealed class KeyboundBrawlerService : IDisposable
         ResetTyping();
         IsRunning = true;
         Status = Ui.M("KB_Queueing");
-        Plugin.Log?.Information("[MOGTOME][KBB] Started kbb-focus-20261028-08; mode={Mode}, role={Role}, wpm={Wpm}, runLimit={RunLimit}, walletTarget={WalletTarget}",
-            settings.PlayMode, settings.PartyRole, settings.TypingWpm, runLimit, walletTarget?.ToString() ?? "off");
+        Plugin.Log?.Information("[MOGTOME][KBB] Started kbb-focus-20261028-08; role={Role}, stage12Wpm={Stage12Wpm}, stage3Wpm={Stage3Wpm}, runLimit={RunLimit}, walletTarget={WalletTarget}",
+            settings.PartyRole, stage12Pace.WordsPerMinute, stage3Pace.WordsPerMinute, runLimit, walletTarget?.ToString() ?? "off");
         return true;
     }
 
@@ -127,6 +130,7 @@ public sealed class KeyboundBrawlerService : IDisposable
     {
         if (!IsRunning || StopRequested || admittedTerritory != KeyboundEventLoop.Arena) return;
         ReleaseKey(); ResetTyping();
+        pace = stage12Pace;
         roundTerritory = admittedTerritory;
         roundSeen = true; completedRound = false;
         castWatch.Reset(); barrierMemory.Clear(); input.Reset(); inputIdentity = 0;
@@ -143,7 +147,7 @@ public sealed class KeyboundBrawlerService : IDisposable
         if (!IsRunning) return;
         try
         {
-            if (suspended && !busy) { ReleaseKey(); ResetTyping(); return; }
+            if (suspended && !busy) { ReleaseKey(); ResetTyping(); pace = stage12Pace; return; }
             if (!ready || busy) { StopWithReason(UnavailableReason.Key!); return; }
             if (!inEvent && roundSeen)
             {
@@ -151,6 +155,7 @@ public sealed class KeyboundBrawlerService : IDisposable
                 roundTerritory = 0;
                 barrierMemory.Clear(); input.Reset();
                 ResetTyping();
+                pace = stage12Pace;
             }
             if (walletTarget.HasValue && !wallet.HasValue) { StopWithReason("KB_NoWallet"); return; }
             if ((!roundSeen || completedRound) && (runLimit > 0 && CompletedRuns >= runLimit ||
@@ -160,6 +165,7 @@ public sealed class KeyboundBrawlerService : IDisposable
             if (!inEvent || completedRound)
             { ReleaseKey(); ResetTyping(); Status = Ui.M("KB_Queueing"); return; }
             input.Read(snapshot);
+            pace = snapshot.InputVisible && snapshot.Stage == 3 ? stage3Pace : stage12Pace;
             if (!snapshot.InputVisible)
             { ReleaseKey(); ResetTyping(); focusAttempts = 0; Status = Ui.M("KB_WaitInput"); return; }
             barrierMemory.Apply(snapshot, now);
@@ -328,6 +334,7 @@ public sealed class KeyboundBrawlerService : IDisposable
         IsRunning = Finished = false;
         Interlocked.Exchange(ref stopRequested, 0);
         ReleaseKey(); ResetTyping();
+        pace = stage12Pace;
         roundSeen = completedRound = false;
         recentlySubmitted = null;
         castWatch.Reset();

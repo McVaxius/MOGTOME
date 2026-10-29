@@ -184,20 +184,33 @@ Leader/Solo Start also accepts an already-open KBB registration panel in Keyboun
 It waits for the dialog to finish loading, then submits the observed registration
 callback once, without requiring another registrar interaction.
 
-**Typing speed (WPM)** is account-configurable from 10–300 WPM and defaults to
-**80 WPM** (five characters per word). Character delays vary by ±20%, with
-200–450 ms reaction pauses and 120–280 ms pauses before Enter. Speed changes apply
-on the next Start. Each native text echo is checked before further input.
+**Typing speed (WPM)** has separate account settings for **stages 1–2** and
+**stage 3**, each defaulting to **80 WPM**. Set stage 3 higher when desired.
+Both controls accept 5–300 WPM in half-WPM steps. Existing saved speeds carry
+into both settings; an old Thrower selection retains its effective half-speed
+value. Winner/Thrower is replaced by these explicit speed controls.
 
-Choose **Winner** or **Thrower** and **Party leader / Solo** or **Member**.
-Thrower always uses half the configured Winner WPM (80 → 40; odd values retain
-half-speed pacing). Both modes keep the combat/mechanic guards. Leaders initiate
-registration/requeue from Keybound Square. Members wait in their current
-territory, accept only the group's matching KBB queue pop, play, leave Results
-and wait for the leader's next queue. While waiting for entry, members do not
-travel to the Square or submit registration, and never initiate or cancel the group queue. A selected leader
-role waits if the character is currently a party member. Choices save per account
-and are captured at Start.
+Character attempts use twice the selected WPM, with five characters per word and
+±20% variation. This adjusts attempted cadence; reaction pauses, frame timing and
+native text acknowledgement still affect measured throughput. Reaction pauses
+remain 200–450 ms, with 120–280 ms before Enter. Both speeds are captured on
+Start; the current native phase selects the appropriate speed during play. An
+unavailable phase observation uses the stages 1–2 speed. Each native text echo
+is checked before further input.
+
+Choose **Party leader / Solo** or **Member**. Leaders initiate registration/requeue
+from Keybound Square. Members wait in their current territory, accept only the
+group's matching KBB queue pop, play, leave Results and wait for the leader's next
+queue. While waiting for entry, members do not travel to the Square or submit
+registration, and never initiate or cancel the group queue. A selected leader
+role waits if the character is currently a party member. Choices save per
+account and are captured at Start.
+
+Returned leaders and members wait up to 20 minutes while other party members
+leave the arena, resuming as soon as they are ready. A confirmed native
+"member is changing areas" registration rejection permits another owned attempt
+after a short readiness wait within that same allowance. Manual Stop, configured
+limits and rejection of other duties remain in force.
 
 Barrier phrases and interruptible casts have priority. Smart targeting favours
 shorter words with four or more phrases visible. A repeated phrase with no enemy

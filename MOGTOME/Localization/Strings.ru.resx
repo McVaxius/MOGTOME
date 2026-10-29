@@ -2358,7 +2358,9 @@ Path: {0}
   <data name="KB_Typing" xml:space="preserve"><value>Ввод · завершено игр: {0} · отправлено фраз: {1}</value></data>
   <data name="KB_Finished" xml:space="preserve"><value>Лимит достигнут · завершено игр: {0}.</value></data>
   <data name="KB_TypingSpeed" xml:space="preserve"><value>Скорость ввода (слов/мин)</value></data>
-  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>По умолчанию 80; диапазон 10–300. Разброс интервалов ±20%, паузы перед фразами и Enter. Со следующего старта.</value></data>
+  <data name="KB_Stage12TypingSpeed" xml:space="preserve"><value>Скорость ввода на этапах 1/2 (слов/мин)</value></data>
+  <data name="KB_Stage3TypingSpeed" xml:space="preserve"><value>Скорость ввода на этапе 3 (слов/мин)</value></data>
+  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>У этапов 1/2 общая скорость, у этапа 3 — отдельная. По умолчанию обе равны 80 слов/мин; диапазон 5–300, шаг 0,5. Попытки ввода идут с удвоенной выбранной скоростью; фиксированные паузы и ожидания игры могут снизить измеренную скорость. Изменения применяются при следующем запуске.</value></data>
   <data name="KB_Queueing" xml:space="preserve"><value>Переход в Keybound Square и регистрация.</value></data>
   <data name="KB_Returning" xml:space="preserve"><value>Получение результатов и возврат в очередь.</value></data>
   <data name="KB_CastHold" xml:space="preserve"><value>Ввод приостановлен из-за заклинания врага.</value></data>

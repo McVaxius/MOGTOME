@@ -1,3 +1,10 @@
+2026-10-29 - Keybound party return and stage speeds (unversioned)
+
+- Keep returned leaders and members active for up to 20 minutes while party members leave the arena. Start the allowance once and refresh ordinary staging time when readiness returns. Preserve matching queue/pop progress, manual Stop and run/wallet limits.
+- Recognize the existing localized member-changing-areas registration error and rearm only the rejected owned submission after a short readiness wait within the same bounded allowance.
+- Replace Winner/Thrower with separate WPM controls for stages 1–2 and stage 3, selected from the current native director's published phase-image index. Carry saved effective speeds into both controls, including fractional legacy Thrower values; preserve party roles and input/mechanic safeguards.
+- Double attempted character cadence without changing displayed speed values or fixed reaction/submission waits. Native acknowledgement and frame timing still govern actual throughput. Native party/stage/throughput acceptance remains pending; no version bump or deployment is included.
+
 2026-10-28 - 4.2.0.1 Keybound late party return
 
 - Wait for every visible party member to leave the previous KBB arena before the leader approaches/submits registration, following the existing main duty queue's member-territory check. A late member no longer causes an early registration request that leaves the loop waiting on its consumed submission.

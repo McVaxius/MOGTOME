@@ -1,4 +1,6 @@
 using MOGTOME.Services.Keybound;
+using MOGTOME.Services;
+using MOGTOME.Models;
 
 namespace MOGTOME.Tests;
 
@@ -82,4 +84,69 @@ public sealed class KeyboundCombatTests
     public void DedicatedIdleCounterRequiresShownHudWithDirectorAndMatchingInputAddon(uint territory, bool shown,
         bool director, bool sameHud, uint expected, uint actual, float idle, bool allowed)
         => Assert.Equal(allowed, KeyboundActivity.Matches(territory, shown, director, sameHud, expected, actual, idle));
+
+    [Theory]
+    [InlineData(-1, 0)]
+    [InlineData(0, 1)]
+    [InlineData(1, 2)]
+    [InlineData(2, 3)]
+    [InlineData(3, 0)]
+    public void NativePhaseImageUsesOnlyTheThreePublishedStageIndices(int image, int stage)
+        => Assert.Equal(stage, KeyboundActivity.StageFromImageIndex(image));
+
+    [Fact]
+    public void StagePacesAreCapturedAtStartAndSwitchWithoutSkippingEchoOrLeakingAcrossGames()
+    {
+        var stage = 1;
+        var input = new KeyboundTypingTests.FakeInput("abcdefghijklmnopqrst")
+        { Configure = snapshot => snapshot.Stage = stage };
+        using var service = new KeyboundBrawlerService(input, (min, max) => (min + max - 1) / 2);
+        service.Observe(true, false, 65, KeyboundEventLoop.Arena);
+        var settings = new KeyboundBrawlerSettings
+        { Stage12TypingWpm = 40, Stage3TypingWpm = 80, WalletTargetEnabled = false };
+        Assert.True(service.Start(settings));
+        settings.Stage12TypingWpm = 300; settings.Stage3TypingWpm = 5;
+
+        service.Update(null, 0); service.Update(null, 325);
+        Assert.Equal("a", input.Sent);
+        stage = 3;
+        service.Update(null, 400); // A faster stage never bypasses the previous character's echo.
+        Assert.Equal("a", input.Sent);
+        service.Update(null, 475); Assert.Equal("a", input.Sent); // Still waits when the next key is due.
+        input.Text = "a"; input.AutoEcho = true;
+        service.Update(null, 476); Assert.Equal("ab", input.Sent);
+        service.Update(null, 550); Assert.Equal("ab", input.Sent);
+        stage = 2;
+        service.Update(null, 551); Assert.Equal("abc", input.Sent);
+        service.Update(null, 700); Assert.Equal("abc", input.Sent);
+        stage = 1;
+        service.Update(null, 701); Assert.Equal("abcd", input.Sent);
+        stage = 3;
+        service.Update(null, 851); Assert.Equal("abcde", input.Sent);
+        stage = 0;
+        service.Update(null, 926); Assert.Equal("abcdef", input.Sent);
+        service.Update(null, 1001); Assert.Equal("abcdef", input.Sent);
+        service.Update(null, 1076); Assert.Equal("abcdefg", input.Sent);
+
+        stage = 3; input.Visible = false;
+        service.Update(null, 1080);
+        stage = 0; input.Visible = true;
+        service.Update(null, 1200); service.Update(null, 1525);
+        Assert.Equal("abcdefgh", input.Sent);
+        service.Update(null, 1600); Assert.Equal("abcdefgh", input.Sent);
+        service.Update(null, 1675); Assert.Equal("abcdefghi", input.Sent);
+
+        stage = 3;
+        service.Update(null, 1825); Assert.Equal("abcdefghij", input.Sent);
+        stage = 0; input.Text = input.Sent = "";
+        service.ObserveNewRound(KeyboundEventLoop.Arena);
+        service.Update(null, 2000); service.Update(null, 2325);
+        Assert.Equal("a", input.Sent);
+        service.Update(null, 2400); Assert.Equal("a", input.Sent);
+        service.Update(null, 2475); Assert.Equal("ab", input.Sent);
+
+        var snapshot = new BattleSnapshot { Stage = 3 };
+        snapshot.Clear();
+        Assert.Equal(0, snapshot.Stage);
+    }
 }

@@ -73,6 +73,7 @@ internal static unsafe class KeyboundUi
         }
 
         snapshot.InputVisible = true;
+        snapshot.Stage = KeyboundActivity.ReadStage(addon->Id);
         snapshot.InputIdentity = (nint)textInput;
         snapshot.InputScreenY = addon->RootNode == null ? 0f : CenterOf(addon->RootNode, out _).Y;
         snapshot.InputText = cache.Decode(BattleSnapshot.InputSlot, textInput->RawString.AsSpan(), singleLine: false);

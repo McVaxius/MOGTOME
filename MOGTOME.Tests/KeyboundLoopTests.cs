@@ -11,18 +11,38 @@ public sealed class KeyboundLoopTests
         internal readonly KeyboundTypingTests.FakeInput Input = new("a");
         internal readonly KeyboundBrawlerService Typer;
         internal readonly KeyboundEventLoop Loop;
-        internal Fixture(int limit = 0, MOGTOME.Models.KeyboundPartyRole role = MOGTOME.Models.KeyboundPartyRole.Leader)
+        internal Fixture(int limit = 0, MOGTOME.Models.KeyboundPartyRole role = MOGTOME.Models.KeyboundPartyRole.Leader,
+            uint? walletTarget = null)
         {
             Typer = new(Input, (_, _) => 0);
             Loop = new(Game, Typer);
             Typer.Observe(true, false, 23, KeyboundEventLoop.Lobby);
-            Assert.True(Typer.Start(new() { PartyRole = role, WalletTargetEnabled = false, RunLimitEnabled = limit > 0, RunLimit = limit }));
+            Assert.True(Typer.Start(new()
+            {
+                PartyRole = role, WalletTargetEnabled = walletTarget.HasValue, WalletTarget = (int)(walletTarget ?? 0),
+                RunLimitEnabled = limit > 0, RunLimit = limit,
+            }));
             Loop.Start(0, role);
         }
-        internal void Tick(long now)
+        internal void Tick(long now, uint? wallet = null)
         {
             Typer.Observe(true, false, Game.Frame.Territory == KeyboundEventLoop.Arena ? 65u : 23u, Game.Frame.Territory, Game.Frame.Transitioning);
-            Loop.Update(now); Typer.Update(null, now);
+            Typer.FinishIfLimitMet(wallet);
+            Loop.Update(now); Typer.Update(wallet, now);
+        }
+        internal long CompleteRoundAndReturn()
+        {
+            Input.Visible = false;
+            Game.Frame = Game.Frame with { Territory = KeyboundEventLoop.Arena, Entry = false };
+            Tick(0);
+            Game.Frame = Game.Frame with { Results = true, ResultsReady = true };
+            Tick(100); Tick(2100);
+            Game.Frame = Game.Frame with
+            {
+                Territory = KeyboundEventLoop.Lobby, Results = false, ResultsReady = false, PartyReturned = false,
+            };
+            Tick(2200);
+            return 2200;
         }
         public void Dispose() { Loop.Stop(); Typer.Dispose(); }
     }
@@ -216,6 +236,247 @@ public sealed class KeyboundLoopTests
         f.Tick(0);
         Assert.Equal(0, f.Game.Registers + f.Game.Approaches);
         Assert.Equal("KB_WaitPartyRole", f.Loop.Status.Key);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ReturnedClientsSurviveOldTimeoutsAndResumeImmediatelyNearTwentyMinutes(bool member)
+    {
+        using var f = new Fixture(role: member ? MOGTOME.Models.KeyboundPartyRole.Member : MOGTOME.Models.KeyboundPartyRole.Leader);
+        f.Game.Frame = f.Game.Frame with
+        {
+            PartyRole = member ? MOGTOME.Models.BlundervilleRole.Member : MOGTOME.Models.BlundervilleRole.Leader,
+        };
+        var returnedAt = f.CompleteRoundAndReturn();
+        foreach (var elapsed in new long[] { 180_001, 600_001, 1_199_000 })
+        {
+            f.Tick(returnedAt + elapsed);
+            Assert.True(f.Loop.IsActive);
+            Assert.True(f.Typer.IsRunning);
+            Assert.Equal(0, f.Game.Registers + f.Game.Commences + f.Game.Approaches + f.Game.LobbyTrips);
+        }
+
+        f.Game.Frame = f.Game.Frame with { PartyReturned = true };
+        f.Tick(returnedAt + 1_199_100);
+        Assert.True(f.Loop.IsActive);
+        Assert.Equal(member ? 0 : 1, f.Game.Approaches);
+        f.Game.Frame = f.Game.Frame with { Entry = !member, Pop = member, PopMatches = member };
+        f.Tick(returnedAt + 1_199_200);
+        f.Tick(returnedAt + 1_200_100);
+        Assert.True(f.Loop.IsActive);
+        Assert.Equal(member ? 0 : 1, f.Game.Registers);
+        Assert.Equal(member ? 1 : 0, f.Game.Commences);
+        Assert.Equal(0, f.Game.Cancels);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PartyReturnPollingCannotExtendTheTwentyMinuteDeadline(bool member)
+    {
+        using var f = new Fixture(role: member ? MOGTOME.Models.KeyboundPartyRole.Member : MOGTOME.Models.KeyboundPartyRole.Leader);
+        f.Game.Frame = f.Game.Frame with
+        {
+            PartyRole = member ? MOGTOME.Models.BlundervilleRole.Member : MOGTOME.Models.BlundervilleRole.Leader,
+        };
+        var returnedAt = f.CompleteRoundAndReturn();
+        foreach (var elapsed in new long[] { 180_001, 600_001, 1_199_999 })
+        {
+            f.Tick(returnedAt + elapsed);
+            Assert.True(f.Loop.IsActive);
+        }
+        f.Tick(returnedAt + 1_200_001);
+        Assert.False(f.Loop.IsActive);
+        Assert.False(f.Typer.IsRunning);
+        Assert.Equal("BV_Timeout", f.Loop.Status.Key);
+        Assert.Equal(0, f.Game.Registers + f.Game.Commences + f.Game.Approaches + f.Game.Cancels);
+    }
+
+    [Fact]
+    public void ConfirmedAreaChangeRejectionWaitsThreeSecondsBeforeRetryingOnce()
+    {
+        using var f = new Fixture();
+        f.Game.Frame = f.Game.Frame with { Entry = true };
+        f.Tick(0);
+        Assert.True(f.Loop.ObserveRegistrationRejected(7461, 100));
+        Assert.False(f.Loop.ObserveRegistrationRejected(7461, 2000));
+        f.Tick(3099);
+        Assert.Equal(1, f.Game.Registers);
+        f.Tick(3100); f.Tick(3101);
+        Assert.True(f.Loop.IsActive);
+        Assert.Equal(2, f.Game.Registers);
+    }
+
+    [Fact]
+    public void AreaChangeRetryRequiresPartyReadinessAndThenAcceptsTheMatchingPopOnce()
+    {
+        using var f = new Fixture();
+        f.Game.Frame = f.Game.Frame with { Entry = true };
+        f.Tick(0);
+        Assert.True(f.Loop.ObserveRegistrationRejected(7461, 100));
+        f.Game.Frame = f.Game.Frame with { PartyReturned = false };
+        f.Tick(3100); f.Tick(5000);
+        Assert.Equal(1, f.Game.Registers);
+        f.Game.Frame = f.Game.Frame with { PartyReturned = true };
+        f.Tick(5100);
+        Assert.Equal(2, f.Game.Registers);
+        f.Game.Frame = f.Game.Frame with { Entry = false, Queued = true, QueueMatches = true };
+        f.Tick(5200);
+        f.Game.Frame = f.Game.Frame with { Pop = true, PopMatches = true };
+        f.Tick(5300); f.Tick(5400);
+        Assert.True(f.Loop.IsActive);
+        Assert.Equal(2, f.Game.Registers);
+        Assert.Equal(1, f.Game.Commences);
+        Assert.Equal(0, f.Game.Cancels);
+    }
+
+    [Fact]
+    public void RepeatedAreaChangeRejectionsCannotRestartTheirTwentyMinuteDeadline()
+    {
+        using var f = new Fixture();
+        f.Game.Frame = f.Game.Frame with { Entry = true };
+        f.Tick(0);
+        Assert.True(f.Loop.ObserveRegistrationRejected(7461, 100));
+        f.Tick(3100);
+        Assert.True(f.Loop.ObserveRegistrationRejected(7461, 3200));
+        f.Tick(600_000);
+        Assert.True(f.Loop.ObserveRegistrationRejected(7461, 600_100));
+        f.Tick(1_190_000);
+        Assert.Equal(4, f.Game.Registers);
+        Assert.True(f.Loop.ObserveRegistrationRejected(7461, 1_190_100));
+        f.Tick(1_200_101);
+        Assert.False(f.Loop.IsActive);
+        Assert.False(f.Typer.IsRunning);
+        Assert.Equal("BV_Timeout", f.Loop.Status.Key);
+        Assert.Equal(4, f.Game.Registers);
+    }
+
+    [Fact]
+    public void LatePartyReturnAndRejectedRegistrationShareTheOriginalDeadline()
+    {
+        using var f = new Fixture();
+        var returnedAt = f.CompleteRoundAndReturn();
+        f.Tick(returnedAt + 1_190_000);
+        f.Game.Frame = f.Game.Frame with { PartyReturned = true, Entry = true };
+        f.Tick(returnedAt + 1_190_100);
+        Assert.Equal(1, f.Game.Registers);
+        Assert.True(f.Loop.ObserveRegistrationRejected(7461, returnedAt + 1_190_200));
+        f.Tick(returnedAt + 1_193_200);
+        Assert.Equal(2, f.Game.Registers);
+        Assert.True(f.Loop.ObserveRegistrationRejected(7461, returnedAt + 1_193_300));
+        f.Tick(returnedAt + 1_200_001);
+        Assert.False(f.Loop.IsActive);
+        Assert.Equal("BV_Timeout", f.Loop.Status.Key);
+        Assert.Equal(2, f.Game.Registers);
+    }
+
+    [Theory]
+    [InlineData(4394u)]
+    [InlineData(7567u)]
+    [InlineData(7460u)]
+    public void OtherRegistrationErrorsCannotRearmTheSubmission(uint logMessageId)
+    {
+        using var f = new Fixture();
+        f.Game.Frame = f.Game.Frame with { Entry = true };
+        f.Tick(0);
+        Assert.False(f.Loop.ObserveRegistrationRejected(logMessageId, 100));
+        f.Tick(5000);
+        Assert.True(f.Loop.IsActive);
+        Assert.Equal(1, f.Game.Registers);
+    }
+
+    [Fact]
+    public void AreaChangeMessageCannotCreateAnUnsubmittedOrMemberOwnedRegistration()
+    {
+        using var leader = new Fixture();
+        Assert.False(leader.Loop.ObserveRegistrationRejected(7461, 100));
+        Assert.Equal(0, leader.Game.Registers);
+        using var member = new Fixture(role: MOGTOME.Models.KeyboundPartyRole.Member);
+        member.Game.Frame = member.Game.Frame with { PartyRole = MOGTOME.Models.BlundervilleRole.Member, Entry = true };
+        member.Tick(0);
+        Assert.False(member.Loop.ObserveRegistrationRejected(7461, 100));
+        member.Tick(5000);
+        Assert.Equal(0, member.Game.Registers + member.Game.Approaches + member.Game.LobbyTrips + member.Game.Cancels);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void MatchingQueueOrPopPreventsAreaChangeRearming(bool pop)
+    {
+        using var f = new Fixture();
+        f.Game.Frame = f.Game.Frame with { Entry = true };
+        f.Tick(0);
+        f.Game.Frame = f.Game.Frame with { Queued = !pop, QueueMatches = !pop, Pop = pop, PopMatches = pop };
+        Assert.False(f.Loop.ObserveRegistrationRejected(7461, 100));
+        f.Tick(5000);
+        Assert.True(f.Loop.IsActive);
+        Assert.Equal(1, f.Game.Registers);
+        Assert.Equal(pop ? 1 : 0, f.Game.Commences);
+    }
+
+    [Theory]
+    [InlineData(200L)]
+    [InlineData(1_200_101L)]
+    public void MatchingPopWinsOverPendingAreaChangeRetryEvenAfterItsDeadline(long popAt)
+    {
+        using var f = new Fixture();
+        f.Game.Frame = f.Game.Frame with { Entry = true };
+        f.Tick(0);
+        Assert.True(f.Loop.ObserveRegistrationRejected(7461, 100));
+        f.Game.Frame = f.Game.Frame with { Entry = false, Pop = true, PopMatches = true, PartyReturned = false };
+        f.Tick(popAt); f.Tick(popAt + 100);
+        Assert.True(f.Loop.IsActive);
+        Assert.Equal(1, f.Game.Registers);
+        Assert.Equal(1, f.Game.Commences);
+        Assert.Equal(0, f.Game.Cancels);
+    }
+
+    [Fact]
+    public void ForeignPopStopsAreaChangeRecoveryWithoutRegistrationOrCancellation()
+    {
+        using var f = new Fixture();
+        f.Game.Frame = f.Game.Frame with { Entry = true };
+        f.Tick(0);
+        Assert.True(f.Loop.ObserveRegistrationRejected(7461, 100));
+        f.Game.Frame = f.Game.Frame with { Entry = false, Pop = true, PopMatches = false };
+        f.Tick(3100);
+        Assert.False(f.Loop.IsActive);
+        Assert.Equal("KB_AutomationBusy", f.Loop.Status.Key);
+        Assert.Equal(1, f.Game.Registers);
+        Assert.Equal(0, f.Game.Commences + f.Game.Cancels);
+    }
+
+    [Fact]
+    public void StopCancelsPendingAreaChangeRetry()
+    {
+        using var f = new Fixture();
+        f.Game.Frame = f.Game.Frame with { Entry = true };
+        f.Tick(0);
+        Assert.True(f.Loop.ObserveRegistrationRejected(7461, 100));
+        f.Typer.RequestStop();
+        Assert.False(f.Loop.ObserveRegistrationRejected(7461, 200));
+        f.Tick(3100);
+        Assert.False(f.Loop.IsActive);
+        Assert.False(f.Typer.IsRunning);
+        Assert.Equal(1, f.Game.Registers);
+        Assert.Equal(0, f.Game.Commences);
+    }
+
+    [Fact]
+    public void WalletLimitWinsBeforePendingAreaChangeRetry()
+    {
+        using var f = new Fixture(walletTarget: 10);
+        f.Game.Frame = f.Game.Frame with { Entry = true };
+        f.Tick(0, 0);
+        Assert.True(f.Loop.ObserveRegistrationRejected(7461, 100));
+        f.Tick(3100, 10);
+        Assert.False(f.Loop.IsActive);
+        Assert.True(f.Typer.Finished);
+        Assert.False(f.Loop.ObserveRegistrationRejected(7461, 3200));
+        Assert.Equal(1, f.Game.Registers);
+        Assert.Equal(0, f.Game.Commences);
     }
 
     [Fact]

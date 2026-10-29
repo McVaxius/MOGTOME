@@ -1151,6 +1151,9 @@ public sealed class Plugin : IDalamudPlugin
             {
                 Engine?.HandleRegistrationChatMessage(message.OriginalMessage.ToString());
                 Blunderville?.HandleRegistrationChatMessage(message.OriginalMessage.ToString());
+                if (KeyboundLoop.IsActive && KeyboundSessionMatches() &&
+                    GameText.MatchesLogMessage(message.OriginalMessage.ToString(), 7461))
+                    KeyboundLoop.ObserveRegistrationRejected(7461, Environment.TickCount64);
             }
         }
         catch (Exception ex) { Log.Error(ex, "[Plugin] registration message handling failed"); }

@@ -248,26 +248,29 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
             { settings.EndingLocation = endings[selected]; changed = true; }
         }
         finally { ImGui.EndTable(); }
-        var mode = (int)settings.PlayMode;
-        ImGui.SetNextItemWidth(Math.Min(UiLayout.AvailableWidth, 180 * ImGuiHelpers.GlobalScale));
-        if (UiLayout.Combo(Ui.L("KB_PlayMode") + "###KeyboundPlayMode", ref mode,
-            [Ui.T("KB_Winner"), Ui.T("KB_Thrower")], 2))
-        { settings.PlayMode = (KeyboundPlayMode)mode; changed = true; }
-        UiLayout.SameLineIfFits(240 * ImGuiHelpers.GlobalScale);
         var role = (int)settings.PartyRole;
         ImGui.SetNextItemWidth(Math.Min(UiLayout.AvailableWidth, 180 * ImGuiHelpers.GlobalScale));
         if (UiLayout.Combo(Ui.L("KB_PartyRole") + "###KeyboundPartyRole", ref role,
             [Ui.T("KB_PartyLeader"), Ui.T("KB_PartyMember")], 2))
         { settings.PartyRole = (KeyboundPartyRole)role; changed = true; }
-        UiLayout.SingleLine(Ui.T("KB_Winner") + " · " + Ui.T("KB_TypingSpeed"));
-        UiLayout.SameLineIfFits(120 * ImGuiHelpers.GlobalScale);
-        ImGui.SetNextItemWidth(Math.Min(UiLayout.AvailableWidth, 120 * ImGuiHelpers.GlobalScale));
-        var wpm = settings.TypingWpm;
-        if (UiLayout.InputIntLabel("###KeyboundTypingWpm", ref wpm))
-        { settings.TypingWpm = Math.Clamp(wpm, 10, 300); changed = true; }
-        if (ImGui.IsItemHovered()) UiLayout.SetTooltip(Ui.T("KB_TypingSpeedHelp"));
-        UiLayout.TextDisabled(Ui.T("KB_ThrowerSpeed", (Math.Clamp(settings.TypingWpm, 10, 300) / 2d).ToString("0.#", Ui.Culture)));
+        var stage12Wpm = settings.Stage12TypingWpm;
+        if (DrawTypingSpeed("KB_Stage12TypingSpeed", "###KeyboundStage12TypingWpm", ref stage12Wpm))
+        { settings.Stage12TypingWpm = stage12Wpm; changed = true; }
+        var stage3Wpm = settings.Stage3TypingWpm;
+        if (DrawTypingSpeed("KB_Stage3TypingSpeed", "###KeyboundStage3TypingWpm", ref stage3Wpm))
+        { settings.Stage3TypingWpm = stage3Wpm; changed = true; }
         UiLayout.TextDisabled(Ui.T("KB_FinishRule"));
+        return changed;
+    }
+
+    private static bool DrawTypingSpeed(string label, string inputId, ref double value)
+    {
+        UiLayout.SingleLine(Ui.T(label));
+        UiLayout.SameLineIfFits(160 * ImGuiHelpers.GlobalScale);
+        ImGui.SetNextItemWidth(Math.Min(UiLayout.AvailableWidth, 160 * ImGuiHelpers.GlobalScale));
+        bool changed;
+        using (MaterialSkin.NativeFieldStyle()) changed = ImGui.InputDouble(inputId, ref value, .5, 5, "%.1f");
+        if (ImGui.IsItemHovered()) UiLayout.SetTooltip(Ui.T("KB_TypingSpeedHelp"));
         return changed;
     }
 

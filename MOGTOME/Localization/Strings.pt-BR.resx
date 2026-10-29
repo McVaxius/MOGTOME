@@ -2508,7 +2508,9 @@ Abra os depósitos para atualizar as quantidades registradas.</value></data>
   <data name="KB_Typing" xml:space="preserve"><value>Digitando · {0} partidas concluídas · {1} frases enviadas</value></data>
   <data name="KB_Finished" xml:space="preserve"><value>Limite atingido · {0} partidas concluídas.</value></data>
   <data name="KB_TypingSpeed" xml:space="preserve"><value>Velocidade de digitação (PPM)</value></data>
-  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>Padrão 80 PPM; 10–300. Ritmo variável ±20% e pausas antes de frases e Enter. No próximo início.</value></data>
+  <data name="KB_Stage12TypingSpeed" xml:space="preserve"><value>Velocidade de digitação nas fases 1/2 (PPM)</value></data>
+  <data name="KB_Stage3TypingSpeed" xml:space="preserve"><value>Velocidade de digitação na fase 3 (PPM)</value></data>
+  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>As fases 1/2 compartilham uma velocidade; a fase 3 tem sua própria. Padrão de 80 PPM para ambas; intervalo de 5–300, incrementos de 0,5. A entrada é tentada ao dobro das PPM selecionadas; pausas fixas e esperas do jogo podem reduzir a velocidade medida. As alterações valem no próximo início.</value></data>
   <data name="KB_Queueing" xml:space="preserve"><value>Viajando até Keybound Square e registrando.</value></data>
   <data name="KB_Returning" xml:space="preserve"><value>Coletando resultados e voltando à fila.</value></data>
   <data name="KB_CastHold" xml:space="preserve"><value>Entrada pausada durante conjuração inimiga.</value></data>

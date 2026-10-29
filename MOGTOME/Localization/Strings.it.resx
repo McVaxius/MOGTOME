@@ -2358,7 +2358,9 @@ Apri i depositi per aggiornare le quantità registrate.</value></data>
   <data name="KB_Typing" xml:space="preserve"><value>Scrittura · {0} partite completate · {1} frasi inviate</value></data>
   <data name="KB_Finished" xml:space="preserve"><value>Limite raggiunto · {0} partite completate.</value></data>
   <data name="KB_TypingSpeed" xml:space="preserve"><value>Velocità di scrittura (PPM)</value></data>
-  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>Predefinita 80 PPM; 10–300. Ritmo variabile ±20% e pause prima di frasi e Invio. Dal prossimo avvio.</value></data>
+  <data name="KB_Stage12TypingSpeed" xml:space="preserve"><value>Velocità di scrittura nelle fasi 1/2 (PPM)</value></data>
+  <data name="KB_Stage3TypingSpeed" xml:space="preserve"><value>Velocità di scrittura nella fase 3 (PPM)</value></data>
+  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>Le fasi 1/2 condividono una velocità; la fase 3 ha la propria. 80 PPM predefinite per entrambe; intervallo 5–300, incrementi di 0,5. L’inserimento viene tentato al doppio delle PPM selezionate; le pause fisse e le attese del gioco possono ridurre la velocità misurata. Le modifiche si applicano al prossimo avvio.</value></data>
   <data name="KB_Queueing" xml:space="preserve"><value>Viaggio a Keybound Square e iscrizione.</value></data>
   <data name="KB_Returning" xml:space="preserve"><value>Risultati e ritorno per una nuova partita.</value></data>
   <data name="KB_CastHold" xml:space="preserve"><value>Input sospeso durante un lancio nemico.</value></data>

@@ -2352,7 +2352,9 @@ Lager öffnen, um erfasste Mengen zu aktualisieren.</value></data>
   <data name="KB_Typing" xml:space="preserve"><value>Tippen · {0} Spiele abgeschlossen · {1} Texte gesendet</value></data>
   <data name="KB_Finished" xml:space="preserve"><value>Limit erreicht · {0} Spiele abgeschlossen.</value></data>
   <data name="KB_TypingSpeed" xml:space="preserve"><value>Tippgeschwindigkeit (WPM)</value></data>
-  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>Standard 80 WPM; 10–300. ±20 % Tastenabstand und Pausen vor Texten und Enter. Ab dem nächsten Start.</value></data>
+  <data name="KB_Stage12TypingSpeed" xml:space="preserve"><value>Tippgeschwindigkeit für Stufen 1/2 (WPM)</value></data>
+  <data name="KB_Stage3TypingSpeed" xml:space="preserve"><value>Tippgeschwindigkeit für Stufe 3 (WPM)</value></data>
+  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>Stufen 1/2 verwenden dieselbe Geschwindigkeit; Stufe 3 hat eine eigene. Jeweils standardmäßig 80 WPM; Bereich 5–300, Schrittweite 0,5. Die Eingabe wird mit dem Doppelten des gewählten WPM-Werts versucht; feste Pausen und Wartezeiten im Spiel können die gemessene Geschwindigkeit senken. Änderungen gelten ab dem nächsten Start.</value></data>
   <data name="KB_Queueing" xml:space="preserve"><value>Reise zum Keybound-Platz und Anmeldung.</value></data>
   <data name="KB_Returning" xml:space="preserve"><value>Ergebnisse abholen und zur Anmeldung zurückkehren.</value></data>
   <data name="KB_CastHold" xml:space="preserve"><value>Eingabe während eines gegnerischen Zaubers angehalten.</value></data>

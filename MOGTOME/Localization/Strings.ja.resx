@@ -2352,7 +2352,9 @@ DictionaryPathsとPathSelectionsByPathを比較します。
   <data name="KB_Typing" xml:space="preserve"><value>入力中 · {0}ゲーム完了 · {1}フレーズ送信</value></data>
   <data name="KB_Finished" xml:space="preserve"><value>上限に到達 · {0}ゲーム完了。</value></data>
   <data name="KB_TypingSpeed" xml:space="preserve"><value>入力速度（WPM）</value></data>
-  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>初期値80 WPM、範囲10～300。入力間隔を±20%変動させ、フレーズとEnterの前に間を置きます。次の開始時に適用。</value></data>
+  <data name="KB_Stage12TypingSpeed" xml:space="preserve"><value>ステージ1・2の入力速度（WPM）</value></data>
+  <data name="KB_Stage3TypingSpeed" xml:space="preserve"><value>ステージ3の入力速度（WPM）</value></data>
+  <data name="KB_TypingSpeedHelp" xml:space="preserve"><value>ステージ1・2は共通の速度、ステージ3は個別の速度を使います。初期値はどちらも80 WPM、範囲は5～300、調整幅は0.5です。選択したWPMの2倍の速さで入力を試みますが、固定の休止やゲーム側の待ち時間により実測速度は低くなる場合があります。変更は次の開始時に適用されます。</value></data>
   <data name="KB_Queueing" xml:space="preserve"><value>Keybound Squareへ移動して参加申請中。</value></data>
   <data name="KB_Returning" xml:space="preserve"><value>リザルトを終了して再参加に戻ります。</value></data>
   <data name="KB_CastHold" xml:space="preserve"><value>敵の詠唱に合わせて入力を停止中。</value></data>

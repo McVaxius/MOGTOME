@@ -27,6 +27,8 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
     internal const uint Arena = 1359, Lobby = 1360, Duty = 1095;
     private bool active, entered, registered, commenced, resultSubmitted, resultsSeen;
     private long stageStarted;
+    private long? partyWaitStarted, registrationRetryAt;
+    private bool partyWaitPending;
     private KeyboundPartyRole partyRole;
     internal UiText Status { get; private set; } = Ui.M("BV_Idle");
     internal bool IsActive => active;
@@ -37,6 +39,8 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
         active = true; entered = registered = commenced = resultSubmitted = resultsSeen = false;
         StopAfterCurrentRoundArmed = false;
         stageStarted = now;
+        partyWaitStarted = registrationRetryAt = null;
+        partyWaitPending = false;
         Status = Ui.M("KB_Queueing");
     }
     internal void Update(long now)
@@ -55,7 +59,12 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
             { Fail("KB_AutomationBusy"); return; }
             if (state.Territory == Arena)
             {
-                if (!entered) { entered = true; stageStarted = now; }
+                if (!entered)
+                {
+                    entered = true; stageStarted = now;
+                    partyWaitStarted = registrationRetryAt = null;
+                    partyWaitPending = false;
+                }
                 if (now - stageStarted > 1_800_000) { Fail("BV_Timeout"); return; }
                 // Posted keys and focus attempts do not reset the event's own idle counter.
                 // Refresh during every owned arena update, including input/cast/wave waits.
@@ -95,6 +104,29 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
                 }
             }
             if (typer.Finished) { active = false; game.StopMovement(); return; }
+            // Native queue/pop progress wins over stale party territory or a delayed rejection retry.
+            if (state.Queued || state.Pop && state.PopMatches || commenced)
+            {
+                if (partyWaitStarted.HasValue) stageStarted = now;
+                partyWaitStarted = registrationRetryAt = null;
+                partyWaitPending = false;
+            }
+            else if (!state.PartyReturned || registrationRetryAt.HasValue || partyWaitPending)
+            {
+                // Keep one allowance across polling, readiness changes and rejected submissions.
+                partyWaitStarted ??= now;
+                if (now - partyWaitStarted.Value > 1_200_000) { Fail("BV_Timeout"); return; }
+                partyWaitPending = true;
+                if (!state.PartyReturned || registrationRetryAt.HasValue && now < registrationRetryAt.Value)
+                {
+                    Status = Ui.M(registrationRetryAt.HasValue ? "BV_RegistrationRetry" : "BV_WaitEntry");
+                    return;
+                }
+                // Resuming after a long wait must receive a fresh ordinary staging budget.
+                stageStarted = now;
+                registrationRetryAt = null;
+                partyWaitPending = false;
+            }
             if (now - stageStarted > (registered || state.Queued || partyRole == KeyboundPartyRole.Member ? 600_000 : 180_000)) { Fail("BV_Timeout"); return; }
             var roleMatches = partyRole == KeyboundPartyRole.Member
                 ? state.PartyRole == BlundervilleRole.Member
@@ -117,8 +149,6 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
             // from their current territory; waiting must never start travel or touch the registrar.
             if (partyRole == KeyboundPartyRole.Member)
             { Status = Ui.M("BV_MemberWait"); return; }
-            if (!state.PartyReturned)
-            { Status = Ui.M("BV_WaitEntry"); return; }
             Status = Ui.M("KB_Queueing");
             if (!game.EnsureLobby()) return;
             if (state.Entry)
@@ -136,6 +166,21 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
             Plugin.Log?.Warning(ex, "[MOGTOME][KBB] event loop failed");
         }
     }
+    internal bool ObserveRegistrationRejected(uint logMessageId, long now)
+    {
+        if (logMessageId != 7461 || !active || partyRole != KeyboundPartyRole.Leader || !registered ||
+            entered || commenced || typer.StopRequested || !typer.CanContinueSession || !typer.IsRunning) return false;
+        var state = game.Read();
+        if (state.Transitioning || state.Territory != Lobby || state.OtherDuty || state.Queued || state.Pop ||
+            state.PartyRole is not (BlundervilleRole.Solo or BlundervilleRole.Leader)) return false;
+        registered = false;
+        partyWaitStarted ??= now;
+        partyWaitPending = true;
+        registrationRetryAt = now + 3000;
+        Status = Ui.M("BV_RegistrationRetry");
+        Plugin.Log?.Information("[MOGTOME][KBB] Confirmed LogMessage7461; waiting for party readiness before registration retry.");
+        return true;
+    }
     internal void ObserveDutyStarted(uint territory, long now)
     {
         if (!active || territory != Arena || !resultSubmitted) return;
@@ -146,6 +191,8 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
         entered = true;
         registered = commenced = resultSubmitted = resultsSeen = false;
         stageStarted = now;
+        partyWaitStarted = registrationRetryAt = null;
+        partyWaitPending = false;
         typer.ObserveNewRound(Arena);
         Plugin.Log?.Information("[MOGTOME][KBB] New duty after results; cleared the previous round's return state.");
     }
@@ -169,6 +216,8 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
     {
         active = false;
         StopAfterCurrentRoundArmed = false;
+        partyWaitStarted = registrationRetryAt = null;
+        partyWaitPending = false;
         typer.SuppressGameplay = false;
         try { if (partyRole == KeyboundPartyRole.Leader && (registered || commenced)) game.CancelQueue(); }
         catch (Exception ex) { Plugin.Log?.Warning(ex, "[MOGTOME][KBB] owned queue cancellation failed"); }
