@@ -33,7 +33,7 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
         TitleBarButtons.Add(new()
         {
             Icon = FontAwesomeIcon.Play, Priority = -20, IconOffset = new(2, 1),
-            Click = button => { if (button == ImGuiMouseButton.Left && plugin.KeyboundBrawler.CanStart) plugin.StartKeyboundBrawler(); },
+            Click = button => { if (button == ImGuiMouseButton.Left && plugin.KeyboundBrawler.CanStart && !plugin.IsKeyboundShoppingTrip) plugin.StartKeyboundBrawler(); },
             ShowTooltip = () => UiLayout.SetTooltip(Ui.T("Main_Start")),
         });
         TitleBarButtons.Add(new()
@@ -100,13 +100,13 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
         if (settings.PurchaseReviewRequired)
         {
             UiLayout.Wrapped(Ui.T("Shop_ReviewRequired"));
-            ImGui.BeginDisabled(!plugin.KeyboundShop.Ready || plugin.KeyboundShop.IsRunning || plugin.IsKeyboundShopActionQueued || plugin.KeyboundLoop.IsActive || plugin.KeyboundBrawler.IsRunning || plugin.IsKeyboundStartQueued);
+            ImGui.BeginDisabled(!plugin.KeyboundShop.Ready || plugin.KeyboundShop.IsRunning || plugin.IsKeyboundShopActionQueued || plugin.KeyboundLoop.IsActive || plugin.KeyboundBrawler.IsRunning || plugin.IsKeyboundStartQueued || plugin.IsKeyboundShoppingTrip);
             if (UiLayout.Button(Ui.L("Shop_Reviewed")))
                 GameHelpers.QueueFrameworkAction("Keybound shop", "Review purchase", TimeSpan.Zero,
                     plugin.KeyboundShop.AcknowledgePurchaseReview);
             ImGui.EndDisabled();
         }
-        ImGui.BeginDisabled(!plugin.CanSelectUiLanguage || plugin.KeyboundShop.IsRunning || plugin.IsKeyboundShopActionQueued || plugin.KeyboundLoop.IsActive || plugin.KeyboundBrawler.IsRunning || plugin.IsKeyboundStartQueued);
+        ImGui.BeginDisabled(!plugin.CanSelectUiLanguage || plugin.KeyboundShop.IsRunning || plugin.IsKeyboundShopActionQueued || plugin.KeyboundLoop.IsActive || plugin.KeyboundBrawler.IsRunning || plugin.IsKeyboundStartQueued || plugin.IsKeyboundShoppingTrip);
         var changed = DrawSettings(settings);
         ImGui.Separator();
         changed |= shopEditor.DrawKeybound(settings, KeyboundBrawlerShop.Catalog, hasWallet ? wallet : null);
@@ -132,16 +132,11 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
     {
         var service = plugin.KeyboundShop;
         var settings = plugin.Configuration.KeyboundBrawler;
-        var catalog = KeyboundBrawlerShop.Catalog.GroupBy(o => o.ItemId).Where(g => g.Count() == 1)
-            .ToDictionary(g => g.Key, g => g.Single());
-        var stocks = plugin.XaDatabase.ReadStocks(settings.PurchaseTargets.Keys);
-        var cost = BlundervilleProgress.TotalMgf(settings.PurchaseTargets, catalog,
-            id => plugin.XaDatabase.TryCount(id, stocks.GetValueOrDefault(id), out var count) ? count : null, out var costKnown);
-        var conflicts = plugin.KeyboundLoop.IsActive || plugin.KeyboundBrawler.IsRunning || plugin.IsKeyboundStartQueued || plugin.Engine?.IsRunning == true || plugin.IsEngineStartQueued ||
+        var conflicts = plugin.IsKeyboundShoppingTrip || plugin.KeyboundLoop.IsActive || plugin.KeyboundBrawler.IsRunning || plugin.IsKeyboundStartQueued || plugin.Engine?.IsRunning == true || plugin.IsEngineStartQueued ||
             plugin.Blunderville.IsRunning || plugin.IsBlundervilleActionQueued ||
             plugin.MoogleShop.IsRunning || plugin.IsMoogleShopActionQueued;
         var buyReady = service.Ready && !service.IsRunning && !plugin.IsKeyboundShopActionQueued && !conflicts &&
-            !settings.PurchaseReviewRequired && costKnown && cost > 0 && wallet.HasValue && cost <= wallet.Value;
+            !settings.PurchaseReviewRequired && wallet.HasValue && service.HasAffordablePurchase(wallet.Value);
         var labels = new[] { Ui.T("Main_Start"), Ui.T("Main_Stop"), Ui.T("BV_Buy"), Ui.T("Shop_Refresh") };
         var actionsWidth = labels.Sum(s => MaterialText.Measure(s).X + ImGui.GetStyle().FramePadding.X * 2) +
             ImGui.GetStyle().ItemSpacing.X * 3 + 8 * ImGuiHelpers.GlobalScale;
@@ -181,12 +176,12 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
 
     private void DrawActionButtons(bool buyReady)
     {
-        ImGui.BeginDisabled(!plugin.KeyboundBrawler.CanStart || plugin.KeyboundLoop.IsActive || plugin.IsKeyboundStartQueued);
+        ImGui.BeginDisabled(!plugin.KeyboundBrawler.CanStart || plugin.KeyboundLoop.IsActive || plugin.IsKeyboundStartQueued || plugin.IsKeyboundShoppingTrip);
         if (UiLayout.Button(Ui.L("Main_Start"))) plugin.StartKeyboundBrawler();
         ImGui.EndDisabled();
         if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) UiLayout.SetTooltip(plugin.KeyboundBrawler.UnavailableReason.Render());
         UiLayout.SameLineIfFits(MaterialText.Measure(Ui.T("Main_Stop")).X + 24 * ImGuiHelpers.GlobalScale);
-        ImGui.BeginDisabled(!plugin.KeyboundShop.IsRunning && !plugin.IsKeyboundShopActionQueued && !plugin.KeyboundLoop.IsActive && !plugin.KeyboundBrawler.IsRunning && !plugin.IsKeyboundStartQueued && !plugin.KeyboundBrawler.Finished);
+        ImGui.BeginDisabled(!plugin.KeyboundShop.IsRunning && !plugin.IsKeyboundShopActionQueued && !plugin.KeyboundLoop.IsActive && !plugin.KeyboundBrawler.IsRunning && !plugin.IsKeyboundStartQueued && !plugin.IsKeyboundShoppingTrip && !plugin.KeyboundBrawler.Finished);
         if (UiLayout.Button(Ui.L("Main_Stop"))) { plugin.StopKeyboundBrawler(); plugin.StopKeyboundShop(); }
         ImGui.EndDisabled();
         UiLayout.SameLineIfFits(MaterialText.Measure(Ui.T("BV_Buy")).X + 24 * ImGuiHelpers.GlobalScale);
@@ -196,7 +191,7 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
         if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
             UiLayout.SetTooltip(Ui.T("Shop_Help"));
         UiLayout.SameLineIfFits(MaterialText.Measure(Ui.T("Shop_Refresh")).X + 24 * ImGuiHelpers.GlobalScale);
-        ImGui.BeginDisabled(!plugin.CanSelectUiLanguage || plugin.KeyboundShop.IsRunning || plugin.IsKeyboundShopActionQueued || plugin.KeyboundLoop.IsActive || plugin.KeyboundBrawler.IsRunning || plugin.IsKeyboundStartQueued);
+        ImGui.BeginDisabled(!plugin.CanSelectUiLanguage || plugin.KeyboundShop.IsRunning || plugin.IsKeyboundShopActionQueued || plugin.KeyboundLoop.IsActive || plugin.KeyboundBrawler.IsRunning || plugin.IsKeyboundStartQueued || plugin.IsKeyboundShoppingTrip);
         if (UiLayout.Button(Ui.L("Shop_Refresh"))) plugin.RefreshKeyboundShop();
         ImGui.EndDisabled();
     }

@@ -45,6 +45,28 @@ public sealed class KeyboundBrawlerShopService : IDisposable
     public UiText Status { get; private set; } = Ui.M("BV_Idle");
     public bool HoldAutomaticDialogs => running || pending is { ReceiptAcknowledged: false } ||
         session?.Settings.PurchaseReviewRequired == true;
+    internal bool CompletedNormally { get; private set; }
+    internal bool CanResumeFarming => CompletedNormally && Volatile.Read(ref stopRequested) == 0 && !running && Ready && !HoldAutomaticDialogs &&
+        !Settings.PurchaseReviewRequired && !BusyClient() && !DialogVisible() && !ShopVisible() &&
+        !BlundervilleGameAdapter.Visible("Talk") && !BlundervilleGameAdapter.Visible("SelectString") &&
+        !BlundervilleGameAdapter.Visible("SelectIconString");
+
+    internal bool HasAffordablePurchase(uint wallet)
+    {
+        var offers = KeyboundBrawlerShop.Catalog;
+        var targets = Settings.PurchaseTargets;
+        var stocks = plugin.XaDatabase.ReadStocks(targets.Keys);
+        foreach (var target in targets.Where(target => target.Value > 0))
+        {
+            if (!plugin.XaDatabase.TryCount(target.Key, stocks.GetValueOrDefault(target.Key), out var count)) continue;
+            var deficit = BlundervilleProgress.Deficit(target.Value, count);
+            if (deficit == 0) continue;
+            var matches = offers.Where(offer => offer.ItemId == target.Key && offer.ShopId == KeyboundBrawlerShop.ShopId).ToArray();
+            if (matches.Length == 1 && matches[0].ReceiveCount > 0 && deficit % matches[0].ReceiveCount == 0 &&
+                matches[0].Price <= wallet) return true;
+        }
+        return false;
+    }
 
     public void RefreshCatalog()
     {
@@ -55,9 +77,11 @@ public sealed class KeyboundBrawlerShopService : IDisposable
         Status = Ui.M(catalog.Count == 0 ? "KB_NoCatalog" : "BV_Idle");
     }
 
-    public bool Buy()
+    public bool Buy(bool returnToFarming = false)
     {
-        if (!Plugin.Framework.IsInFrameworkUpdateThread || Volatile.Read(ref stopRequested) != 0 || !Ready || running || plugin.KeyboundLoop?.IsActive == true || plugin.KeyboundBrawler.OwnsInput || plugin.IsKeyboundStartQueued || plugin.IsEngineStartQueued ||
+        CompletedNormally = false;
+        if (!Plugin.Framework.IsInFrameworkUpdateThread || Volatile.Read(ref stopRequested) != 0 || !Ready || running ||
+            plugin.IsKeyboundShoppingTrip && !returnToFarming || plugin.KeyboundLoop?.IsActive == true || plugin.KeyboundBrawler.OwnsInput || plugin.IsKeyboundStartQueued || plugin.IsEngineStartQueued ||
             plugin.Engine.IsRunning || plugin.Engine.IsStartupPending || plugin.MoogleShop.IsRunning ||
             plugin.IsMoogleShopActionQueued || plugin.Blunderville.IsRunning || plugin.IsBlundervilleActionQueued)
             return Reject("BV_Unavailable");
@@ -69,19 +93,19 @@ public sealed class KeyboundBrawlerShopService : IDisposable
         if (BusyClient() || DialogVisible() || ShopVisible() || BlundervilleGameAdapter.Visible("Talk") ||
             BlundervilleGameAdapter.Visible("SelectString") || BlundervilleGameAdapter.Visible("SelectIconString"))
             return Reject("BV_BusyClient");
-        if (!Enum.IsDefined(Settings.EndingLocation)) return Reject("BV_TravelUnavailable");
+        if (!returnToFarming && !Enum.IsDefined(Settings.EndingLocation)) return Reject("BV_TravelUnavailable");
         var account = plugin.ConfigManager.CurrentAccountId;
         if (string.IsNullOrEmpty(account) || account is "temporary" or "default") return Reject("KB_ProfileUnavailable");
         try
         {
             RefreshCatalog();
             if (catalog.Count == 0) return Reject("KB_NoCatalog");
-            var candidate = new KeyboundShopSession(Settings, account, Plugin.PlayerState.ContentId);
-            if (!TryNextOffer(candidate, out var next)) return false;
+            var candidate = new KeyboundShopSession(Settings, account, Plugin.PlayerState.ContentId,
+                returnToFarming ? BlundervilleEndingLocation.Stay : null);
+            if (!KeyboundBrawlerShop.TryWallet(out var wallet)) return Reject("KB_NoWallet");
+            if (!TryNextOffer(candidate, wallet, out var next)) return false;
             if (next != null)
             {
-                if (!KeyboundBrawlerShop.TryWallet(out var wallet)) return Reject("KB_NoWallet");
-                if (wallet < next.Price) return Reject("KB_NoFunds");
                 if (!BlundervilleGameAdapter.TryInventory(next.ItemId, out var count, out var capacity)) return Reject("BV_NoInventory");
                 var item = Plugin.DataManager.GetExcelSheet<Item>().GetRow(next.ItemId);
                 if (capacity < next.ReceiveCount || item.IsUnique && (count > 0 || next.ReceiveCount > 1)) return Reject("BV_NoCapacity");
@@ -140,14 +164,18 @@ public sealed class KeyboundBrawlerShopService : IDisposable
                 { if (DateTime.UtcNow - submitted > TimeSpan.FromSeconds(10)) Fail("BV_UiMismatch"); return; }
                 settling = null;
             }
-            if (!TryNextOffer(session!, out var next)) return;
+            if (!TryNextOffer(session!, wallet, out var next)) return;
             if (next == null)
             {
+                if ((ShopVisible() || DialogVisible()) && !OwnsTrader()) { Fail("BV_UiMismatch"); return; }
                 CloseShop();
+                if (ShopVisible() || DialogVisible()) return;
                 if (session!.EndingLocation == BlundervilleEndingLocation.Stay) Complete();
                 else { innStarted = true; started = DateTime.UtcNow; Status = Ui.M("BV_EndingTravel"); UpdateEnding(); }
                 return;
             }
+            if (!CheckEligibility(next)) return;
+            Status = Ui.M("BV_Shopping");
             if (!ReachTrader(next)) return;
             if (!BlundervilleGameAdapter.TryValidateOffer(next, out var addon, out purchaseRow, KeyboundBrawlerShop.CurrencyItemId))
             { Fail("BV_UiMismatch"); return; }
@@ -157,7 +185,7 @@ public sealed class KeyboundBrawlerShopService : IDisposable
             var item = Plugin.DataManager.GetExcelSheet<Item>().GetRow(next.ItemId);
             if (capacity < next.ReceiveCount || item.IsUnique && (before > 0 || next.ReceiveCount > 1)) { Fail("BV_NoCapacity"); return; }
             if (!KeyboundBrawlerShop.TryWallet(out wallet)) { Fail("KB_NoWallet"); return; }
-            if (wallet < next.Price) { Fail("KB_NoFunds"); return; }
+            if (wallet < next.Price) return;
             if (!CheckEligibility(next)) return;
             ownedAddon = addon;
             ownedOffer = next;
@@ -175,7 +203,7 @@ public sealed class KeyboundBrawlerShopService : IDisposable
         }
     }
 
-    private bool TryNextOffer(KeyboundShopSession candidate, out BlundervilleOffer? next)
+    private bool TryNextOffer(KeyboundShopSession candidate, uint wallet, out BlundervilleOffer? next)
     {
         next = null;
         var stocks = plugin.XaDatabase.ReadStocks(candidate.Targets.Keys);
@@ -186,10 +214,12 @@ public sealed class KeyboundBrawlerShopService : IDisposable
             if (BlundervilleProgress.Deficit(target.Value, count) == 0) continue;
             var offers = catalog.Where(offer => offer.ItemId == target.Key && offer.ShopId == KeyboundBrawlerShop.ShopId).ToArray();
             if (offers.Length != 1) { Fail("KB_NoCatalog"); return false; }
-            next = offers[0];
-            if (next.ReceiveCount == 0 || BlundervilleProgress.Deficit(target.Value, count) % next.ReceiveCount != 0)
+            var offer = offers[0];
+            if (offer.ReceiveCount == 0 || BlundervilleProgress.Deficit(target.Value, count) % offer.ReceiveCount != 0)
             { Fail("BV_QuantityMismatch"); return false; }
-            return CheckEligibility(next);
+            if (offer.Price > wallet) continue;
+            next = offer;
+            return true;
         }
         return true;
     }
@@ -198,7 +228,8 @@ public sealed class KeyboundBrawlerShopService : IDisposable
     {
         var availability = ShopOfferEligibility.Read(offer.Gate);
         if (availability == ShopOfferAvailability.Available) return true;
-        Fail(availability == ShopOfferAvailability.Locked ? "Shop_Locked" : "Shop_EligibilityUnknown");
+        if (availability == ShopOfferAvailability.Locked) Fail("Shop_Locked");
+        else Status = Ui.M("Shop_EligibilityUnknown");
         return false;
     }
 
@@ -379,12 +410,14 @@ public sealed class KeyboundBrawlerShopService : IDisposable
     public void RequestStop() => Interlocked.Exchange(ref stopRequested, 1);
     public void Stop()
     {
+        CompletedNormally = false;
         Interlocked.Exchange(ref stopRequested, 0);
         Cleanup();
         Status = Ui.M("BV_Stopped");
     }
-    private void Cleanup()
+    private bool Cleanup()
     {
+        var succeeded = true;
         running = false;
         if (session != null && (pending is { ReceiptAcknowledged: false } || settling != null && DialogVisible()))
         {
@@ -397,27 +430,33 @@ public sealed class KeyboundBrawlerShopService : IDisposable
             () => { if (movement) { movement = false; plugin.VNavIPC.Stop(); } },
             () => { if (travel) { travel = false; Plugin.PluginInterface.GetIpcSubscriber<object>("Lifestream.Abort").InvokeAction(); } },
             CloseShop,
-        }) try { cleanup(); } catch (Exception ex) { Plugin.Log.Warning(ex, "[MOGTOME][KeyboundShop] owned cleanup failed"); }
+        }) try { cleanup(); } catch (Exception ex) { succeeded = false; Plugin.Log.Warning(ex, "[MOGTOME][KeyboundShop] owned cleanup failed"); }
         pending = null; settling = null; ownedOffer = null; npc = 0; ownedAddon = string.Empty;
         movement = travel = innStarted = false;
         if (session?.Settings.PurchaseReviewRequired != true) session = null;
-        if (!HoldAutomaticDialogs && !plugin.Configuration.Blunderville.PurchaseReviewRequired &&
+        if (!plugin.IsKeyboundShoppingTrip && !HoldAutomaticDialogs && !plugin.Configuration.Blunderville.PurchaseReviewRequired &&
             !plugin.Configuration.MoogleShop.PurchaseReviewRequired && !plugin.Blunderville.IsRunning &&
             !plugin.MoogleShop.IsRunning && plugin.Engine?.IsRunning != true) plugin.YesAlreadyIPC.Unpause();
+        return succeeded;
     }
     private bool Reject(string key, params object?[] arguments) { Status = Ui.M(key, arguments); return false; }
-    private void Fail(string key) { Cleanup(); Status = Ui.M(key); Plugin.Log.Warning("[MOGTOME][KeyboundShop] stopped: {Reason}", Status.English); }
-    private void Complete() { Cleanup(); Status = Ui.M("BV_ShopDone"); }
+    private void Fail(string key) { CompletedNormally = false; Cleanup(); Status = Ui.M(key); Plugin.Log.Warning("[MOGTOME][KeyboundShop] stopped: {Reason}", Status.English); }
+    private void Complete()
+    {
+        CompletedNormally = Cleanup() && !HoldAutomaticDialogs;
+        Status = Ui.M(CompletedNormally ? "BV_ShopDone" : "BV_ActionFailed");
+    }
     public void Dispose() { if (disposed) return; Stop(); disposed = true; }
 }
 
 internal sealed class KeyboundShopSession
 {
-    internal KeyboundShopSession(KeyboundBrawlerSettings settings, string accountId, ulong characterId)
+    internal KeyboundShopSession(KeyboundBrawlerSettings settings, string accountId, ulong characterId,
+        BlundervilleEndingLocation? endingOverride = null)
     {
         Settings = settings; AccountId = accountId; CharacterId = characterId;
         Targets = new(settings.PurchaseTargets);
-        EndingLocation = settings.EndingLocation;
+        EndingLocation = endingOverride ?? settings.EndingLocation;
     }
     internal KeyboundBrawlerSettings Settings { get; }
     internal string AccountId { get; }

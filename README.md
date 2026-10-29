@@ -156,6 +156,11 @@ shop-on-finish and ending destination save separately in the current account;
 changing them does not start activity. Either enabled limit stops typing after a confirmed game completion (or before
 the first game if the wallet target is already met).
 
+With a run-count limit enabled and the MGC target disabled, reaching **9,500 MGC** pauses between rounds
+for an affordable shopping trip, then resumes the same run count. An enabled MGC target takes priority
+and keeps its configured target-and-stop behavior. Temporary trips stay in the Square; the final
+shopping run retains the selected ending destination.
+
 New configurations target one of each of the 19 non-coffer rewards, with the
 run limit disabled, the MGC wallet target enabled at **5,470 MGC**, and
 shop-on-finish enabled. The coffer starts at zero; the ending destination is
@@ -165,10 +170,11 @@ preferences are retained. Preparing a new configuration starts nothing.
 **Buy also works independently of auto typing.** Be near the loaded MGC trader and
 use Buy, `/keybound buy` or `/kbb buy`. The shopper approaches that identified
 trader, validates its current shop/items/prices and festival eligibility, buys
-only missing quantities, and checks the exact item/MGC receipt after each
+only affordable missing quantities, keeps the remaining targets for later, and checks the exact item/MGC receipt after each
 transaction. It respects other MOGTOME activity and account/character changes.
-Stop cancels owned work; Refresh reloads the native catalog. After a completed
-shopping list, the selected inn destination uses the existing Lifestream route.
+Stop cancels owned work; Refresh reloads the native catalog. A shopping trip needs only enough MGC
+for an affordable item, rather than the full remaining list. After a final or manual shopping trip,
+the selected inn destination uses the existing Lifestream route.
 An uncertain purchase persists a review hold; check bags and MGC before clearing
 it with the review action. The native purchase and travel paths still need live
 event verification.

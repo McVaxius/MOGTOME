@@ -1,14 +1,25 @@
 using System.Reflection;
+using System.Collections.Frozen;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using Dalamud.Plugin;
+using Dalamud.Plugin.Ipc;
 using Dalamud.Plugin.Services;
+using Dalamud.Game.ClientState.Objects.Types;
+using Dalamud.Game.ClientState.Objects.SubKinds;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using MOGTOME.IPC;
 using MOGTOME.Models;
 using MOGTOME.Services;
+using MOGTOME.Services.Keybound;
+using Lumina.Excel;
+using Lumina.Excel.Sheets;
+using NativeAchievement = FFXIVClientStructs.FFXIV.Client.Game.UI.Achievement;
+using AtkUnitBasePtr = Dalamud.Game.NativeWrapper.AtkUnitBasePtr;
 
 namespace MOGTOME.Tests;
 
@@ -35,6 +46,281 @@ public sealed class KeyboundBrawlerShoppingTests
         Assert.False(session.Matches(settings, "fixture-a", 456));
         Assert.False(session.Matches(settings, "fixture-b", 123));
         Assert.False(session.Matches(new KeyboundBrawlerSettings(), "fixture-a", 123));
+    }
+
+    [Fact]
+    public void InterimShoppingStaysWithoutChangingTheConfiguredFinalEnding()
+    {
+        var settings = new KeyboundBrawlerSettings { EndingLocation = BlundervilleEndingLocation.Limsa };
+        var interim = new KeyboundShopSession(settings, "fixture", 123, BlundervilleEndingLocation.Stay);
+        Assert.Equal(BlundervilleEndingLocation.Stay, interim.EndingLocation);
+        Assert.Equal(BlundervilleEndingLocation.Limsa, settings.EndingLocation);
+        Assert.Equal(BlundervilleEndingLocation.Limsa, new KeyboundShopSession(settings, "fixture", 123).EndingLocation);
+    }
+
+    [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(true, true, false)]
+    [InlineData(true, false, true)]
+    public void CapturedWalletTargetTakesPriorityOverRunCountShopping(bool runs, bool wallet, bool expected)
+    {
+        var settings = new KeyboundBrawlerSettings
+        {
+            RunLimitEnabled = runs, RunLimit = 3, WalletTargetEnabled = wallet, WalletTarget = 9999,
+        };
+        using var service = new KeyboundBrawlerService(new KeyboundTypingTests.FakeInput("a"));
+        service.Observe(true, false, 23, KeyboundEventLoop.Lobby);
+        Assert.True(service.Start(settings));
+        settings.RunLimitEnabled = !runs;
+        settings.WalletTargetEnabled = !wallet;
+        Assert.Equal(expected, service.UsesRunCountMode);
+        service.Stop();
+        Assert.Equal(expected, service.ResumeAfterShopping(9500));
+    }
+
+    [Fact]
+    public void ResumeKeepsRunsPhrasesStageSpeedsAndLimitsCapturedBeforeTheTrip()
+    {
+        var delays = new List<int>();
+        var input = new KeyboundTypingTests.FakeInput("abc") { AutoEcho = true };
+        using var service = new KeyboundBrawlerService(input, (minimum, _) => { delays.Add(minimum); return 0; });
+        var settings = new KeyboundBrawlerSettings
+        {
+            RunLimitEnabled = true, RunLimit = 3, WalletTargetEnabled = false,
+            Stage12TypingWpm = 80, Stage3TypingWpm = 40,
+        };
+        service.Observe(true, false, 65, KeyboundEventLoop.Arena);
+        Assert.True(service.Start(settings));
+        service.Update(9500, 0); service.Update(9500, 1); service.Update(9500, 2); service.Update(9500, 3); service.Update(9500, 38);
+        Assert.Equal(1, service.SubmittedPhrases);
+        Assert.False(service.CanPauseForShopping);
+        service.ObserveCompletion(KeyboundEventLoop.Arena);
+        Assert.Equal(1, service.CompletedRuns);
+        Assert.True(service.CanPauseForShopping);
+        service.Observe(true, false, 23, KeyboundEventLoop.Lobby);
+        // The shopping handoff can precede the first controller Update outside the old arena.
+        service.Stop();
+        settings.RunLimit = 1;
+        settings.WalletTargetEnabled = true; settings.WalletTarget = 0;
+        settings.Stage12TypingWpm = settings.Stage3TypingWpm = 300;
+        Assert.True(service.ResumeAfterShopping(9500));
+        Assert.Equal(1, service.CompletedRuns);
+        Assert.Equal(1, service.SubmittedPhrases);
+        service.Observe(true, false, 65, KeyboundEventLoop.Arena);
+        service.ObserveArenaEntry(KeyboundEventLoop.Arena);
+        delays.Clear();
+        service.Update(0, 1000);
+        Assert.Contains(60, delays); // Captured 80 WPM: 75 ms average, 60 ms minimum.
+        delays.Clear();
+        input.Configure = snapshot => snapshot.Stage = 3;
+        service.Update(0, 1001);
+        Assert.Contains(120, delays); // Captured 40 WPM remains the stage-three cadence.
+        service.ObserveCompletion(KeyboundEventLoop.Arena);
+        service.FinishIfLimitMet(0);
+        Assert.Equal(2, service.CompletedRuns);
+        Assert.True(service.IsRunning);
+        service.Observe(true, false, 23, KeyboundEventLoop.Lobby);
+        service.Update(0, 2000);
+        service.Observe(true, false, 65, KeyboundEventLoop.Arena);
+        service.ObserveArenaEntry(KeyboundEventLoop.Arena);
+        service.ObserveCompletion(KeyboundEventLoop.Arena);
+        service.FinishIfLimitMet(0);
+        Assert.Equal(3, service.CompletedRuns);
+        Assert.True(service.Finished);
+        Assert.False(service.ResumeAfterShopping(9500));
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void StopOrUnavailableAdmissionCannotResumeAfterShopping(bool ready, bool busy)
+    {
+        using var service = new KeyboundBrawlerService(new KeyboundTypingTests.FakeInput("a"));
+        service.Observe(true, false, 23, KeyboundEventLoop.Lobby);
+        Assert.True(service.Start(new() { RunLimitEnabled = true, RunLimit = 3, WalletTargetEnabled = false }));
+        service.Stop();
+        service.Observe(ready, busy, 23, KeyboundEventLoop.Lobby);
+        if (ready && !busy) service.RequestStop();
+        Assert.False(service.ResumeAfterShopping(9500));
+        Assert.False(service.IsRunning);
+    }
+
+    [Theory]
+    [InlineData(9499u, true, false, false, false)]
+    [InlineData(9500u, true, false, false, true)]
+    [InlineData(9999u, true, false, false, true)]
+    [InlineData(9500u, false, false, false, false)]
+    [InlineData(9500u, true, true, false, false)]
+    [InlineData(9500u, true, false, true, false)]
+    public void AutomaticTripUsesTheCapturedModeAndThresholdBeforeAnotherRegistration(
+        uint wallet, bool runs, bool walletTarget, bool finalRun, bool shops)
+    {
+        using var f = new ShopFixture();
+        f.Settings.RunLimitEnabled = runs; f.Settings.RunLimit = finalRun ? 1 : 3;
+        f.Settings.WalletTargetEnabled = walletTarget; f.Settings.WalletTarget = 9999;
+        f.Settings.ShopWhenFinished = false;
+        f.Settings.PurchaseTargets = new() { [Offer.ItemId] = 2 };
+        f.ArmFarming();
+        // Edits after Start cannot change which captured limit owns the session.
+        f.Settings.RunLimitEnabled = !runs; f.Settings.WalletTargetEnabled = !walletTarget;
+        if (finalRun)
+        {
+            f.Typer.Observe(true, false, 65, KeyboundEventLoop.Arena);
+            f.Typer.ObserveArenaEntry(KeyboundEventLoop.Arena);
+            f.Typer.ObserveCompletion(KeyboundEventLoop.Arena);
+        }
+        ShopFixture.Wallet = wallet;
+        f.UpdateFarming();
+        Assert.Equal(shops, f.Shop.Status.Key == "Plugin_RequiredXaPlugins"); // Buy was reached; this offline host has no loaded plugins.
+        Assert.Equal(!shops && !finalRun, f.Typer.IsRunning);
+        Assert.Equal(!shops && !finalRun, f.Loop.IsActive);
+        Assert.Equal(0, f.Game.Registrations);
+    }
+
+    [Fact]
+    public void SelectorSkipsExpensiveTargetsAndBuysRepeatedAffordableUnits()
+    {
+        using var f = new ShopFixture();
+        var expensive = Offer with { ItemId = 52323, Price = 5000 };
+        f.Offers(expensive, Offer);
+        f.Settings.PurchaseTargets = new() { [expensive.ItemId] = 1, [Offer.ItemId] = 3 };
+        var session = f.Session();
+        uint wallet = 2000;
+        Assert.True(f.Shop.HasAffordablePurchase(wallet));
+        for (var owned = 0; owned < 2; owned++)
+        {
+            Assert.Same(Offer, f.Next(session, wallet));
+            f.Counts[Offer.ItemId] = owned + 1;
+            wallet -= Offer.Price;
+        }
+        Assert.Equal(180u, wallet);
+        Assert.Null(f.Next(session, wallet));
+        Assert.False(f.Shop.HasAffordablePurchase(wallet));
+        f.Counts[Offer.ItemId] = 3;
+        Assert.Null(f.Next(session, 4999));
+        Assert.Same(expensive, f.Next(session, 5000));
+    }
+
+    [Fact]
+    public void EmptyFulfilledAndUnaffordableTargetsNeverRequestAnotherTrip()
+    {
+        using var f = new ShopFixture();
+        foreach (var targets in new Dictionary<uint, int>[]
+        {
+            new(), new() { [Offer.ItemId] = 0 }, new() { [Offer.ItemId] = 1 },
+        })
+        {
+            f.Settings.PurchaseTargets = targets;
+            Assert.False(f.Shop.HasAffordablePurchase(Offer.Price - 1));
+            Assert.Null(f.Next(f.Session(), Offer.Price - 1));
+        }
+        f.Counts[Offer.ItemId] = 1;
+        Assert.False(f.Shop.HasAffordablePurchase(9999));
+        Assert.Null(f.Next(f.Session(), 9999));
+    }
+
+    [ThreadStatic] private static bool achievementComplete;
+    [UnmanagedCallersOnly]
+    private static unsafe byte BarterAchievement(NativeAchievement* _, uint id) => 0;
+    [UnmanagedCallersOnly]
+    private static unsafe byte CompletedAchievement(NativeAchievement* _, int id) => achievementComplete ? (byte)1 : (byte)0;
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public unsafe void UnknownEligibilityKeepsTheTripPendingUntilNativeAchievementsResolve(bool unlocked)
+    {
+        using var f = new ShopFixture();
+        var native = new NativeAchievement();
+        var originalInstance = NativeAchievement.Addresses.Instance.Value;
+        var originalBarter = NativeAchievement.Addresses.IsItemBarterWarningAchievementComplete.Value;
+        var originalComplete = NativeAchievement.Addresses.IsComplete.Value;
+        NativeAchievement.Addresses.Instance.Value = (nint)(&native);
+        NativeAchievement.Addresses.IsItemBarterWarningAchievementComplete.Value = (nint)(delegate* unmanaged<NativeAchievement*, uint, byte>)&BarterAchievement;
+        NativeAchievement.Addresses.IsComplete.Value = (nint)(delegate* unmanaged<NativeAchievement*, int, byte>)&CompletedAchievement;
+        try
+        {
+            var gated = Offer with { Gate = new(Achievement: 1) };
+            f.BeginShop();
+            Assert.False(f.CheckEligibility(gated));
+            Assert.True(f.Shop.IsRunning);
+            Assert.Equal("Shop_EligibilityUnknown", f.Shop.Status.Key);
+            Assert.False(f.Shop.CompletedNormally);
+            native.State = NativeAchievement.AchievementState.Loaded;
+            achievementComplete = unlocked;
+            Assert.Equal(unlocked, f.CheckEligibility(gated));
+            Assert.Equal(unlocked, f.Shop.IsRunning);
+            Assert.False(f.Shop.CompletedNormally);
+            if (!unlocked) Assert.Equal("Shop_Locked", f.Shop.Status.Key);
+        }
+        finally
+        {
+            NativeAchievement.Addresses.Instance.Value = originalInstance;
+            NativeAchievement.Addresses.IsItemBarterWarningAchievementComplete.Value = originalBarter;
+            NativeAchievement.Addresses.IsComplete.Value = originalComplete;
+        }
+    }
+
+    [Fact]
+    public unsafe void SuccessfulShoppingRequiresClosedDialogsAndNoPendingStopBeforeResume()
+    {
+        using var f = new ShopFixture();
+        f.BeginShop();
+        f.Complete();
+        Assert.True(f.Shop.CompletedNormally);
+        Assert.True(f.Shop.CanResumeFarming);
+        foreach (var addon in new[] { "SelectYesno", "ShopExchangeCurrencyDialog", "ShopExchangeItemDialog", "ShopExchangeCurrency", "ShopExchangeItem", "Talk", "SelectString", "SelectIconString" })
+        {
+            f.VisibleAddon = addon;
+            Assert.False(f.Shop.CanResumeFarming);
+        }
+        f.VisibleAddon = null;
+        Assert.True(f.Shop.CanResumeFarming);
+        f.Shop.RequestStop();
+        Assert.False(f.Shop.CanResumeFarming);
+        f.Shop.Update();
+        Assert.False(f.Shop.CompletedNormally);
+        Assert.False(f.Shop.CanResumeFarming);
+    }
+
+    [Fact]
+    public void FailedOwnedCleanupCannotMarkShoppingComplete()
+    {
+        using var f = new ShopFixture();
+        f.BeginShop();
+        f.SetShopField("npc", 99ul);
+        f.SetShopField("ownedAddon", "ShopExchangeCurrency");
+        f.VisibleAddon = "ShopExchangeCurrency";
+        f.Complete();
+        Assert.False(f.Shop.IsRunning);
+        Assert.False(f.Shop.CompletedNormally);
+        Assert.False(f.Shop.CanResumeFarming);
+        Assert.Equal("BV_ActionFailed", f.Shop.Status.Key);
+    }
+
+    [Fact]
+    public void SessionChangesAndUncertainReceiptsCannotCompleteOrResumeShopping()
+    {
+        using var f = new ShopFixture();
+        f.BeginShop();
+        f.Character = 456;
+        f.Shop.Update();
+        Assert.Equal("BV_SessionChanged", f.Shop.Status.Key);
+        Assert.False(f.Shop.CompletedNormally);
+        Assert.False(f.Shop.CanResumeFarming);
+        f.Character = 123;
+        f.BeginShop();
+        var transaction = new KeyboundShopPurchase(f.Settings, Offer, 0, 1000);
+        transaction.Submit(() => { }, () => true);
+        f.SetShopField("pending", transaction);
+        f.Character = 456; // Cleanup must retain the captured hold without saving into the new session.
+        f.Shop.Stop();
+        Assert.True(f.Settings.PurchaseReviewRequired);
+        Assert.True(f.Shop.HoldAutomaticDialogs);
+        Assert.False(f.Shop.CompletedNormally);
+        Assert.False(f.Shop.CanResumeFarming);
     }
 
     [Fact]
@@ -296,6 +582,193 @@ public sealed class KeyboundBrawlerShoppingTests
             Assert.DoesNotContain("MOGTOME", requests);
         }
         finally { property.SetValue(null, original); }
+    }
+
+    [ThreadStatic] private static uint nativeWallet;
+    [UnmanagedCallersOnly]
+    private static unsafe uint ReadWallet(CurrencyManager* _, uint itemId) => nativeWallet;
+
+    private sealed class ShopGame : IKeyboundLoopGame
+    {
+        internal int Registrations;
+        public KeyboundLoopFrame Read() => new(KeyboundEventLoop.Lobby, false, false, false, false, false, false, false, false, false);
+        public bool EnsureLobby() => true;
+        public bool ApproachRegistrar() => true;
+        public bool Register() { Registrations++; return true; }
+        public bool Commence() => true;
+        public bool LeaveResults() => true;
+        public void KeepActive() { }
+        public void CancelQueue() { }
+        public void StopMovement() { }
+    }
+
+    // DispatchProxy cannot preserve IDataManager's self-referential Excel row constraints.
+    private sealed class EmptyDataManager : IDataManager
+    {
+        private readonly RawExcelSheet sheet = (RawExcelSheet)RuntimeHelpers.GetUninitializedObject(typeof(RawExcelSheet));
+        internal EmptyDataManager()
+        {
+            var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+            typeof(RawExcelSheet).GetField("_rowIndexLookupArray", flags)!.SetValue(sheet, Array.Empty<int>());
+            typeof(RawExcelSheet).GetField("_rowIndexLookupDict", flags)!.SetValue(sheet, FrozenDictionary<int, int>.Empty);
+        }
+        public Dalamud.Game.ClientLanguage Language => Dalamud.Game.ClientLanguage.English;
+        public Lumina.GameData GameData => throw new NotSupportedException();
+        public ExcelModule Excel => throw new NotSupportedException();
+        public bool HasModifiedGameDataFiles => false;
+        public ExcelSheet<T> GetExcelSheet<T>(Dalamud.Game.ClientLanguage? language = null, string? name = null)
+            where T : struct, IExcelRow<T> => new(sheet);
+        public SubrowExcelSheet<T> GetSubrowExcelSheet<T>(Dalamud.Game.ClientLanguage? language = null, string? name = null)
+            where T : struct, IExcelSubrow<T> => throw new NotSupportedException();
+        public Lumina.Data.FileResource? GetFile(string path) => null;
+        public T? GetFile<T>(string path) where T : Lumina.Data.FileResource => null;
+        public Task<T> GetFileAsync<T>(string path, CancellationToken cancellationToken) where T : Lumina.Data.FileResource
+            => throw new NotSupportedException();
+        public bool FileExists(string path) => false;
+    }
+
+    private sealed unsafe class ShopFixture : IDisposable
+    {
+        private const BindingFlags Fields = BindingFlags.Instance | BindingFlags.NonPublic;
+        private readonly Dictionary<PropertyInfo, object?> originals = new();
+        private readonly object? originalCatalog;
+        private readonly nint originalCurrency, originalWallet;
+        private readonly nint currencySlot, currency, addon;
+        internal readonly Plugin Plugin = (Plugin)RuntimeHelpers.GetUninitializedObject(typeof(Plugin));
+        internal readonly Configuration Configuration = new();
+        internal readonly Dictionary<uint, int> Counts = new();
+        internal readonly ShopGame Game = new();
+        internal readonly KeyboundBrawlerService Typer = new(new KeyboundTypingTests.FakeInput("a"), (_, _) => 0);
+        internal readonly KeyboundEventLoop Loop;
+        internal readonly KeyboundBrawlerShopService Shop;
+        internal KeyboundBrawlerSettings Settings => Configuration.KeyboundBrawler;
+        internal ulong Character = 123;
+        internal string? VisibleAddon;
+        internal static uint Wallet { set => nativeWallet = value; }
+
+        internal ShopFixture()
+        {
+            var log = Fake<IPluginLog>();
+            Service("Log", log);
+            Service("ClientState", Fake<IClientState>((method, _) => method.Name switch
+            {
+                "get_IsLoggedIn" => true, "get_TerritoryType" => KeyboundEventLoop.Lobby,
+                _ => Default(method.ReturnType),
+            }));
+            Service("PlayerState", Fake<IPlayerState>((method, _) => method.Name switch
+            {
+                "get_IsLoaded" => true, "get_ContentId" => Character, _ => Default(method.ReturnType),
+            }));
+            Service("ObjectTable", Fake<IObjectTable>((method, _) => method.Name == "get_LocalPlayer"
+                ? Fake<IPlayerCharacter>() : Default(method.ReturnType)));
+            Service("Condition", Fake<ICondition>());
+            Service("Framework", Fake<IFramework>((method, _) => method.Name == "get_IsInFrameworkUpdateThread"
+                ? true : Default(method.ReturnType)));
+            var target = Fake<IGameObject>((method, _) => method.Name == "get_GameObjectId" ? 99ul : Default(method.ReturnType));
+            Service("TargetManager", Fake<ITargetManager>((method, _) => method.Name == "get_Target" ? target : Default(method.ReturnType)));
+            addon = (nint)NativeMemory.AllocZeroed((nuint)sizeof(AtkUnitBase));
+            ((AtkUnitBase*)addon)->IsVisible = true;
+            Service("GameGui", Fake<IGameGui>((method, args) => method.Name == "GetAddonByName"
+                ? new AtkUnitBasePtr((string?)args![0] == VisibleAddon ? addon : 0) : Default(method.ReturnType)));
+            Service("DataManager", new EmptyDataManager());
+            var gate = Fake<ICallGateSubscriber<string, string>>((method, _) => method.Name == "InvokeFunc"
+                ? JsonSerializer.Serialize(new
+                {
+                    version = 1, ready = true, character = new { contentId = Character },
+                    rows = Counts.Select(pair => new { itemId = pair.Key, ownerContentId = Character, quantity = pair.Value,
+                        source = "inventory", containerName = "Inventory 1" }),
+                }) : Default(method.ReturnType));
+            var host = Fake<IDalamudPluginInterface>((method, _) => method.Name switch
+            {
+                "GetIpcSubscriber" => gate, "get_InstalledPlugins" => Array.Empty<IExposedPlugin>(),
+                _ => Default(method.ReturnType),
+            });
+            Service("PluginInterface", host);
+            var config = (ConfigManager)RuntimeHelpers.GetUninitializedObject(typeof(ConfigManager));
+            Field(config, "log", log);
+            Field(config, "currentAccountId", "fixture");
+            Field(config, "accounts", new Dictionary<string, AccountConfig> { ["fixture"] = new() { AccountId = "fixture", Settings = Configuration } });
+            Field(Plugin, "<ConfigManager>k__BackingField", config);
+            Field(Plugin, "accountInitialized", true);
+            Field(Plugin, "<Engine>k__BackingField", RuntimeHelpers.GetUninitializedObject(typeof(MogtomeEngine)));
+            Field(Plugin, "<Blunderville>k__BackingField", RuntimeHelpers.GetUninitializedObject(typeof(BlundervilleService)));
+            Field(Plugin, "<MoogleShop>k__BackingField", RuntimeHelpers.GetUninitializedObject(typeof(MoogleShopService)));
+            Field(Plugin, "<XaDatabase>k__BackingField", new XaDatabaseIPC(host));
+            Field(Plugin, "<YesAlreadyIPC>k__BackingField", new YesAlreadyIPC(log));
+            Field(Plugin, "<KeyboundBrawler>k__BackingField", Typer);
+            Loop = new(Game, Typer);
+            Field(Plugin, "<KeyboundLoop>k__BackingField", Loop);
+            Shop = new(Plugin);
+            Field(Plugin, "<KeyboundShop>k__BackingField", Shop);
+            originalCatalog = typeof(KeyboundBrawlerShop).GetField("catalog", BindingFlags.Static | BindingFlags.NonPublic)!.GetValue(null);
+            Offers(Offer);
+            originalCurrency = CurrencyManager.Addresses.Instance.Value;
+            originalWallet = CurrencyManager.Addresses.GetItemCount.Value;
+            currencySlot = (nint)NativeMemory.AllocZeroed((nuint)sizeof(nint));
+            currency = (nint)NativeMemory.AllocZeroed((nuint)sizeof(CurrencyManager));
+            *(nint*)currencySlot = currency;
+            CurrencyManager.Addresses.Instance.Value = currencySlot;
+            CurrencyManager.Addresses.GetItemCount.Value = (nint)(delegate* unmanaged<CurrencyManager*, uint, uint>)&ReadWallet;
+            nativeWallet = 9500;
+        }
+        internal void ArmFarming()
+        {
+            Field(Plugin, "keyboundSessionSettings", Settings);
+            Field(Plugin, "keyboundSessionAccount", "fixture");
+            Field(Plugin, "keyboundSessionCharacter", Character);
+            Typer.Observe(true, false, 23, KeyboundEventLoop.Lobby);
+            Assert.True(Typer.Start(Settings));
+            Loop.Start(Environment.TickCount64);
+        }
+        internal void UpdateFarming() => typeof(Plugin).GetMethod("UpdateKeyboundBrawler", Fields)!.Invoke(Plugin, null);
+        internal KeyboundShopSession Session() => new(Settings, "fixture", Character, BlundervilleEndingLocation.Stay);
+        internal void BeginShop()
+        {
+            Field(Plugin, "<IsKeyboundShoppingTrip>k__BackingField", true);
+            SetShopField("session", Session());
+            SetShopField("running", true);
+            SetShopField("started", DateTime.UtcNow);
+        }
+        internal void Offers(params BlundervilleOffer[] offers)
+        {
+            typeof(KeyboundBrawlerShop).GetField("catalog", BindingFlags.Static | BindingFlags.NonPublic)!.SetValue(null, offers);
+            SetShopField("catalog", offers);
+        }
+        internal BlundervilleOffer? Next(KeyboundShopSession session, uint wallet)
+        {
+            object?[] args = [session, wallet, null];
+            Assert.True((bool)typeof(KeyboundBrawlerShopService).GetMethod("TryNextOffer", Fields)!.Invoke(Shop, args)!);
+            return (BlundervilleOffer?)args[2];
+        }
+        internal bool CheckEligibility(BlundervilleOffer offer)
+            => (bool)typeof(KeyboundBrawlerShopService).GetMethod("CheckEligibility", Fields)!.Invoke(Shop, [offer])!;
+        internal void Complete() => typeof(KeyboundBrawlerShopService).GetMethod("Complete", Fields)!.Invoke(Shop, null);
+        internal void SetShopField(string name, object value) => Field(Shop, name, value);
+        private static void Field(object target, string name, object value) => target.GetType().GetField(name, Fields)!.SetValue(target, value);
+        private void Service(string name, object value)
+        {
+            var property = typeof(Plugin).GetProperty(name, BindingFlags.Static | BindingFlags.NonPublic)!;
+            originals.TryAdd(property, property.GetValue(null));
+            property.SetValue(null, value);
+        }
+        public void Dispose()
+        {
+            Typer.Dispose();
+            CurrencyManager.Addresses.Instance.Value = originalCurrency;
+            CurrencyManager.Addresses.GetItemCount.Value = originalWallet;
+            typeof(KeyboundBrawlerShop).GetField("catalog", BindingFlags.Static | BindingFlags.NonPublic)!.SetValue(null, originalCatalog);
+            foreach (var (property, value) in originals) property.SetValue(null, value);
+            NativeMemory.Free((void*)currencySlot);
+            NativeMemory.Free((void*)currency);
+            NativeMemory.Free((void*)addon);
+        }
+    }
+    private static object? Default(Type type) => type == typeof(void) ? null : type.IsValueType ? Activator.CreateInstance(type) : null;
+    private static T Fake<T>(Func<MethodInfo, object?[]?, object?>? handler = null) where T : class
+    {
+        var proxy = DispatchProxy.Create<T, ShoppingProxy>();
+        ((ShoppingProxy)(object)proxy).InvokeHandler = handler ?? ((method, _) => Default(method.ReturnType));
+        return proxy;
     }
 
     public class ShoppingProxy : DispatchProxy

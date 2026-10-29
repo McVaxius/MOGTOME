@@ -50,9 +50,9 @@ public sealed class KeyboundLoopTests
     {
         internal KeyboundLoopFrame Frame = new(KeyboundEventLoop.Lobby, false, false, false, false, false, false, false, false, false);
         internal int Registers, Commences, Leaves, Approaches, Cancels, Heartbeats, Cleanups, LobbyTrips;
-        internal bool RegisterAccepted = true;
+        internal bool RegisterAccepted = true, LobbyReady = true;
         public KeyboundLoopFrame Read() => Frame;
-        public bool EnsureLobby() { LobbyTrips++; return true; }
+        public bool EnsureLobby() { LobbyTrips++; return LobbyReady; }
         public bool ApproachRegistrar() { Approaches++; return true; }
         public bool Register() { Registers++; return RegisterAccepted; }
         public bool Commence() { Commences++; return true; }
@@ -110,6 +110,56 @@ public sealed class KeyboundLoopTests
             Assert.Equal(2, f.Game.Commences);
         }
         Assert.Equal(0, f.Game.Registers + f.Game.Approaches + f.Game.LobbyTrips + f.Game.Cancels);
+    }
+
+    [Fact]
+    public void MemberPreparingShoppingReturnsToLobbyWithoutRegistering()
+    {
+        using var f = new Fixture(3, MOGTOME.Models.KeyboundPartyRole.Member);
+        f.Game.Frame = f.Game.Frame with { Territory = 129, PartyRole = MOGTOME.Models.BlundervilleRole.Member };
+        f.Game.LobbyReady = false;
+        Assert.False(f.Loop.Update(0, prepareShopping: true));
+        Assert.Equal(1, f.Game.LobbyTrips);
+        Assert.Equal("BV_Shopping", f.Loop.Status.Key);
+        Assert.True(f.Loop.IsActive);
+        Assert.True(f.Typer.IsRunning);
+        Assert.Equal(0, f.Game.Registers + f.Game.Approaches + f.Game.Commences);
+        f.Game.Frame = f.Game.Frame with { Territory = KeyboundEventLoop.Lobby, Entry = true };
+        f.Game.LobbyReady = true;
+        Assert.True(f.Loop.Update(100, prepareShopping: true));
+        Assert.Equal(0, f.Game.Registers + f.Game.Approaches);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ExistingQueueOrMatchingPopWinsOverShoppingPreparation(bool pop)
+    {
+        using var f = new Fixture(3);
+        f.Game.Frame = f.Game.Frame with
+        {
+            Queued = !pop, QueueMatches = true, Pop = pop, PopMatches = true, Entry = true,
+        };
+        Assert.False(f.Loop.Update(0, prepareShopping: true));
+        Assert.Equal(pop ? 1 : 0, f.Game.Commences);
+        Assert.Equal(0, f.Game.LobbyTrips + f.Game.Registers + f.Game.Approaches);
+        Assert.True(f.Loop.IsActive);
+    }
+
+    [Fact]
+    public void ArmedOrRequestedStopCannotPrepareAShoppingReturn()
+    {
+        using var f = new Fixture(3);
+        f.CompleteRoundAndReturn();
+        f.Loop.StopAfterCurrentRound();
+        Assert.False(f.Loop.Update(2300, prepareShopping: true));
+        Assert.False(f.Loop.IsActive);
+        Assert.Equal(0, f.Game.LobbyTrips + f.Game.Registers + f.Game.Approaches);
+
+        using var requested = new Fixture(3);
+        requested.Typer.RequestStop();
+        Assert.False(requested.Loop.Update(0, prepareShopping: true));
+        Assert.Equal(0, requested.Game.LobbyTrips + requested.Game.Registers + requested.Game.Approaches);
     }
 
     [Fact]

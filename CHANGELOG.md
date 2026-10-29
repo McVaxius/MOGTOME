@@ -1,3 +1,8 @@
+2026-10-29 - Keybound run-count shopping trips (unversioned)
+
+- In run-count mode with the MGC target disabled, pause between rounds at 9,500+ MGC, buy affordable missing rewards, then resume with the same run progress and captured limits. Enabled MGC targets retain their configured target-and-stop behavior.
+- Allow shopping to make partial progress without funding the whole remaining list. Keep unaffordable targets for later, temporary trips in the Square, final ending preferences, manual Stop and purchase-receipt protections.
+
 2026-10-29 - Keybound party return and stage speeds (unversioned)
 
 - Keep returned leaders and members active for up to 20 minutes while party members leave the arena. Start the allowance once and refresh ordinary staging time when readiness returns. Preserve matching queue/pop progress, manual Stop and run/wallet limits.

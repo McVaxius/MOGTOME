@@ -43,20 +43,20 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
         partyWaitPending = false;
         Status = Ui.M("KB_Queueing");
     }
-    internal void Update(long now)
+    internal bool Update(long now, bool prepareShopping = false)
     {
         typer.SuppressGameplay = false;
-        if (!active) return;
+        if (!active) return false;
         try
         {
-            if (typer.StopRequested || !typer.CanContinueSession || !typer.IsRunning && !typer.Finished) { Stop(); return; }
+            if (typer.StopRequested || !typer.CanContinueSession || !typer.IsRunning && !typer.Finished) { Stop(); return false; }
             var state = game.Read();
-            if (state.Transitioning) return;
+            if (state.Transitioning) return false;
             // Only the registering client owns the local queued-entry list. Party members can
             // have empty or stale entries; they wait for a positively identified KBB pop instead.
             if (state.OtherDuty || state.Queued && !state.QueueMatches && partyRole != KeyboundPartyRole.Member ||
                 state.Pop && state.PopReady && !state.PopMatches)
-            { Fail("KB_AutomationBusy"); return; }
+            { Fail("KB_AutomationBusy"); return false; }
             if (state.Territory == Arena)
             {
                 if (!entered)
@@ -65,7 +65,7 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
                     partyWaitStarted = registrationRetryAt = null;
                     partyWaitPending = false;
                 }
-                if (now - stageStarted > 1_800_000) { Fail("BV_Timeout"); return; }
+                if (now - stageStarted > 1_800_000) { Fail("BV_Timeout"); return false; }
                 // Posted keys and focus attempts do not reset the event's own idle counter.
                 // Refresh during every owned arena update, including input/cast/wave waits.
                 game.KeepActive();
@@ -89,21 +89,21 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
                     typer.ObserveArenaEntry(Arena);
                     Status = typer.Status;
                 }
-                return;
+                return false;
             }
             if (entered)
             {
                 // A return alone cannot prove a finished game or earn a run count.
-                if (!resultSubmitted) { Fail("BV_UiMismatch"); return; }
+                if (!resultSubmitted) { Fail("BV_UiMismatch"); return false; }
                 entered = registered = commenced = resultSubmitted = resultsSeen = false;
                 stageStarted = now;
                 if (StopAfterCurrentRoundArmed)
                 {
                     Stop(); typer.Stop(); Status = Ui.M("KB_Stopped");
-                    return;
+                    return false;
                 }
             }
-            if (typer.Finished) { active = false; game.StopMovement(); return; }
+            if (typer.Finished) { active = false; game.StopMovement(); return false; }
             // Native queue/pop progress wins over stale party territory or a delayed rejection retry.
             if (state.Queued || state.Pop && state.PopMatches || commenced)
             {
@@ -115,45 +115,50 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
             {
                 // Keep one allowance across polling, readiness changes and rejected submissions.
                 partyWaitStarted ??= now;
-                if (now - partyWaitStarted.Value > 1_200_000) { Fail("BV_Timeout"); return; }
+                if (now - partyWaitStarted.Value > 1_200_000) { Fail("BV_Timeout"); return false; }
                 partyWaitPending = true;
                 if (!state.PartyReturned || registrationRetryAt.HasValue && now < registrationRetryAt.Value)
                 {
                     Status = Ui.M(registrationRetryAt.HasValue ? "BV_RegistrationRetry" : "BV_WaitEntry");
-                    return;
+                    return false;
                 }
                 // Resuming after a long wait must receive a fresh ordinary staging budget.
                 stageStarted = now;
                 registrationRetryAt = null;
                 partyWaitPending = false;
             }
-            if (now - stageStarted > (registered || state.Queued || partyRole == KeyboundPartyRole.Member ? 600_000 : 180_000)) { Fail("BV_Timeout"); return; }
+            if (now - stageStarted > (registered || state.Queued || partyRole == KeyboundPartyRole.Member ? 600_000 : 180_000)) { Fail("BV_Timeout"); return false; }
             var roleMatches = partyRole == KeyboundPartyRole.Member
                 ? state.PartyRole == BlundervilleRole.Member
                 : state.PartyRole is BlundervilleRole.Solo or BlundervilleRole.Leader;
             if (!roleMatches)
-            { Status = Ui.M("KB_WaitPartyRole"); return; }
+            { Status = Ui.M("KB_WaitPartyRole"); return false; }
             if (state.Pop)
             {
-                if (!state.PopReady) { Status = Ui.M("BV_WaitEntry"); return; }
+                if (!state.PopReady) { Status = Ui.M("BV_WaitEntry"); return false; }
                 if (!commenced)
                 {
                     commenced = true;
                     game.StopMovement();
                     if (!game.Commence()) Fail("BV_UiMismatch");
                 }
-                Status = Ui.M("BV_WaitEntry"); return;
+                Status = Ui.M("BV_WaitEntry"); return false;
             }
-            if (state.Queued || registered || commenced) { Status = Ui.M("BV_WaitEntry"); return; }
+            if (state.Queued || registered || commenced) { Status = Ui.M("BV_WaitEntry"); return false; }
+            if (prepareShopping)
+            {
+                Status = Ui.M("BV_Shopping");
+                return game.EnsureLobby();
+            }
             // Only the leader registers in the Square. Members can receive the matching group pop
             // from their current territory; waiting must never start travel or touch the registrar.
             if (partyRole == KeyboundPartyRole.Member)
-            { Status = Ui.M("BV_MemberWait"); return; }
+            { Status = Ui.M("BV_MemberWait"); return false; }
             Status = Ui.M("KB_Queueing");
-            if (!game.EnsureLobby()) return;
+            if (!game.EnsureLobby()) return false;
             if (state.Entry)
             {
-                if (!state.EntryReady) return; // Visible during setup is not a rejected registration.
+                if (!state.EntryReady) return false; // Visible during setup is not a rejected registration.
                 registered = true; stageStarted = now;
                 game.StopMovement();
                 if (!game.Register()) Fail("BV_UiMismatch");
@@ -165,6 +170,7 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
             Fail("BV_ActionFailed");
             Plugin.Log?.Warning(ex, "[MOGTOME][KBB] event loop failed");
         }
+        return false;
     }
     internal bool ObserveRegistrationRejected(uint logMessageId, long now)
     {

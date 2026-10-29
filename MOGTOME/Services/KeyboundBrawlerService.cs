@@ -50,9 +50,11 @@ public sealed class KeyboundBrawlerService : IDisposable
     public bool IsRunning { get; private set; }
     internal bool StopRequested => Volatile.Read(ref stopRequested) != 0;
     internal bool CanContinueSession => !disposed && !busy && (ready || suspended) && !StopRequested;
+    internal bool CanPauseForShopping => IsRunning && !StopRequested && (!roundSeen || completedRound);
     internal bool OwnsInput => IsRunning || heldKey.HasValue;
     public int CompletedRuns { get; private set; }
     internal uint? WalletTarget => walletTarget;
+    internal bool UsesRunCountMode => !walletTarget.HasValue && runLimit > 0;
     public int SubmittedPhrases { get; private set; }
     public bool Finished { get; private set; }
     internal bool SuppressGameplay { get; set; }
@@ -104,6 +106,16 @@ public sealed class KeyboundBrawlerService : IDisposable
         Plugin.Log?.Information("[MOGTOME][KBB] Started kbb-focus-20261028-08; role={Role}, stage12Wpm={Stage12Wpm}, stage3Wpm={Stage3Wpm}, runLimit={RunLimit}, walletTarget={WalletTarget}",
             settings.PartyRole, stage12Pace.WordsPerMinute, stage3Pace.WordsPerMinute, runLimit, walletTarget?.ToString() ?? "off");
         return true;
+    }
+
+    internal bool ResumeAfterShopping(uint wallet)
+    {
+        if (!CanStart || StopRequested || Finished || !UsesRunCountMode) return false;
+        roundTerritory = 0;
+        IsRunning = true;
+        Status = Ui.M("KB_Queueing");
+        FinishIfLimitMet(wallet);
+        return IsRunning;
     }
 
     internal void ObserveCompletion(uint completedTerritory)

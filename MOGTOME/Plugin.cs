@@ -107,8 +107,11 @@ public sealed class Plugin : IDalamudPlugin
     private string? keyboundSessionAccount;
     private ulong keyboundSessionCharacter;
     private Dalamud.Game.ClientLanguage keyboundSessionLanguage;
+    private KeyboundPartyRole keyboundSessionPartyRole;
+    private int keyboundShoppingGeneration;
     private bool keyboundFinishPending;
-    internal bool KeyboundShopOwnsAutomation => KeyboundLoop?.IsActive == true || KeyboundBrawler?.OwnsInput == true || IsKeyboundStartQueued || keyboundFinishPending ||
+    internal bool IsKeyboundShoppingTrip { get; private set; }
+    internal bool KeyboundShopOwnsAutomation => KeyboundLoop?.IsActive == true || KeyboundBrawler?.OwnsInput == true || IsKeyboundStartQueued || keyboundFinishPending || IsKeyboundShoppingTrip ||
         KeyboundShop?.HoldAutomaticDialogs == true ||
         IsKeyboundShopActionQueued || ConfigManager?.GetActiveConfig()?.KeyboundBrawler?.PurchaseReviewRequired == true;
     private int moogleShopActionGeneration;
@@ -276,7 +279,7 @@ public sealed class Plugin : IDalamudPlugin
         KeyboundShop.Dispose();
         MoogleShop.Dispose();
         ++keyboundStartGeneration;
-        IsKeyboundStartQueued = keyboundFinishPending = false;
+        IsKeyboundStartQueued = keyboundFinishPending = IsKeyboundShoppingTrip = false;
         KeyboundLoop.Stop();
         KeyboundBrawler.Dispose();
         Blunderville.Dispose();
@@ -361,7 +364,7 @@ public sealed class Plugin : IDalamudPlugin
 
     public void RequestKeyboundShopBuy()
     {
-        if (KeyboundLoop.IsActive || KeyboundBrawler.OwnsInput || IsKeyboundStartQueued || keyboundFinishPending || IsKeyboundShopActionQueued || KeyboundShop.IsRunning || IsEngineStartQueued || Engine?.IsRunning == true ||
+        if (KeyboundLoop.IsActive || KeyboundBrawler.OwnsInput || IsKeyboundStartQueued || keyboundFinishPending || IsKeyboundShoppingTrip || IsKeyboundShopActionQueued || KeyboundShop.IsRunning || IsEngineStartQueued || Engine?.IsRunning == true ||
             Engine?.IsStartupPending == true || MoogleShop.IsRunning || IsMoogleShopActionQueued ||
             Blunderville.IsRunning || IsBlundervilleActionQueued || !KeyboundShop.Ready) return;
         var selected = Configuration.KeyboundBrawler;
@@ -384,19 +387,27 @@ public sealed class Plugin : IDalamudPlugin
         ++keyboundShopActionGeneration;
         IsKeyboundShopActionQueued = false;
         if (KeyboundShop == null) return;
+        if (IsKeyboundShoppingTrip) KeyboundBrawler.RequestStop();
         KeyboundShop.RequestStop();
-        GameHelpers.QueueFrameworkAction("Keybound shop", "Stop", TimeSpan.Zero, KeyboundShop.Stop);
+        GameHelpers.QueueFrameworkAction("Keybound shop", "Stop", TimeSpan.Zero, () =>
+        {
+            KeyboundShop.Stop();
+            if (!IsKeyboundShoppingTrip) return;
+            KeyboundLoop.Stop();
+            KeyboundBrawler.Stop();
+            ReleaseKeyboundSession();
+        });
     }
 
     public void RefreshKeyboundShop()
     {
-        if (KeyboundShop.IsRunning || IsKeyboundShopActionQueued) return;
+        if (KeyboundShop.IsRunning || IsKeyboundShopActionQueued || IsKeyboundShoppingTrip) return;
         GameHelpers.QueueFrameworkAction("Keybound shop", "Refresh", TimeSpan.Zero, KeyboundShop.RefreshCatalog);
     }
 
     public void StartKeyboundBrawler()
     {
-        if (IsKeyboundStartQueued || KeyboundBrawler.IsRunning || KeyboundLoop.IsActive || keyboundFinishPending) return;
+        if (IsKeyboundStartQueued || KeyboundBrawler.IsRunning || KeyboundLoop.IsActive || keyboundFinishPending || IsKeyboundShoppingTrip) return;
         var selected = ConfigManager.GetActiveConfig()?.KeyboundBrawler;
         if (selected == null) return;
         var account = ConfigManager.CurrentAccountId;
@@ -416,6 +427,7 @@ public sealed class Plugin : IDalamudPlugin
             keyboundSessionAccount = account;
             keyboundSessionCharacter = character;
             keyboundSessionLanguage = ClientState.ClientLanguage;
+            keyboundSessionPartyRole = selected.PartyRole;
             YesAlreadyIPC.Pause();
         });
     }
@@ -426,17 +438,19 @@ public sealed class Plugin : IDalamudPlugin
         IsKeyboundStartQueued = keyboundFinishPending = false;
         if (KeyboundBrawler == null) return;
         KeyboundBrawler.RequestStop();
+        if (IsKeyboundShoppingTrip) KeyboundShop.RequestStop();
         GameHelpers.QueueFrameworkAction("Keybound Brawler", "Stop", TimeSpan.Zero, () =>
         {
             KeyboundLoop.Stop();
             KeyboundBrawler.Stop();
+            if (IsKeyboundShoppingTrip) KeyboundShop.Stop();
             ReleaseKeyboundSession();
         });
     }
 
     public void StopKeyboundAfterCurrentRound()
     {
-        if (IsKeyboundStartQueued) { StopKeyboundBrawler(); StopKeyboundShop(); return; }
+        if (IsKeyboundStartQueued || IsKeyboundShoppingTrip) { StopKeyboundBrawler(); StopKeyboundShop(); return; }
         var generation = keyboundStartGeneration;
         GameHelpers.QueueFrameworkAction("Keybound Brawler", "Stop after current round", TimeSpan.Zero, () =>
         {
@@ -450,6 +464,7 @@ public sealed class Plugin : IDalamudPlugin
     {
         keyboundSessionSettings = null;
         keyboundFinishPending = false;
+        IsKeyboundShoppingTrip = false;
         if (!KeyboundShopOwnsAutomation && !Blunderville.IsRunning && !MoogleShop.IsRunning && Engine?.IsRunning != true &&
             !Configuration.Blunderville.PurchaseReviewRequired && !Configuration.MoogleShop.PurchaseReviewRequired)
             YesAlreadyIPC.Unpause();
@@ -474,11 +489,56 @@ public sealed class Plugin : IDalamudPlugin
     private void UpdateKeyboundBrawler()
     {
         if (keyboundSessionSettings != null && !KeyboundSessionMatches())
-        { KeyboundLoop.Stop(); KeyboundBrawler.StopWithReason("BV_SessionChanged"); ReleaseKeyboundSession(); }
+        {
+            KeyboundLoop.Stop();
+            KeyboundBrawler.StopWithReason("BV_SessionChanged");
+            if (IsKeyboundShoppingTrip) KeyboundShop.Stop();
+            ReleaseKeyboundSession();
+        }
         UpdateKeyboundBrawlerAdmission();
         uint? wallet = KeyboundBrawlerShop.TryWallet(out var currentWallet) ? currentWallet : null;
+        if (IsKeyboundShoppingTrip)
+        {
+            if (KeyboundBrawler.StopRequested || keyboundShoppingGeneration != keyboundStartGeneration)
+            {
+                KeyboundShop.Stop();
+                KeyboundBrawler.Stop();
+                ReleaseKeyboundSession();
+                return;
+            }
+            if (KeyboundShop.IsRunning) return;
+            if (!KeyboundShop.CompletedNormally) { ReleaseKeyboundSession(); return; }
+            if (!KeyboundShop.CanResumeFarming || !wallet.HasValue) return;
+            IsKeyboundShoppingTrip = false;
+            UpdateKeyboundBrawlerAdmission();
+            if (KeyboundBrawler.ResumeAfterShopping(wallet.Value))
+            {
+                KeyboundLoop.Start(Environment.TickCount64, keyboundSessionPartyRole);
+                YesAlreadyIPC.Pause();
+            }
+            else ReleaseKeyboundSession();
+            return;
+        }
         KeyboundBrawler.FinishIfLimitMet(wallet);
-        KeyboundLoop.Update(Environment.TickCount64);
+        var prepareShopping = keyboundSessionSettings != null && KeyboundBrawler.UsesRunCountMode && KeyboundBrawler.CanPauseForShopping &&
+            KeyboundBrawler.CanContinueSession && !KeyboundLoop.StopAfterCurrentRoundArmed && wallet >= 9500 &&
+            KeyboundShop.Ready && !Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BoundByDuty] &&
+            !Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.InDutyQueue] &&
+            !Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas] &&
+            !Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas51] &&
+            KeyboundBrawlerService.ReadTerritoryIntendedUse() != 65 && KeyboundShop.HasAffordablePurchase(wallet.Value);
+        var generation = keyboundStartGeneration;
+        var shoppingReady = KeyboundLoop.Update(Environment.TickCount64, prepareShopping);
+        if (shoppingReady && ClientState.TerritoryType == KeyboundEventLoop.Lobby)
+        {
+            keyboundShoppingGeneration = generation;
+            IsKeyboundShoppingTrip = true;
+            KeyboundLoop.Stop();
+            KeyboundBrawler.Stop();
+            if (keyboundShoppingGeneration != keyboundStartGeneration || !KeyboundShop.Buy(returnToFarming: true))
+                ReleaseKeyboundSession();
+            return;
+        }
         KeyboundBrawler.Update(wallet, Environment.TickCount64);
         if (keyboundSessionSettings == null) return;
         if (KeyboundBrawler.Finished && keyboundSessionSettings.ShopWhenFinished)
