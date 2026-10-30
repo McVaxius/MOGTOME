@@ -18,6 +18,7 @@ public sealed class BlundervilleWindow : Window, IDisposable
 {
     private readonly AethertekUI.Dalamud.MaterialWindowMotion windowMotion = new();
     private bool materialBackdropStylePushed;
+    private readonly AethertekUI.Dalamud.MaterialWindowLock windowLock = new();
     private readonly Plugin plugin;
     private readonly EventShopTargetEditor shopEditor;
     public bool DebugVisible { get; set; }
@@ -42,16 +43,19 @@ public sealed class BlundervilleWindow : Window, IDisposable
     {
         WindowName = Ui.T("Window_BlundervilleFailer") + "###MogtomeBlunderville";
         Size = MogtomePresentation.Compact ? new Vector2(720, 611) : new Vector2(740, 630);
-        if (MogtomePresentation.HasMaterial)
+        if (MogtomePresentation.HasMaterial || plugin?.Appearance.BackgroundRequested == true)
         {
             ImGui.PushStyleColor(ImGuiCol.WindowBg, Vector4.Zero);
             materialBackdropStylePushed = true;
         }
-        windowMotion.Prepare(this, reducedMotion: false, roundedCorners: true);
+        windowMotion.Prepare(this, reducedMotion: plugin?.Configuration.UiStylingEnabled == false,
+            roundedCorners: plugin?.Configuration.UiStylingEnabled != false);
+        windowLock.Apply(this, plugin?.Configuration.UiWindowsLocked == true);
     }
 
     public override void PostDraw()
     {
+        windowLock.Restore(this);
         windowMotion.Restore(this);
         if (materialBackdropStylePushed)
         {
@@ -67,7 +71,8 @@ public sealed class BlundervilleWindow : Window, IDisposable
             ImGui.PopStyleColor();
             materialBackdropStylePushed = false;
         }
-        MaterialSkin.Backdrop();
+        plugin.Appearance.DrawBackdrop(this);
+        using var structuralBackground = AethertekUI.MaterialSkin.StructuralBackgroundStyle();
         windowMotion.DrawChrome();
         if (AethertekUI.MaterialTheme.Current.IsLcars) AethertekUI.MaterialLcars.Header(string.Empty);
         var moogle = plugin.Appearance.OriginalIcon;

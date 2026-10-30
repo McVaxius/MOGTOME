@@ -12,6 +12,7 @@ public sealed class WarningTextWindow : Window, IDisposable
 {
     private readonly AethertekUI.Dalamud.MaterialWindowMotion windowMotion = new();
     private bool materialBackdropStylePushed;
+    private readonly AethertekUI.Dalamud.MaterialWindowLock windowLock = new();
     public const int CurrentWarningVersion = 0;
 
     private static readonly UiText[] WarningLines =
@@ -97,16 +98,19 @@ public sealed class WarningTextWindow : Window, IDisposable
     public override void PreDraw()
     {
         WindowName = Ui.T("Window_MOGTOMEWarningText") + "###MOGTOMEWarningText";
-        if (MogtomePresentation.HasMaterial)
+        if (MogtomePresentation.HasMaterial || plugin?.Appearance.BackgroundRequested == true)
         {
             ImGui.PushStyleColor(ImGuiCol.WindowBg, Vector4.Zero);
             materialBackdropStylePushed = true;
         }
-        windowMotion.Prepare(this, reducedMotion: false, roundedCorners: true);
+        windowMotion.Prepare(this, reducedMotion: plugin?.Configuration.UiStylingEnabled == false,
+            roundedCorners: plugin?.Configuration.UiStylingEnabled != false);
+        windowLock.Apply(this, plugin?.Configuration.UiWindowsLocked == true);
     }
 
     public override void PostDraw()
     {
+        windowLock.Restore(this);
         windowMotion.Restore(this);
         if (materialBackdropStylePushed)
         {
@@ -122,7 +126,8 @@ public sealed class WarningTextWindow : Window, IDisposable
             ImGui.PopStyleColor();
             materialBackdropStylePushed = false;
         }
-        MaterialSkin.Backdrop();
+        plugin.Appearance.DrawBackdrop(this);
+        using var structuralBackground = AethertekUI.MaterialSkin.StructuralBackgroundStyle();
         windowMotion.DrawChrome();
         if (AethertekUI.MaterialTheme.Current.IsLcars) AethertekUI.MaterialLcars.Header(WindowName.Split("##", 2)[0]);
         if (ImGui.IsWindowAppearing())

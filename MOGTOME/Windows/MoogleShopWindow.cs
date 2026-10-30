@@ -20,6 +20,7 @@ public sealed class MoogleShopWindow : Window
     private ShopMissingResult? missingResult;
     private readonly AethertekUI.Dalamud.MaterialWindowMotion motion = new();
     private bool materialBackdropStylePushed;
+    private readonly AethertekUI.Dalamud.MaterialWindowLock windowLock = new();
     public MoogleShopWindow(Plugin plugin) : base(Ui.T("Shop_Title") + "###MogtomeShop")
     {
         this.plugin = plugin;
@@ -30,15 +31,18 @@ public sealed class MoogleShopWindow : Window
     public override void PreDraw()
     {
         WindowName = Ui.T("Shop_Title") + "###MogtomeShop";
-        if (MogtomePresentation.HasMaterial)
+        if (MogtomePresentation.HasMaterial || plugin?.Appearance.BackgroundRequested == true)
         {
             ImGui.PushStyleColor(ImGuiCol.WindowBg, Vector4.Zero);
             materialBackdropStylePushed = true;
         }
-        motion.Prepare(this, reducedMotion: false, roundedCorners: true);
+        motion.Prepare(this, reducedMotion: plugin?.Configuration.UiStylingEnabled == false,
+            roundedCorners: plugin?.Configuration.UiStylingEnabled != false);
+        windowLock.Apply(this, plugin?.Configuration.UiWindowsLocked == true);
     }
     public override void PostDraw()
     {
+        windowLock.Restore(this);
         motion.Restore(this);
         if (materialBackdropStylePushed)
         {
@@ -53,7 +57,8 @@ public sealed class MoogleShopWindow : Window
             ImGui.PopStyleColor();
             materialBackdropStylePushed = false;
         }
-        MaterialSkin.Backdrop();
+        plugin.Appearance.DrawBackdrop(this);
+        using var structuralBackground = AethertekUI.MaterialSkin.StructuralBackgroundStyle();
         motion.DrawChrome();
         if (AethertekUI.MaterialTheme.Current.IsLcars) AethertekUI.MaterialLcars.Header(WindowName.Split("##", 2)[0]);
         var shop = plugin.MoogleShop;

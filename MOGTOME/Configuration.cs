@@ -19,6 +19,8 @@ public class Configuration
     public Localization.UiLanguage? UiLanguage { get; set; }
     public uint UiAccentRgb { get; set; } = UiDesign.MogtomePresentation.ReferenceAccent;
     public AethertekUI.MaterialColorSettings UiColors { get; set; } = new();
+    public bool UiStylingEnabled { get; set; } = true;
+    public bool UiWindowsLocked { get; set; }
     public bool UiLcarsSoundsMuted { get; set; } = true;
     public bool UiCompact { get; set; } = true;
     public bool UiShowTitlebarStatus { get; set; } = true;

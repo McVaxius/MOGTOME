@@ -1,3 +1,12 @@
+2026-10-29 - 4.2.0.4 shared appearance rollout
+
+- Add saved native/styled UI and movement/resize locks in Settings and titlebar actions, with `/mog style on|off|toggle`, `/mog lock` and `/mog unlock` recovery commands (also `/mogtome`). Preserve account storage, window geometry and the existing opacity/fade path.
+- Use the shared Glasswork renderer only for Background surfaces, preserving foreground fills and selected tint. Add Waves, all three Lights effects and Image backgrounds with the native image picker; Glass defaults to 75% Frost/on, other styles off. Colour and Transparency share the session-only screenshot pause, initially off. Ship the three Glasswork assemblies and MIT notice.
+
+2026-10-29 - Keybound cutscene-skip startup (unversioned)
+
+- Enable XA Slave's cutscene skipping through the existing `/xa skipcutscenes on` startup action when an admitted Keybound Brawler session starts, before its entry loop begins. Preserve repeated-round progress, duplicate-Start guards and the existing warning behavior if XA Slave cannot handle the command.
+
 2026-10-29 - Keybound run-count shopping trips (unversioned)
 
 - In run-count mode with the MGC target disabled, pause between rounds at 9,500+ MGC, buy affordable missing rewards, then resume with the same run progress and captured limits. Enabled MGC targets retain their configured target-and-stop behavior.

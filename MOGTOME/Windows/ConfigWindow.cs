@@ -20,6 +20,7 @@ public class ConfigWindow : Window, IDisposable
 {
     private readonly AethertekUI.Dalamud.MaterialWindowMotion windowMotion = new();
     private bool materialBackdropStylePushed;
+    private readonly AethertekUI.Dalamud.MaterialWindowLock windowLock = new();
     private readonly Plugin plugin;
     private readonly AethertekUI.Dalamud.MaterialSupportLog supportLog = new();
     private readonly IPluginLog Log;
@@ -96,12 +97,14 @@ public class ConfigWindow : Window, IDisposable
             pendingWindowPosition = null;
             pendingPositionConditionReset = true;
         }
-        if (MogtomePresentation.HasMaterial)
+        if (MogtomePresentation.HasMaterial || plugin?.Appearance.BackgroundRequested == true)
         {
             ImGui.PushStyleColor(ImGuiCol.WindowBg, Vector4.Zero);
             materialBackdropStylePushed = true;
         }
-        windowMotion.Prepare(this, reducedMotion: false, roundedCorners: true);
+        windowMotion.Prepare(this, reducedMotion: plugin?.Configuration.UiStylingEnabled == false,
+            roundedCorners: plugin?.Configuration.UiStylingEnabled != false);
+        windowLock.Apply(this, plugin?.Configuration.UiWindowsLocked == true);
     }
 
     private void EnsureItemsLoaded()
@@ -149,6 +152,7 @@ public class ConfigWindow : Window, IDisposable
 
     public override void PostDraw()
     {
+        windowLock.Restore(this);
         windowMotion.Restore(this);
         ReleaseMaterialBackdropStyle();
     }
@@ -163,7 +167,8 @@ public class ConfigWindow : Window, IDisposable
     public override void Draw()
     {
         ReleaseMaterialBackdropStyle();
-        AethertekUI.MaterialSkin.Backdrop();
+        plugin.Appearance.DrawBackdrop(this);
+        using var structuralBackground = AethertekUI.MaterialSkin.StructuralBackgroundStyle();
         windowMotion.DrawChrome();
         if (AethertekUI.MaterialTheme.Current.IsLcars) AethertekUI.MaterialLcars.Header(WindowName.Split("##", 2)[0]);
         EnsureItemsLoaded();

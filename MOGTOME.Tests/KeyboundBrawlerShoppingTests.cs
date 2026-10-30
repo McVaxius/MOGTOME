@@ -28,6 +28,70 @@ public sealed class KeyboundBrawlerShoppingTests
     private static readonly BlundervilleOffer Offer = new(1771021, 52450, 1, 910, "MGC exchange");
 
     [Fact]
+    public void KeyboundStartupEnablesXaCutsceneSkippingBeforeRegistrationAndContinuesThroughTwoClears()
+    {
+        using var f = new ShopFixture();
+        f.Settings.RunLimitEnabled = true; f.Settings.RunLimit = 2;
+        f.Settings.WalletTargetEnabled = false; f.Settings.ShopWhenFinished = false;
+        f.Settings.PurchaseReviewRequired = true;
+        f.Plugin.StartKeyboundBrawler();
+        Assert.False(f.Typer.IsRunning);
+        Assert.Empty(f.Commands); // Rejected admission must not change XA settings.
+
+        f.Settings.PurchaseReviewRequired = false;
+        f.Plugin.StartKeyboundBrawler();
+        Assert.True(f.Typer.IsRunning);
+        Assert.True(f.Loop.IsActive);
+        Assert.Equal(new[] { "/xa skipcutscenes on" }, f.Commands);
+        Assert.Equal(0, f.Game.Registrations);
+        f.Plugin.StartKeyboundBrawler();
+        Assert.Single(f.Commands); // A duplicate Start does not repeat the startup action.
+
+        void Tick(long now)
+        {
+            var frame = f.Game.Frame;
+            f.Typer.Observe(true, false, frame.Territory == KeyboundEventLoop.Arena ? 65u : 23u,
+                frame.Territory, frame.Transitioning);
+            f.Typer.FinishIfLimitMet(0);
+            f.Loop.Update(now);
+            f.Typer.Update(0, now);
+        }
+
+        var started = Environment.TickCount64;
+        for (var round = 0; round < 2; round++)
+        {
+            var now = started + round * 3000;
+            f.Game.Frame = f.Game.Frame with { Entry = true };
+            Tick(now);
+            Assert.Equal(round + 1, f.Game.Registrations);
+            f.Game.Frame = f.Game.Frame with { Entry = false, Queued = true, QueueMatches = true };
+            Tick(now + 100);
+            f.Game.Frame = f.Game.Frame with { Queued = false, Pop = true, PopMatches = true };
+            Tick(now + 200);
+            f.Game.Frame = f.Game.Frame with { Territory = KeyboundEventLoop.Arena, Pop = false };
+            Tick(now + 300);
+            f.Game.Frame = f.Game.Frame with { Results = true, ResultsReady = true };
+            Tick(now + 400); Tick(now + 2400);
+            Assert.Equal(round + 1, f.Typer.CompletedRuns);
+            Assert.Equal(round + 1, f.Game.Leaves);
+            f.Game.Frame = f.Game.Frame with
+            {
+                Territory = KeyboundEventLoop.Lobby, Results = false, ResultsReady = false,
+            };
+            Tick(now + 2500);
+            Assert.Equal(round == 0, f.Loop.IsActive);
+        }
+        Assert.Equal(2, f.Game.Commences);
+        Assert.True(f.Typer.Finished);
+        Assert.Single(f.Commands);
+
+        f.Plugin.StartKeyboundBrawler();
+        Assert.True(f.Typer.IsRunning);
+        Assert.Equal(0, f.Typer.CompletedRuns);
+        Assert.Equal(new[] { "/xa skipcutscenes on", "/xa skipcutscenes on" }, f.Commands);
+    }
+
+    [Fact]
     public void ShoppingSnapshotsTargetsAndEndingAtAdmissionEvenWhenTheEditorChanges()
     {
         var settings = new KeyboundBrawlerSettings
@@ -590,13 +654,14 @@ public sealed class KeyboundBrawlerShoppingTests
 
     private sealed class ShopGame : IKeyboundLoopGame
     {
-        internal int Registrations;
-        public KeyboundLoopFrame Read() => new(KeyboundEventLoop.Lobby, false, false, false, false, false, false, false, false, false);
+        internal KeyboundLoopFrame Frame = new(KeyboundEventLoop.Lobby, false, false, false, false, false, false, false, false, false);
+        internal int Registrations, Commences, Leaves;
+        public KeyboundLoopFrame Read() => Frame;
         public bool EnsureLobby() => true;
         public bool ApproachRegistrar() => true;
         public bool Register() { Registrations++; return true; }
-        public bool Commence() => true;
-        public bool LeaveResults() => true;
+        public bool Commence() { Commences++; return true; }
+        public bool LeaveResults() { Leaves++; return true; }
         public void KeepActive() { }
         public void CancelQueue() { }
         public void StopMovement() { }
@@ -637,6 +702,7 @@ public sealed class KeyboundBrawlerShoppingTests
         internal readonly Plugin Plugin = (Plugin)RuntimeHelpers.GetUninitializedObject(typeof(Plugin));
         internal readonly Configuration Configuration = new();
         internal readonly Dictionary<uint, int> Counts = new();
+        internal readonly List<string> Commands = new();
         internal readonly ShopGame Game = new();
         internal readonly KeyboundBrawlerService Typer = new(new KeyboundTypingTests.FakeInput("a"), (_, _) => 0);
         internal readonly KeyboundEventLoop Loop;
@@ -664,6 +730,12 @@ public sealed class KeyboundBrawlerShoppingTests
             Service("Condition", Fake<ICondition>());
             Service("Framework", Fake<IFramework>((method, _) => method.Name == "get_IsInFrameworkUpdateThread"
                 ? true : Default(method.ReturnType)));
+            Service("CommandManager", Fake<ICommandManager>((method, args) =>
+            {
+                if (method.Name != "ProcessCommand") return Default(method.ReturnType);
+                Commands.Add((string)args![0]!);
+                return true;
+            }));
             var target = Fake<IGameObject>((method, _) => method.Name == "get_GameObjectId" ? 99ul : Default(method.ReturnType));
             Service("TargetManager", Fake<ITargetManager>((method, _) => method.Name == "get_Target" ? target : Default(method.ReturnType)));
             addon = (nint)NativeMemory.AllocZeroed((nuint)sizeof(AtkUnitBase));

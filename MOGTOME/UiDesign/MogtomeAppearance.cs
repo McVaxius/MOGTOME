@@ -9,6 +9,7 @@ using Dalamud.Interface.Utility;
 using Dalamud.Interface.Windowing;
 using Dalamud.Interface;
 using Dalamud.Interface.Textures.TextureWraps;
+using Dalamud.Interface.ImGuiFileDialog;
 using MOGTOME.Localization;
 using MOGTOME.Models;
 using MOGTOME.Services;
@@ -23,6 +24,9 @@ internal sealed class MogtomeAppearance : IDisposable
     private readonly System.Collections.Generic.Dictionary<Window, MaterialAppearanceTitleBar> titleBars = new();
     private readonly Plugin plugin;
     private readonly AethertekUI.Dalamud.MaterialTextHost shapedText;
+    private readonly FileDialogManager imagePicker = new();
+    private MaterialGlassRenderer? backgroundGlass;
+    internal bool BackgroundRequested { get; private set; }
     private static readonly string[] NativeLanguages = ["English", "Français", "Deutsch", "日本語", "Español", "Italiano", "Русский", "한국어", "简体中文", "Tiếng Việt", "Português (Brasil)", "Bahasa Indonesia", "Polski", "Türkçe", "हिन्दी"];
     private MogtomeFonts? fonts;
     private MaterialTheme? theme;
@@ -47,6 +51,7 @@ internal sealed class MogtomeAppearance : IDisposable
     {
         this.plugin = plugin;
         shapedText = new(Plugin.TextureProvider);
+        Plugin.PluginInterface.UiBuilder.ResizeBuffers += ReleaseResources;
     }
     internal const string OriginalIconResource = "MOGTOME.images.icon.png";
     // The host owns this shared texture and keeps it alive through render submission.
@@ -104,6 +109,7 @@ internal sealed class MogtomeAppearance : IDisposable
 
     private unsafe void PaintBrandTitleWithStatus(Window owner, MaterialTitlebarStatus? status)
     {
+        if (!plugin.Configuration.UiStylingEnabled) return;
         var window = ImGuiP.FindWindowByName(owner.WindowName);
         if (window.Handle == null) return;
         var count = owner.TitleBarButtons.Count(button => !owner.IsClickthrough || button.AvailableClickthrough);
@@ -290,8 +296,18 @@ internal sealed class MogtomeAppearance : IDisposable
         finally { ImGui.EndTable(); }
     }
 
-    internal void Draw(WindowSystem windows)
+    internal void Draw(WindowSystem windows, Action prepare)
     {
+        var completed = false;
+        var requested = false;
+        try { prepare(); imagePicker.Draw(); completed = DrawOwner(windows, out requested); }
+        finally { backgroundGlass?.EndFrame(requested && completed); BackgroundRequested = false; }
+    }
+
+    private bool DrawOwner(WindowSystem windows, out bool requested)
+    {
+        requested = false;
+        BackgroundRequested = false;
         using var shaping = shapedText.Push();
         var config = plugin.Configuration;
         if (plugin.CanSelectUiLanguage && config.UiLanguage is { } saved) Ui.SetLanguage(saved);
@@ -328,7 +344,7 @@ internal sealed class MogtomeAppearance : IDisposable
             appliedSoundsMuted = config.UiLcarsSoundsMuted;
             if (appliedSoundsMuted) uiSoundPlayer?.Stop();
         }
-        if (!windows.Windows.Any(window => window.IsOpen)) return;
+        if (!windows.Windows.Any(window => window.IsOpen)) return false;
         if (fonts!.Ready && checkedHindiGeneration != fonts.Generation)
         {
             var generation = fonts.Generation;
@@ -346,20 +362,22 @@ internal sealed class MogtomeAppearance : IDisposable
         if (!fonts.Ready || checkedGeneration != fonts.Generation)
         {
             if (!fontIssueLogged && fonts.LoadException is { } error) { Plugin.Log.Error(error, "[MOGTOME] Required UI fonts failed to load."); fontIssueLogged = true; }
-            using var statusPalette = MaterialTheme.Push(theme, ImGuiHelpers.GlobalScale, MaterialStyleMode.ColorsOnly);
+            using var statusPalette = MaterialTheme.Push(theme, ImGuiHelpers.GlobalScale,
+                config.UiStylingEnabled ? MaterialStyleMode.ColorsOnly : MaterialStyleMode.Native);
             using var statusChrome = MaterialWindowChrome.Push();
             ImGui.SetNextWindowSize(new Vector2(460 * ImGuiHelpers.GlobalScale, 0), ImGuiCond.Always);
-            fontStatusFold.PreDraw("MOGTOME##MogtomeFontStatus", null, null, reducedMotion: false,
-                prepareDecorations: fontStatusDecorations.Prepare);
+            fontStatusFold.PreDraw("MOGTOME##MogtomeFontStatus", null, null, reducedMotion: !config.UiStylingEnabled,
+                prepareDecorations: config.UiStylingEnabled ? fontStatusDecorations.Prepare : null);
             try
             {
                 bool statusVisible;
                 using (MaterialSkin.BackdropStyle())
-                    statusVisible = ImGui.Begin("MOGTOME##MogtomeFontStatus", ImGuiWindowFlags.AlwaysAutoResize);
+                    statusVisible = ImGui.Begin("MOGTOME##MogtomeFontStatus", ImGuiWindowFlags.AlwaysAutoResize |
+                        (config.UiWindowsLocked ? ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize : ImGuiWindowFlags.None));
                 if (statusVisible)
                 {
                     MaterialSkin.Backdrop();
-                    fontStatusDecorations.Paint();
+                    if (config.UiStylingEnabled) fontStatusDecorations.Paint();
                     var loading = fonts.LoadException is null && !fontIssueLogged;
                     if (Ui.Language == UiLanguage.Hindi)
                     {
@@ -378,34 +396,49 @@ internal sealed class MogtomeAppearance : IDisposable
             finally
             {
                 ImGui.End();
-                fontStatusDecorations.Paint();
+                if (config.UiStylingEnabled) fontStatusDecorations.Paint();
                 fontStatusFold.PostDraw();
             ApplyWindowOpacity(fontStatusOpacity, "MOGTOME##MogtomeFontStatus");
             }
-            return;
+            return false;
         }
-        using var palette = MaterialTheme.Push(theme, ImGuiHelpers.GlobalScale, MaterialStyleMode.ColorsOnly);
+        var blurEnabled = config.UiStylingEnabled && colorDraft.HasBackgroundBlur(colorDraft.Mode);
+        var imageEnabled = config.UiStylingEnabled && colorDraft.Mode == MaterialColorMode.Glassmorphism &&
+            colorDraft.GlassBackground == MaterialGlassBackground.Image;
+        requested = blurEnabled || imageEnabled;
+        BackgroundRequested = requested;
+        if (blurEnabled || imageEnabled) backgroundGlass ??= new(Plugin.PluginInterface, Plugin.Log);
+        backgroundGlass?.ConfigureImage(Plugin.TextureProvider, imageEnabled, colorDraft.GlassImagePath);
+        backgroundGlass?.BeginFrame();
+        using var rendererScope = MaterialSkin.PushBackgroundRenderer(blurEnabled || imageEnabled ? backgroundGlass : null,
+            blurEnabled, colorDraft.BackgroundBlurPercent / 100f);
+        using var palette = MaterialTheme.Push(theme, ImGuiHelpers.GlobalScale,
+            config.UiStylingEnabled ? MaterialStyleMode.ColorsOnly : MaterialStyleMode.Native);
         using var style = new MaterialStyleScope();
         var scale = ImGuiHelpers.GlobalScale;
-        style.Style(ImGuiStyleVar.WindowPadding, new Vector2(config.UiCompact ? 16 : 22) * scale);
-        style.Style(ImGuiStyleVar.ItemSpacing, new Vector2(config.UiCompact ? 10 : 12, config.UiCompact ? 8 : 12) * scale);
-        style.Style(ImGuiStyleVar.FramePadding, new Vector2(config.UiCompact ? 10 : 12, config.UiCompact ? 5 : 7) * scale);
-        style.Style(ImGuiStyleVar.CellPadding, new Vector2(config.UiCompact ? 8 : 12, config.UiCompact ? 5 : 7) * scale);
-        style.Style(ImGuiStyleVar.FrameRounding, 4 * scale);
-        style.Style(ImGuiStyleVar.ChildRounding, 4 * scale);
-        var colors = theme.Colors;
-        var buttonFill = theme.IsLcars ? colors.SurfaceContainerHighest : colors.SurfaceContainerHigh;
-        style.Color(ImGuiCol.Button, buttonFill);
-        style.Color(ImGuiCol.ButtonHovered, MaterialColor.Layer(buttonFill, colors.OnSurface, .08f));
-        style.Color(ImGuiCol.ButtonActive, MaterialColor.Layer(buttonFill, colors.OnSurface, .14f));
-        style.Color(ImGuiCol.FrameBg, colors.SurfaceContainerHigh);
-        style.Color(ImGuiCol.FrameBgHovered, MaterialColor.Layer(colors.SurfaceContainerHigh, colors.OnSurface, .08f));
-        style.Color(ImGuiCol.FrameBgActive, MaterialColor.Layer(colors.SurfaceContainerHigh, colors.OnSurface, .14f));
+        if (config.UiStylingEnabled)
+        {
+            style.Style(ImGuiStyleVar.WindowPadding, new Vector2(config.UiCompact ? 16 : 22) * scale);
+            style.Style(ImGuiStyleVar.ItemSpacing, new Vector2(config.UiCompact ? 10 : 12, config.UiCompact ? 8 : 12) * scale);
+            style.Style(ImGuiStyleVar.FramePadding, new Vector2(config.UiCompact ? 10 : 12, config.UiCompact ? 5 : 7) * scale);
+            style.Style(ImGuiStyleVar.CellPadding, new Vector2(config.UiCompact ? 8 : 12, config.UiCompact ? 5 : 7) * scale);
+            style.Style(ImGuiStyleVar.FrameRounding, 4 * scale);
+            style.Style(ImGuiStyleVar.ChildRounding, 4 * scale);
+            var colors = theme.Colors;
+            var buttonFill = theme.IsLcars ? colors.SurfaceContainerHighest : colors.SurfaceContainerHigh;
+            style.Color(ImGuiCol.Button, buttonFill);
+            style.Color(ImGuiCol.ButtonHovered, MaterialColor.Layer(buttonFill, colors.OnSurface, .08f));
+            style.Color(ImGuiCol.ButtonActive, MaterialColor.Layer(buttonFill, colors.OnSurface, .14f));
+            style.Color(ImGuiCol.FrameBg, colors.SurfaceContainerHigh);
+            style.Color(ImGuiCol.FrameBgHovered, MaterialColor.Layer(colors.SurfaceContainerHigh, colors.OnSurface, .08f));
+            style.Color(ImGuiCol.FrameBgActive, MaterialColor.Layer(colors.SurfaceContainerHigh, colors.OnSurface, .14f));
+        }
         using var body = fonts.Push(MogtomeFontRole.Body);
         using var chrome = MaterialWindowChrome.Push();
         using var nativeButtons = MaterialSkin.NativeButtonStyle();
         foreach (var owner in windows.Windows.OfType<Window>())
         {
+            owner.AllowBackgroundBlur = false;
             if (!titleBars.TryGetValue(owner, out var titleBar))
             {
                 titleBar = MaterialAppearanceTitleBar.Register(owner,
@@ -431,6 +464,11 @@ internal sealed class MogtomeAppearance : IDisposable
                             plugin.Configuration.UiCompactVisibleOnMainWindow,
                             plugin.Configuration.UiTransparencyVisibleOnMainWindow, true)
                         : null);
+                titleBar.RegisterWindowControls(
+                    () => SetWindowControls(styling: !plugin.Configuration.UiStylingEnabled),
+                    () => Ui.T(plugin.Configuration.UiStylingEnabled ? "Use native UI" : "Use styled UI"),
+                    () => SetWindowControls(locked: !plugin.Configuration.UiWindowsLocked),
+                    () => Ui.T(plugin.Configuration.UiWindowsLocked ? "Unlock windows" : "Lock windows"));
                 titleBars.Add(owner, titleBar);
             }
             titleBar.RefreshVisibility();
@@ -455,7 +493,7 @@ internal sealed class MogtomeAppearance : IDisposable
         MaterialTitlebarStatus? mainStatus = null, moogleStatus = null, blundervilleStatus = null;
         foreach (var window in windows.Windows)
         {
-            if (window.IsOpen && window is Window owner)
+            if (config.UiStylingEnabled && window.IsOpen && window is Window owner)
             {
                 MaterialTitlebarStatus? status = null;
                 if (config.UiShowTitlebarStatus)
@@ -470,6 +508,47 @@ internal sealed class MogtomeAppearance : IDisposable
                 windowOpacities.Add(window, opacity = new());
             ApplyWindowOpacity(opacity, window.WindowName);
         }
+        return true;
+    }
+
+    internal void DrawBackdrop(Window owner)
+    {
+        if (!windowOpacities.TryGetValue(owner, out var opacity)) windowOpacities.Add(owner, opacity = new());
+        if (backgroundGlass != null)
+            backgroundGlass.Opacity = plugin.Configuration.UiTransparencyEnabled
+                ? ImGui.IsWindowAppearing() ? plugin.Configuration.UiWindowOpacityPercent / 100f : opacity.CurrentOpacity : 1;
+        MaterialSkin.Backdrop();
+    }
+
+    private void SetWindowControls(bool? styling = null, bool? locked = null)
+    {
+        if (!plugin.CanSelectUiLanguage) return;
+        if ((!styling.HasValue || styling.Value == plugin.Configuration.UiStylingEnabled) &&
+            (!locked.HasValue || locked.Value == plugin.Configuration.UiWindowsLocked)) return;
+        if (styling.HasValue) plugin.Configuration.UiStylingEnabled = styling.Value;
+        if (locked.HasValue) plugin.Configuration.UiWindowsLocked = locked.Value;
+        plugin.ConfigManager.SaveCurrentAccount();
+    }
+
+    internal bool HandleCommand(string arguments)
+    {
+        var parts = arguments.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 0 || parts[0].ToLowerInvariant() is not ("style" or "styling" or "lock" or "unlock")) return false;
+        if (!plugin.CanSelectUiLanguage) return true;
+        var styleCommand = parts[0].Equals("style", StringComparison.OrdinalIgnoreCase) ||
+            parts[0].Equals("styling", StringComparison.OrdinalIgnoreCase);
+        if (!styleCommand)
+        {
+            if (parts.Length == 1) SetWindowControls(locked: parts[0].Equals("lock", StringComparison.OrdinalIgnoreCase));
+            else Plugin.ChatGui.Print("/mog style [on|off|toggle], /mog lock, /mog unlock");
+            return true;
+        }
+        var current = plugin.Configuration.UiStylingEnabled;
+        bool? selected = parts.Length == 1 || parts.Length == 2 && parts[1].Equals("toggle", StringComparison.OrdinalIgnoreCase)
+            ? !current : parts.Length == 2 ? parts[1].ToLowerInvariant() switch { "on" => true, "off" => false, _ => null } : null;
+        if (!selected.HasValue) { Plugin.ChatGui.Print("/mog style [on|off|toggle], /mog lock, /mog unlock"); return true; }
+        SetWindowControls(styling: selected.Value);
+        return true;
     }
     internal void DrawSelector(string id = "appearance")
     {
@@ -556,9 +635,21 @@ internal sealed class MogtomeAppearance : IDisposable
                 Animation = Ui.T("Animation"), AnimationSpeed = Ui.T("Animation speed (0.1–10x; default 1x)"),
                 WaveColors = Ui.T("Wave colours"), GlassWave1 = Ui.T("Wave colour 1"),
                 GlassWave2 = Ui.T("Wave colour 2"), GlassWave3 = Ui.T("Wave colour 3"), ResetWaveColors = Ui.T("Reset wave colours"),
+                BackgroundMode = Ui.T("Background mode"), Waves = Ui.T("Waves"), Lights = Ui.T("Lights"), Image = Ui.T("Image"),
+                LightEffect = Ui.T("Light effect"), AmbientGlows = Ui.T("Ambient glows"),
+                SweepingBeams = Ui.T("Sweeping beams"), PointerGlow = Ui.T("Pointer glow"),
+                LightColors = Ui.T("Light colours"), GlassLight1 = Ui.T("Light colour 1"),
+                GlassLight2 = Ui.T("Light colour 2"), GlassLight3 = Ui.T("Light colour 3"), ResetLightColors = Ui.T("Reset light colours"),
+                ImageFile = Ui.T("Image file"), BrowseImage = Ui.T("Browse..."), LoadImage = Ui.T("Load image"),
+                ImageHelp = Ui.T("The image fills the window. Blur (%) applies to the image."),
+                BackgroundBlur = Ui.T("Background blur"), BlurPercent = Ui.T("Blur (%)"),
             },
             new MaterialColorSettings(), MaterialColorSettings.Rgb(MogtomePresentation.ReferenceAccent),
+            BrowseImage,
             plugin.Configuration.UiCompact ? 298 : 316);
+        DrawScreenshotPause(id + "-screenshots");
+        if (backgroundGlass?.ImageProblem is { } problem && colorDraft.Mode == MaterialColorMode.Glassmorphism &&
+            colorDraft.GlassBackground == MaterialGlassBackground.Image) UiLayout.Wrapped(Ui.T(problem));
         if (!changed) return false;
         config.UiColors = colorDraft;
         config.UiAccentRgb = MaterialColorSettings.ToRgb(accentDraft);
@@ -580,7 +671,57 @@ internal sealed class MogtomeAppearance : IDisposable
         ImGui.EndDisabled();
         if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) UiLayout.SetTooltip(Ui.T("Ui_CompactMode"));
     }
-    public void Dispose() { uiSoundPlayer?.Dispose(); fonts?.Dispose(); shapedText.Dispose(); }
+    private void BrowseImage()
+    {
+        var owner = plugin.Configuration;
+        imagePicker.OpenFileDialog(Ui.T("Choose background image") + "###MogtomeBackgroundImagePicker",
+            Ui.T("Images") + "{.png,.jpg,.jpeg,.bmp,.gif,.webp,.tif,.tiff,.dds,.tga},.*", (accepted, path) =>
+            {
+                if (!accepted || !plugin.CanSelectUiLanguage || !ReferenceEquals(owner, plugin.Configuration)) return;
+                owner.UiColors = (owner.UiColors ?? new MaterialColorSettings()) with { GlassImagePath = path };
+                colorDraft = owner.UiColors;
+                plugin.ConfigManager.SaveCurrentAccount();
+            });
+    }
+
+    private void ReleaseResources() => backgroundGlass?.ReleaseResources();
+    public void Dispose()
+    {
+        Plugin.PluginInterface.UiBuilder.ResizeBuffers -= ReleaseResources;
+        imagePicker.Reset();
+        backgroundGlass?.Dispose();
+        uiSoundPlayer?.Dispose(); fonts?.Dispose(); shapedText.Dispose();
+    }
+
+    private void DrawScreenshotPause(string id)
+    {
+        if (colorDraft.Mode == MaterialColorMode.Glassmorphism && colorDraft.GlassBackground == MaterialGlassBackground.Image)
+        { UiLayout.Wrapped(Ui.T("Image backgrounds remain visible to screenshots.")); return; }
+        var paused = backgroundGlass?.ScreenshotsPaused == true;
+        ImGui.BeginDisabled(!paused && backgroundGlass?.CanPauseForScreenshots != true);
+        try
+        {
+            if (UiLayout.Checkbox(Ui.T("Pause backdrop for screenshots") + "###" + id, ref paused))
+                backgroundGlass?.TrySetScreenshotsPaused(paused);
+        }
+        finally { ImGui.EndDisabled(); }
+    }
+
+    private bool DrawBlurControls()
+    {
+        var settings = plugin.Configuration.UiColors ?? new MaterialColorSettings();
+        var enabled = settings.HasBackgroundBlur(settings.Mode);
+        var changed = UiLayout.Checkbox(Ui.T("Background blur") + "###background-blur", ref enabled);
+        if (changed) settings = settings.WithBackgroundBlur(settings.Mode, enabled);
+        var percent = settings.BackgroundBlurPercent;
+        ImGui.BeginDisabled(!enabled);
+        try { if (UiLayout.InputIntLabel(Ui.T("Blur (%)") + "###background-frost", ref percent))
+            { settings = settings with { BackgroundBlurPercent = percent }; changed = true; } }
+        finally { ImGui.EndDisabled(); }
+        if (changed) plugin.Configuration.UiColors = colorDraft = settings;
+        DrawScreenshotPause("window-screenshots");
+        return changed;
+    }
 
     internal void ApplyWindowOpacity(AethertekUI.MaterialWindowOpacity opacity, string windowName)
     {
@@ -604,6 +745,12 @@ internal sealed class MogtomeAppearance : IDisposable
         var config = plugin.Configuration;
         var changed = false;
         ImGui.BeginDisabled(!plugin.CanSelectUiLanguage);
+        var styling = config.UiStylingEnabled;
+        if (UiLayout.Checkbox(Ui.T("Use styled UI") + "###window-styling", ref styling))
+        { config.UiStylingEnabled = styling; changed = true; }
+        var locked = config.UiWindowsLocked;
+        if (UiLayout.Checkbox(Ui.T("Lock windows") + "###window-lock", ref locked))
+        { config.UiWindowsLocked = locked; changed = true; }
         if (includeVisibility)
         {
             var showStatus = config.UiShowTitlebarStatus;
@@ -644,6 +791,7 @@ internal sealed class MogtomeAppearance : IDisposable
         { config.UiUnfocusedDelaySeconds = delay; changed = true; }
         ImGui.EndDisabled();
         ImGui.EndDisabled();
+        changed |= DrawBlurControls();
         ImGui.EndDisabled();
         if (changed) plugin.ConfigManager.SaveCurrentAccount();
         if (includeVisibility) DrawLcarsSounds();

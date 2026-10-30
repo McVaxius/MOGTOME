@@ -2527,4 +2527,34 @@ Otwórz magazyny, aby odświeżyć zapisane ilości.</value></data>
   <data name="KB_StopAfterNextHelp" xml:space="preserve"><value>Dokończ bieżącą rundę i wyjdź, a następnie zatrzymaj. Poza rundą zatrzymaj natychmiast.</value></data>
   <data name="KB_StopAfterNextArmed" xml:space="preserve"><value>Zatrzymanie po bieżącej rundzie.</value></data>
   <data name="KB_TitleStatus" xml:space="preserve"><value>MGC {0}/{1} · Rundy {2}</value></data>
+  <data name="Use native UI" xml:space="preserve"><value>Użyj natywnego interfejsu</value></data>
+  <data name="Use styled UI" xml:space="preserve"><value>Użyj stylizowanego interfejsu</value></data>
+  <data name="Unlock windows" xml:space="preserve"><value>Odblokuj okna</value></data>
+  <data name="Lock windows" xml:space="preserve"><value>Zablokuj okna</value></data>
+  <data name="Background mode" xml:space="preserve"><value>Tryb tła</value></data>
+  <data name="Waves" xml:space="preserve"><value>Fale</value></data>
+  <data name="Lights" xml:space="preserve"><value>Światła</value></data>
+  <data name="Image" xml:space="preserve"><value>Obraz</value></data>
+  <data name="Light effect" xml:space="preserve"><value>Efekt świetlny</value></data>
+  <data name="Ambient glows" xml:space="preserve"><value>Łagodna poświata</value></data>
+  <data name="Sweeping beams" xml:space="preserve"><value>Ruchome promienie</value></data>
+  <data name="Pointer glow" xml:space="preserve"><value>Poświata za myszą</value></data>
+  <data name="Light colours" xml:space="preserve"><value>Kolory świateł</value></data>
+  <data name="Light colour 1" xml:space="preserve"><value>Kolor światła 1</value></data>
+  <data name="Light colour 2" xml:space="preserve"><value>Kolor światła 2</value></data>
+  <data name="Light colour 3" xml:space="preserve"><value>Kolor światła 3</value></data>
+  <data name="Reset light colours" xml:space="preserve"><value>Resetuj kolory świateł</value></data>
+  <data name="Image file" xml:space="preserve"><value>Plik obrazu</value></data>
+  <data name="Browse..." xml:space="preserve"><value>Przeglądaj...</value></data>
+  <data name="Load image" xml:space="preserve"><value>Wczytaj obraz</value></data>
+  <data name="The image fills the window. Blur (%) applies to the image." xml:space="preserve"><value>Obraz wypełnia okno. Rozmycie (%) dotyczy obrazu.</value></data>
+  <data name="Background blur" xml:space="preserve"><value>Rozmycie tła</value></data>
+  <data name="Blur (%)" xml:space="preserve"><value>Rozmycie (%)</value></data>
+  <data name="Choose background image" xml:space="preserve"><value>Wybierz obraz tła</value></data>
+  <data name="Images" xml:space="preserve"><value>Obrazy</value></data>
+  <data name="Image backgrounds remain visible to screenshots." xml:space="preserve"><value>Tła z obrazem są widoczne na zrzutach ekranu.</value></data>
+  <data name="Pause backdrop for screenshots" xml:space="preserve"><value>Wstrzymaj tło na czas zrzutów ekranu</value></data>
+  <data name="Choose an image file." xml:space="preserve"><value>Wybierz plik obrazu.</value></data>
+  <data name="Loading image..." xml:space="preserve"><value>Wczytywanie obrazu...</value></data>
+  <data name="Image could not be loaded." xml:space="preserve"><value>Nie można wczytać obrazu.</value></data>
 </root>

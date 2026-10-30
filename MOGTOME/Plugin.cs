@@ -342,6 +342,7 @@ public sealed class Plugin : IDalamudPlugin
 
     private void OnCommand(string command, string args)
     {
+        if (Appearance.HandleCommand(args)) return;
         if (args.Trim().Equals("shop", StringComparison.OrdinalIgnoreCase)) { OpenMoogleShop(); return; }
         if (HandleKeyboundBrawlerCommand(args)) return;
         MainWindow.Toggle();
@@ -422,6 +423,7 @@ public sealed class Plugin : IDalamudPlugin
                 !ReferenceEquals(selected, Configuration.KeyboundBrawler)) return;
             UpdateKeyboundBrawlerAdmission();
             if (!KeyboundBrawler.Start(selected)) return;
+            TryEnableXaSlaveSkipCutscenes("Keybound Brawler");
             KeyboundLoop.Start(Environment.TickCount64, selected.PartyRole);
             keyboundSessionSettings = selected;
             keyboundSessionAccount = account;
@@ -633,7 +635,9 @@ public sealed class Plugin : IDalamudPlugin
     private readonly CommandInfo blundervilleCommandInfo;
     private readonly CommandInfo keyboundCommandInfo;
 
-    private void DrawUi()
+    private void DrawUi() => Appearance.Draw(WindowSystem, PrepareDrawUi);
+
+    private void PrepareDrawUi()
     {
         if (!CanSelectUiLanguage)
             Localization.Ui.SetLanguage(Localization.Ui.FromClient(ClientState.ClientLanguage));
@@ -645,11 +649,11 @@ public sealed class Plugin : IDalamudPlugin
             keyboundCommandInfo.HelpMessage = Ui.GameT("Main_Open") + ": " + Ui.GameT("KB_Title") + " (/keybound, /kbb)";
             commandHelpLanguage = Ui.Language;
         }
-        Appearance.Draw(WindowSystem);
     }
 
     private void OnAliasCommand(string command, string args)
     {
+        if (Appearance.HandleCommand(args)) return;
         if (HandleKeyboundBrawlerCommand(args)) return;
         var arg = args.Trim().ToLowerInvariant();
         switch (arg)

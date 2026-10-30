@@ -23,6 +23,36 @@ namespace MOGTOME.Tests;
 
 public sealed class LocalizationTests : IDisposable
 {
+    [Fact]
+    public void SharedAppearanceDefaultsAndSavedBackgroundChoicesPreserveExistingAccountSettings()
+    {
+        var legacy = JsonSerializer.Deserialize<Configuration>("""{"Version":2,"UiCompactDefaultsApplied":true,"UiWindowOpacityPercent":73,"MaxRuns":66,"FutureSetting":{"value":"retained"}}""")!;
+        Assert.True(legacy.UiStylingEnabled);
+        Assert.False(legacy.UiWindowsLocked);
+        Assert.Equal(75, legacy.UiColors.BackgroundBlurPercent);
+        foreach (var mode in Enum.GetValues<AethertekUI.MaterialColorMode>())
+            Assert.Equal(mode == AethertekUI.MaterialColorMode.Glassmorphism, legacy.UiColors.HasBackgroundBlur(mode));
+        legacy.UiStylingEnabled = false;
+        legacy.UiWindowsLocked = true;
+        legacy.UiColors = legacy.UiColors.WithBackgroundBlur(AethertekUI.MaterialColorMode.Cyberpunk, true) with
+        {
+            Mode = AethertekUI.MaterialColorMode.Glassmorphism,
+            GlassBackground = AethertekUI.MaterialGlassBackground.Image,
+            GlassLights = AethertekUI.MaterialGlassLights.PointerGlow,
+            GlassImagePath = "fixture-background.png", GlassAnimation = false,
+            GlassWave1Rgb = 0x123456, GlassLight3Rgb = 0x654321,
+            BackgroundBlurPercent = 38,
+        };
+        var saved = JsonSerializer.Deserialize<Configuration>(JsonSerializer.Serialize(legacy))!;
+        Assert.False(saved.UiStylingEnabled);
+        Assert.True(saved.UiWindowsLocked);
+        Assert.Equal(legacy.UiColors, saved.UiColors);
+        Assert.True(saved.UiColors.HasBackgroundBlur(AethertekUI.MaterialColorMode.Cyberpunk));
+        Assert.Equal(73, saved.UiWindowOpacityPercent);
+        Assert.Equal(66, saved.MaxRuns);
+        Assert.Equal("retained", saved.AdditionalSettings["FutureSetting"].GetProperty("value").GetString());
+    }
+
     private readonly UiLanguage originalLanguage = Ui.Language;
     private readonly Dictionary<PropertyInfo, object?> originalServices = [];
     // Captured from the installed game sheets, 2026-09-12. No game process is used.

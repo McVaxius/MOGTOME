@@ -165,7 +165,8 @@ internal static class UiLayout
             if (MaterialTheme.Current.IsLcars || MogtomePresentation.HasMaterial) MaterialSkin.PanelFrame(origin, origin + new Vector2(width, height), 1);
             else
             {
-                MaterialCanvas.Surface(origin, origin + new Vector2(width, height), colors.SurfaceContainer, colors.Surface, 4 * scale);
+                MaterialCanvas.Surface(origin, origin + new Vector2(width, height),
+                    MaterialSkin.BackgroundFill(colors.SurfaceContainer), MaterialSkin.BackgroundFill(colors.Surface), 4 * scale);
                 list.AddRect(origin, origin + new Vector2(width, height), MaterialCanvas.Color(colors.OutlineVariant), 4 * scale);
             }
         }
