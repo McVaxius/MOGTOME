@@ -489,7 +489,11 @@ internal sealed class MogtomeAppearance : IDisposable
             else if (!theme.IsLcars) owner.TitleBarButtons.Remove(sound);
         }
         windows.Draw();
-        foreach (var titleBar in titleBars.Values) titleBar.DrawPopups();
+        foreach (var (owner, titleBar) in titleBars)
+        {
+            PrepareBackgroundOpacity(owner);
+            titleBar.DrawPopups();
+        }
         MaterialTitlebarStatus? mainStatus = null, moogleStatus = null, blundervilleStatus = null;
         foreach (var window in windows.Windows)
         {
@@ -513,11 +517,17 @@ internal sealed class MogtomeAppearance : IDisposable
 
     internal void DrawBackdrop(Window owner)
     {
+        PrepareBackgroundOpacity(owner);
+        MaterialSkin.Backdrop();
+    }
+
+    private void PrepareBackgroundOpacity(Window owner)
+    {
         if (!windowOpacities.TryGetValue(owner, out var opacity)) windowOpacities.Add(owner, opacity = new());
+        var native = ImGuiP.FindWindowByName(owner.WindowName);
         if (backgroundGlass != null)
             backgroundGlass.Opacity = plugin.Configuration.UiTransparencyEnabled
-                ? ImGui.IsWindowAppearing() ? plugin.Configuration.UiWindowOpacityPercent / 100f : opacity.CurrentOpacity : 1;
-        MaterialSkin.Backdrop();
+                ? native.IsNull || native.Appearing ? plugin.Configuration.UiWindowOpacityPercent / 100f : opacity.CurrentOpacity : 1;
     }
 
     private void SetWindowControls(bool? styling = null, bool? locked = null)

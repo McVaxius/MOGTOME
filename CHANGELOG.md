@@ -1,5 +1,6 @@
 2026-10-29 - 4.2.0.4 shared appearance rollout
 
+- Keep titlebar popup glass at its own window opacity, including collapsed and reopened windows, without applying foreground opacity twice.
 - Add saved native/styled UI and movement/resize locks in Settings and titlebar actions, with `/mog style on|off|toggle`, `/mog lock` and `/mog unlock` recovery commands (also `/mogtome`). Preserve account storage, window geometry and the existing opacity/fade path.
 - Use the shared Glasswork renderer only for Background surfaces, preserving foreground fills and selected tint. Add Waves, all three Lights effects and Image backgrounds with the native image picker; Glass defaults to 75% Frost/on, other styles off. Colour and Transparency share the session-only screenshot pause, initially off. Ship the three Glasswork assemblies and MIT notice.
 
