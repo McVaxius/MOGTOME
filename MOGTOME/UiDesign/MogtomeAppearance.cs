@@ -117,10 +117,16 @@ internal sealed class MogtomeAppearance : IDisposable
         var extraRight = count * (ImGuiP.CalcFontSize(window) + ImGui.GetStyle().ItemInnerSpacing.X);
         var icon = owner is KeyboundBrawlerWindow ? KeyboundIcon : owner is BlundervilleWindow ? BlundervilleIcon : OriginalIcon;
         using var font = Font(MogtomeFontRole.Body);
+        var title = owner.WindowName.Split("##", 2)[0];
+        var separator = title.IndexOf(" | ", StringComparison.Ordinal);
+        var retainedTitle = separator >= 0 ? title[(separator + 3)..] : string.Empty;
+        if (status is not null && owner is KeyboundBrawlerWindow && separator >= 0)
+            title = title[..separator];
+        title = UiLayout.FitWindowTitle(window, title, retainedTitle, status, shapedText.Renderer, extraRight, owner.ShowCloseButton);
         if (status is { } summary)
-            MaterialWindowHeader.PaintTitleWithStatus(window, owner.WindowName.Split("##", 2)[0], icon.Handle, icon.Size,
+            MaterialWindowHeader.PaintTitleWithStatus(window, title, icon.Handle, icon.Size,
                 summary, extraRight, owner.ShowCloseButton);
-        else MaterialWindowHeader.PaintTitle(window, owner.WindowName.Split("##", 2)[0], icon.Handle, icon.Size, extraRight, owner.ShowCloseButton);
+        else MaterialWindowHeader.PaintTitle(window, title, icon.Handle, icon.Size, extraRight, owner.ShowCloseButton);
     }
 
     private MaterialTitlebarStatus TitlebarStatus(Window owner)
@@ -201,8 +207,7 @@ internal sealed class MogtomeAppearance : IDisposable
             state = Ui.T(plugin.KeyboundLoop.IsActive || plugin.KeyboundBrawler.IsRunning || plugin.IsKeyboundStartQueued ? "Main_Running" : active ? "Ui_TitlebarBuying" : blocked ? "Ui_TitlebarBlocked"
                 : shop.Status.Key == "BV_Stopped" ? "Main_Stopped" : "BV_Idle");
             detail = plugin.KeyboundLoop.IsActive ? plugin.KeyboundLoop.Status.Render() : plugin.KeyboundBrawler.IsRunning ? plugin.KeyboundBrawler.Status.Render() : shop.Status.Render();
-            var walletKnown = KeyboundBrawlerShop.TryWallet(out var wallet);
-            fields.Add($"MGC {(walletKnown ? wallet.ToString(Ui.Culture) : "—")}");
+            fields.Add(((KeyboundBrawlerWindow)owner).TitleStatus);
         }
         else
         {

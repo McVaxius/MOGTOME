@@ -23,6 +23,7 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
     private readonly Plugin plugin;
     private readonly EventShopTargetEditor shopEditor;
     private bool layoutSizeApplied;
+    internal string TitleStatus { get; private set; } = string.Empty;
 
     public KeyboundBrawlerWindow(Plugin plugin) : base(Ui.T("KB_Title") + "###MogtomeKeyboundBrawler")
     {
@@ -52,8 +53,8 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
         var goal = plugin.KeyboundLoop.IsActive || plugin.KeyboundBrawler.IsRunning
             ? plugin.KeyboundBrawler.WalletTarget : settings.WalletTargetEnabled ? (uint?)Math.Max(0, settings.WalletTarget) : null;
         var wallet = KeyboundBrawlerShop.TryWallet(out var balance) ? balance.ToString("N0") : "?";
-        WindowName = Ui.T("KB_Title") + " | " + Ui.T("KB_TitleStatus", wallet, goal?.ToString("N0") ?? "—",
-            plugin.KeyboundBrawler.CompletedRuns) + "###MogtomeKeyboundBrawler";
+        TitleStatus = Ui.T("KB_TitleStatus", wallet, goal?.ToString("N0") ?? "—", plugin.KeyboundBrawler.CompletedRuns);
+        WindowName = Ui.T("KB_Title") + " | " + TitleStatus + "###MogtomeKeyboundBrawler";
         SizeConstraints = new WindowSizeConstraints
         {
             MinimumSize = new(Math.Max(560, UiLayout.TitleMinimumWidth(this) / Math.Max(.01f, ImGuiHelpers.GlobalScale)), 520),

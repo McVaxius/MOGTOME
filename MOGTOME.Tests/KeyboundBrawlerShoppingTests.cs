@@ -478,15 +478,17 @@ public sealed class KeyboundBrawlerShoppingTests
         evt->Param = 999; // The native callback may alter its copy, never the registration.
     }
 
-    [Fact]
-    public unsafe void StandardEquipmentWarningChecksOwnershipThenProceedAndOkWithoutConsumingTheFollowingConfirmation()
+    [Theory]
+    [InlineData(AtkValueType.Int)]
+    [InlineData(AtkValueType.UInt)]
+    public unsafe void StandardEquipmentWarningChecksOwnershipThenProceedAndOkWithoutConsumingTheFollowingConfirmation(AtkValueType zeroType)
     {
         const string prompt = "You will never be able to equip this item.Proceed with the transaction?";
         var values = stackalloc AtkValue[13];
         new Span<AtkValue>(values, 13).Clear();
         values[0].Type = AtkValueType.String;
         values[8].Type = AtkValueType.String;
-        values[12] = new AtkValue { Type = AtkValueType.Int, Int = 0 };
+        values[12] = new AtkValue { Type = zeroType, UInt = 0 };
         var shop = new AtkUnitBase { Id = 42 };
         var receive = new AgentShop.ShopItem { ItemId = Offer.ItemId, ItemCount = Offer.ReceiveCount };
         var agent = new AgentShop { ItemReceive = &receive, ItemReceiveCount = 1, SelectedItemIndex = 0, SelectedItemStackSize = 1 };
@@ -510,6 +512,25 @@ public sealed class KeyboundBrawlerShoppingTests
         var okEvent = new AtkEvent { Listener = &warning.AtkUnitBase.AtkEventListener, Param = 8,
             State = new AtkEventState { EventType = AtkEventType.ButtonClick } };
         okOwner.AtkResNode.AtkEventManager.Event = &okEvent;
+
+        foreach (var invalidValue in new AtkValue[]
+        {
+            new() { Type = AtkValueType.Int, Int = -1 },
+            new() { Type = AtkValueType.Int, Int = 1 },
+            new() { Type = AtkValueType.UInt, UInt = 1 },
+            new() { Type = AtkValueType.UInt, UInt = uint.MaxValue },
+        })
+        {
+            values[12] = invalidValue;
+            Assert.False(BlundervilleGameAdapter.EquipmentWarningMatches(&warning, &shop, &agent, 0, Offer, prompt, prompt));
+        }
+        foreach (var invalidType in Enum.GetValues<AtkValueType>())
+        {
+            if (invalidType is AtkValueType.Int or AtkValueType.UInt) continue;
+            values[12] = new AtkValue { Type = invalidType, UInt = 0 };
+            Assert.False(BlundervilleGameAdapter.EquipmentWarningMatches(&warning, &shop, &agent, 0, Offer, prompt, prompt));
+        }
+        values[12] = new AtkValue { Type = zeroType, UInt = 0 };
 
         Assert.True(BlundervilleGameAdapter.EquipmentWarningMatches(&warning, &shop, &agent, 0, Offer, prompt, prompt));
         Assert.False(BlundervilleGameAdapter.EquipmentWarningMatches(&warning, &shop, &agent, 0, Offer, "An unrelated question?", prompt));

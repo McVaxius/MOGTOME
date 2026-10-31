@@ -473,6 +473,32 @@ internal static class UiLayout
     private static int TitleButtonCount(Window owner)
         => owner.TitleBarButtons.Count(button => !owner.IsClickthrough || button.AvailableClickthrough)
             + (owner.AllowPinning || owner.AllowClickthrough || owner.AllowBackgroundBlur ? 1 : 0);
+    internal static unsafe string FitWindowTitle(ImGuiWindowPtr window, string title, string retainedTitle,
+        MaterialTitlebarStatus? status, MaterialTextRenderer renderer, float extraRightWidth, bool showCloseButton)
+    {
+        var style = ImGui.GetStyle();
+        var height = window.InnerRect.Min.Y - window.Pos.Y;
+        if ((window.Flags & ImGuiWindowFlags.MenuBar) != 0)
+            height = (height - window.DC.MenuBarOffset.Y) * .5f;
+        var fontSize = height - 2 * style.FramePadding.Y;
+        if (fontSize <= 0) return string.Empty;
+        var gap = style.ItemInnerSpacing.X;
+        var collapse = (window.Flags & (ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.Modal)) == 0;
+        var controls = (showCloseButton ? 1 : 0)
+            + (collapse && style.WindowMenuButtonPosition is ImGuiDir.Left or ImGuiDir.Right ? 1 : 0);
+        var width = window.Size.X - 2 * (window.WindowBorderSize + style.FramePadding.X)
+            - controls * (fontSize + gap) - Math.Max(0, extraRightWidth) - fontSize - gap;
+        if (status is { } summary && !string.IsNullOrWhiteSpace(summary.Text))
+        {
+            var text = string.IsNullOrWhiteSpace(summary.ShortText) ? summary.Text : summary.ShortText;
+            width -= 3 * gap + fontSize * .26f + Measure(text.Replace('\r', ' ').Replace('\n', ' ').Trim());
+        }
+        return Measure(title) <= width ? title : status is null ? retainedTitle : string.Empty;
+
+        float Measure(string text) => MaterialText.RequiresShaping(text)
+            ? renderer.GetLayout(text, fontSize).Size.X
+            : ImGui.CalcTextSize(text).X * (fontSize / ImGui.GetFontSize());
+    }
     internal static void PaintWindowTitle(string name, MaterialTextRenderer renderer)
         => PaintTitle(name, null, renderer);
     internal static void PaintWindowTitleWithButtons(Window owner, MaterialTextRenderer renderer)

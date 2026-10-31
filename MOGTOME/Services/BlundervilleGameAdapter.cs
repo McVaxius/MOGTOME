@@ -796,7 +796,8 @@ internal sealed unsafe class BlundervilleGameAdapter
         // Standard equipment warnings have no item payload. Bind them to the blocked shop and
         // its selected one-transaction row instead of reading collectible-only values 13..15.
         if (addon == null || addon->AtkValues == null || addon->AtkValuesCount != 13 ||
-            addon->AtkValues[12].Type != AtkValueType.Int || addon->AtkValues[12].Int != 0 ||
+            !((addon->AtkValues[12].Type == AtkValueType.Int && addon->AtkValues[12].Int == 0) ||
+              (addon->AtkValues[12].Type == AtkValueType.UInt && addon->AtkValues[12].UInt == 0)) ||
             shop == null || shop->Id == 0 || addon->BlockedParentId != shop->Id || agent == null ||
             agent->ItemReceiveCount is < 1 or > 122 ||
             row < 0 || row >= agent->ItemReceiveSpan.Length || agent->SelectedItemIndex != row ||

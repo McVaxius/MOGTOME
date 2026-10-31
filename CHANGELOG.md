@@ -1,3 +1,11 @@
+2026-10-31 - Keybound equipment warning (I711, unversioned)
+
+- Accept signed or unsigned zero for the standard equipment-warning indicator so owned gear warnings can be confirmed or cancelled. Preserve shop ownership, localized prompt, quantity, exact-receipt checks and the saved purchase-review hold.
+
+2026-10-31 - Titlebar spacing (unversioned)
+
+- Hide the styled window-name text when the titlebar needs its space for status and native controls, and restore it when the window is wide enough. Keep Keybound's wallet target and run count in its status without repeating the counters beside the name; preserve native window identities, saved geometry, icons and titlebar actions.
+
 2026-10-29 - 4.2.0.4 shared appearance rollout
 
 - Keep titlebar popup glass at its own window opacity, including collapsed and reopened windows, without applying foreground opacity twice.
