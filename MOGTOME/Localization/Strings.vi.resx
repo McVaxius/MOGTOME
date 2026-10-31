@@ -1527,7 +1527,7 @@ ADS là tùy chọn trong chế độ AutoDuty và chỉ dùng khi yêu cầu /m
     <value>Chuẩn bị bộ thiết lập {0} thất bại; chưa bật chiến đấu.</value>
   </data>
   <data name="Rotation_RSRAutoIPCAndRotationAutoBoth" xml:space="preserve">
-    <value>RSR Auto IPC và /rotation auto đều thất bại.</value>
+    <value>Lệnh gọi IPC Auto của RSR thất bại.</value>
   </data>
   <data name="Rotation_CouldNotEnableUsing" xml:space="preserve">
     <value>Không thể bật {0} bằng {1}.</value>

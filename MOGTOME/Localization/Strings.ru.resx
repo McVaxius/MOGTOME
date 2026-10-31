@@ -1527,7 +1527,7 @@ ADS необязателен в режиме AutoDuty и используетс�
     <value>Подготовка пресета {0} не удалась; бой не включён.</value>
   </data>
   <data name="Rotation_RSRAutoIPCAndRotationAutoBoth" xml:space="preserve">
-    <value>Не сработали ни RSR Auto IPC, ни /rotation auto.</value>
+    <value>Сбой IPC режима Auto RSR.</value>
   </data>
   <data name="Rotation_CouldNotEnableUsing" xml:space="preserve">
     <value>Не удалось включить {0} через {1}.</value>

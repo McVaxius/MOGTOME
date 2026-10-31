@@ -1527,7 +1527,7 @@ AutoDuty 모드에서 ADS는 선택 사항이며 /mog inn 요청 시에만 사�
     <value>{0} 프리셋 준비에 실패했습니다. 전투는 활성화되지 않았습니다.</value>
   </data>
   <data name="Rotation_RSRAutoIPCAndRotationAutoBoth" xml:space="preserve">
-    <value>RSR Auto IPC와 /rotation auto가 모두 실패했습니다.</value>
+    <value>RSR Auto IPC 호출에 실패했습니다.</value>
   </data>
   <data name="Rotation_CouldNotEnableUsing" xml:space="preserve">
     <value>{1}을 사용하여 {0}을 활성화할 수 없습니다.</value>

@@ -1521,7 +1521,7 @@ AutoDutyモードではADSは任意で、/mog inn の使用時だけ使われま
     <value>{0}のプリセット準備に失敗したため、戦闘を有効にしませんでした。</value>
   </data>
   <data name="Rotation_RSRAutoIPCAndRotationAutoBoth" xml:space="preserve">
-    <value>RSR Auto IPCと /rotation auto の両方が失敗しました。</value>
+    <value>RSR Auto の IPC 呼び出しに失敗しました。</value>
   </data>
   <data name="Rotation_CouldNotEnableUsing" xml:space="preserve">
     <value>{1}で{0}を有効にできませんでした。</value>

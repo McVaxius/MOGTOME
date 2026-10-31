@@ -1521,7 +1521,7 @@ Im AutoDuty-Modus ist ADS optional und wird nur für /mog inn verwendet.</value>
     <value>Vorbereitung der Voreinstellung {0} fehlgeschlagen; Kampf wurde nicht aktiviert.</value>
   </data>
   <data name="Rotation_RSRAutoIPCAndRotationAutoBoth" xml:space="preserve">
-    <value>RSR-Auto-IPC und /rotation auto sind beide fehlgeschlagen.</value>
+    <value>IPC-Aufruf für RSR Auto fehlgeschlagen.</value>
   </data>
   <data name="Rotation_CouldNotEnableUsing" xml:space="preserve">
     <value>{0} konnte nicht mit {1} aktiviert werden.</value>

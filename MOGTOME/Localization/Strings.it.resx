@@ -1527,7 +1527,7 @@ ADS è facoltativo in modalità AutoDuty e viene usato solo quando si richiede /
     <value>Preparazione preset {0} fallita; il combattimento non è stato abilitato.</value>
   </data>
   <data name="Rotation_RSRAutoIPCAndRotationAutoBoth" xml:space="preserve">
-    <value>Sia RSR Auto IPC sia /rotation auto sono falliti.</value>
+    <value>Chiamata IPC Auto di RSR non riuscita.</value>
   </data>
   <data name="Rotation_CouldNotEnableUsing" xml:space="preserve">
     <value>Impossibile abilitare {0} tramite {1}.</value>

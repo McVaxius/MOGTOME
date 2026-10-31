@@ -776,7 +776,7 @@ public class BossModIPC : IDisposable
         }
         catch (Exception ex)
         {
-            log.Debug($"[MOGTOME][Rotation] RSR mode IPC unavailable; command fallback will be used: {ex.Message}");
+            log.Debug($"[MOGTOME][Rotation] RSR mode IPC unavailable: {ex.Message}");
             return false;
         }
     }

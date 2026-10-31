@@ -503,6 +503,9 @@ public sealed class DutyRecoveryTests
         Set(plugin, "<Engine>k__BackingField", run.Engine);
         Set(plugin, "<ConfigManager>k__BackingField", run.Manager);
         Set(plugin, "<State>k__BackingField", run.State);
+        var appearance = RuntimeHelpers.GetUninitializedObject(typeof(MOGTOME.UiDesign.MogtomeAppearance));
+        Set(appearance, "plugin", plugin);
+        Set(plugin, "<Appearance>k__BackingField", appearance);
         if (source == "dad")
         {
             var dad = (MogtomeDadIpcService)RuntimeHelpers.GetUninitializedObject(typeof(MogtomeDadIpcService));
@@ -1607,6 +1610,20 @@ public sealed class DutyRecoveryTests
         Assert.False(plugin.IsEngineStartQueued);
         start.Click(ImGuiMouseButton.Left);
         Assert.False(plugin.IsEngineStartQueued);
+    }
+
+    [Fact]
+    public void RsrActivationDoesNotAcknowledgeUnavailableModeIpcThroughChat()
+    {
+        using var run = new Run();
+        run.Config.CombatProvider = CombatProvider.Rsr;
+
+        Assert.False((bool)Invoke(run.Rotation, "EnableRsr")!);
+        Assert.DoesNotContain(run.Commands, command => command.StartsWith("/rotation", StringComparison.OrdinalIgnoreCase));
+
+        Set(run.Rotation, "rotationDisableSentForDuty", true);
+        Assert.False((bool)Invoke(run.Rotation, "EnableRsr")!);
+        Assert.DoesNotContain(run.Commands, command => command.StartsWith("/rotation", StringComparison.OrdinalIgnoreCase));
     }
 
     private sealed class Run : IDisposable

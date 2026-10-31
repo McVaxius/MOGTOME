@@ -1527,7 +1527,7 @@ AutoDuty मोड में ADS वैकल्पिक है और के�
     <value>{0} की प्रीसेट तैयारी विफल; कॉम्बैट चालू नहीं किया गया।</value>
   </data>
   <data name="Rotation_RSRAutoIPCAndRotationAutoBoth" xml:space="preserve">
-    <value>RSR Auto IPC और /rotation auto दोनों विफल हुए।</value>
+    <value>RSR Auto IPC विफल रहा।</value>
   </data>
   <data name="Rotation_CouldNotEnableUsing" xml:space="preserve">
     <value>{1} का उपयोग करके {0} चालू नहीं किया जा सका।</value>

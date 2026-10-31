@@ -1527,7 +1527,7 @@ ADS jest opcjonalny w trybie AutoDuty i używany tylko na żądanie /mog inn.</v
     <value>Przygotowanie presetu {0} nie powiodło się; walka nie została włączona.</value>
   </data>
   <data name="Rotation_RSRAutoIPCAndRotationAutoBoth" xml:space="preserve">
-    <value>RSR Auto IPC i /rotation auto nie powiodły się.</value>
+    <value>Wywołanie IPC trybu Auto RSR nie powiodło się.</value>
   </data>
   <data name="Rotation_CouldNotEnableUsing" xml:space="preserve">
     <value>Nie udało się włączyć {0} za pomocą {1}.</value>

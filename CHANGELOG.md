@@ -1,3 +1,8 @@
+2026-10-31 - RSR activation acceptance (unversioned)
+
+- Require the current RSR operating-mode IPC to accept Auto activation instead of treating a submitted chat fallback as success. Preserve duty-stop guards, targeting, BossMod ownership and existing startup/cleanup behavior.
+- Report the actual IPC failure in all fifteen languages without claiming that an unused chat fallback also failed.
+
 2026-10-31 - Keybound equipment warning (I711, unversioned)
 
 - Accept signed or unsigned zero for the standard equipment-warning indicator so owned gear warnings can be confirmed or cancelled. Preserve shop ownership, localized prompt, quantity, exact-receipt checks and the saved purchase-review hold.

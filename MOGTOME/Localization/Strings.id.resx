@@ -1527,7 +1527,7 @@ ADS opsional dalam mode AutoDuty dan hanya digunakan saat /mog inn diminta.</val
     <value>Persiapan preset {0} gagal; pertempuran tidak diaktifkan.</value>
   </data>
   <data name="Rotation_RSRAutoIPCAndRotationAutoBoth" xml:space="preserve">
-    <value>RSR Auto IPC dan /rotation auto sama-sama gagal.</value>
+    <value>Panggilan IPC Auto RSR gagal.</value>
   </data>
   <data name="Rotation_CouldNotEnableUsing" xml:space="preserve">
     <value>Tidak dapat mengaktifkan {0} menggunakan {1}.</value>

@@ -1527,7 +1527,7 @@ AutoDuty 模式下 ADS 可选，仅在请求 /mog inn 时使用。</value>
     <value>{0} 预设准备失败；战斗未启用。</value>
   </data>
   <data name="Rotation_RSRAutoIPCAndRotationAutoBoth" xml:space="preserve">
-    <value>RSR Auto IPC 和 /rotation auto 均失败。</value>
+    <value>RSR Auto IPC 调用失败。</value>
   </data>
   <data name="Rotation_CouldNotEnableUsing" xml:space="preserve">
     <value>无法通过 {1} 启用 {0}。</value>

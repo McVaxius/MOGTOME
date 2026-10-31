@@ -1527,7 +1527,7 @@ ADS, AutoDuty modunda isteğe bağlıdır ve yalnızca /mog inn istendiğinde ku
     <value>{0} ön ayar hazırlığı başarısız; savaş etkinleştirilmedi.</value>
   </data>
   <data name="Rotation_RSRAutoIPCAndRotationAutoBoth" xml:space="preserve">
-    <value>RSR Auto IPC ve /rotation auto başarısız oldu.</value>
+    <value>RSR Auto IPC çağrısı başarısız oldu.</value>
   </data>
   <data name="Rotation_CouldNotEnableUsing" xml:space="preserve">
     <value>{1} kullanılarak {0} etkinleştirilemedi.</value>

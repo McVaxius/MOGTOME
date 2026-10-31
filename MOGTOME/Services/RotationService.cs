@@ -497,10 +497,7 @@ public class RotationService : IDisposable
         if (rotationDisableSentForDuty) return false;
         enabledComponents.Add(CombatProvider.Rsr);
         var accepted = bossModIPC.TrySetRsrAutoViaIpc();
-        if (rotationDisableSentForDuty) return false;
-        if (!accepted && !bossModIPC.SendCommand("/rotation auto", "enable RSR fallback"))
-            return false;
-        return !rotationDisableSentForDuty;
+        return accepted && !rotationDisableSentForDuty;
     }
 
     private bool Fail(UiText reason)
