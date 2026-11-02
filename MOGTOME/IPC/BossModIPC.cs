@@ -333,6 +333,8 @@ public class BossModIPC : IDisposable
         var stored = storedReadable ? LiveMember(node!, "AIAutorotPresetName") as string : null;
         var aiEnabled = provider == "BMR" ? ReadBmrAiActive(assembly)
             : node is null ? null : LiveMember(node, "Enabled") as bool?;
+        var manualTarget = provider == "BMR" && node is not null
+            ? LiveMember(node, "ManualTarget") as bool? : null;
         double? distance = null;
         if (provider == "BMR")
         {
@@ -345,7 +347,7 @@ public class BossModIPC : IDisposable
             }
             catch (Exception ex) { log.Debug($"BossMod preferred-distance read unavailable: {ex.GetBaseException().Message}"); }
         }
-        return new BossModSettingsSnapshot(runtime, storedReadable, stored, distance, aiEnabled);
+        return new BossModSettingsSnapshot(runtime, storedReadable, stored, distance, aiEnabled, manualTarget);
     }
 
     private static object? ReadAiConfig(Assembly assembly)
@@ -499,6 +501,62 @@ public class BossModIPC : IDisposable
         return false;
     }
 
+    internal bool ApplyOwnedAutomaticTargeting(Func<string, bool> sendCommand)
+    {
+        if (ownedIdentity.Provider != "BMR" || !TryReadOwnedBossModSettings(out var before))
+            return false;
+        if (before.ManualTarget == false)
+            return true;
+        if (!ownedSettings!.CanChangeManualTarget(before.ManualTarget))
+        {
+            LastStatus = "BMR targeting retained: its original or current value is unavailable or owned elsewhere.";
+            return false;
+        }
+        var ownership = ownedSettings!;
+        var submitted = sendCommand("/bmrai manualtarget off");
+        if (TryReadOwnedBossModSettings(out var after) && ReferenceEquals(ownedSettings, ownership)
+            && after.ManualTarget == false)
+        {
+            ownership.OwnManualTarget(false);
+            return true;
+        }
+        LastStatus = submitted ? "BMR automatic-targeting command was submitted but its readback was not confirmed."
+            : "BMR automatic-targeting command dispatch failed.";
+        return false;
+    }
+
+    internal bool RestoreOwnedAutomaticTargeting()
+    {
+        if (ownedSettings?.OwnedManualTarget is null)
+            return true;
+        if (!TryReadOwnedBossModSettings(out var current, allowCleanup: cleanupStarted))
+            return false;
+        if (current.ManualTarget is null)
+        {
+            LastStatus = "BMR targeting restoration retained: current state is unreadable.";
+            return false;
+        }
+        var ownership = ownedSettings!;
+        if (ownership.GetManualTargetCleanupTarget(current.ManualTarget) is { } originalManualTarget
+            && current.ManualTarget != originalManualTarget)
+        {
+            try
+            {
+                pluginInterface.GetIpcSubscriber<List<string>, bool, List<string>>("BossMod.Configuration")
+                    .InvokeFunc(new List<string> { "AIConfig", "ManualTarget", originalManualTarget.ToString() }, true);
+                if (!TryReadOwnedBossModSettings(out var after, allowCleanup: cleanupStarted)
+                    || !ReferenceEquals(ownedSettings, ownership) || after.ManualTarget != originalManualTarget)
+                {
+                    LastStatus = "BMR targeting restoration could not be confirmed.";
+                    return false;
+                }
+            }
+            catch { LastStatus = "BMR targeting restoration endpoint is unavailable."; return false; }
+        }
+        ownership.ReleaseManualTarget();
+        return true;
+    }
+
     internal bool SendBossModAiCommand(string command, Func<string, bool> sendCommand)
     {
         var relevant = ownedSettings is not null
@@ -611,6 +669,8 @@ public class BossModIPC : IDisposable
             LastStatus = "Preferred-distance restoration retained: current state is unreadable.";
             cleanupFailed = true;
         }
+        if (!RestoreOwnedAutomaticTargeting())
+            cleanupFailed = true;
         return !cleanupFailed;
     }
 
@@ -1322,7 +1382,8 @@ internal sealed record BossModRuntimePresetState(bool ForceDisabled, IReadOnlyLi
 }
 
 internal sealed record BossModSettingsSnapshot(BossModRuntimePresetState? Runtime,
-    bool StoredSelectorReadable, string? StoredAiSelector, double? PreferredDistance, bool? AiEnabled)
+    bool StoredSelectorReadable, string? StoredAiSelector, double? PreferredDistance, bool? AiEnabled,
+    bool? ManualTarget = null)
 {
     internal static BossModSettingsSnapshot Unavailable { get; } = new(null, false, null, null, null);
 }
@@ -1333,6 +1394,7 @@ internal sealed class BossModSettingsOwnership(string provider, BossModSettingsS
     internal BossModRuntimePresetState? OwnedRuntime { get; private set; }
     internal string? OwnedStoredSelector { get; private set; }
     internal double? OwnedDistance { get; private set; }
+    internal bool? OwnedManualTarget { get; private set; }
     private bool? ownedAiEnabled;
 
     internal bool CanChangeRuntime(BossModSettingsSnapshot current)
@@ -1345,9 +1407,16 @@ internal sealed class BossModSettingsOwnership(string provider, BossModSettingsS
     internal bool CanChangeDistance(double? current)
         => Original.PreferredDistance is { } originalDistance && double.IsFinite(originalDistance)
             && current == (OwnedDistance ?? originalDistance);
+    internal bool CanChangeManualTarget(bool? current)
+        => Original.ManualTarget is { } originalManualTarget
+            && current == (OwnedManualTarget ?? originalManualTarget);
+    internal bool? GetManualTargetCleanupTarget(bool? current)
+        => OwnedManualTarget is { } owned && current == owned ? Original.ManualTarget : null;
     internal void OwnRuntime(BossModRuntimePresetState state) => OwnedRuntime = state;
     internal void OwnStoredSelector(string? selector) => OwnedStoredSelector = selector;
     internal void OwnDistance(double distance) => OwnedDistance = distance;
+    internal void OwnManualTarget(bool manualTarget) => OwnedManualTarget = manualTarget;
+    internal void ReleaseManualTarget() => OwnedManualTarget = null;
     internal bool MatchesOwnedRuntime(BossModSettingsSnapshot current)
     {
         if (BossModRuntimePresetState.Matches(current.Runtime, OwnedRuntime))

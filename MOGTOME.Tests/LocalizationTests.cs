@@ -61,6 +61,34 @@ public sealed class LocalizationTests : IDisposable
         JsonSerializer.Deserialize<Dictionary<string, Dictionary<uint, string>>>(
             File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "GameTextFixtures.json")))!;
 
+    // Addon2437: four-language XIVAPI sheet version 0874aee069e1e7c4, 2026-11-01.
+    [Theory]
+    [InlineData(ClientLanguage.English)]
+    [InlineData(ClientLanguage.French)]
+    [InlineData(ClientLanguage.German)]
+    [InlineData(ClientLanguage.Japanese)]
+    public void EquipmentExchangeWarningUsesTheExchangeRowInsteadOfItsEnglishDuplicate(ClientLanguage client)
+    {
+        var evaluator = new SheetEvaluator(client);
+        SetService("ClientState", Fake<IClientState>((method, _) =>
+            method.Name == "get_ClientLanguage" ? client : Default(method.ReturnType)));
+        SetService("SeStringEvaluator", evaluator);
+        foreach (var ui in Enum.GetValues<UiLanguage>())
+        {
+            Ui.SetLanguage(ui);
+            Assert.Equal(evaluator.Text(2437), BlundervilleGameAdapter.EquipmentWarningText());
+        }
+        if (client == ClientLanguage.French)
+        {
+            Assert.True(GameText.MatchesEvaluated("Vous ne pourrez pas vous équiper de cet objet.\nProcéder quand même à l'échange ?",
+                BlundervilleGameAdapter.EquipmentWarningText()));
+            Assert.False(GameText.MatchesEvaluated("Vous ne pourrez jamais vous équiper de cet objet. Continuer ?",
+                BlundervilleGameAdapter.EquipmentWarningText()));
+        }
+        evaluator.Throw = true;
+        Assert.Null(BlundervilleGameAdapter.EquipmentWarningText());
+    }
+
     public static IEnumerable<object[]> Languages =>
         from client in Enum.GetValues<ClientLanguage>()
         from ui in Enum.GetValues<UiLanguage>()

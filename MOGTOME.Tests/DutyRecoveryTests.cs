@@ -1237,6 +1237,34 @@ public sealed class DutyRecoveryTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void BmrActivationOwnsAutomaticTargetingAndCleanupPreservesNewerManualChanges(bool externalManualChange)
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original") { ManualTarget = true };
+        using var run = new Run(native);
+        run.Config.CombatProvider = CombatProvider.Bmr;
+        run.Config.UseManualBossModPreset = true;
+        run.Config.ManualBossModPresetName = "null";
+        Assert.True(run.Rotation.Initialize());
+        Assert.True(native.ManualTarget);
+
+        Assert.True(run.Rotation.EnableRotation(), run.Rotation.Failure + " | " + run.BossMod.LastSettingsStatus);
+        Assert.False(native.ManualTarget);
+        Assert.Contains("/bmrai manualtarget off", native.Writes);
+        Assert.Contains("/bmrai on", native.Writes);
+        Assert.True(native.Writes.IndexOf("/bmrai manualtarget off") < native.Writes.IndexOf("/bmrai on"));
+        native.Writes.Clear();
+        if (externalManualChange) native.ManualTarget = true;
+        Assert.True(run.Rotation.DisableRotationForDutyEnd("test targeting cleanup"));
+        Assert.True(native.ManualTarget);
+        Assert.Equal(externalManualChange ? 0 : 1,
+            native.Writes.Count(write => write.StartsWith("Configuration ManualTarget ", StringComparison.Ordinal)));
+        if (!externalManualChange) Assert.Contains("Configuration ManualTarget True", native.Writes);
+        Assert.DoesNotContain(native.Writes, write => write.StartsWith("/bmrai manualtarget ", StringComparison.Ordinal));
+    }
+
+    [Theory]
     [InlineData(CombatProvider.Bmr)]
     [InlineData(CombatProvider.Vbm)]
     public void BossModCommittedPresetChangesUseSettingsOnlyWithoutRestartingTheDuty(CombatProvider provider)
@@ -1879,6 +1907,11 @@ public sealed class DutyRecoveryTests
                 aiManager?.GetType().GetField("Beh")!.SetValue(aiManager, value ? new object() : null);
             }
         }
+        internal bool ManualTarget
+        {
+            get => (bool)node.GetType().GetField("ManualTarget")!.GetValue(node)!;
+            set => node.GetType().GetField("ManualTarget")!.SetValue(node, value);
+        }
 
         internal NativeBossModProvider(CombatProvider provider, string names, bool disabled = false)
         {
@@ -1890,6 +1923,7 @@ public sealed class DutyRecoveryTests
             var configNodeType = module.DefineType("BossMod.ConfigNode", TypeAttributes.Public | TypeAttributes.Abstract).CreateType()!;
             var nodeBuilder = module.DefineType("BossMod.AI.AIConfig", TypeAttributes.Public, configNodeType);
             nodeBuilder.DefineField("Enabled", typeof(bool), FieldAttributes.Public);
+            nodeBuilder.DefineField("ManualTarget", typeof(bool), FieldAttributes.Public);
             nodeBuilder.DefineField("AIAutorotPresetName", typeof(string), FieldAttributes.Public);
             var nodeType = nodeBuilder.CreateType()!;
             node = Activator.CreateInstance(nodeType)!;
@@ -2041,6 +2075,8 @@ public sealed class DutyRecoveryTests
             Writes.Add(command);
             if (command.StartsWith("/bmrai prefdistance ", StringComparison.Ordinal))
                 Distance = double.Parse(command["/bmrai prefdistance ".Length..], CultureInfo.InvariantCulture);
+            else if (command is "/bmrai manualtarget on" or "/bmrai manualtarget off")
+                ManualTarget = command.EndsWith(" on", StringComparison.Ordinal);
             else if (!RejectAiEffect && command is "/bmrai on" or "/bmrai off")
             {
                 AiEnabled = command.EndsWith(" on", StringComparison.Ordinal);
@@ -2066,6 +2102,15 @@ public sealed class DutyRecoveryTests
             if (channel == "BossMod.Configuration")
             {
                 var arguments = (List<string>)values![0]!;
+                if (arguments[1] == "ManualTarget")
+                {
+                    if ((bool)values[1]!)
+                    {
+                        Writes.Add("Configuration ManualTarget " + arguments[2]);
+                        ManualTarget = bool.Parse(arguments[2]);
+                    }
+                    return new List<string> { ManualTarget.ToString() };
+                }
                 if ((bool)values[1]!)
                 {
                     Writes.Add("Configuration " + arguments[2]);

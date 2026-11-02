@@ -450,6 +450,9 @@ public class RotationService : IDisposable
         if (rotationDisableSentForDuty) return false;
         if (aiProvider == CombatProvider.Bmr)
         {
+            if (!bossModIPC.ApplyOwnedAutomaticTargeting(command => bossModIPC.SendCommand(command, "enable BMR automatic targeting")))
+                return Fail(Ui.M("Rotation_BossModSettingsUnconfirmed"));
+            if (rotationDisableSentForDuty) return false;
             if (!bossModIPC.ApplyOwnedPreferredDistance(command => bossModIPC.SendCommand(command, "set BMR dodge clearance"), 1.5))
                 log.Warning($"[MOGTOME][Rotation] Preferred distance retained: {bossModIPC.LastSettingsStatus}");
             if (rotationDisableSentForDuty) return false;
@@ -485,6 +488,8 @@ public class RotationService : IDisposable
             _ => null,
         };
         var aiEnabled = command is not null && bossModIPC.IsOwnedProviderCurrent &&
+            (preparedBossMod != CombatProvider.Bmr || bossModIPC.ApplyOwnedAutomaticTargeting(
+                targetingCommand => bossModIPC.SendCommand(targetingCommand, "reassert BMR automatic targeting"))) &&
             bossModIPC.SendCommand(command, $"reassert BossMod AI ({reason})");
         if (!rsrEnabled || !aiEnabled)
             log.Warning($"[MOGTOME][Rotation] Combat reassertion incomplete ({reason}): RSR={rsrEnabled}, BossModAI={aiEnabled}");

@@ -63,6 +63,45 @@ public sealed class KeyboundLoopTests
     }
 
     [Theory]
+    [InlineData(MOGTOME.Models.KeyboundPartyRole.Leader)]
+    [InlineData(MOGTOME.Models.KeyboundPartyRole.Member)]
+    public void DeclinedPartySlotRearmsOnlyAfterTheAcceptedPopReturnsToSearch(MOGTOME.Models.KeyboundPartyRole role)
+    {
+        using var f = new Fixture(role: role);
+        f.Game.Frame = f.Game.Frame with
+        {
+            Queued = true, QueueMatches = role == MOGTOME.Models.KeyboundPartyRole.Leader,
+            Pop = true, PopMatches = true,
+            PartyRole = role == MOGTOME.Models.KeyboundPartyRole.Member
+                ? MOGTOME.Models.BlundervilleRole.Member : MOGTOME.Models.BlundervilleRole.Solo,
+        };
+        f.Tick(0); f.Tick(100);
+        Assert.Equal(1, f.Game.Commences);
+        f.Game.Frame = f.Game.Frame with { Pop = false, Queued = false };
+        f.Tick(200); // A disappearing addon alone is not resumed matchmaking.
+        f.Game.Frame = f.Game.Frame with { Pop = true };
+        f.Tick(300);
+        Assert.Equal(1, f.Game.Commences);
+
+        f.Game.Frame = f.Game.Frame with { Pop = false, Queued = true, Transitioning = true };
+        f.Tick(400);
+        f.Game.Frame = f.Game.Frame with { Pop = true, Transitioning = false };
+        f.Tick(500);
+        Assert.Equal(1, f.Game.Commences);
+
+        f.Game.Frame = f.Game.Frame with { Pop = false };
+        f.Tick(600); // Another participant declined; native search is active again.
+        f.Game.Frame = f.Game.Frame with { Pop = true, PopReady = false };
+        f.Tick(700);
+        Assert.Equal(1, f.Game.Commences);
+        f.Game.Frame = f.Game.Frame with { PopReady = true };
+        f.Tick(800); f.Tick(900);
+        Assert.Equal(2, f.Game.Commences);
+        Assert.True(f.Loop.IsActive);
+        Assert.Equal(0, f.Game.Registers + f.Game.Approaches + f.Game.LobbyTrips);
+    }
+
+    [Theory]
     [InlineData(129u)]
     [InlineData(KeyboundEventLoop.Lobby)]
     public void PremadeMemberWaitsInPlaceAndAcceptsEntryWithoutTravelRegistrationOrQueueCancellation(uint territory)

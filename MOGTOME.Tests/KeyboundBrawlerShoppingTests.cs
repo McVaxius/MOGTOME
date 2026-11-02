@@ -28,6 +28,40 @@ public sealed class KeyboundBrawlerShoppingTests
     private static readonly BlundervilleOffer Offer = new(1771021, 52450, 1, 910, "MGC exchange");
 
     [Fact]
+    public void KeyboundTitlebarActionStartsStopsAndCancelsQueuedWorkUsingCurrentState()
+    {
+        using var f = new ShopFixture();
+        f.Settings.WalletTargetEnabled = false;
+        f.Settings.ShopWhenFinished = false;
+        f.Typer.Observe(true, false, 23, KeyboundEventLoop.Lobby);
+        using var window = new MOGTOME.Windows.KeyboundBrawlerWindow(f.Plugin);
+        var action = window.TitleBarButtons.Single(button => button.Priority == -20);
+        window.RefreshRunTitleButton();
+        Assert.Equal(Dalamud.Interface.FontAwesomeIcon.Play, action.Icon);
+        action.Click(Dalamud.Bindings.ImGui.ImGuiMouseButton.Right);
+        Assert.False(f.Loop.IsActive);
+        action.Click(Dalamud.Bindings.ImGui.ImGuiMouseButton.Left);
+        Assert.True(f.Loop.IsActive);
+        window.RefreshRunTitleButton();
+        Assert.Equal(Dalamud.Interface.FontAwesomeIcon.Stop, action.Icon);
+        action.Click(Dalamud.Bindings.ImGui.ImGuiMouseButton.Right);
+        Assert.True(f.Loop.IsActive);
+        action.Click(Dalamud.Bindings.ImGui.ImGuiMouseButton.Left);
+        Assert.False(f.Loop.IsActive);
+        Assert.False(f.Typer.IsRunning);
+        window.RefreshRunTitleButton();
+        Assert.Equal(Dalamud.Interface.FontAwesomeIcon.Play, action.Icon);
+
+        typeof(Plugin).GetProperty(nameof(Plugin.IsKeyboundStartQueued))!.SetValue(f.Plugin, true);
+        window.RefreshRunTitleButton();
+        Assert.Equal(Dalamud.Interface.FontAwesomeIcon.Stop, action.Icon);
+        action.Click(Dalamud.Bindings.ImGui.ImGuiMouseButton.Left);
+        Assert.False(f.Plugin.IsKeyboundStartQueued);
+        window.RefreshRunTitleButton();
+        Assert.Equal(Dalamud.Interface.FontAwesomeIcon.Play, action.Icon);
+    }
+
+    [Fact]
     public void KeyboundStartupEnablesXaCutsceneSkippingBeforeRegistrationAndContinuesThroughTwoClears()
     {
         using var f = new ShopFixture();
@@ -479,11 +513,18 @@ public sealed class KeyboundBrawlerShoppingTests
     }
 
     [Theory]
-    [InlineData(AtkValueType.Int)]
-    [InlineData(AtkValueType.UInt)]
-    public unsafe void StandardEquipmentWarningChecksOwnershipThenProceedAndOkWithoutConsumingTheFollowingConfirmation(AtkValueType zeroType)
+    [InlineData(AtkValueType.Int, Dalamud.Game.ClientLanguage.English)]
+    [InlineData(AtkValueType.UInt, Dalamud.Game.ClientLanguage.English)]
+    [InlineData(AtkValueType.Int, Dalamud.Game.ClientLanguage.French)]
+    [InlineData(AtkValueType.UInt, Dalamud.Game.ClientLanguage.French)]
+    [InlineData(AtkValueType.Int, Dalamud.Game.ClientLanguage.German)]
+    [InlineData(AtkValueType.UInt, Dalamud.Game.ClientLanguage.German)]
+    [InlineData(AtkValueType.Int, Dalamud.Game.ClientLanguage.Japanese)]
+    [InlineData(AtkValueType.UInt, Dalamud.Game.ClientLanguage.Japanese)]
+    public unsafe void StandardEquipmentWarningChecksOwnershipThenProceedAndOkWithoutConsumingTheFollowingConfirmation(
+        AtkValueType zeroType, Dalamud.Game.ClientLanguage client)
     {
-        const string prompt = "You will never be able to equip this item.Proceed with the transaction?";
+        var prompt = LocalizationTests.Templates[client.ToString()][2437];
         var values = stackalloc AtkValue[13];
         new Span<AtkValue>(values, 13).Clear();
         values[0].Type = AtkValueType.String;

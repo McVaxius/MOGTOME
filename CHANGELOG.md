@@ -1,3 +1,13 @@
+2026-11-01 - KBB queue, titlebar and exchange warning (I727/I722/I720, unversioned)
+
+- Accept a fresh matching KBB duty pop after another participant declines, once native matchmaking has resumed. Preserve one Commence per visible pop and existing queue ownership.
+- Resolve the native exchange equipment warning by its Addon row, retaining the correct French/Japanese exchange wording instead of selecting an English-identical purchase warning. Preserve owned cancellation, receipt checks and the uncertain-purchase hold.
+- Switch KBB's titlebar action between Start and Stop using current queued/active work. Prioritize status over the left title and retain the original caption font when replacing its glyphs, preventing overlap with the styled status.
+
+2026-11-01 - BMR automatic target selection (unversioned)
+
+- Confirm BMR automatic target selection before enabling combat or movement support for RSR. Restore the previous targeting choice during existing cleanup while preserving later external changes and independent RSR recovery.
+
 2026-10-31 - RSR activation acceptance (unversioned)
 
 - Require the current RSR operating-mode IPC to accept Auto activation instead of treating a submitted chat fallback as success. Preserve duty-stop guards, targeting, BossMod ownership and existing startup/cleanup behavior.

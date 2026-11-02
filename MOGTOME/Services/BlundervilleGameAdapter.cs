@@ -779,15 +779,12 @@ internal sealed unsafe class BlundervilleGameAdapter
         return inputs == 1 && button != null && button->OwnerNode != null;
     }
 
-    private static string? EquipmentWarningText()
+    internal static string? EquipmentWarningText()
     {
-        // Resolve the static warning's identity in English, then use the client's native translation.
-        foreach (var row in Plugin.DataManager.GetExcelSheet<Addon>(ClientLanguage.English))
-            if (GameText.Normalize(row.Text.ToString()) is
-                "You will never be able to equip this item. Proceed with the transaction?" or
-                "You will never be able to equip this item.Proceed with the transaction?")
-                return Plugin.SeStringEvaluator.EvaluateFromAddon(row.RowId, language: Plugin.ClientState.ClientLanguage).ToString();
-        return null;
+        // Exchange warning 2437: rows 1939/11503 share its English text but
+        // have different French/Japanese purchase wording (four sheets, 2026-11-01).
+        try { return Plugin.SeStringEvaluator.EvaluateFromAddon(2437, language: Plugin.ClientState.ClientLanguage).ToString(); }
+        catch (Exception) { return null; }
     }
 
     internal static bool EquipmentWarningMatches(AddonSelectYesno* addon, AtkUnitBase* shop, AgentShop* agent,

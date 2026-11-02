@@ -22,8 +22,12 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
     private readonly AethertekUI.Dalamud.MaterialWindowLock windowLock = new();
     private readonly Plugin plugin;
     private readonly EventShopTargetEditor shopEditor;
+    private readonly TitleBarButton runTitleButton;
     private bool layoutSizeApplied;
     internal string TitleStatus { get; private set; } = string.Empty;
+    internal ImFontPtr NativeCaptionFont { get; private set; }
+    private bool HasActiveAutomation => plugin.KeyboundLoop.IsActive || plugin.KeyboundBrawler.IsRunning ||
+        plugin.IsKeyboundStartQueued || plugin.IsKeyboundShoppingTrip || plugin.KeyboundShop.IsRunning || plugin.IsKeyboundShopActionQueued;
 
     public KeyboundBrawlerWindow(Plugin plugin) : base(Ui.T("KB_Title") + "###MogtomeKeyboundBrawler")
     {
@@ -32,12 +36,18 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
         Size = new Vector2(1000, 880);
         SizeCondition = ImGuiCond.FirstUseEver;
         SizeConstraints = new WindowSizeConstraints { MinimumSize = new(560, 520), MaximumSize = new(1500, 1500) };
-        TitleBarButtons.Add(new()
+        runTitleButton = new()
         {
             Icon = FontAwesomeIcon.Play, Priority = -20, IconOffset = new(2, 1),
-            Click = button => { if (button == ImGuiMouseButton.Left && plugin.KeyboundBrawler.CanStart && !plugin.IsKeyboundShoppingTrip) plugin.StartKeyboundBrawler(); },
-            ShowTooltip = () => UiLayout.SetTooltip(Ui.T("Main_Start")),
-        });
+            Click = button =>
+            {
+                if (button != ImGuiMouseButton.Left) return;
+                if (HasActiveAutomation) { plugin.StopKeyboundBrawler(); plugin.StopKeyboundShop(); }
+                else if (plugin.KeyboundBrawler.CanStart && !plugin.IsKeyboundShoppingTrip) plugin.StartKeyboundBrawler();
+            },
+            ShowTooltip = () => UiLayout.SetTooltip(Ui.T(HasActiveAutomation ? "Main_Stop" : "Main_Start")),
+        };
+        TitleBarButtons.Add(runTitleButton);
         TitleBarButtons.Add(new()
         {
             Icon = FontAwesomeIcon.Clock, Priority = -30, IconOffset = new(2, 1),
@@ -49,6 +59,8 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
 
     public override void PreDraw()
     {
+        NativeCaptionFont = ImGui.GetFont();
+        RefreshRunTitleButton();
         var settings = plugin.Configuration.KeyboundBrawler;
         var goal = plugin.KeyboundLoop.IsActive || plugin.KeyboundBrawler.IsRunning
             ? plugin.KeyboundBrawler.WalletTarget : settings.WalletTargetEnabled ? (uint?)Math.Max(0, settings.WalletTarget) : null;
@@ -57,7 +69,7 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
         WindowName = Ui.T("KB_Title") + " | " + TitleStatus + "###MogtomeKeyboundBrawler";
         SizeConstraints = new WindowSizeConstraints
         {
-            MinimumSize = new(Math.Max(560, UiLayout.TitleMinimumWidth(this) / Math.Max(.01f, ImGuiHelpers.GlobalScale)), 520),
+            MinimumSize = new(560, 520),
             MaximumSize = new(1500, 1500),
         };
         // Apply the approved shop-sized layout once; subsequent user resizes survive reopening.
@@ -72,6 +84,8 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
             roundedCorners: plugin?.Configuration.UiStylingEnabled != false);
         windowLock.Apply(this, plugin?.Configuration.UiWindowsLocked == true);
     }
+
+    internal void RefreshRunTitleButton() => runTitleButton.Icon = HasActiveAutomation ? FontAwesomeIcon.Stop : FontAwesomeIcon.Play;
 
     public override void PostDraw()
     {

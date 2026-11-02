@@ -104,6 +104,9 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
                 }
             }
             if (typer.Finished) { active = false; game.StopMovement(); return false; }
+            // Another participant can decline after our Commence. Only native search
+            // without the old pop re-arms acceptance; an addon gap alone does not.
+            if (commenced && !state.Pop && state.Queued) commenced = false;
             // Native queue/pop progress wins over stale party territory or a delayed rejection retry.
             if (state.Queued || state.Pop && state.PopMatches || commenced)
             {
