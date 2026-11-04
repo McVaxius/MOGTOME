@@ -1335,7 +1335,7 @@ public class ConfigWindow : Window, IDisposable
         if (config.UseAdsExperimental)
         {
             var repairMode = (int)config.AdsRepairMode;
-            var repairModes = Enum.GetValues<AdsRepairMode>().Select(mode => Ui.T(Services.RepairService.GetAdsRepairLabelKey(mode))).ToArray();
+            var repairModes = Enum.GetValues<AdsRepairMode>().Select(Services.RepairService.GetAdsRepairLabel).ToArray();
             UiLayout.SingleLine(Ui.T("Config_RepairMode"));
             ImGui.SetNextItemWidth(UiLayout.AvailableWidth);
             if (UiLayout.Combo("###Config_RepairMode", ref repairMode, repairModes, repairModes.Length))
@@ -1364,7 +1364,7 @@ public class ConfigWindow : Window, IDisposable
         AethertekUI.MaterialText.Text(Ui.T("Config_CurrentThreshold", config.RepairThreshold));
         AethertekUI.MaterialText.Text(Ui.T("Config_AutoRepair", (config.RepairThreshold > 0 ? Ui.T("Config_Enabled") : Ui.T("Config_Disabled"))));
         if (config.UseAdsExperimental)
-            AethertekUI.MaterialText.Text(Ui.T("Config_ADSRepairMethod", Ui.T(Services.RepairService.GetAdsRepairLabelKey(config.AdsRepairMode))));
+            AethertekUI.MaterialText.Text(Ui.T("Config_ADSRepairMethod", Services.RepairService.GetAdsRepairLabel(config.AdsRepairMode)));
 
         return changed;
     }

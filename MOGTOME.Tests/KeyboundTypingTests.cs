@@ -53,6 +53,41 @@ public sealed class KeyboundTypingTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SubmittedPhraseEchoCountsOnceEvenWhenTheBarLosesFocus(bool chatFocused)
+    {
+        var input = new FakeInput("a") { Text = "a" };
+        using var service = Arm(input);
+        service.Update(null, 0);
+        Assert.Equal(0, service.SubmittedPhrases);
+        input.Text = "";
+        input.Focused = false;
+        input.Other = chatFocused;
+        service.Update(null, 40);
+        service.Update(null, 80);
+        Assert.Equal(1, service.SubmittedPhrases);
+        Assert.Single(input.Down);
+        Assert.Empty(input.Sent);
+        input.Focused = true;
+        input.Other = false;
+        service.Update(null, 200);
+        Assert.Equal(1, service.SubmittedPhrases);
+    }
+
+    [Fact]
+    public void AnUnrelatedRebuiltInputCannotAcknowledgeThePreviousSubmission()
+    {
+        var input = new FakeInput("a") { Text = "a" };
+        using var service = Arm(input);
+        service.Update(null, 0);
+        input.Text = "";
+        input.Configure = snapshot => snapshot.InputIdentity = 456;
+        service.Update(null, 40);
+        Assert.Equal(0, service.SubmittedPhrases);
+    }
+
+    [Theory]
     [InlineData(false, false, false)] // Disabled input, including Letterlock.
     [InlineData(true, false, true)] // Chat owns focus.
     public void DisabledInputAndChatNeverReceiveCharactersOrFocus(bool visible, bool focused, bool other)

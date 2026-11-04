@@ -2005,7 +2005,7 @@ Path: {0}
     <value>Ремонт NPC + номер в гостинице</value>
   </data>
   <data name="Engine_InnRepairFailed" xml:space="preserve">
-    <value>Ошибка ремонта в гостинице: {0}</value>
+    <value>Ошибка ремонта ADS: {0}</value>
   </data>
   <data name="Config_NPCRepairInnUldah" xml:space="preserve">
     <value>Ремонт NPC + номер в гостинице — Ul’dah</value>
@@ -2407,4 +2407,7 @@ Path: {0}
   <data name="Choose an image file." xml:space="preserve"><value>Выберите файл изображения.</value></data>
   <data name="Loading image..." xml:space="preserve"><value>Загрузка изображения...</value></data>
   <data name="Image could not be loaded." xml:space="preserve"><value>Не удалось загрузить изображение.</value></data>
+  <data name="KB_WaitEntry" xml:space="preserve"><value>Ожидание входа в {0}.</value></data>
+  <data name="KB_PhraseCount" xml:space="preserve"><value>Отправлено фраз: {0}</value></data>
+  <data name="Config_NPCRepairNoInn" xml:space="preserve"><value>Ремонт у NPC, остаться снаружи</value></data>
 </root>

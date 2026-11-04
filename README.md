@@ -167,6 +167,8 @@ shop-on-finish enabled. The coffer starts at zero; the ending destination is
 "Don't go anywhere." These are editable defaults; existing saved targets and
 preferences are retained. Preparing a new configuration starts nothing.
 
+The wallet display shows current MGC against the fixed **10,000 MGC** capacity. It is independent of the farming target. Submitted phrases count the native acknowledgement even when submission releases input focus.
+
 **Buy also works independently of auto typing.** Be near the loaded MGC trader and
 use Buy, `/keybound buy` or `/kbb buy`. The shopper approaches that identified
 trader, validates its current shop/items/prices and festival eligibility, buys
@@ -307,7 +309,9 @@ R: development bundle: `R:\XIVLauncher\devPlugins\MOGTOME-Blunderville\MOGTOME.d
 
 ### Starting the Bot
 
-Choose the combat provider in Settings: BMR or VBM handles attacks and movement; RSR handles attacks with the loaded BossMod variant for avoidance; Wrath uses its current attack settings. BMR/VBM can use an existing named preset with **Use manual BossMod preset** enabled, or MOGTOME's packaged preset selected by job role when disabled. The per-account Setup Wizard reviews the selected backend, provider, dependencies and party setup before applying its draft.
+BMR is the default combat provider. Existing provider selections migrate once; choices made afterward are retained. Choose another provider in Settings: BMR or VBM handles attacks and movement; RSR handles attacks with the loaded BossMod variant for avoidance; Wrath uses its current attack settings. BMR/VBM can use an existing named preset with **Use manual BossMod preset** enabled, or MOGTOME's packaged preset selected by job role when disabled. The per-account Setup Wizard reviews the selected backend, provider, dependencies and party setup before applying its draft.
+
+Both traveling NPC repair modes offer Automatic, Ul'dah, Gridania, Limsa Lominsa, Ishgard, the Crystarium, Old Sharlayan and Tuliyollal. A no-inn trip stops after ADS confirms repair; repair-then-inn also waits for room entry. City-specific no-inn travel requires an ADS version advertising that exact repair mode. ADS validates native unlocks and selects an eligible starting-city fallback when the preferred route is unavailable.
 
 1. Ensure you're outside a duty
 2. Open MOGTOME: `/mogtome`

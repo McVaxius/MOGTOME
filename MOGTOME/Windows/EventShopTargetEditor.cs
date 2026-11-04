@@ -198,7 +198,7 @@ internal sealed class EventShopTargetEditor
         var catalogTotalWidth = MaterialText.Measure(catalogTotal).X;
         if (ImGui.GetItemRectMax().X + ImGui.GetStyle().ItemSpacing.X + catalogTotalWidth <= headingOrigin.X + headingWidth)
             ImGui.SetCursorScreenPos(new(headingOrigin.X + headingWidth - catalogTotalWidth, headingOrigin.Y));
-        UiLayout.SingleLine(catalogTotal);
+        UiLayout.Wrapped(catalogTotal);
 
         using (MaterialControls.Push(MaterialControlContext.Toolbar))
         {

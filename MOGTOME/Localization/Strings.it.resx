@@ -2005,7 +2005,7 @@ I risultati sono registrati nel log Dalamud.</value>
     <value>Riparazione NPC + camera in locanda</value>
   </data>
   <data name="Engine_InnRepairFailed" xml:space="preserve">
-    <value>Riparazione in locanda fallita: {0}</value>
+    <value>Riparazione ADS fallita: {0}</value>
   </data>
   <data name="Config_NPCRepairInnUldah" xml:space="preserve">
     <value>Riparazione NPC + camera in locanda — Ul’dah</value>
@@ -2407,4 +2407,7 @@ Apri i depositi per aggiornare le quantità registrate.</value></data>
   <data name="Choose an image file." xml:space="preserve"><value>Scegli un file immagine.</value></data>
   <data name="Loading image..." xml:space="preserve"><value>Caricamento immagine...</value></data>
   <data name="Image could not be loaded." xml:space="preserve"><value>Impossibile caricare l’immagine.</value></data>
+  <data name="KB_WaitEntry" xml:space="preserve"><value>In attesa di entrare in {0}.</value></data>
+  <data name="KB_PhraseCount" xml:space="preserve"><value>Frasi inviate: {0}</value></data>
+  <data name="Config_NPCRepairNoInn" xml:space="preserve"><value>Riparazione PNG, resta fuori</value></data>
 </root>

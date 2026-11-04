@@ -2079,7 +2079,7 @@ Wyniki zapisywane w logu Dalamud.</value>
     <value>Naprawa u NPC i pokój w gospodzie</value>
   </data>
   <data name="Engine_InnRepairFailed" xml:space="preserve">
-    <value>Naprawa w gospodzie nie powiodła się: {0}</value>
+    <value>Naprawa ADS nie powiodła się: {0}</value>
   </data>
   <data name="Config_NPCRepairInnUldah" xml:space="preserve">
     <value>Naprawa u NPC i pokój w gospodzie — Ul’dah</value>
@@ -2557,4 +2557,7 @@ Otwórz magazyny, aby odświeżyć zapisane ilości.</value></data>
   <data name="Choose an image file." xml:space="preserve"><value>Wybierz plik obrazu.</value></data>
   <data name="Loading image..." xml:space="preserve"><value>Wczytywanie obrazu...</value></data>
   <data name="Image could not be loaded." xml:space="preserve"><value>Nie można wczytać obrazu.</value></data>
+  <data name="KB_WaitEntry" xml:space="preserve"><value>Oczekiwanie na wejście do {0}.</value></data>
+  <data name="KB_PhraseCount" xml:space="preserve"><value>Wysłane frazy: {0}</value></data>
+  <data name="Config_NPCRepairNoInn" xml:space="preserve"><value>Naprawa u NPC, pozostań na zewnątrz</value></data>
 </root>

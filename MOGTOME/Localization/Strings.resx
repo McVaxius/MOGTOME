@@ -2005,7 +2005,7 @@ Results logged to Dalamud log.</value>
     <value>NPC repair + inn room</value>
   </data>
   <data name="Engine_InnRepairFailed" xml:space="preserve">
-    <value>Inn repair failed: {0}</value>
+    <value>ADS repair failed: {0}</value>
   </data>
   <data name="Config_NPCRepairInnUldah" xml:space="preserve">
     <value>NPC repair + inn room — Ul’dah</value>
@@ -2407,4 +2407,7 @@ Open storage to refresh recorded quantities.</value></data>
   <data name="Choose an image file." xml:space="preserve"><value>Choose an image file.</value></data>
   <data name="Loading image..." xml:space="preserve"><value>Loading image...</value></data>
   <data name="Image could not be loaded." xml:space="preserve"><value>Image could not be loaded.</value></data>
+  <data name="KB_WaitEntry" xml:space="preserve"><value>Waiting for {0} entry.</value></data>
+  <data name="KB_PhraseCount" xml:space="preserve"><value>Phrases submitted: {0}</value></data>
+  <data name="Config_NPCRepairNoInn" xml:space="preserve"><value>NPC repair, stay outside</value></data>
 </root>

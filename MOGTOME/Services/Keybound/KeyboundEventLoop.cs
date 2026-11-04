@@ -122,7 +122,7 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
                 partyWaitPending = true;
                 if (!state.PartyReturned || registrationRetryAt.HasValue && now < registrationRetryAt.Value)
                 {
-                    Status = Ui.M(registrationRetryAt.HasValue ? "BV_RegistrationRetry" : "BV_WaitEntry");
+                    Status = registrationRetryAt.HasValue ? Ui.M("BV_RegistrationRetry") : Ui.M("KB_WaitEntry", Ui.M("KB_Title"));
                     return false;
                 }
                 // Resuming after a long wait must receive a fresh ordinary staging budget.
@@ -138,16 +138,16 @@ internal sealed class KeyboundEventLoop(IKeyboundLoopGame game, KeyboundBrawlerS
             { Status = Ui.M("KB_WaitPartyRole"); return false; }
             if (state.Pop)
             {
-                if (!state.PopReady) { Status = Ui.M("BV_WaitEntry"); return false; }
+                if (!state.PopReady) { Status = Ui.M("KB_WaitEntry", Ui.M("KB_Title")); return false; }
                 if (!commenced)
                 {
                     commenced = true;
                     game.StopMovement();
                     if (!game.Commence()) Fail("BV_UiMismatch");
                 }
-                Status = Ui.M("BV_WaitEntry"); return false;
+                Status = Ui.M("KB_WaitEntry", Ui.M("KB_Title")); return false;
             }
-            if (state.Queued || registered || commenced) { Status = Ui.M("BV_WaitEntry"); return false; }
+            if (state.Queued || registered || commenced) { Status = Ui.M("KB_WaitEntry", Ui.M("KB_Title")); return false; }
             if (prepareShopping)
             {
                 Status = Ui.M("BV_Shopping");

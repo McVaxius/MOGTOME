@@ -177,6 +177,7 @@ public sealed class KeyboundBrawlerService : IDisposable
             if (!inEvent || completedRound)
             { ReleaseKey(); ResetTyping(); Status = Ui.M("KB_Queueing"); return; }
             input.Read(snapshot);
+            ObserveSubmissionEcho();
             pace = snapshot.InputVisible && snapshot.Stage == 3 ? stage3Pace : stage12Pace;
             if (!snapshot.InputVisible)
             { ReleaseKey(); ResetTyping(); focusAttempts = 0; Status = Ui.M("KB_WaitInput"); return; }
@@ -194,10 +195,11 @@ public sealed class KeyboundBrawlerService : IDisposable
             }
             castWatch.Update(snapshot, now);
             if (castWatch.Holding)
-            { ReleaseKey(); echoDeadline = now + 750; Status = Ui.M("KB_CastHold"); return; }
+            { ReleaseKey(); ObserveSubmissionEcho(); echoDeadline = now + 750; Status = Ui.M("KB_CastHold"); return; }
             if (!snapshot.InputFocused)
             {
                 if (!heldKeyIsSystem) ReleaseKey();
+                ObserveSubmissionEcho();
                 ResetTyping(); Status = Ui.M("KB_WaitInput");
                 if (!snapshot.OtherInputFocused && now >= focusRetryAt)
                 {
@@ -219,12 +221,6 @@ public sealed class KeyboundBrawlerService : IDisposable
                 if (snapshot.InputText == expectedText)
                 {
                     expectedText = null;
-                    if (submissionPending)
-                    {
-                        SubmittedPhrases++; submissionPending = false;
-                        if (SubmittedPhrases == 1)
-                            Plugin.Log?.Information("[MOGTOME][KBB] First submitted phrase received the native clear echo.");
-                    }
                 }
                 else if (snapshot.InputText != previousText)
                 {
@@ -292,6 +288,19 @@ public sealed class KeyboundBrawlerService : IDisposable
         }
     }
 
+    private void ObserveSubmissionEcho()
+    {
+        // Enter can clear the bar and relinquish focus in the same frame.
+        // Read its echo before focus/cast handling resets typing, after releasing the owned key.
+        if (!submissionPending || heldKey.HasValue || !snapshot.InputVisible || snapshot.InputIdentity != inputIdentity || snapshot.InputText.Length != 0)
+            return;
+        SubmittedPhrases++;
+        submissionPending = false;
+        expectedText = null;
+        Status = Ui.M("KB_Typing", CompletedRuns, SubmittedPhrases);
+        if (SubmittedPhrases == 1)
+            Plugin.Log?.Information("[MOGTOME][KBB] First submitted phrase received the native clear echo.");
+    }
     private void Expect(string text, long now) { previousText = snapshot.InputText; expectedText = text; echoDeadline = now + 750; }
     private bool Press(GameKey key, long now)
     {

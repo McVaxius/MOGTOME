@@ -2079,7 +2079,7 @@ Resultados registrados no log Dalamud.</value>
     <value>Reparo NPC + quarto da pousada</value>
   </data>
   <data name="Engine_InnRepairFailed" xml:space="preserve">
-    <value>Falha no reparo da pousada: {0}</value>
+    <value>Falha no reparo do ADS: {0}</value>
   </data>
   <data name="Config_NPCRepairInnUldah" xml:space="preserve">
     <value>Reparo NPC + quarto da pousada — Ul’dah</value>
@@ -2557,4 +2557,7 @@ Abra os depósitos para atualizar as quantidades registradas.</value></data>
   <data name="Choose an image file." xml:space="preserve"><value>Escolha um arquivo de imagem.</value></data>
   <data name="Loading image..." xml:space="preserve"><value>Carregando imagem...</value></data>
   <data name="Image could not be loaded." xml:space="preserve"><value>Não foi possível carregar a imagem.</value></data>
+  <data name="KB_WaitEntry" xml:space="preserve"><value>Aguardando a entrada em {0}.</value></data>
+  <data name="KB_PhraseCount" xml:space="preserve"><value>Frases enviadas: {0}</value></data>
+  <data name="Config_NPCRepairNoInn" xml:space="preserve"><value>Reparo com NPC, ficar do lado de fora</value></data>
 </root>

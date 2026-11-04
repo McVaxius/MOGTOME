@@ -2005,7 +2005,7 @@ Los resultados se escriben en el registro de Dalamud.</value>
     <value>Reparación NPC + habitación de posada</value>
   </data>
   <data name="Engine_InnRepairFailed" xml:space="preserve">
-    <value>Error al reparar en la posada: {0}</value>
+    <value>Error de reparación de ADS: {0}</value>
   </data>
   <data name="Config_NPCRepairInnUldah" xml:space="preserve">
     <value>Reparación NPC + habitación de posada — Ul’dah</value>
@@ -2407,4 +2407,7 @@ Abre los almacenes para actualizar las cantidades registradas.</value></data>
   <data name="Choose an image file." xml:space="preserve"><value>Elige un archivo de imagen.</value></data>
   <data name="Loading image..." xml:space="preserve"><value>Cargando imagen...</value></data>
   <data name="Image could not be loaded." xml:space="preserve"><value>No se pudo cargar la imagen.</value></data>
+  <data name="KB_WaitEntry" xml:space="preserve"><value>Esperando para entrar en {0}.</value></data>
+  <data name="KB_PhraseCount" xml:space="preserve"><value>Frases enviadas: {0}</value></data>
+  <data name="Config_NPCRepairNoInn" xml:space="preserve"><value>Reparación de PNJ, quedarse fuera</value></data>
 </root>

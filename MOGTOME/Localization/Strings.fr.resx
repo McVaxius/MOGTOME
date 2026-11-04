@@ -1999,7 +1999,7 @@ Résultats dans le journal Dalamud.</value>
     <value>Réparation PNJ + chambre d’auberge</value>
   </data>
   <data name="Engine_InnRepairFailed" xml:space="preserve">
-    <value>Échec de la réparation avec retour à l’auberge : {0}</value>
+    <value>Échec de la réparation ADS : {0}</value>
   </data>
   <data name="Config_NPCRepairInnUldah" xml:space="preserve">
     <value>Réparation PNJ + chambre d’auberge — Ul’dah</value>
@@ -2401,4 +2401,7 @@ Ouvrir les stockages pour actualiser les quantités enregistrées.</value></data
   <data name="Choose an image file." xml:space="preserve"><value>Choisissez un fichier image.</value></data>
   <data name="Loading image..." xml:space="preserve"><value>Chargement de l’image...</value></data>
   <data name="Image could not be loaded." xml:space="preserve"><value>Impossible de charger l’image.</value></data>
+  <data name="KB_WaitEntry" xml:space="preserve"><value>En attente de l’entrée de {0}.</value></data>
+  <data name="KB_PhraseCount" xml:space="preserve"><value>Phrases envoyées : {0}</value></data>
+  <data name="Config_NPCRepairNoInn" xml:space="preserve"><value>Réparation PNJ, rester dehors</value></data>
 </root>

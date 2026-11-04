@@ -606,18 +606,20 @@ public sealed class DutyRecoveryTests
             Ready with { IsLoggedIn = loggedIn, IsWatchingCutscene78 = cutscene }, false, occupied));
 
     [Fact]
-    public async Task InnDestinationsPreserveSavedValuesAndWaitForAdsTerminalResult()
+    public async Task NpcDestinationsPreserveSavedValuesAndWaitForAdsTerminalResult()
     {
         var destinations = new[] { "uldah", "gridania", "limsa", "ishgard", "crystarium", "sharlayan", "tuliyollal" };
         Assert.Equal(0, (int)AdsRepairMode.Npc);
         Assert.Equal(1, (int)AdsRepairMode.Self);
         Assert.Equal(2, (int)AdsRepairMode.NpcYesInn);
         using var run = new Run();
-        for (var index = 2; index <= 9; index++)
+        for (var index = 2; index <= 17; index++)
         {
             var mode = (AdsRepairMode)index;
-            var suffix = index == 2 ? "" : " " + destinations[index - 3];
-            Assert.Equal("/ads npcrepair yesinn" + suffix, RepairService.GetAdsRepairCommand(mode));
+            var noInn = index >= 10;
+            var first = noInn ? 10 : 2;
+            var suffix = index == first ? "" : " " + destinations[index - first - 1];
+            Assert.Equal("/ads npcrepair " + (noInn ? "noinn" : "yesinn") + suffix, RepairService.GetAdsRepairCommand(mode));
             foreach (var language in Enum.GetValues<MOGTOME.Localization.UiLanguage>())
             {
                 var original = MOGTOME.Localization.Ui.Language;
@@ -626,7 +628,7 @@ public sealed class DutyRecoveryTests
                     MOGTOME.Localization.Ui.SetLanguage(language);
                     var key = RepairService.GetAdsRepairLabelKey(mode);
                     Assert.NotEqual(key, MOGTOME.Localization.Ui.T(key));
-                    if (index > 2) Assert.Contains(" — ", MOGTOME.Localization.Ui.T(key));
+                    if (index != first) Assert.Contains(" — ", RepairService.GetAdsRepairLabel(mode));
                 }
                 finally { MOGTOME.Localization.Ui.SetLanguage(original); }
             }
@@ -642,14 +644,17 @@ public sealed class DutyRecoveryTests
                 await Task.Delay(10);
             }
             Assert.True(run.Automation.IsAdsRepairWaitingForCompletion);
-            Assert.Equal(index == 2 ? "npc-yes-inn" : "npc-yes-inn-" + destinations[index - 3], run.RepairModes[^1]);
+            Assert.Equal((noInn ? "npc-no-inn" : "npc-yes-inn") + (index == first ? "" : "-" + destinations[index - first - 1]), run.RepairModes[^1]);
             Assert.True(run.Automation.IsAdsInnRepairPending(out failure));
             Assert.Empty(failure);
             Assert.DoesNotContain(run.Commands, command => command.StartsWith("/ads npcrepair"));
 
-            string Terminal(DateTime time, string success, string error) => System.Text.Json.JsonSerializer.Serialize(new
-            { utilityRunning = false, utilityCompletedAtUtc = time, utilityLastSuccess = success, utilityLastFailure = error });
+            string Terminal(DateTime time, string success, string error, string? utilityMode = null) => System.Text.Json.JsonSerializer.Serialize(new
+            { utilityRunning = false, utilityCompletedAtUtc = time, utilityLastSuccess = success, utilityLastFailure = error,
+                utilityMode = utilityMode ?? run.RepairModes[^1] });
             run.RepairStatus = Terminal(DateTime.UtcNow.AddMinutes(-5), "old entry", "");
+            Assert.True(run.Automation.IsAdsInnRepairPending(out _));
+            run.RepairStatus = Terminal(DateTime.UtcNow, "unrelated utility", "", "self");
             Assert.True(run.Automation.IsAdsInnRepairPending(out _));
             run.RepairStatus = Terminal(DateTime.UtcNow, "confirmed room entry", "");
             Assert.False(run.Automation.IsAdsInnRepairPending(out failure));
@@ -677,6 +682,36 @@ public sealed class DutyRecoveryTests
         }
         Assert.False(run.Automation.IsAdsInnRepairPending(out var rejected));
         Assert.Contains("did not accept", rejected);
+
+        run.Automation.CancelPendingOperations("old ADS capability check");
+        run.AcceptRepair = true;
+        run.RepairCapabilities = "{\"schemaVersion\":1}";
+        run.Config.AdsRepairMode = AdsRepairMode.NpcNoInnGridania;
+        count = run.RepairModes.Count;
+        run.Automation.RequestNpcRepair();
+        end = DateTime.UtcNow.AddSeconds(10);
+        while (!run.Automation.IsAdsRepairWaitingForCompletion && DateTime.UtcNow < end)
+        {
+            run.Pump();
+            await Task.Delay(10);
+        }
+        Assert.False(run.Automation.IsAdsInnRepairPending(out var incompatible));
+        Assert.Contains("does not support", incompatible);
+        Assert.Equal(count, run.RepairModes.Count);
+
+        // Existing no-inn selection works with an older ADS that has no additive mode list.
+        run.Automation.CancelPendingOperations("legacy no-inn capability check");
+        run.Config.AdsRepairMode = AdsRepairMode.NpcNoInn;
+        run.Automation.RequestNpcRepair();
+        end = DateTime.UtcNow.AddSeconds(10);
+        while (!run.Automation.IsAdsRepairWaitingForCompletion && DateTime.UtcNow < end)
+        {
+            run.Pump();
+            await Task.Delay(10);
+        }
+        Assert.Equal("npc-no-inn", run.RepairModes[^1]);
+        run.Automation.ReturnToInnIfNeeded();
+        Assert.DoesNotContain("/ads enterinn", run.Commands);
     }
 
     [Theory]
@@ -1675,6 +1710,7 @@ public sealed class DutyRecoveryTests
         internal string? ThrowOnCommand;
         internal readonly List<string> RepairModes = [];
         internal string RepairStatus = "{}";
+        internal string RepairCapabilities = """{"schemaVersion":1,"repairModes":["npc-no-inn","npc-no-inn-uldah","npc-no-inn-gridania","npc-no-inn-limsa","npc-no-inn-ishgard","npc-no-inn-crystarium","npc-no-inn-sharlayan","npc-no-inn-tuliyollal"]}""";
         internal bool AcceptRepair = true;
         private readonly System.Collections.Concurrent.ConcurrentQueue<Action> scheduled = new();
         private readonly Dictionary<string, object?> originalStatics = new();
@@ -1732,6 +1768,7 @@ public sealed class DutyRecoveryTests
                     {
                         if (member.Name != "InvokeFunc") return Default(member.ReturnType);
                         if (name == "ADS.GetStatusJson") return RepairStatus;
+                        if (name == "ADS.GetCapabilitiesJson") return RepairCapabilities;
                         if (name == "ADS.StartRepair") { RepairModes.Add((string)values![0]!); return AcceptRepair; }
                         return Default(member.ReturnType);
                     }

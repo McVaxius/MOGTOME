@@ -429,7 +429,7 @@ public sealed class LocalizationTests : IDisposable
     {
         SetService("Log", Fake<IPluginLog>());
         Assert.Equal(AdsRepairMode.NpcYesInn, new Configuration().AdsRepairMode);
-        Assert.Equal(2, new Configuration().Version);
+        Assert.Equal(3, new Configuration().Version);
         var directory = Path.Combine(Path.GetTempPath(), "MogtomeRepairMigrationTests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(directory);
         try
@@ -456,7 +456,7 @@ public sealed class LocalizationTests : IDisposable
                 var migrated = Configuration.LoadFromFile(path);
                 Assert.Equal(selfRepair ? AdsRepairMode.Self : AdsRepairMode.NpcYesInn, migrated.AdsRepairMode);
                 var saved = File.ReadAllText(path);
-                Assert.Equal(2, JsonSerializer.Deserialize<Configuration>(saved)!.Version);
+                Assert.Equal(3, JsonSerializer.Deserialize<Configuration>(saved)!.Version);
                 Assert.Equal(migrated.AdsRepairMode, JsonSerializer.Deserialize<Configuration>(saved)!.AdsRepairMode);
                 var reloaded = Configuration.LoadFromFile(path);
                 Assert.Equal(migrated.AdsRepairMode, reloaded.AdsRepairMode);
@@ -470,7 +470,7 @@ public sealed class LocalizationTests : IDisposable
                     for (var reload = 0; reload < 2; reload++)
                     {
                         reloaded = Configuration.LoadFromFile(path);
-                        Assert.Equal(2, reloaded.Version);
+                        Assert.Equal(3, reloaded.Version);
                         Assert.Equal(selection, reloaded.AdsRepairMode);
                         Assert.Equal(threshold, reloaded.RepairThreshold);
                         Assert.False(reloaded.UseAdsExperimental);
@@ -486,6 +486,58 @@ public sealed class LocalizationTests : IDisposable
         {
             Directory.Delete(directory, recursive: true);
         }
+    }
+
+    [Theory]
+    [InlineData(CombatProvider.Rsr)]
+    [InlineData(CombatProvider.Vbm)]
+    [InlineData(CombatProvider.Wrath)]
+    [InlineData(CombatProvider.Bmr)]
+    public void BmrProviderMigrationRunsOnceAndPreservesCustomSettingsAndLaterChoices(CombatProvider oldProvider)
+    {
+        SetService("Log", Fake<IPluginLog>());
+        Assert.Equal(CombatProvider.Bmr, new Configuration().CombatProvider);
+        var directory = Path.Combine(Path.GetTempPath(), "MogtomeProviderMigrationTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        try
+        {
+            var path = Path.Combine(directory, "profile.json");
+            var legacy = new Configuration
+            {
+                Version = 2, UiCompactDefaultsApplied = true, CombatProvider = oldProvider,
+                UseManualBossModPreset = true, ManualBossModPresetName = "Custom##literal", MaxRuns = 37,
+                AdsRepairMode = AdsRepairMode.NpcYesInnSharlayan, RepairThreshold = 73,
+            };
+            legacy.KeyboundBrawler.WalletTarget = 3210;
+            legacy.KeyboundBrawler.PurchaseTargets.Clear();
+            legacy.KeyboundBrawler.PurchaseTargets[52323] = 4;
+            using (var unknown = JsonDocument.Parse("{\"custom\":[1,2]}"))
+                legacy.AdditionalSettings["FutureProviderOptions"] = unknown.RootElement.Clone();
+            legacy.SaveToFile(path);
+
+            var migrated = Configuration.LoadFromFile(path);
+            Assert.Equal(CombatProvider.Bmr, migrated.CombatProvider);
+            Assert.Equal(3, migrated.Version);
+            Assert.True(migrated.UseManualBossModPreset);
+            Assert.Equal("Custom##literal", migrated.ManualBossModPresetName);
+            Assert.Equal(37, migrated.MaxRuns);
+            Assert.Equal(73, migrated.RepairThreshold);
+            Assert.Equal(AdsRepairMode.NpcYesInnSharlayan, migrated.AdsRepairMode);
+            Assert.Equal(3210, migrated.KeyboundBrawler.WalletTarget);
+            Assert.Equal(4, migrated.KeyboundBrawler.PurchaseTargets[52323]);
+            Assert.Single(migrated.KeyboundBrawler.PurchaseTargets);
+            Assert.Equal(2, migrated.AdditionalSettings["FutureProviderOptions"].GetProperty("custom").GetArrayLength());
+
+            foreach (var provider in Enum.GetValues<CombatProvider>())
+            {
+                migrated.CombatProvider = provider;
+                migrated.SaveToFile(path);
+                var saved = File.ReadAllText(path);
+                Assert.Equal(provider, Configuration.LoadFromFile(path).CombatProvider);
+                Assert.Equal(saved, File.ReadAllText(path));
+            }
+        }
+        finally { Directory.Delete(directory, recursive: true); }
     }
 
     [Fact]

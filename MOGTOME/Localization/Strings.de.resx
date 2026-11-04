@@ -1999,7 +1999,7 @@ Ergebnisse im Dalamud-Protokoll.</value>
     <value>NPC-Reparatur + Gästezimmer</value>
   </data>
   <data name="Engine_InnRepairFailed" xml:space="preserve">
-    <value>Reparatur mit Gasthausrückkehr fehlgeschlagen: {0}</value>
+    <value>ADS-Reparatur fehlgeschlagen: {0}</value>
   </data>
   <data name="Config_NPCRepairInnUldah" xml:space="preserve">
     <value>NPC-Reparatur + Gästezimmer — Ul’dah</value>
@@ -2401,4 +2401,7 @@ Lager öffnen, um erfasste Mengen zu aktualisieren.</value></data>
   <data name="Choose an image file." xml:space="preserve"><value>Bilddatei auswählen.</value></data>
   <data name="Loading image..." xml:space="preserve"><value>Bild wird geladen...</value></data>
   <data name="Image could not be loaded." xml:space="preserve"><value>Bild konnte nicht geladen werden.</value></data>
+  <data name="KB_WaitEntry" xml:space="preserve"><value>Warte auf den Eintritt zu {0}.</value></data>
+  <data name="KB_PhraseCount" xml:space="preserve"><value>Übermittelte Ausdrücke: {0}</value></data>
+  <data name="Config_NPCRepairNoInn" xml:space="preserve"><value>NPC-Reparatur, draußen bleiben</value></data>
 </root>

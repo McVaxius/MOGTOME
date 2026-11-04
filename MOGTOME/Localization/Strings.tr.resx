@@ -2079,7 +2079,7 @@ Sonuçlar Dalamud günlüğüne yazılır.</value>
     <value>NPC onarımı ve han odası</value>
   </data>
   <data name="Engine_InnRepairFailed" xml:space="preserve">
-    <value>Han onarımı başarısız: {0}</value>
+    <value>ADS onarımı başarısız: {0}</value>
   </data>
   <data name="Config_NPCRepairInnUldah" xml:space="preserve">
     <value>NPC onarımı ve han odası — Ul’dah</value>
@@ -2557,4 +2557,7 @@ Kayıtlı miktarları yenilemek için depoları açın.</value></data>
   <data name="Choose an image file." xml:space="preserve"><value>Bir resim dosyası seçin.</value></data>
   <data name="Loading image..." xml:space="preserve"><value>Resim yükleniyor...</value></data>
   <data name="Image could not be loaded." xml:space="preserve"><value>Resim yüklenemedi.</value></data>
+  <data name="KB_WaitEntry" xml:space="preserve"><value>{0} girişi bekleniyor.</value></data>
+  <data name="KB_PhraseCount" xml:space="preserve"><value>Gönderilen ifadeler: {0}</value></data>
+  <data name="Config_NPCRepairNoInn" xml:space="preserve"><value>NPC onarımı, dışarıda kal</value></data>
 </root>

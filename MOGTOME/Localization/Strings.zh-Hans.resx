@@ -2005,7 +2005,7 @@ Path: {0}
     <value>NPC 修理 + 旅馆房间</value>
   </data>
   <data name="Engine_InnRepairFailed" xml:space="preserve">
-    <value>旅馆修理失败：{0}</value>
+    <value>ADS修理失败：{0}</value>
   </data>
   <data name="Config_NPCRepairInnUldah" xml:space="preserve">
     <value>NPC 修理 + 旅馆房间 — Ul’dah</value>
@@ -2407,4 +2407,7 @@ Path: {0}
   <data name="Choose an image file." xml:space="preserve"><value>请选择图片文件。</value></data>
   <data name="Loading image..." xml:space="preserve"><value>正在加载图片...</value></data>
   <data name="Image could not be loaded." xml:space="preserve"><value>无法加载图片。</value></data>
+  <data name="KB_WaitEntry" xml:space="preserve"><value>等待进入{0}。</value></data>
+  <data name="KB_PhraseCount" xml:space="preserve"><value>已提交短语：{0}</value></data>
+  <data name="Config_NPCRepairNoInn" xml:space="preserve"><value>NPC修理后留在室外</value></data>
 </root>

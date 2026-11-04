@@ -2079,7 +2079,7 @@ Ghi kết quả vào log Dalamud.</value>
     <value>Sửa bằng NPC + phòng nhà trọ</value>
   </data>
   <data name="Engine_InnRepairFailed" xml:space="preserve">
-    <value>Sửa ở nhà trọ thất bại: {0}</value>
+    <value>Sửa chữa ADS thất bại: {0}</value>
   </data>
   <data name="Config_NPCRepairInnUldah" xml:space="preserve">
     <value>Sửa bằng NPC + phòng nhà trọ — Ul’dah</value>
@@ -2557,4 +2557,7 @@ Mở kho để cập nhật số lượng đã ghi.</value></data>
   <data name="Choose an image file." xml:space="preserve"><value>Chọn tệp hình ảnh.</value></data>
   <data name="Loading image..." xml:space="preserve"><value>Đang tải hình ảnh...</value></data>
   <data name="Image could not be loaded." xml:space="preserve"><value>Không thể tải hình ảnh.</value></data>
+  <data name="KB_WaitEntry" xml:space="preserve"><value>Đang chờ vào {0}.</value></data>
+  <data name="KB_PhraseCount" xml:space="preserve"><value>Số cụm từ đã gửi: {0}</value></data>
+  <data name="Config_NPCRepairNoInn" xml:space="preserve"><value>Sửa với NPC, ở lại bên ngoài</value></data>
 </root>

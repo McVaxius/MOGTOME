@@ -2079,7 +2079,7 @@ DictionaryPaths और PathSelectionsByPath की तुलना करता 
     <value>NPC रिपेयर + इन का कमरा</value>
   </data>
   <data name="Engine_InnRepairFailed" xml:space="preserve">
-    <value>इन में रिपेयर विफल: {0}</value>
+    <value>ADS मरम्मत विफल: {0}</value>
   </data>
   <data name="Config_NPCRepairInnUldah" xml:space="preserve">
     <value>NPC रिपेयर + इन का कमरा — Ul’dah</value>
@@ -2573,4 +2573,7 @@ Retainer और अन्य भंडारण: {3}
   <data name="Choose an image file." xml:space="preserve"><value>छवि फ़ाइल चुनें।</value></data>
   <data name="Loading image..." xml:space="preserve"><value>छवि लोड हो रही है...</value></data>
   <data name="Image could not be loaded." xml:space="preserve"><value>छवि लोड नहीं हो सकी।</value></data>
+  <data name="KB_WaitEntry" xml:space="preserve"><value>{0} में प्रवेश की प्रतीक्षा।</value></data>
+  <data name="KB_PhraseCount" xml:space="preserve"><value>भेजे गए वाक्यांश: {0}</value></data>
+  <data name="Config_NPCRepairNoInn" xml:space="preserve"><value>NPC से मरम्मत, बाहर रहें</value></data>
 </root>

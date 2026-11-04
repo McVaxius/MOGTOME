@@ -36,8 +36,6 @@ public sealed class DutyAutomationService
     private const string AdsStopCommand = "/ads stop";
     private const string AdsEnterInnCommand = "/ads enterinn";
     private const string AdsSelfRepairCommand = "/ads selfrepair";
-    private const string AdsNpcRepairCommand = "/ads npcrepair";
-    private const string AdsNpcInnRepairCommand = "/ads npcrepair yesinn";
     private const int AdsVisiblePollDelayMs = 500;
     private const int AdsVisiblePollAttempts = 20;
     private const int AdsInitialSettleDelayMs = 1500;
@@ -105,7 +103,8 @@ public sealed class DutyAutomationService
     private bool adsRepairHandoffActive = false;
     private bool adsRepairWaitingForCompletion = false;
     private bool adsRepairOutsideRestorePending = false;
-    private bool adsRepairReturnsToInn;
+    private bool adsRepairWaitsForUtility;
+    private string? adsRepairTripMode;
     private DateTime adsInnRepairRequestedUtc;
     private string adsInnRepairFailure = string.Empty;
     private DateTime adsLastOutsideArmUtc = DateTime.MinValue;
@@ -383,9 +382,10 @@ public sealed class DutyAutomationService
     {
         failure = string.Empty;
         DateTime requestedUtc;
+        string? requestedMode;
         lock (adsRepairStateLock)
         {
-            if (!adsRepairHandoffActive || !adsRepairReturnsToInn)
+            if (!adsRepairHandoffActive || !adsRepairWaitsForUtility)
                 return false;
             failure = adsInnRepairFailure;
             if (failure.Length != 0)
@@ -393,11 +393,12 @@ public sealed class DutyAutomationService
             if (!adsRepairWaitingForCompletion)
                 return true;
             requestedUtc = adsInnRepairRequestedUtc;
+            requestedMode = adsRepairTripMode;
         }
 
         if (requestedUtc == DateTime.MinValue)
         {
-            failure = "The character was not ready to start the ADS inn repair trip.";
+            failure = "The character was not ready to start the ADS repair trip.";
             return false;
         }
 
@@ -405,26 +406,29 @@ public sealed class DutyAutomationService
         {
             using var document = JsonDocument.Parse(Plugin.PluginInterface.GetIpcSubscriber<string>("ADS.GetStatusJson").InvokeFunc());
             var root = document.RootElement;
-            if (root.TryGetProperty("utilityRunning", out var running) && !running.GetBoolean()
+            // Older ADS clears its active mode after completion; a non-empty identity must still match.
+            var matchingMode = !root.TryGetProperty("utilityMode", out var mode) ||
+                mode.ValueKind == JsonValueKind.String && (string.IsNullOrEmpty(mode.GetString()) || mode.GetString() == requestedMode);
+            if (matchingMode && root.TryGetProperty("utilityRunning", out var running) && !running.GetBoolean()
                 && root.TryGetProperty("utilityCompletedAtUtc", out var completed)
                 && completed.ValueKind == JsonValueKind.String && completed.TryGetDateTime(out var completedUtc)
                 && completedUtc >= requestedUtc)
             {
                 failure = root.TryGetProperty("utilityLastFailure", out var error) ? error.GetString() ?? string.Empty : string.Empty;
                 if (failure.Length == 0 && (!root.TryGetProperty("utilityLastSuccess", out var success) || string.IsNullOrEmpty(success.GetString())))
-                    failure = "ADS ended the inn repair trip without a success result.";
+                    failure = "ADS ended the repair trip without a success result.";
                 return false;
             }
         }
         catch (Exception ex)
         {
-            log.Debug($"[MOGTOME][ADS][Repair] Could not read inn repair status: {ex.Message}");
+            log.Debug($"[MOGTOME][ADS][Repair] Could not read repair status: {ex.Message}");
         }
 
         // ADS's utility timeout is 120 seconds; allow its terminal status to arrive.
         if (DateTime.UtcNow - requestedUtc > TimeSpan.FromSeconds(150))
         {
-            failure = "Timed out waiting for ADS to complete the inn repair trip.";
+            failure = "Timed out waiting for ADS to complete the repair trip.";
             return false;
         }
         return true;
@@ -462,6 +466,13 @@ public sealed class DutyAutomationService
 
     public void ReturnToInnIfNeeded()
     {
+        string? acceptedTripMode;
+        lock (adsRepairStateLock)
+            acceptedTripMode = adsRepairTripMode;
+        // A later saved-mode edit must not add inn travel to the accepted outside trip.
+        if (UseAdsExperimental && (acceptedTripMode ??
+            RepairService.GetAdsRepairTripMode(RepairService.GetAdsRepairCommand(Config.AdsRepairMode)))?.StartsWith("npc-no-inn", StringComparison.Ordinal) == true)
+            return;
         try
         {
             var territoryId = Plugin.ClientState.TerritoryType;
@@ -1169,7 +1180,8 @@ public sealed class DutyAutomationService
             adsRepairHandoffActive = true;
             adsRepairWaitingForCompletion = false;
             adsRepairOutsideRestorePending = true;
-            adsRepairReturnsToInn = repairCommand != AdsNpcRepairCommand && repairCommand != AdsSelfRepairCommand;
+            adsRepairTripMode = RepairService.GetAdsRepairTripMode(repairCommand);
+            adsRepairWaitsForUtility = string.IsNullOrEmpty(repairCommand) || adsRepairTripMode is not null;
             adsInnRepairRequestedUtc = DateTime.MinValue;
             adsInnRepairFailure = string.IsNullOrEmpty(repairCommand) ? "Unsupported ADS repair mode." : string.Empty;
         }
@@ -1209,13 +1221,23 @@ public sealed class DutyAutomationService
             {
                 if (IsCurrentAdsRepairOperation(operationId) && Plugin.ClientState.IsLoggedIn && !DutyStartupService.IsInDuty())
                 {
-                    if (repairCommand == AdsNpcInnRepairCommand || repairCommand.StartsWith(AdsNpcInnRepairCommand + " ", StringComparison.Ordinal))
+                    if (RepairService.GetAdsRepairTripMode(repairCommand) is { } mode)
                     {
                         lock (adsRepairStateLock)
                         {
+                            if (mode.StartsWith("npc-no-inn-", StringComparison.Ordinal))
+                            {
+                                using var capabilities = JsonDocument.Parse(Plugin.PluginInterface.GetIpcSubscriber<string>("ADS.GetCapabilitiesJson").InvokeFunc());
+                                var root = capabilities.RootElement;
+                                if (!root.TryGetProperty("schemaVersion", out var schema) || !schema.TryGetInt32(out var version) || version != 1 ||
+                                    !root.TryGetProperty("repairModes", out var modes) || modes.ValueKind != JsonValueKind.Array ||
+                                    !modes.EnumerateArray().Any(value => value.ValueKind == JsonValueKind.String && value.GetString() == mode))
+                                {
+                                    adsInnRepairFailure = $"The loaded ADS does not support repair mode {mode}. Update ADS before selecting this trip.";
+                                    return;
+                                }
+                            }
                             adsInnRepairRequestedUtc = DateTime.UtcNow;
-                            var destination = repairCommand[AdsNpcInnRepairCommand.Length..].Trim();
-                            var mode = destination.Length == 0 ? "npc-yes-inn" : $"npc-yes-inn-{destination}";
                             if (!Plugin.PluginInterface.GetIpcSubscriber<string, bool>("ADS.StartRepair").InvokeFunc(mode))
                                 adsInnRepairFailure = $"ADS did not accept repair mode {mode}.";
                         }
@@ -1266,6 +1288,8 @@ public sealed class DutyAutomationService
             adsRepairHandoffActive = false;
             adsRepairWaitingForCompletion = false;
             adsRepairOutsideRestorePending = false;
+            adsRepairTripMode = null;
+            adsRepairWaitsForUtility = false;
         }
 
         if (!hadRepairState)

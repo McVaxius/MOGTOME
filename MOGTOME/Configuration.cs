@@ -11,7 +11,7 @@ namespace MOGTOME;
 [Serializable]
 public class Configuration
 {
-    public int Version { get; set; } = 2;
+    public int Version { get; set; } = 3;
     public BlundervilleSettings Blunderville { get; set; } = new();
     public KeyboundBrawlerSettings KeyboundBrawler { get; set; } = new();
     public MoogleShopSettings MoogleShop { get; set; } = new();
@@ -97,7 +97,7 @@ public class Configuration
     public int SetupWizardCompletedVersion { get; set; } = 0;
 
     // --- Combat Provider ---
-    public CombatProvider CombatProvider { get; set; } = CombatProvider.Rsr;
+    public CombatProvider CombatProvider { get; set; } = CombatProvider.Bmr;
     public bool UseManualBossModPreset { get; set; } = false;
     public string ManualBossModPresetName { get; set; } = "";
     public bool ObstacleMapsOn { get; set; } = false;
@@ -223,6 +223,13 @@ public class Configuration
                 config.Version = 2;
                 changed = true;
             }
+            if (config.Version < 3)
+            {
+                // Apply the selected provider default once; later explicit selections survive reloads.
+                config.CombatProvider = CombatProvider.Bmr;
+                config.Version = 3;
+                changed = true;
+            }
             if (changed) config.SaveToFile(filePath);
             return config;
         }
@@ -269,4 +276,12 @@ public enum AdsRepairMode
     NpcYesInnCrystarium = 7,
     NpcYesInnSharlayan = 8,
     NpcYesInnTuliyollal = 9,
+    NpcNoInn = 10,
+    NpcNoInnUldah = 11,
+    NpcNoInnGridania = 12,
+    NpcNoInnLimsa = 13,
+    NpcNoInnIshgard = 14,
+    NpcNoInnCrystarium = 15,
+    NpcNoInnSharlayan = 16,
+    NpcNoInnTuliyollal = 17,
 }

@@ -2079,7 +2079,7 @@ Hasil dicatat ke log Dalamud.</value>
     <value>Perbaikan NPC + kamar penginapan</value>
   </data>
   <data name="Engine_InnRepairFailed" xml:space="preserve">
-    <value>Perbaikan penginapan gagal: {0}</value>
+    <value>Perbaikan ADS gagal: {0}</value>
   </data>
   <data name="Config_NPCRepairInnUldah" xml:space="preserve">
     <value>Perbaikan NPC + kamar penginapan — Ul’dah</value>
@@ -2557,4 +2557,7 @@ Buka penyimpanan untuk memperbarui jumlah tercatat.</value></data>
   <data name="Choose an image file." xml:space="preserve"><value>Pilih berkas gambar.</value></data>
   <data name="Loading image..." xml:space="preserve"><value>Memuat gambar...</value></data>
   <data name="Image could not be loaded." xml:space="preserve"><value>Gambar tidak dapat dimuat.</value></data>
+  <data name="KB_WaitEntry" xml:space="preserve"><value>Menunggu masuk ke {0}.</value></data>
+  <data name="KB_PhraseCount" xml:space="preserve"><value>Frasa terkirim: {0}</value></data>
+  <data name="Config_NPCRepairNoInn" xml:space="preserve"><value>Perbaikan NPC, tetap di luar</value></data>
 </root>

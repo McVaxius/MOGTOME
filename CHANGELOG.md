@@ -1,3 +1,10 @@
+2026-11-04 - 4.2.0.8 - BMR defaults, repair cities and KBB corrections (I724/I734-I737/I739)
+
+- Make BMR the default combat provider and migrate existing provider selections once. Preserve later choices, optional providers, custom presets and farming targets.
+- Offer all seven repair cities for both NPC repair modes. Require the exact ADS capability for city-specific no-inn travel, wait for its terminal result and keep no-inn trips outside the inn.
+- Display the fixed 10,000 MGC wallet capacity without changing the 5,470 farming default or saved targets. Count acknowledged phrase submissions across focus changes while retaining key-release timing.
+- Correct KBB entry wording, fit one native title/status caption and wrap settings and status at narrow window widths.
+
 2026-11-01 - KBB queue, titlebar and exchange warning (I727/I722/I720, unversioned)
 
 - Accept a fresh matching KBB duty pop after another participant declines, once native matchmaking has resumed. Preserve one Commence per visible pop and existing queue ownership.

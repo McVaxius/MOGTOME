@@ -11,6 +11,7 @@ internal static class KeyboundBrawlerShop
     // The MGC trader (1058753) links directly to this shop; its festival gate still applies.
     internal const uint ShopId = 1771021;
     internal const uint CurrencyItemId = 52322;
+    internal const uint WalletCapacity = 10_000;
     internal const uint CofferItemId = 52450;
 
     private static IReadOnlyList<BlundervilleOffer>? catalog;

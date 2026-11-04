@@ -61,12 +61,10 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
     {
         NativeCaptionFont = ImGui.GetFont();
         RefreshRunTitleButton();
-        var settings = plugin.Configuration.KeyboundBrawler;
-        var goal = plugin.KeyboundLoop.IsActive || plugin.KeyboundBrawler.IsRunning
-            ? plugin.KeyboundBrawler.WalletTarget : settings.WalletTargetEnabled ? (uint?)Math.Max(0, settings.WalletTarget) : null;
         var wallet = KeyboundBrawlerShop.TryWallet(out var balance) ? balance.ToString("N0") : "?";
-        TitleStatus = Ui.T("KB_TitleStatus", wallet, goal?.ToString("N0") ?? "—", plugin.KeyboundBrawler.CompletedRuns);
-        WindowName = Ui.T("KB_Title") + " | " + TitleStatus + "###MogtomeKeyboundBrawler";
+        TitleStatus = Ui.T("KB_TitleStatus", wallet, KeyboundBrawlerShop.WalletCapacity.ToString("N0"), plugin.KeyboundBrawler.CompletedRuns);
+        // Keep one native caption; the shared header owns and fits the live status after End.
+        WindowName = Ui.T("KB_Title") + "###MogtomeKeyboundBrawler";
         SizeConstraints = new WindowSizeConstraints
         {
             MinimumSize = new(560, 520),
@@ -115,6 +113,7 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
         ImGui.Separator();
         var hasWallet = KeyboundBrawlerShop.TryWallet(out var wallet);
         DrawActions(hasWallet ? wallet : null);
+        UiLayout.TextDisabled(Ui.T("KB_PhraseCount", plugin.KeyboundBrawler.SubmittedPhrases));
         var settings = plugin.Configuration.KeyboundBrawler;
         UiLayout.Wrapped(Ui.T(settings.PartyRole == KeyboundPartyRole.Member ? "BV_MemberWait" : "KB_AutoLoopHelp"));
         if (settings.PurchaseReviewRequired)
@@ -160,7 +159,7 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
         var labels = new[] { Ui.T("Main_Start"), Ui.T("Main_Stop"), Ui.T("BV_Buy"), Ui.T("Shop_Refresh") };
         var actionsWidth = labels.Sum(s => MaterialText.Measure(s).X + ImGui.GetStyle().FramePadding.X * 2) +
             ImGui.GetStyle().ItemSpacing.X * 3 + 8 * ImGuiHelpers.GlobalScale;
-        var walletWidth = MaterialText.Measure(Ui.T("KB_Wallet", "999,999,999")).X + 28 * ImGuiHelpers.GlobalScale;
+        var walletWidth = MaterialText.Measure(Ui.T("KB_Wallet", "10,000 / 10,000")).X + 28 * ImGuiHelpers.GlobalScale;
         var status = plugin.KeyboundLoop.IsActive || plugin.KeyboundBrawler.IsRunning || plugin.IsKeyboundStartQueued ||
             service.Status.Key == "BV_Idle" && plugin.KeyboundBrawler.Status.Key != "KB_Idle"
             ? (plugin.KeyboundLoop.IsActive ? plugin.KeyboundLoop.Status.Render() : plugin.KeyboundBrawler.Status.Render()) : service.Status.Render();
@@ -177,7 +176,7 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
                 DrawActionButtons(buyReady);
                 ImGui.TableSetColumnIndex(1);
                 ImGui.AlignTextToFramePadding();
-                UiLayout.SingleLine(status);
+                UiLayout.Wrapped(status);
                 if (ImGui.IsItemHovered()) UiLayout.SetTooltip(status);
                 ImGui.TableSetColumnIndex(2);
                 ImGui.AlignTextToFramePadding();
@@ -224,14 +223,18 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
             ImGui.Image(texture.Handle, new Vector2(ImGui.GetTextLineHeight()));
             ImGui.SameLine();
         }
-        UiLayout.SingleLine(Ui.T("KB_Wallet", wallet?.ToString(Ui.Culture) ?? "?"));
+        UiLayout.SingleLine(Ui.T("KB_Wallet", (wallet?.ToString("N0", Ui.Culture) ?? "?") + " / " + KeyboundBrawlerShop.WalletCapacity.ToString("N0", Ui.Culture)));
         if (ImGui.IsItemHovered()) UiLayout.SetTooltip(Ui.T("KB_CurrencyName"));
     }
 
     private static bool DrawSettings(KeyboundBrawlerSettings settings)
     {
         var changed = false;
-        var columns = UiLayout.AvailableWidth >= 680 * ImGuiHelpers.GlobalScale ? 2 : 1;
+        var fieldWidth = ImGui.CalcTextSize("999999").X + ImGui.GetStyle().FramePadding.X * 2;
+        var labelWidth = Math.Max(MaterialText.Measure(Ui.T("BV_RunLimit")).X, MaterialText.Measure(Ui.T("KB_WalletTarget")).X);
+        var minimumColumnWidth = labelWidth + ImGui.GetFrameHeight() + fieldWidth + MaterialText.Measure("MGC").X
+            + ImGui.GetStyle().ItemSpacing.X * 4;
+        var columns = UiLayout.AvailableWidth >= Math.Max(680 * ImGuiHelpers.GlobalScale, minimumColumnWidth * 2) ? 2 : 1;
         if (!ImGui.BeginTable("###KeyboundSettings", columns, ImGuiTableFlags.SizingStretchSame)) return false;
         try
         {
@@ -253,7 +256,7 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
             if (UiLayout.Checkbox(Ui.L("BV_AutoShop"), ref automatic)) { settings.ShopWhenFinished = automatic; changed = true; }
             if (columns == 1) ImGui.TableNextRow();
             ImGui.TableSetColumnIndex(columns - 1);
-            UiLayout.SingleLine(Ui.T("KB_AfterShopping"));
+            UiLayout.Wrapped(Ui.T("KB_AfterShopping"));
             UiLayout.SameLineIfFits(150 * ImGuiHelpers.GlobalScale);
             var endings = Enum.GetValues<BlundervilleEndingLocation>();
             var selected = (int)settings.EndingLocation;
@@ -264,8 +267,9 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
         }
         finally { ImGui.EndTable(); }
         var role = (int)settings.PartyRole;
+        UiLayout.Wrapped(Ui.T("KB_PartyRole"));
         ImGui.SetNextItemWidth(Math.Min(UiLayout.AvailableWidth, 180 * ImGuiHelpers.GlobalScale));
-        if (UiLayout.Combo(Ui.L("KB_PartyRole") + "###KeyboundPartyRole", ref role,
+        if (UiLayout.Combo("###KeyboundPartyRole", ref role,
             [Ui.T("KB_PartyLeader"), Ui.T("KB_PartyMember")], 2))
         { settings.PartyRole = (KeyboundPartyRole)role; changed = true; }
         var stage12Wpm = settings.Stage12TypingWpm;
@@ -280,7 +284,7 @@ public sealed class KeyboundBrawlerWindow : Window, IDisposable
 
     private static bool DrawTypingSpeed(string label, string inputId, ref double value)
     {
-        UiLayout.SingleLine(Ui.T(label));
+        UiLayout.Wrapped(Ui.T(label));
         UiLayout.SameLineIfFits(160 * ImGuiHelpers.GlobalScale);
         ImGui.SetNextItemWidth(Math.Min(UiLayout.AvailableWidth, 160 * ImGuiHelpers.GlobalScale));
         bool changed;

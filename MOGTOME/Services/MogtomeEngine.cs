@@ -1778,7 +1778,7 @@ public class MogtomeEngine
             return;
         }
 
-        // yesinn owns repair and travel, including the interval after durability recovers.
+        // ADS NPC trips own repair and travel, including the interval after durability recovers.
         if (dutyAutomationService.IsAdsInnRepairPending(out var innRepairFailure))
         {
             Status = Ui.M("Automation_RepairWaiting");

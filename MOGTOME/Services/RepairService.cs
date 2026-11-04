@@ -2,6 +2,7 @@ using System;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using MOGTOME.Models;
+using MOGTOME.Localization;
 
 namespace MOGTOME.Services;
 
@@ -19,6 +20,14 @@ public class RepairService
         AdsRepairMode.NpcYesInnCrystarium => "/ads npcrepair yesinn crystarium",
         AdsRepairMode.NpcYesInnSharlayan => "/ads npcrepair yesinn sharlayan",
         AdsRepairMode.NpcYesInnTuliyollal => "/ads npcrepair yesinn tuliyollal",
+        AdsRepairMode.NpcNoInn => "/ads npcrepair noinn",
+        AdsRepairMode.NpcNoInnUldah => "/ads npcrepair noinn uldah",
+        AdsRepairMode.NpcNoInnGridania => "/ads npcrepair noinn gridania",
+        AdsRepairMode.NpcNoInnLimsa => "/ads npcrepair noinn limsa",
+        AdsRepairMode.NpcNoInnIshgard => "/ads npcrepair noinn ishgard",
+        AdsRepairMode.NpcNoInnCrystarium => "/ads npcrepair noinn crystarium",
+        AdsRepairMode.NpcNoInnSharlayan => "/ads npcrepair noinn sharlayan",
+        AdsRepairMode.NpcNoInnTuliyollal => "/ads npcrepair noinn tuliyollal",
         _ => string.Empty,
     };
 
@@ -34,8 +43,39 @@ public class RepairService
         AdsRepairMode.NpcYesInnCrystarium => "Config_NPCRepairInnCrystarium",
         AdsRepairMode.NpcYesInnSharlayan => "Config_NPCRepairInnSharlayan",
         AdsRepairMode.NpcYesInnTuliyollal => "Config_NPCRepairInnTuliyollal",
+        AdsRepairMode.NpcNoInn or AdsRepairMode.NpcNoInnUldah or AdsRepairMode.NpcNoInnGridania or
+            AdsRepairMode.NpcNoInnLimsa or AdsRepairMode.NpcNoInnIshgard or AdsRepairMode.NpcNoInnCrystarium or
+            AdsRepairMode.NpcNoInnSharlayan or AdsRepairMode.NpcNoInnTuliyollal => "Config_NPCRepairNoInn",
         _ => "Config_UnsupportedADSRepairMode",
     };
+
+    internal static string GetAdsRepairLabel(AdsRepairMode mode)
+    {
+        var label = Ui.T(GetAdsRepairLabelKey(mode));
+        var city = mode switch
+        {
+            AdsRepairMode.NpcNoInnUldah => "Uldah",
+            AdsRepairMode.NpcNoInnGridania => "Gridania",
+            AdsRepairMode.NpcNoInnLimsa => "Limsa",
+            AdsRepairMode.NpcNoInnIshgard => "Ishgard",
+            AdsRepairMode.NpcNoInnCrystarium => "Crystarium",
+            AdsRepairMode.NpcNoInnSharlayan => "Sharlayan",
+            AdsRepairMode.NpcNoInnTuliyollal => "Tuliyollal",
+            _ => null,
+        };
+        return city is null ? label : label + " — " + Ui.T("BV_Inn" + city);
+    }
+
+    internal static string? GetAdsRepairTripMode(string command)
+    {
+        const string withInn = "/ads npcrepair yesinn";
+        const string withoutInn = "/ads npcrepair noinn";
+        var prefix = command == withInn || command.StartsWith(withInn + " ", StringComparison.Ordinal) ? withInn
+            : command == withoutInn || command.StartsWith(withoutInn + " ", StringComparison.Ordinal) ? withoutInn : null;
+        if (prefix is null) return null;
+        var city = command[prefix.Length..].Trim();
+        return (prefix == withInn ? "npc-yes-inn" : "npc-no-inn") + (city.Length == 0 ? string.Empty : "-" + city);
+    }
 
     private readonly IPluginLog log;
     private Configuration config; // Remove readonly to allow updates

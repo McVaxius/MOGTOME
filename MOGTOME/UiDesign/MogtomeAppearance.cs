@@ -125,7 +125,7 @@ internal sealed class MogtomeAppearance : IDisposable
         // KBB's live status wins space before the left name. Its native caption
         // can use a different font from the body font borrowed for this repaint.
         var nativeCaptionFont = owner is KeyboundBrawlerWindow keybound ? keybound.NativeCaptionFont : default;
-        var fitStatus = owner is KeyboundBrawlerWindow && status is { } full ? full with { ShortText = full.Text } : status;
+        var fitStatus = status;
         title = UiLayout.FitWindowTitle(window, title, retainedTitle, fitStatus, shapedText.Renderer, extraRight, owner.ShowCloseButton);
         if (status is { } summary)
             MaterialWindowHeader.PaintTitleWithStatus(window, title, icon.Handle, icon.Size,
