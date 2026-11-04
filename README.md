@@ -1,5 +1,7 @@
 # M.O.G.T.O.M.E.
 
+Automatic BMR healer presets use the Dhog healer rotations supplied by God Mod Companion. If those rotations cannot be found or the loaded preset drops their strategies, activation reports a warning. Saved manual presets and optional providers remain available.
+
 ---
 
 **Help fund my AI overlords' coffee addiction so they can keep generating more plugins instead of taking over the world**

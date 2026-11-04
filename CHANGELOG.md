@@ -1,3 +1,8 @@
+2026-11-04 - 4.2.0.9 - God Mod Companion Dhog healer rotations (I745)
+
+- Use Dhog WHM, SCH, AST and SGE in the distributed ranged preset; remove Xan healer modules and duplicate HealerAI while preserving other job strategies.
+- Require registered God Mod Companion rotations and matching loaded preset strategies for automatic BMR healer activation. Warn clearly when unavailable; preserve manual presets, movement-only presets and optional rotation providers.
+
 2026-11-04 - 4.2.0.8 - BMR defaults, repair cities and KBB corrections (I724/I734-I737/I739)
 
 - Make BMR the default combat provider and migrate existing provider selections once. Preserve later choices, optional providers, custom presets and farming targets.

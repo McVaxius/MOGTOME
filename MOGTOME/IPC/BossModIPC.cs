@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Globalization;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -64,6 +65,12 @@ public class BossModIPC : IDisposable
     private static readonly HashSet<uint> MeleeJobRows = [2, 4, 20, 22, 29, 30, 34, 39, 41, 43];
     private static readonly HashSet<uint> RangedJobRows = [5, 6, 7, 23, 24, 25, 26, 27, 28, 31, 33, 35, 36, 38, 40, 42];
 
+    internal const string MissingGodModCompanionRotations = "Could not find God Mod Companion rotations";
+    private const string DhogModulePrefix = "BMRVariantModulePack.Autorotation.Dhog.Dhog";
+    private static readonly string[] DhogHealerJobs = ["WHM", "SCH", "AST", "SGE"];
+    private bool? packagedDhogHealers;
+    private bool warnedMissingDhogHealers;
+
     private readonly IDalamudPluginInterface pluginInterface;
     private readonly IPluginLog log;
     private readonly ICommandManager commandManager;
@@ -88,6 +95,93 @@ public class BossModIPC : IDisposable
 
     public bool IsPluginLoaded(string internalName)
         => pluginInterface.InstalledPlugins.Any(p => p.IsLoaded && p.InternalName == internalName);
+
+    internal static IReadOnlySet<string> ReadDhogHealerModules(Type? registry)
+    {
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        try
+        {
+            const BindingFlags flags = BindingFlags.Static | BindingFlags.Public;
+            if (registry?.GetField("Modules", flags)?.GetValue(null) is not IDictionary modules
+                || registry.GetMethod("FindType", flags, [typeof(string)]) is not { } findType)
+                return names;
+            foreach (var job in DhogHealerJobs)
+            {
+                var name = DhogModulePrefix + job;
+                if (findType.Invoke(null, [name]) is Type type && type.FullName == name && modules.Contains(type))
+                    names.Add(name);
+            }
+        }
+        catch { names.Clear(); }
+        return names;
+    }
+
+    private bool HasDhogHealers()
+    {
+        if (!TryGetLiveBossMod("BMR", out _, out var assembly, out _)) return false;
+        var modules = ReadDhogHealerModules(assembly!.GetType("BossMod.Autorotation.RotationModuleRegistry"));
+        return DhogHealerJobs.All(job => modules.Contains(DhogModulePrefix + job));
+    }
+
+    internal static string AdaptDhogHealerPreset(string json, bool available)
+    {
+        if (!available) return json;
+        var root = JsonNode.Parse(json)?.AsObject();
+        if (root?["Modules"] is not JsonObject modules
+            || !DhogHealerJobs.All(job => modules.ContainsKey("BossMod.Autorotation.xan." + job)))
+            return json;
+        foreach (var job in DhogHealerJobs)
+        {
+            modules.Remove("BossMod.Autorotation.xan." + job, out var settings);
+            modules[DhogModulePrefix + job] = settings;
+        }
+        modules.Remove("BossMod.Autorotation.xan.HealerAI");
+        return root.ToJsonString();
+    }
+
+    internal static bool MatchesDhogHealerPreset(string expectedJson, string? actualJson)
+    {
+        if (string.IsNullOrWhiteSpace(actualJson)) return false;
+        try
+        {
+            using var expected = JsonDocument.Parse(expectedJson);
+            using var actual = JsonDocument.Parse(actualJson);
+            if (!actual.RootElement.TryGetProperty("Name", out var name)
+                || !JsonElement.DeepEquals(expected.RootElement.GetProperty("Name"), name)
+                || !actual.RootElement.TryGetProperty("Modules", out var modules) || modules.ValueKind != JsonValueKind.Object)
+                return false;
+            var expectedModules = expected.RootElement.GetProperty("Modules");
+            return !modules.TryGetProperty("BossMod.Autorotation.xan.HealerAI", out _)
+                   && DhogHealerJobs.All(job => !modules.TryGetProperty("BossMod.Autorotation.xan." + job, out _)
+                       && modules.TryGetProperty(DhogModulePrefix + job, out var settings)
+                       && JsonElement.DeepEquals(expectedModules.GetProperty(DhogModulePrefix + job), settings));
+        }
+        catch (Exception ex) when (ex is JsonException or InvalidOperationException or KeyNotFoundException) { return false; }
+    }
+
+    internal bool PrepareGodModCompanionHealers(uint job, CombatProvider provider, bool manualPreset, Action<string> reportWarning)
+    {
+        if (provider != CombatProvider.Bmr || manualPreset || job is not (6 or 24 or 28 or 33 or 40)) return true;
+        var available = HasDhogHealers();
+        if (!available)
+        {
+            LastStatus = MissingGodModCompanionRotations;
+            if (!warnedMissingDhogHealers) reportWarning(LastStatus);
+            warnedMissingDhogHealers = true;
+            packagedDhogHealers = false;
+            return false;
+        }
+        if (packagedDhogHealers != true && !RefreshPackagedPresets()) return false;
+        var expected = ReadPackagedPresetJson("FRENRIDER - RANGED");
+        if (expected == null || !VerifyCreatedDhogPreset("FRENRIDER - RANGED", AdaptDhogHealerPreset(expected, true)))
+        {
+            if (!warnedMissingDhogHealers) reportWarning(LastStatus);
+            warnedMissingDhogHealers = true;
+            return false;
+        }
+        warnedMissingDhogHealers = false;
+        return true;
+    }
 
     public BossModPresetCatalog ReadPresetCatalog(CombatProvider provider)
         => ReadPresetCatalog(provider == CombatProvider.Vbm ? "VBM" : "BMR");
@@ -769,6 +863,13 @@ public class BossModIPC : IDisposable
     {
         try
         {
+            if (!passive && !PrepareGodModCompanionHealers(Plugin.ObjectTable.LocalPlayer?.ClassJob.RowId ?? 0,
+                    provider, useManualPreset, warning =>
+                    {
+                        log.Warning($"[MOGTOME][Rotation] {warning}");
+                        Plugin.ChatGui?.Print(warning);
+                    }))
+                return false;
             var manualPresetSelected = !passive && useManualPreset;
             if (manualPresetSelected && string.IsNullOrWhiteSpace(manualPresetName))
             {
@@ -965,12 +1066,15 @@ public class BossModIPC : IDisposable
     private int InstallPackagedPresets(bool forceRecreate)
     {
         var createdCount = 0;
+        var useDhogHealers = ownedIdentity.Config is { CombatProvider: CombatProvider.Bmr, UseManualBossModPreset: false }
+                            && HasDhogHealers();
 
         foreach (var presetName in PackagedPresetNames)
         {
             var json = ReadPackagedPresetJson(presetName);
             if (json == null)
                 continue;
+            json = AdaptDhogHealerPreset(json, useDhogHealers);
 
             if (TryCreatePreset(presetName, json, forceRecreate))
             {
@@ -982,6 +1086,7 @@ public class BossModIPC : IDisposable
         }
 
         log.Information($"[MOGTOME][BossMod] Installed {createdCount}/{PackagedPresetNames.Length} packaged presets");
+        if (createdCount == PackagedPresetNames.Length) packagedDhogHealers = useDhogHealers;
 
         return createdCount;
     }
@@ -1052,6 +1157,18 @@ public class BossModIPC : IDisposable
         if (RangedJobRows.Contains(rowId))
             return passive ? PassiveRangedPreset : ActiveRangedPreset;
         throw new InvalidOperationException($"Unsupported combat job {rowId}");
+    }
+
+    private bool VerifyCreatedDhogPreset(string name, string json)
+    {
+        using var expected = JsonDocument.Parse(json);
+        if (!expected.RootElement.TryGetProperty("Modules", out var modules)
+            || !DhogHealerJobs.Any(job => modules.TryGetProperty(DhogModulePrefix + job, out _)))
+            return true;
+        if (MatchesDhogHealerPreset(json, TryStringIpc("BossMod.Presets.Get", name))) return true;
+        LastStatus = MissingGodModCompanionRotations + ": the created preset did not retain the exact healer modules and settings.";
+        log.Warning($"[MOGTOME][Rotation] {LastStatus}");
+        return false;
     }
 
     private bool TryCreatePreset(string name, string json, bool forceRecreate)

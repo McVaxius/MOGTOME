@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Globalization;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Runtime.CompilerServices;
 using Dalamud.Game;
 using Dalamud.Game.Text.Evaluator;
@@ -25,6 +26,113 @@ namespace MOGTOME.Tests;
 // database, or native callbacks are used by this fixture.
 public sealed class DutyRecoveryTests
 {
+    [Fact]
+    public void GodModCompanionAdaptationChangesOnlyStockHealersAndLeavesPassiveDefinitionsIntact()
+    {
+        var directory = Path.Combine(Path.GetDirectoryName(typeof(BossModIPC).Assembly.Location)!, "data", "bm");
+        foreach (var path in Directory.EnumerateFiles(directory, "*.json"))
+        {
+            var json = File.ReadAllText(path);
+            Assert.Equal(json, BossModIPC.AdaptDhogHealerPreset(json, false));
+            var updated = BossModIPC.AdaptDhogHealerPreset(json, true);
+            if (!Path.GetFileName(path).StartsWith("FRENRIDER - ", StringComparison.Ordinal))
+            {
+                Assert.Equal(json, updated);
+                continue;
+            }
+            using var original = JsonDocument.Parse(json);
+            using var adapted = JsonDocument.Parse(updated);
+            var modules = adapted.RootElement.GetProperty("Modules");
+            foreach (var job in new[] { "WHM", "SCH", "AST", "SGE" })
+            {
+                Assert.False(modules.TryGetProperty("BossMod.Autorotation.xan." + job, out _));
+                var before = original.RootElement.GetProperty("Modules");
+                var expected = before.TryGetProperty("BossMod.Autorotation.xan." + job, out var legacy) ? legacy
+                    : before.GetProperty("BMRVariantModulePack.Autorotation.Dhog.Dhog" + job);
+                Assert.True(JsonElement.DeepEquals(expected,
+                    modules.GetProperty("BMRVariantModulePack.Autorotation.Dhog.Dhog" + job)));
+            }
+            Assert.False(modules.TryGetProperty("BossMod.Autorotation.xan.HealerAI", out _));
+            foreach (var module in original.RootElement.GetProperty("Modules").EnumerateObject()
+                         .Where(module => module.Name is not ("BossMod.Autorotation.xan.WHM" or "BossMod.Autorotation.xan.SCH"
+                             or "BossMod.Autorotation.xan.AST" or "BossMod.Autorotation.xan.SGE" or "BossMod.Autorotation.xan.HealerAI")))
+                Assert.True(JsonElement.DeepEquals(module.Value, modules.GetProperty(module.Name)));
+        }
+    }
+
+    [Theory]
+    [InlineData(CombatProvider.Bmr)]
+    [InlineData(CombatProvider.Vbm)]
+    public void MissingHealerModulesDoNotRejectStockPresetInstallationForOtherJobs(CombatProvider provider)
+    {
+        var path = Path.Combine(Path.GetDirectoryName(typeof(BossModIPC).Assembly.Location)!, "data", "bm", "FRENRIDER - RANGED.json");
+        var native = new NativeBossModProvider(provider, "Original");
+        native.CreatedPresetTransform = payload =>
+        {
+            var root = JsonNode.Parse(payload)!;
+            var modules = root["Modules"]!.AsObject();
+            foreach (var job in new[] { "WHM", "SCH", "AST", "SGE" })
+                modules.Remove("BMRVariantModulePack.Autorotation.Dhog.Dhog" + job);
+            return root.ToJsonString();
+        };
+        using var service = native.CreateService();
+        var result = typeof(BossModIPC).GetMethod("TryCreatePreset", BindingFlags.NonPublic | BindingFlags.Instance)!
+            .Invoke(service, ["FRENRIDER - RANGED", File.ReadAllText(path), true]);
+        Assert.True(Assert.IsType<bool>(result));
+        Assert.Equal(new[] { "Original" }, native.Active);
+    }
+
+    [Theory]
+    [InlineData("unchanged", true)]
+    [InlineData("module", false)]
+    [InlineData("setting", false)]
+    [InlineData("competing-native", false)]
+    public void GodModCompanionCreationRequiresExactHealerReadbackEvenWhenNativeCreateReturnsTrue(string change, bool expected)
+    {
+        var path = Path.Combine(Path.GetDirectoryName(typeof(BossModIPC).Assembly.Location)!, "data", "bm", "FRENRIDER - RANGED.json");
+        var json = BossModIPC.AdaptDhogHealerPreset(File.ReadAllText(path), true);
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original");
+        native.CreatedPresetTransform = payload =>
+        {
+            var root = JsonNode.Parse(payload)!;
+            var modules = root["Modules"]!.AsObject();
+            if (change == "module") modules.Remove("BMRVariantModulePack.Autorotation.Dhog.DhogSCH");
+            if (change == "setting") modules["BMRVariantModulePack.Autorotation.Dhog.DhogWHM"] = new JsonArray();
+            if (change == "competing-native") modules["BossMod.Autorotation.xan.HealerAI"] = new JsonArray();
+            return root.ToJsonString();
+        };
+        using var service = native.CreateService();
+        var created = typeof(BossModIPC).GetMethod("TryCreatePreset", BindingFlags.NonPublic | BindingFlags.Instance)!
+            .Invoke(service, ["FRENRIDER - RANGED", json, true]);
+        Assert.True(Assert.IsType<bool>(created));
+        var result = typeof(BossModIPC).GetMethod("VerifyCreatedDhogPreset", BindingFlags.NonPublic | BindingFlags.Instance)!
+            .Invoke(service, ["FRENRIDER - RANGED", json]);
+
+        Assert.Equal(expected, Assert.IsType<bool>(result));
+        Assert.Single(native.Writes, write => write.StartsWith("BossMod.Presets.Create ", StringComparison.Ordinal));
+        Assert.Equal(new[] { "Original" }, native.Active);
+        if (!expected) Assert.Contains("God Mod Companion rotations", service.LastSettingsStatus, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void MissingGodModCompanionWarnsOnceWithoutRewritingManualPresetsOrOptionalProviders()
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original");
+        using var service = native.CreateService();
+        var warnings = new List<string>();
+        Assert.True(service.PrepareGodModCompanionHealers(24, CombatProvider.Vbm, true, warnings.Add));
+        Assert.True(service.PrepareGodModCompanionHealers(19, CombatProvider.Bmr, true, warnings.Add));
+        Assert.Empty(warnings);
+        Assert.True(service.PrepareGodModCompanionHealers(6, CombatProvider.Bmr, true, warnings.Add));
+        Assert.True(service.PrepareGodModCompanionHealers(24, CombatProvider.Bmr, true, warnings.Add));
+        Assert.Empty(warnings);
+        Assert.False(service.PrepareGodModCompanionHealers(6, CombatProvider.Bmr, false, warnings.Add));
+        Assert.False(service.PrepareGodModCompanionHealers(24, CombatProvider.Bmr, false, warnings.Add));
+        Assert.Equal(new[] { "Could not find God Mod Companion rotations" }, warnings);
+        Assert.Empty(native.Writes);
+        Assert.Equal(new[] { "Original" }, native.Active);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -1917,6 +2025,8 @@ public sealed class DutyRecoveryTests
         internal double Distance = 7.5;
         internal int AccountSaveAttempts;
         internal Action? AfterPackagedRefresh;
+        internal Func<string, string>? CreatedPresetTransform;
+        private readonly Dictionary<string, string> presetDefinitions = new(StringComparer.Ordinal);
         internal Action? AfterSelectorWrite;
         private readonly object node;
         private readonly object? aiManager;
@@ -2134,7 +2244,7 @@ public sealed class DutyRecoveryTests
             if (channel == "BossMod.Presets.Get")
             {
                 var found = Presets.AllPresets.FirstOrDefault(preset => string.Equals(preset.Name, (string)values![0]!, StringComparison.CurrentCultureIgnoreCase));
-                return found is null ? null : JsonSerializer.Serialize(new { found.Name });
+                return found is null ? null : presetDefinitions.GetValueOrDefault(found.Name) ?? JsonSerializer.Serialize(new { found.Name });
             }
             if (channel == "BossMod.Configuration")
             {
@@ -2168,6 +2278,7 @@ public sealed class DutyRecoveryTests
             if (channel == "BossMod.Presets.Delete")
             {
                 var name = (string)values![0]!;
+                presetDefinitions.Remove(name);
                 Presets.AllPresets.RemoveAll(preset => preset.Name == name);
                 Presets.DefaultPresets.RemoveAll(preset => preset.Name == name);
                 Active.RemoveAll(preset => preset == name);
@@ -2177,6 +2288,7 @@ public sealed class DutyRecoveryTests
             {
                 using var json = JsonDocument.Parse((string)values![0]!);
                 var preset = new NativePreset(json.RootElement.GetProperty("Name").GetString()!);
+                presetDefinitions[preset.Name] = CreatedPresetTransform?.Invoke((string)values![0]!) ?? (string)values![0]!;
                 Presets.AllPresets.Add(preset);
                 Presets.DefaultPresets.Add(preset);
                 if (preset.Name == "FRENRIDER - RANGED") AfterPackagedRefresh?.Invoke();
