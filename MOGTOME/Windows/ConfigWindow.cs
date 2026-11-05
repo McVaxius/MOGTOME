@@ -38,7 +38,7 @@ public class ConfigWindow : Window, IDisposable
     // Dependency check cache
     private DateTime lastDepCheck = DateTime.MinValue;
     private bool depRsr, depBmr, depVbm, depWrath, depVnav, depYesAlready, depTextAdv, depXaSlave, depXaDatabase, depAutoDuty, depAds, depLifestream;
-    private bool depCustomRes, depChillframes, depKrangler, depDps, depTtsl;
+    private bool depCustomRes, depChillframes, depKrangler, depDps, depTtsl, depGmc;
     private bool depTwistOfFayteInstalled, depTwistOfFayteEnabled;
     private bool allDepsGreen = false;
     private const int SetupWizardVersion = 1;
@@ -300,6 +300,7 @@ public class ConfigWindow : Window, IDisposable
             depKrangler = false;
             depDps = false;
             depTtsl = false;
+            depGmc = false;
             depTwistOfFayteInstalled = false;
             depTwistOfFayteEnabled = false;
 
@@ -326,6 +327,7 @@ public class ConfigWindow : Window, IDisposable
                     case "Krangler": depKrangler = true; break;
                     case "DPS": depDps = true; break;
                     case "TTSL": depTtsl = true; break;
+                    case "BMRVariantLoader": depGmc = true; break;
                 }
 
                 if (!depWrath &&
@@ -352,7 +354,7 @@ public class ConfigWindow : Window, IDisposable
             var backendReady = useAdsExperimental
                 ? depAds
                 : depAutoDuty && pathOk;
-            var providerReady = plugin.Configuration.CombatProvider switch
+            var providerReady = (depGmc ? CombatProvider.Bmr : plugin.Configuration.CombatProvider) switch
             {
                 CombatProvider.Bmr => depBmr,
                 CombatProvider.Vbm => depVbm,
@@ -403,7 +405,7 @@ public class ConfigWindow : Window, IDisposable
         }
         ImGui.Separator();
 
-        switch (config.CombatProvider)
+        switch (depGmc ? CombatProvider.Bmr : config.CombatProvider)
         {
             case CombatProvider.Rsr:
                 DrawDepLine(Ui.T("Config_RSRRotationSolverReborn"), depRsr, depRsr ? Ui.T("Config_Installed") : Ui.T("Config_NOTFOUND"), "RSR");
@@ -433,6 +435,8 @@ public class ConfigWindow : Window, IDisposable
         }
         var config = plugin.Configuration;
         ImGui.PushID(id);
+        if (depGmc)
+            UiLayout.Wrapped(Ui.T("Config_GmcCombat"));
         var startupPending = plugin.Engine?.IsStartupPending == true || plugin.IsEngineStartQueued;
         ImGui.BeginDisabled(plugin.Engine?.IsRunning == true || startupPending);
         UiLayout.Wrapped(Ui.T("Config_CombatRotation"));
@@ -590,6 +594,7 @@ public class ConfigWindow : Window, IDisposable
         ImGui.Spacing();
         DrawSectionHeading("Config_OptionalPlugins");
 
+        DrawDepLineOptional("God Mod Companion (GMC)", depGmc, Ui.T("Config_OptionalNotRequiredByMOGTOME"));
         DrawDepLineOptional("Lifestream", depLifestream, Ui.T("Config_OptionalNotRequiredByMOGTOME"));
         DrawDepLineOptional("TextAdvance", depTextAdv, Ui.T("Config_OptionalNotRequiredByMOGTOME"));
         DrawDepLineOptional("Krangler", depKrangler, Ui.T("Config_RecommendedAppearanceNameplateRandomizer"));
@@ -876,7 +881,7 @@ public class ConfigWindow : Window, IDisposable
             : depAutoDuty && plugin.AutoDutyPathService.PathExists(config.PraetoriumPathFileName);
 
         AethertekUI.MaterialText.Text(Ui.T("Config_Backend2", (config.UseAdsExperimental ? Ui.T("Config_ADSPrimary") : Ui.T("Config_AutoDutyAlternative"))));
-        AethertekUI.MaterialText.Text(Ui.T("Config_CombatProvider2", Ui.EnumLabel(config.CombatProvider)));
+        AethertekUI.MaterialText.Text(Ui.T("Config_CombatProvider2", Ui.EnumLabel(depGmc ? CombatProvider.Bmr : config.CombatProvider)));
         AethertekUI.MaterialText.Text(Ui.T("Config_RequiredChecks", (backendReady && IsCombatProviderReady(config) && depVnav && depXaSlave && depYesAlready ? Ui.T("Config_Ready") : Ui.T("Config_Incomplete"))));
         AethertekUI.MaterialText.Text(Ui.T("Config_PartyRole", (config.IsPartyLeader ? Ui.T("Config_Leader") : Ui.T("Config_Participant"))));
         AethertekUI.MaterialText.Text(Ui.T("Config_OptionalFood", (config.FoodItemId > 0 ? Ui.Item((uint)config.FoodItemId).Render() : Ui.T("Config_NotConfigured"))));
@@ -885,7 +890,7 @@ public class ConfigWindow : Window, IDisposable
     }
 
     private bool IsCombatProviderReady(Configuration config)
-        => config.CombatProvider switch
+        => (depGmc ? CombatProvider.Bmr : config.CombatProvider) switch
         {
             CombatProvider.Bmr => depBmr,
             CombatProvider.Vbm => depVbm,

@@ -2560,4 +2560,7 @@ Abra os depósitos para atualizar as quantidades registradas.</value></data>
   <data name="KB_WaitEntry" xml:space="preserve"><value>Aguardando a entrada em {0}.</value></data>
   <data name="KB_PhraseCount" xml:space="preserve"><value>Frases enviadas: {0}</value></data>
   <data name="Config_NPCRepairNoInn" xml:space="preserve"><value>Reparo com NPC, ficar do lado de fora</value></data>
+  <data name="Config_GmcCombat" xml:space="preserve">
+    <value>O GMC usa a rotação automática do BMR e o plano do chefe para o job atual, quando disponível.</value>
+  </data>
 </root>

@@ -2404,4 +2404,7 @@ Ouvrir les stockages pour actualiser les quantités enregistrées.</value></data
   <data name="KB_WaitEntry" xml:space="preserve"><value>En attente de l’entrée de {0}.</value></data>
   <data name="KB_PhraseCount" xml:space="preserve"><value>Phrases envoyées : {0}</value></data>
   <data name="Config_NPCRepairNoInn" xml:space="preserve"><value>Réparation PNJ, rester dehors</value></data>
+  <data name="Config_GmcCombat" xml:space="preserve">
+    <value>GMC utilise la rotation automatique de BMR et, s'il existe, le plan du boss pour le job actuel.</value>
+  </data>
 </root>

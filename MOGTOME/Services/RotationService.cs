@@ -23,6 +23,7 @@ public class RotationService : IDisposable
     private string preparedCharacter = string.Empty;
     private bool settingsPending;
     private bool sessionEnded;
+    private bool gmcSession;
     private (bool Manual, string Name)? appliedPresetSettings;
     public string LastFailureReason => Failure.English;
     public UiText Failure { get; private set; } = string.Empty;
@@ -52,6 +53,7 @@ public class RotationService : IDisposable
 
     internal void SetAdsDutyIpcService(AdsDutyIpcService service) => bossModIPC.SetAdsDutyIpcService(service);
     internal bool IsVbmActivationDeferred => preparedBossMod == CombatProvider.Vbm && bossModIPC.IsVbmInteractionPauseActive;
+    internal bool UsesGmc => bossModIPC.IsGmcLoaded;
 
     private string ReadCharacterIdentity()
     {
@@ -67,7 +69,8 @@ public class RotationService : IDisposable
     internal void ObserveSessionDeparture()
     {
         if (preparedConfig is null) return;
-        if (!MatchesPreparedSession(configManager.GetActiveConfig()) || !bossModIPC.IsOwnedProviderCurrent)
+        if (!MatchesPreparedSession(configManager.GetActiveConfig()) || !bossModIPC.IsOwnedProviderCurrent
+            || gmcSession != bossModIPC.IsGmcLoaded)
         {
             DisableRotationForDutyEnd("account, character, provider or profile departure");
             preparedConfig = null;
@@ -122,6 +125,11 @@ public class RotationService : IDisposable
             return false;
         var config = configManager.GetActiveConfig();
         var selected = CurrentPresetSettings(config);
+        if (gmcSession)
+        {
+            settingsPending = false;
+            return true;
+        }
         if (appliedPresetSettings == selected || config.CombatProvider is CombatProvider.Rsr or CombatProvider.Wrath)
         {
             appliedPresetSettings = selected;
@@ -165,7 +173,8 @@ public class RotationService : IDisposable
         settingsPending = false;
 
         var config = configManager.GetActiveConfig();
-        if (preferBmr && config.CombatProvider == CombatProvider.Vbm)
+        gmcSession = bossModIPC.IsGmcLoaded;
+        if (!gmcSession && preferBmr && config.CombatProvider == CombatProvider.Vbm)
         {
             config.CombatProvider = CombatProvider.Bmr;
             configManager.SaveCurrentAccount();
@@ -176,15 +185,16 @@ public class RotationService : IDisposable
         if (bmrLoaded && vbmLoaded)
             return Fail(Ui.M("Rotation_BothBossModVariantsAreStillLoadedConflict"));
 
-        if (config.CombatProvider != CombatProvider.Wrath)
+        var provider = gmcSession ? CombatProvider.Bmr : config.CombatProvider;
+        if (provider != CombatProvider.Wrath)
         {
-            preparedBossMod = config.CombatProvider == CombatProvider.Rsr
+            preparedBossMod = provider == CombatProvider.Rsr
                 ? bmrLoaded ? CombatProvider.Bmr : vbmLoaded ? CombatProvider.Vbm : null
-                : config.CombatProvider;
+                : provider;
             if (preparedBossMod == null ||
                 (preparedBossMod == CombatProvider.Bmr && !bmrLoaded) ||
                 (preparedBossMod == CombatProvider.Vbm && !vbmLoaded))
-                return Fail(Ui.M("Rotation_RequiresLoadedBossModSupport", config.CombatProvider, (config.CombatProvider == CombatProvider.Rsr ? Ui.M("Rotation_BMROrVBM") : (UiText)config.CombatProvider.ToString())));
+                return Fail(Ui.M("Rotation_RequiresLoadedBossModSupport", provider, (provider == CombatProvider.Rsr ? Ui.M("Rotation_BMROrVBM") : (UiText)provider.ToString())));
 
             var character = ReadCharacterIdentity();
             if (string.IsNullOrEmpty(configManager.CurrentAccountId) || string.IsNullOrEmpty(character)
@@ -203,12 +213,14 @@ public class RotationService : IDisposable
         preparedCharacter = ReadCharacterIdentity();
 
         Failure = string.Empty;
-        log.Information($"[MOGTOME][Rotation] Initialized selected combat provider: {config.CombatProvider}");
+        log.Information($"[MOGTOME][Rotation] Initialized selected combat provider: {provider}; GMC={gmcSession}");
         return true;
     }
 
     internal void RestoreRsrHealingForStart()
-        => bossModIPC.RestoreRsrHealing();
+    {
+        if (!UsesGmc) bossModIPC.RestoreRsrHealing();
+    }
 
     public bool ForceRotation()
         => EnableRotationOncePerDuty("force rotation");
@@ -251,7 +263,7 @@ public class RotationService : IDisposable
         if (IsVbmActivationDeferred)
             return false;
 
-        var provider = configManager.GetActiveConfig().CombatProvider;
+        var provider = gmcSession ? CombatProvider.Bmr : configManager.GetActiveConfig().CombatProvider;
         try
         {
             if (!EnableSelectedProvider() || rotationDisableSentForDuty)
@@ -285,7 +297,7 @@ public class RotationService : IDisposable
         if (betweenAreas)
         {
             if (!rsrMapTransitionPending && rotationEnableSentForDuty && !rotationDisableSentForDuty &&
-                !sessionEnded && inDuty && configManager.GetActiveConfig().CombatProvider == CombatProvider.Rsr)
+                !sessionEnded && !gmcSession && inDuty && configManager.GetActiveConfig().CombatProvider == CombatProvider.Rsr)
             {
                 rsrMapTransitionPending = true;
                 rsrMapTransitionTerritory = territoryId;
@@ -320,7 +332,17 @@ public class RotationService : IDisposable
         if (DutyState.IsMogtomeDutyTerritory(territoryId) && backendStarted && !dutyCompleted && !localPlayerDead)
             ApplyPendingCombatSettings();
         var provider = configManager.GetActiveConfig().CombatProvider;
-        if (provider != CombatProvider.Rsr ||
+        if (gmcSession && rotationEnableSentForDuty && !rotationDisableSentForDuty && !sessionEnded
+            && DutyState.IsMogtomeDutyTerritory(territoryId) && backendStarted && !dutyCompleted && !localPlayerDead)
+        {
+            ObserveSessionDeparture();
+            if (!rotationDisableSentForDuty && !bossModIPC.UpdateGmcAutorotation())
+            {
+                DisableRotationForDutyEnd("GMC combat ownership or native state changed");
+                Fail(Ui.M("Rotation_BossModSettingsUnconfirmed"));
+            }
+        }
+        if (gmcSession || provider != CombatProvider.Rsr ||
             !DutyState.IsMogtomeDutyTerritory(territoryId) ||
             !backendStarted ||
             dutyCompleted ||
@@ -410,6 +432,14 @@ public class RotationService : IDisposable
         var provider = config.CombatProvider;
         if (preparedConfig is not null && !MatchesPreparedSession(config))
             return Fail(Ui.M("Rotation_BossModSessionChanged"));
+        if (gmcSession)
+        {
+            if (!bossModIPC.IsGmcLoaded || preparedBossMod != CombatProvider.Bmr
+                || !bossModIPC.IsPluginLoaded("BossModReborn") || bossModIPC.IsPluginLoaded("BossMod")
+                || !bossModIPC.BeginOwnedBossModSettings(CombatProvider.Bmr, configManager.CurrentAccountId, ReadCharacterIdentity(), config))
+                return Fail(Ui.M("Rotation_BossModSettingsUnconfirmed"));
+            return bossModIPC.BeginGmcAutorotation();
+        }
         if (provider != CombatProvider.Wrath)
         {
             var bmrLoaded = bossModIPC.IsPluginLoaded("BossModReborn");

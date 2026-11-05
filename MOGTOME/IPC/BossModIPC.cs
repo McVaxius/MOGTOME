@@ -28,7 +28,7 @@ internal enum RsrOperatingMode
     Active,
 }
 
-public class BossModIPC : IDisposable
+public partial class BossModIPC : IDisposable
 {
     private enum RsrOtherCommandType : byte { Settings }
 
@@ -198,6 +198,7 @@ public class BossModIPC : IDisposable
         log.Warning($"[MOGTOME] Owned BossMod settings cleanup was incomplete: {LastStatus}");
         ownedSettings = null;
         ownedProvider = null;
+        ForgetGmcPlan();
         cleanupStarted = cleanupFailed = false;
         cleanupRuntimeExpected = cleanupRuntimeTarget = null;
         return true;
@@ -342,8 +343,8 @@ public class BossModIPC : IDisposable
         return database?.GetType() == databaseType ? database : null;
     }
 
-    private static object? LiveMember(object root, string name)
-        => GetInstanceMember(root, name);
+    private static object? LiveMember(object? root, string name)
+        => root is null ? null : GetInstanceMember(root, name);
 
     internal bool PrepareOwnedBossModSettings(string rotationProvider, string account, string character,
         Configuration config)
@@ -378,6 +379,7 @@ public class BossModIPC : IDisposable
             ownedIdentity = identity;
             ownedProvider = new WeakReference<object>(live!);
             ownedSettings = new BossModSettingsOwnership(provider, ReadBossModSettings(provider, assembly!));
+            ForgetGmcPlan();
         }
         return true;
     }
@@ -696,6 +698,8 @@ public class BossModIPC : IDisposable
         }
         cleanupRuntimeExpected = current.Runtime;
         cleanupRuntimeTarget = ownedSettings!.GetRuntimeCleanupTarget(current, turnEverythingOff: false);
+        if (!RestoreGmcPlan())
+            cleanupFailed = true;
         if (ownedSettings.OwnedRuntime is not null && current.Runtime is null)
         {
             LastStatus = "BossMod runtime preset restoration retained: current state is unreadable.";
@@ -799,6 +803,7 @@ public class BossModIPC : IDisposable
         {
             ownedSettings = null;
             ownedProvider = null;
+            ForgetGmcPlan();
         }
         cleanupStarted = false;
         cleanupRuntimeExpected = null;

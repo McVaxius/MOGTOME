@@ -2404,4 +2404,7 @@ DictionaryPathsとPathSelectionsByPathを比較します。
   <data name="KB_WaitEntry" xml:space="preserve"><value>{0}への入場を待機中。</value></data>
   <data name="KB_PhraseCount" xml:space="preserve"><value>送信したフレーズ: {0}</value></data>
   <data name="Config_NPCRepairNoInn" xml:space="preserve"><value>NPC修理後、屋外に留まる</value></data>
+  <data name="Config_GmcCombat" xml:space="preserve">
+    <value>GMCはBMRの自動ローテーションを使用し、現在のジョブ用のボスプランがあれば適用します。</value>
+  </data>
 </root>

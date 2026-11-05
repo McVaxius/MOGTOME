@@ -2410,4 +2410,7 @@ DictionaryPaths와 PathSelectionsByPath를 비교합니다.
   <data name="KB_WaitEntry" xml:space="preserve"><value>{0} 입장을 기다리는 중입니다.</value></data>
   <data name="KB_PhraseCount" xml:space="preserve"><value>제출한 문구: {0}</value></data>
   <data name="Config_NPCRepairNoInn" xml:space="preserve"><value>NPC 수리 후 밖에 머물기</value></data>
+  <data name="Config_GmcCombat" xml:space="preserve">
+    <value>GMC는 BMR 자동 전투를 사용하며, 현재 직업의 보스 계획이 있으면 적용합니다.</value>
+  </data>
 </root>

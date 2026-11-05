@@ -2410,4 +2410,7 @@ Abre los almacenes para actualizar las cantidades registradas.</value></data>
   <data name="KB_WaitEntry" xml:space="preserve"><value>Esperando para entrar en {0}.</value></data>
   <data name="KB_PhraseCount" xml:space="preserve"><value>Frases enviadas: {0}</value></data>
   <data name="Config_NPCRepairNoInn" xml:space="preserve"><value>Reparación de PNJ, quedarse fuera</value></data>
+  <data name="Config_GmcCombat" xml:space="preserve">
+    <value>GMC usa la rotación automática de BMR y el plan del jefe para el trabajo actual, si está disponible.</value>
+  </data>
 </root>

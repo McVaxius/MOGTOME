@@ -2576,4 +2576,7 @@ Retainer और अन्य भंडारण: {3}
   <data name="KB_WaitEntry" xml:space="preserve"><value>{0} में प्रवेश की प्रतीक्षा।</value></data>
   <data name="KB_PhraseCount" xml:space="preserve"><value>भेजे गए वाक्यांश: {0}</value></data>
   <data name="Config_NPCRepairNoInn" xml:space="preserve"><value>NPC से मरम्मत, बाहर रहें</value></data>
+  <data name="Config_GmcCombat" xml:space="preserve">
+    <value>GMC, BMR का स्वचालित रोटेशन और उपलब्ध होने पर मौजूदा जॉब की बॉस योजना इस्तेमाल करता है।</value>
+  </data>
 </root>

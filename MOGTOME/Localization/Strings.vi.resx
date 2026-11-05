@@ -2560,4 +2560,7 @@ Mở kho để cập nhật số lượng đã ghi.</value></data>
   <data name="KB_WaitEntry" xml:space="preserve"><value>Đang chờ vào {0}.</value></data>
   <data name="KB_PhraseCount" xml:space="preserve"><value>Số cụm từ đã gửi: {0}</value></data>
   <data name="Config_NPCRepairNoInn" xml:space="preserve"><value>Sửa với NPC, ở lại bên ngoài</value></data>
+  <data name="Config_GmcCombat" xml:space="preserve">
+    <value>GMC dùng tự động xoay chiêu của BMR và kế hoạch đánh trùm cho nghề hiện tại nếu có.</value>
+  </data>
 </root>

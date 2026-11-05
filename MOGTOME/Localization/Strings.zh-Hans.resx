@@ -2410,4 +2410,7 @@ Path: {0}
   <data name="KB_WaitEntry" xml:space="preserve"><value>等待进入{0}。</value></data>
   <data name="KB_PhraseCount" xml:space="preserve"><value>已提交短语：{0}</value></data>
   <data name="Config_NPCRepairNoInn" xml:space="preserve"><value>NPC修理后留在室外</value></data>
+  <data name="Config_GmcCombat" xml:space="preserve">
+    <value>GMC 使用 BMR 自动循环，并在有可用计划时使用当前职业的首领计划。</value>
+  </data>
 </root>

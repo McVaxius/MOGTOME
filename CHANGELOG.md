@@ -10,6 +10,12 @@
 - Display the fixed 10,000 MGC wallet capacity without changing the 5,470 farming default or saved targets. Count acknowledged phrase submissions across focus changes while retaining key-release timing.
 - Correct KBB entry wording, fit one native title/status caption and wrap settings and status at narrow window widths.
 
+2026-11-01 - Optional GMC combat support (unversioned)
+
+- List God Mod Companion (BMRVariantLoader), public or private, as optional. When loaded, use its currently supported BMR autorotation without enabling BossMod AI movement; retain saved combat-provider preferences.
+- Omit movement modules from a temporary copy of the active job-group preset, preserving its saved definition. Defer boss-plan selection until native combat entry without changing BMR's planned-pull safety setting.
+- Use the current job and boss CD plan injected by GMC in Praetorium or Porta Decumana. Keep the existing group rotation until a matching plan is ready, and return to it when no plan exists. Restore owned native selections on cleanup without installing or rewriting plans.
+
 2026-11-01 - KBB queue, titlebar and exchange warning (I727/I722/I720, unversioned)
 
 - Accept a fresh matching KBB duty pop after another participant declines, once native matchmaking has resumed. Preserve one Commence per visible pop and existing queue ownership.

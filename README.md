@@ -84,6 +84,8 @@ copies remain owned regardless of snapshot age until the data is refreshed.
 - **XA Slave** - Provides `/xa skipcutscenes on` startup control
 - **YesAlready** - Auto-confirm dialogs
 ### Optional Plugins
+
+- **God Mod Companion (GMC / BMRVariantLoader)** - Optional; Public and Private are both supported. GMC currently supports BMR. With GMC loaded, MogTome uses temporary copies of the existing job-group autorotation presets with movement modules omitted and switches to an injected current-job boss plan when one is ready in Praetorium or Porta Decumana. Missing plans, including the not-yet-authored Decumana plans, keep the normal group rotation running. GMC owns plan installation; MogTome retains saved combat-provider preferences and restores its temporary native selections during cleanup.
 - **ADS (AI Duty Solver)** - Optional in AutoDuty mode; enables `/mog inn` delegation
 - **Lifestream** and **TextAdvance** - Optional; neither is required for MOGTOME setup
 

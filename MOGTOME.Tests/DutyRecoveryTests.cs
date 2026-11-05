@@ -134,6 +134,163 @@ public sealed class DutyRecoveryTests
     }
 
     [Theory]
+    [InlineData(CombatProvider.Rsr)]
+    [InlineData(CombatProvider.Wrath)]
+    [InlineData(CombatProvider.Vbm)]
+    public void GmcUsesOnlyBmrAutorotationAndPreservesSavedProvider(CombatProvider saved)
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original");
+        using var run = new Run(native) { GmcLoaded = true, Territory = 1044 };
+        run.Config.CombatProvider = saved;
+        run.Rotation.RestoreRsrHealingForStart();
+        Assert.Equal(0, run.RsrSettingsRequests);
+        Assert.True(run.Rotation.Initialize(preferBmr: true));
+        Assert.True(run.Rotation.EnableRotationOncePerDuty("GMC test"));
+        Assert.Equal(saved, run.Config.CombatProvider);
+        Assert.Equal(new[] { "FRENRIDER - TANK" }, native.Active);
+        Assert.False(native.AiEnabled);
+        Assert.Equal("Original", native.Selector);
+        Assert.NotSame(native.Presets.AllPresets.Single(preset => preset.Name == "FRENRIDER - TANK"), native.Rotation.Preset);
+        Assert.All(native.Rotation.Preset!.Modules, module => Assert.NotEqual(NativeModuleOrder.Movement, module.Definition.Order));
+        Assert.Contains(native.Presets.AllPresets.Single(preset => preset.Name == "FRENRIDER - TANK").Modules,
+            module => module.Definition.Order == NativeModuleOrder.Movement);
+        Assert.DoesNotContain(native.Writes, write => write.StartsWith("BossMod.AI.SetPreset", StringComparison.Ordinal));
+        Assert.DoesNotContain(run.Commands, command => command.EndsWith(" on", StringComparison.Ordinal)
+            || command.StartsWith("/rotation", StringComparison.Ordinal) || command.StartsWith("/wrath", StringComparison.Ordinal));
+        Assert.True(run.Rotation.DisableRotationForDutyEnd("GMC Stop"));
+        Assert.Equal(new[] { "Original" }, native.Active);
+    }
+
+    [Theory]
+    [InlineData(typeof(D141Colossus), 1044u)]
+    [InlineData(typeof(D142Nero), 1044u)]
+    [InlineData(typeof(D143Gaius), 1044u)]
+    [InlineData(typeof(T04PortaDecumana1), 1048u)]
+    [InlineData(typeof(T04PortaDecumana2), 1048u)]
+    public void GmcUsesInjectedBossPlanOnlyAfterNativeBindingAndRestoresSelections(Type boss, uint territory)
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original");
+        using var run = new Run(native) { GmcLoaded = true, Territory = territory };
+        var module = Activator.CreateInstance(boss, nonPublic: true)!;
+        native.Rotation.Bossmods.ActiveModule = module;
+        var original = new NativePlan("Existing job plan", NativeJob.WAR, boss);
+        var bundled = new NativePlan($"BMRV-{boss.Name}-Tank-WAR", NativeJob.WAR, boss);
+        var list = new NativePlanList { SelectedIndex = 0, Plans = [original, bundled] };
+        native.Rotation.Database.Plans.Plans[boss] = new() { [NativeJob.WAR] = list };
+        Assert.True(run.Rotation.Initialize());
+        Assert.True(run.Rotation.EnableRotationOncePerDuty("GMC boss"));
+        Assert.Equal(1, list.SelectedIndex);
+        Assert.Equal(new[] { "FRENRIDER - TANK" }, native.Active);
+
+        native.Rotation.Planner = new(module, bundled); // BMR's next native update.
+        run.Rotation.UpdateDutyRotationHealth(territory, true, false, false, "boss plan ready");
+        Assert.Empty(native.Active);
+        Assert.False(native.ForceDisabled);
+        Assert.False(native.AiEnabled);
+        Assert.True(run.Rotation.DisableRotationForDutyEnd("GMC Stop"));
+        Assert.Equal(0, list.SelectedIndex);
+        Assert.Equal(new[] { "Original" }, native.Active);
+        native.Rotation.Planner = null;
+        run.Rotation.UpdateDutyRotationHealth(territory, true, false, false, "after Stop");
+        Assert.Equal(new[] { "Original" }, native.Active);
+    }
+
+    [Fact]
+    public void GmcKeepsNormalGroupRotationWithoutPlansAndChangesWithCurrentJob()
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original");
+        using var run = new Run(native) { GmcLoaded = true, Territory = 1048 };
+        Assert.True(run.Rotation.Initialize());
+        Assert.True(run.Rotation.EnableRotationOncePerDuty("Decumana without plans"));
+        Assert.Equal(new[] { "FRENRIDER - TANK" }, native.Active);
+        native.Rotation.Player.Class = NativeJob.NIN;
+        run.Rotation.UpdateDutyRotationHealth(1048, true, false, false, "current job changed");
+        Assert.Equal(new[] { "FRENRIDER - MELEE" }, native.Active);
+        Assert.Empty(native.Rotation.Database.Plans.Plans);
+    }
+
+    [Fact]
+    public void GmcReturnsToGroupRotationBetweenBossesAndRetainsLaterNativeChoices()
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original");
+        using var run = new Run(native) { GmcLoaded = true, Territory = 1044 };
+        var module = new D142Nero();
+        var plan = new NativePlan("BMRV-D142Nero-Tank-WAR", NativeJob.WAR, typeof(D142Nero));
+        var list = new NativePlanList { Plans = [plan] };
+        native.Rotation.Bossmods.ActiveModule = module;
+        native.Rotation.Database.Plans.Plans[typeof(D142Nero)] = new() { [NativeJob.WAR] = list };
+        Assert.True(run.Rotation.Initialize());
+        Assert.True(run.Rotation.EnableRotationOncePerDuty("GMC boss"));
+        native.Rotation.Planner = new(module, plan);
+        run.Rotation.UpdateDutyRotationHealth(1044, true, false, false, "plan bound");
+        Assert.Empty(native.Active);
+        native.Rotation.Bossmods.ActiveModule = null;
+        native.Rotation.Planner = null;
+        run.Rotation.UpdateDutyRotationHealth(1044, true, false, false, "boss ended");
+        Assert.Equal(-1, list.SelectedIndex);
+        Assert.Equal(new[] { "FRENRIDER - TANK" }, native.Active);
+
+        native.Rotation.Bossmods.ActiveModule = module;
+        run.Rotation.UpdateDutyRotationHealth(1044, true, false, false, "next pull");
+        Assert.Equal(0, list.SelectedIndex);
+        list.SelectedIndex = -1; // An explicit later native None is retained.
+        run.Rotation.UpdateDutyRotationHealth(1044, true, false, false, "native user choice");
+        run.Rotation.UpdateDutyRotationHealth(1044, true, false, false, "no reselection");
+        Assert.Equal(-1, list.SelectedIndex);
+        native.Active = ["External"];
+        run.Rotation.UpdateDutyRotationHealth(1044, true, false, false, "native preset choice");
+        Assert.Equal(new[] { "External" }, native.Active);
+    }
+
+    [Fact]
+    public void GmcDepartureStopsItsOwnedAutorotationWithoutStartingAnotherProvider()
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original") { AiEnabled = true };
+        using var run = new Run(native) { GmcLoaded = true, Territory = 1044 };
+        run.Config.CombatProvider = CombatProvider.Rsr;
+        Assert.True(run.Rotation.Initialize());
+        Assert.True(run.Rotation.EnableRotationOncePerDuty("GMC start"));
+        Assert.False(native.AiEnabled);
+        Assert.Equal(new[] { "/bmrai off" }, run.Commands);
+        run.GmcLoaded = false;
+        run.Rotation.ObserveSessionDeparture();
+        Assert.Equal(new[] { "Original" }, native.Active);
+        Assert.False(run.Rotation.EnableRotationOncePerDuty("departed GMC"));
+        Assert.Equal(new[] { "/bmrai off" }, run.Commands);
+    }
+
+    [Fact]
+    public void GmcDefersPlanSelectionUntilNativeCombatEntryWithoutChangingPullSafety()
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original");
+        using var run = new Run(native) { GmcLoaded = true, Territory = 1044 };
+        var module = new D142Nero();
+        var original = new NativePlan("Original job plan", NativeJob.WAR, typeof(D142Nero));
+        var bundled = new NativePlan("BMRV-D142Nero-Tank-WAR", NativeJob.WAR, typeof(D142Nero));
+        var list = new NativePlanList { SelectedIndex = 0, Plans = [original, bundled] };
+        native.Rotation.Database.Plans.Plans[typeof(D142Nero)] = new() { [NativeJob.WAR] = list };
+        native.Rotation.Bossmods.LoadedModules = [module];
+        native.Rotation.Player.InCombat = false;
+        Assert.True(run.Rotation.Initialize());
+        Assert.True(run.Rotation.EnableRotationOncePerDuty("before automated pull"));
+        Assert.Equal(-1, list.SelectedIndex);
+        Assert.Equal(new[] { "FRENRIDER - TANK" }, native.Active);
+        // This is the native event's actual selected-plan predicate; no plan is
+        // selected when it runs, so it cannot force-disable this no-countdown pull.
+        Assert.False(list.SelectedIndex >= 0);
+        native.Rotation.Player.InCombat = true;
+        native.Rotation.Bossmods.ActiveModule = module;
+        run.Rotation.UpdateDutyRotationHealth(1044, true, false, false, "native combat event passed");
+        Assert.Equal(1, list.SelectedIndex);
+        native.Rotation.Planner = new(module, bundled);
+        run.Rotation.UpdateDutyRotationHealth(1044, true, false, false, "plan bound");
+        Assert.Empty(native.Active);
+        Assert.True(run.Rotation.DisableRotationForDutyEnd("Stop"));
+        Assert.Equal(0, list.SelectedIndex);
+        Assert.DoesNotContain(native.Writes, write => write.Contains("PlannedPullSafety", StringComparison.Ordinal));
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void VbmCatalogUsesTheReleasedTickOrNewRegisteredDatabase(bool releasedLayout)
@@ -1814,6 +1971,9 @@ public sealed class DutyRecoveryTests
         internal readonly BossModIPC BossMod;
         internal ulong CurrentContentId;
         internal bool XaDatabaseLoaded = true;
+        internal bool GmcLoaded;
+        internal uint Territory;
+        internal int RsrSettingsRequests;
         internal uint[] PartyTerritories = [];
         internal string? ThrowOnCommand;
         internal readonly List<string> RepairModes = [];
@@ -1833,6 +1993,7 @@ public sealed class DutyRecoveryTests
             {
                 "get_IsLoggedIn" => true,
                 "get_ClientLanguage" => clientLanguage,
+                "get_TerritoryType" => Territory,
                 _ => Default(method.ReturnType),
             });
             var condition = Fake<ICondition>();
@@ -1855,16 +2016,18 @@ public sealed class DutyRecoveryTests
                 return Default(method.ReturnType);
             });
             var requests = new HashSet<string>();
-            var dependencies = new[] { "XADatabase", "XASlave" }.Select(name =>
+            var dependencies = new[] { "XADatabase", "XASlave", "BMRVariantLoader" }.Select(name =>
                 Fake<IExposedPlugin>((member, _) => member.Name switch
                 {
                     "get_InternalName" or "get_Name" => name,
-                    "get_IsLoaded" => name != "XADatabase" || XaDatabaseLoaded,
+                    "get_IsLoaded" => name == "BMRVariantLoader" ? GmcLoaded : name != "XADatabase" || XaDatabaseLoaded,
                     _ => Default(member.ReturnType),
                 })).ToArray();
             var pi = Fake<IDalamudPluginInterface>((method, args) =>
             {
                 if (method.Name == "GetOrCreateData") return requests;
+                if (method.Name == "GetIpcSubscriber" && Equals(args![0], "RotationSolverReborn.OtherCommand"))
+                    RsrSettingsRequests++;
                 if (method.Name == "get_InstalledPlugins") return (native?.Interface.InstalledPlugins
                     ?? Array.Empty<IExposedPlugin>()).Concat(dependencies).ToArray();
                 if (native is not null && method.Name == "get_AssemblyLocation") return new FileInfo(typeof(BossModIPC).Assembly.Location);
@@ -1989,14 +2152,54 @@ public sealed class DutyRecoveryTests
         }
     }
 
-    private sealed record NativePreset(string Name, bool HiddenByDefault = false);
+    private enum NativeModuleOrder { Rotation, Movement }
+    private sealed record NativeModuleDefinition(NativeModuleOrder Order);
+    private sealed record NativePresetModule(NativeModuleDefinition Definition);
+    private sealed record NativePreset(string Name, bool HiddenByDefault = false)
+    {
+        public List<NativePresetModule> Modules = [new(new(NativeModuleOrder.Rotation)), new(new(NativeModuleOrder.Movement))];
+        public NativePreset MakeClone(bool includeTransient) => new(Name, HiddenByDefault) { Modules = [.. Modules] };
+    }
     private sealed class NativePresetDatabase
     {
         public List<NativePreset> AllPresets { get; set; } = [];
         public List<NativePreset> DefaultPresets { get; set; } = [];
         public List<NativePreset> UserPresets { get; set; } = [];
     }
-    private sealed record NativeRotationDatabase(NativePresetDatabase Presets);
+    private enum NativeJob : uint { WAR = 21, NIN = 30 }
+    private sealed record NativePlan(string Name, NativeJob Class, Type Encounter)
+    {
+        public List<object> Modules = [new object()];
+    }
+    private sealed class NativePlanList
+    {
+        public int SelectedIndex = -1;
+        public List<NativePlan> Plans = [];
+    }
+    private sealed class NativePlanDatabase
+    {
+        public Dictionary<Type, Dictionary<NativeJob, NativePlanList>> Plans = [];
+    }
+    private sealed record NativeRotationDatabase(NativePresetDatabase Presets)
+    {
+        public NativePlanDatabase Plans = new();
+    }
+    private sealed class NativeActor { public NativeJob Class = NativeJob.WAR; public bool InCombat = true; }
+    private sealed class NativeBossmods { public object? ActiveModule; public List<object> LoadedModules = []; }
+    private sealed record NativePlanner(object Module, NativePlan Plan);
+    private sealed class NativeRotationManager(NativeRotationDatabase database, Action<NativePreset?> onPreset)
+    {
+        public NativeRotationDatabase Database = database;
+        public NativeActor Player = new();
+        public NativeBossmods Bossmods = new();
+        public NativePlanner? Planner;
+        public NativePreset? Preset { get; set { field = value; onPreset(value); } }
+    }
+    private sealed class D141Colossus { }
+    private sealed class D142Nero { }
+    private sealed class D143Gaius { }
+    private sealed class T04PortaDecumana1 { }
+    private sealed class T04PortaDecumana2 { }
     private sealed record NativeHost(IServiceProvider Services);
     private sealed class NativeTickServices(object tick) : IServiceProvider
     {
@@ -2033,6 +2236,7 @@ public sealed class DutyRecoveryTests
         private readonly object wrapper;
         private readonly Type pluginType;
         private readonly object database;
+        internal readonly NativeRotationManager Rotation;
         private readonly object? host;
 
         internal bool Loaded
@@ -2139,6 +2343,11 @@ public sealed class DutyRecoveryTests
                 .Select(name => new NativePreset(name, name == "VBM Multibox")).ToList();
             Presets.DefaultPresets = Presets.AllPresets.ToList();
             database = new NativeRotationDatabase(Presets);
+            Rotation = new((NativeRotationDatabase)database, preset =>
+            {
+                Active = preset is null ? [] : [preset.Name];
+                ForceDisabled = false;
+            });
             if (provider == CombatProvider.Vbm)
             {
                 var tickBuilder = module.DefineType("BossMod.Services.TickService", TypeAttributes.Public);
@@ -2150,6 +2359,7 @@ public sealed class DutyRecoveryTests
             }
             var pluginBuilder = module.DefineType("BossMod.Plugin", TypeAttributes.Public);
             pluginBuilder.DefineField("_rotationDB", typeof(object), FieldAttributes.Public);
+            pluginBuilder.DefineField("_rotation", typeof(object), FieldAttributes.Public);
             pluginBuilder.DefineField("Host", typeof(object), FieldAttributes.Public);
             pluginType = pluginBuilder.CreateType()!;
             var wrapperBuilder = module.DefineType("Dalamud.Plugin.Internal.Types.LocalPlugin", TypeAttributes.Public,
@@ -2213,6 +2423,7 @@ public sealed class DutyRecoveryTests
         {
             var plugin = Activator.CreateInstance(pluginType)!;
             pluginType.GetField("_rotationDB")!.SetValue(plugin, database);
+            pluginType.GetField("_rotation")!.SetValue(plugin, Rotation);
             pluginType.GetField("Host")!.SetValue(plugin, host);
             wrapper.GetType().GetField("instance")!.SetValue(wrapper, plugin);
         }
@@ -2227,6 +2438,7 @@ public sealed class DutyRecoveryTests
             else if (!RejectAiEffect && command is "/bmrai on" or "/bmrai off")
             {
                 AiEnabled = command.EndsWith(" on", StringComparison.Ordinal);
+                Rotation.Preset = null;
                 Active.Clear();
                 ForceDisabled = false;
             }
@@ -2295,10 +2507,14 @@ public sealed class DutyRecoveryTests
                 return true;
             }
             if (RejectRuntimeWrite) return false;
-            if (channel == "BossMod.Presets.SetActive") { Active = [(string)values![0]!]; ForceDisabled = false; }
+            if (channel == "BossMod.Presets.SetActive")
+            {
+                Rotation.Preset = Presets.AllPresets.Single(preset => preset.Name == (string)values![0]!);
+                Active = [(string)values![0]!]; ForceDisabled = false;
+            }
             else if (channel == "BossMod.Presets.SetActiveList") { Active = ((List<string>)values![0]!).ToList(); ForceDisabled = false; }
-            else if (channel == "BossMod.Presets.ClearActive") { Active.Clear(); ForceDisabled = false; }
-            else if (channel == "BossMod.Presets.SetForceDisabled") { Active.Clear(); ForceDisabled = true; }
+            else if (channel == "BossMod.Presets.ClearActive") { Rotation.Preset = null; Active.Clear(); ForceDisabled = false; }
+            else if (channel == "BossMod.Presets.SetForceDisabled") { Rotation.Preset = null; Active.Clear(); ForceDisabled = true; }
             else throw new InvalidOperationException("unexpected native endpoint " + channel);
             if (ThrowAfterRuntimeWrite) throw new InvalidOperationException("native write completed before endpoint failure");
             return true;

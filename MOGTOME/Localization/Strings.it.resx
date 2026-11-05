@@ -2410,4 +2410,7 @@ Apri i depositi per aggiornare le quantità registrate.</value></data>
   <data name="KB_WaitEntry" xml:space="preserve"><value>In attesa di entrare in {0}.</value></data>
   <data name="KB_PhraseCount" xml:space="preserve"><value>Frasi inviate: {0}</value></data>
   <data name="Config_NPCRepairNoInn" xml:space="preserve"><value>Riparazione PNG, resta fuori</value></data>
+  <data name="Config_GmcCombat" xml:space="preserve">
+    <value>GMC usa la rotazione automatica di BMR e il piano del boss per il job attuale, se disponibile.</value>
+  </data>
 </root>

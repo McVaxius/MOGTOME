@@ -2560,4 +2560,7 @@ Otwórz magazyny, aby odświeżyć zapisane ilości.</value></data>
   <data name="KB_WaitEntry" xml:space="preserve"><value>Oczekiwanie na wejście do {0}.</value></data>
   <data name="KB_PhraseCount" xml:space="preserve"><value>Wysłane frazy: {0}</value></data>
   <data name="Config_NPCRepairNoInn" xml:space="preserve"><value>Naprawa u NPC, pozostań na zewnątrz</value></data>
+  <data name="Config_GmcCombat" xml:space="preserve">
+    <value>GMC używa autorotacji BMR i dostępnego planu walki z bossem dla bieżącej profesji.</value>
+  </data>
 </root>

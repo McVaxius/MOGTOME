@@ -2410,4 +2410,7 @@ Open storage to refresh recorded quantities.</value></data>
   <data name="KB_WaitEntry" xml:space="preserve"><value>Waiting for {0} entry.</value></data>
   <data name="KB_PhraseCount" xml:space="preserve"><value>Phrases submitted: {0}</value></data>
   <data name="Config_NPCRepairNoInn" xml:space="preserve"><value>NPC repair, stay outside</value></data>
+  <data name="Config_GmcCombat" xml:space="preserve">
+    <value>GMC uses BMR autorotation and the current job's boss plan when available.</value>
+  </data>
 </root>

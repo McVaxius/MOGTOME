@@ -2404,4 +2404,7 @@ Lager öffnen, um erfasste Mengen zu aktualisieren.</value></data>
   <data name="KB_WaitEntry" xml:space="preserve"><value>Warte auf den Eintritt zu {0}.</value></data>
   <data name="KB_PhraseCount" xml:space="preserve"><value>Übermittelte Ausdrücke: {0}</value></data>
   <data name="Config_NPCRepairNoInn" xml:space="preserve"><value>NPC-Reparatur, draußen bleiben</value></data>
+  <data name="Config_GmcCombat" xml:space="preserve">
+    <value>GMC verwendet die BMR-Autorotation und, falls verfügbar, den Bossplan für den aktuellen Job.</value>
+  </data>
 </root>

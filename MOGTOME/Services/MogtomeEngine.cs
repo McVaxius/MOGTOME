@@ -425,10 +425,11 @@ public class MogtomeEngine
                 if (!IsCurrentStartup(operation))
                     return new StartupPreparationResult(EnteredRepairMode: false);
                 rotationService.RestoreRsrHealingForStart();
-                commandManager.ProcessCommand(
-                    config.ObstacleMapsOn
-                        ? "/bmrai obstaclemaps on"
-                        : "/bmrai obstaclemaps off");
+                if (!rotationService.UsesGmc)
+                    commandManager.ProcessCommand(
+                        config.ObstacleMapsOn
+                            ? "/bmrai obstaclemaps on"
+                            : "/bmrai obstaclemaps off");
                 log.Information("[MOGTOME][Engine] Sending /at enable as part of startup command prep");
                 GameHelpers.SendCommand("/at enable");
 
