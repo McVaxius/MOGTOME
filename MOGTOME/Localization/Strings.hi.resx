@@ -2579,4 +2579,12 @@ Retainer और अन्य भंडारण: {3}
   <data name="Config_GmcCombat" xml:space="preserve">
     <value>GMC, BMR का स्वचालित रोटेशन और उपलब्ध होने पर मौजूदा जॉब की बॉस योजना इस्तेमाल करता है।</value>
   </data>
+  <data name="Shop_BuyPoeticsGear" xml:space="preserve"><value>Poetics से जमा करने योग्य उपकरण खरीदें</value></data>
+  <data name="Shop_PoeticsHelp" xml:space="preserve"><value>अनलॉक किए गए विक्रेताओं से ऐसे उपकरण खरीदें जो आपके पास नहीं हैं और Grand Company में जमा किए जा सकते हैं। प्रति Poetics लागत सबसे अधिक सील देने वाले उपकरण चुनें, जब तक कोई योग्य खरीद शेष न रहे।</value></data>
+  <data name="Shop_DeliverPoeticsGear" xml:space="preserve"><value>खरीदे गए उपकरण जमा करें (/ays deliver)</value></data>
+  <data name="Shop_PoeticsDeliveryHelp" xml:space="preserve"><value>खरीदारी के बाद AutoRetainer की निर्धारित जमा प्रक्रिया चलाएँ। केवल तब लौटें जब इस सत्र में खरीदा गया उपकरण अब मौजूद न हो और AutoRetainer लगातार 10 सेकंड से निष्क्रिय हो।</value></data>
+  <data name="Shop_PoeticsDeliveryUnavailable" xml:space="preserve"><value>AutoRetainer लोड होना चाहिए और उसकी स्थिति पढ़ी जा सकनी चाहिए।</value></data>
+  <data name="Shop_PoeticsEndingLocation" xml:space="preserve"><value>Poetics खरीदारी के बाद लौटने की सराय</value></data>
+  <data name="Shop_PoeticsEndingHelp" xml:space="preserve"><value>सराय का यह विकल्प केवल Poetics खरीदारी के लिए है। जमा प्रक्रिया चालू होने पर लौटने से पहले निष्क्रियता की जाँच होती है।</value></data>
+  <data name="Shop_PoeticsDelivering" xml:space="preserve"><value>जमा प्रक्रिया और AutoRetainer की 10 सेकंड की निष्क्रियता की प्रतीक्षा है।</value></data>
 </root>

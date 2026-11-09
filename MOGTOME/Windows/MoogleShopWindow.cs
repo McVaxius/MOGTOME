@@ -85,11 +85,14 @@ public sealed class MoogleShopWindow : Window
         ImGui.BeginDisabled(!shop.Ready || shop.IsRunning || plugin.IsMoogleShopActionQueued);
         if (UiLayout.IconButton(Ui.L("Shop_Refresh"), MaterialIcon.Refresh)) plugin.RefreshMoogleShop();
         ImGui.EndDisabled();
-        UiLayout.SameLineIfFits(UiLayout.IconButtonWidth(Ui.T("Shop_Clear")));
-        ImGui.BeginDisabled(!plugin.CanSelectUiLanguage || shop.IsRunning || plugin.IsMoogleShopActionQueued ||
-            settings.PurchaseTargets.Count == 0);
-        if (UiLayout.Button(Ui.L("Shop_Clear"))) { settings.PurchaseTargets.Clear(); missingResult = null; changed = true; }
-        ImGui.EndDisabled();
+        if (!settings.BuyPoeticsGear)
+        {
+            UiLayout.SameLineIfFits(UiLayout.IconButtonWidth(Ui.T("Shop_Clear")));
+            ImGui.BeginDisabled(!plugin.CanSelectUiLanguage || shop.IsRunning || plugin.IsMoogleShopActionQueued ||
+                settings.PurchaseTargets.Count == 0);
+            if (UiLayout.Button(Ui.L("Shop_Clear"))) { settings.PurchaseTargets.Clear(); missingResult = null; changed = true; }
+            ImGui.EndDisabled();
+        }
         ImGui.Separator();
         ImGui.BeginDisabled(!plugin.CanSelectUiLanguage || shop.IsRunning || plugin.IsMoogleShopActionQueued);
         if (settings.PurchaseReviewRequired)
@@ -98,27 +101,59 @@ public sealed class MoogleShopWindow : Window
             if (UiLayout.Button(Ui.L("Shop_Reviewed")))
                 GameHelpers.QueueFrameworkAction("Moogle shop", "Review", TimeSpan.Zero, shop.AcknowledgeReview);
         }
-        UiLayout.SingleLine(Ui.T("Shop_City"));
-        ImGui.SameLine();
-        var city = (int)settings.City;
-        ImGui.SetNextItemWidth(Math.Min(230 * scale, UiLayout.AvailableWidth));
-        if (UiLayout.Combo("###MoogleShopCity", ref city, new[] { Ui.T("BV_InnLimsa"), Ui.T("BV_InnUldah"), Ui.T("BV_InnGridania") }, 3))
-        { settings.City = (MoogleShopCity)city; changed = true; }
-        var currencies = shop.Catalog.Select(o => o.TomestoneId).Distinct().ToArray();
-        if (currencies.Length > 0)
+        var buyPoeticsGear = settings.BuyPoeticsGear;
+        if (UiLayout.Checkbox(Ui.L("Shop_BuyPoeticsGear"), ref buyPoeticsGear))
+        { settings.BuyPoeticsGear = buyPoeticsGear; changed = true; }
+        if (settings.BuyPoeticsGear)
         {
-            UiLayout.SingleLine(Ui.T("Shop_Currency"));
-            ImGui.SameLine();
-            var selected = Math.Max(0, Array.IndexOf(currencies, shop.CurrencyId));
-            ImGui.SetNextItemWidth(UiLayout.AvailableWidth);
-            if (UiLayout.Combo("###MoogleShopCurrency", ref selected, currencies.Select(id => Ui.Item(id).Render()).ToArray(), currencies.Length))
-                shop.CurrencyId = currencies[selected];
+            changed |= DrawPoeticsSettings(settings);
         }
-        var hideOwned = settings.HideOwned;
-        if (UiLayout.Checkbox(Ui.L("Shop_HideOwned"), ref hideOwned)) { settings.HideOwned = hideOwned; changed = true; }
-        changed |= DrawGrid(settings, shop.SelectedCatalog, shop.Catalog);
+        else
+        {
+            UiLayout.SingleLine(Ui.T("Shop_City"));
+            ImGui.SameLine();
+            var city = (int)settings.City;
+            ImGui.SetNextItemWidth(Math.Min(230 * scale, UiLayout.AvailableWidth));
+            if (UiLayout.Combo("###MoogleShopCity", ref city, new[] { Ui.T("BV_InnLimsa"), Ui.T("BV_InnUldah"), Ui.T("BV_InnGridania") }, 3))
+            { settings.City = (MoogleShopCity)city; changed = true; }
+            var currencies = shop.Catalog.Select(o => o.TomestoneId).Distinct().ToArray();
+            if (currencies.Length > 0)
+            {
+                UiLayout.SingleLine(Ui.T("Shop_Currency"));
+                ImGui.SameLine();
+                var selected = Math.Max(0, Array.IndexOf(currencies, shop.CurrencyId));
+                ImGui.SetNextItemWidth(UiLayout.AvailableWidth);
+                if (UiLayout.Combo("###MoogleShopCurrency", ref selected, currencies.Select(id => Ui.Item(id).Render()).ToArray(), currencies.Length))
+                    shop.CurrencyId = currencies[selected];
+            }
+            var hideOwned = settings.HideOwned;
+            if (UiLayout.Checkbox(Ui.L("Shop_HideOwned"), ref hideOwned)) { settings.HideOwned = hideOwned; changed = true; }
+            changed |= DrawGrid(settings, shop.SelectedCatalog, shop.Catalog);
+        }
         ImGui.EndDisabled();
         if (changed) plugin.ConfigManager.SaveCurrentAccount();
+    }
+
+    private bool DrawPoeticsSettings(MoogleShopSettings settings)
+    {
+        UiLayout.Wrapped(Ui.T("Shop_PoeticsHelp"));
+        var changed = false;
+        var deliveryAvailable = plugin.MoogleShop.PoeticsDeliveryAvailable;
+        var deliver = settings.DeliverPoeticsGear;
+        ImGui.BeginDisabled(!deliveryAvailable && !deliver);
+        if (UiLayout.Checkbox(Ui.L("Shop_DeliverPoeticsGear"), ref deliver) && (!deliver || deliveryAvailable))
+        { settings.DeliverPoeticsGear = deliver; changed = true; }
+        ImGui.EndDisabled();
+        UiLayout.TextDisabled(Ui.T("Shop_PoeticsDeliveryHelp"));
+        if (!deliveryAvailable) UiLayout.Wrapped(Ui.T("Shop_PoeticsDeliveryUnavailable"));
+        UiLayout.Wrapped(Ui.T("Shop_PoeticsEndingLocation"));
+        var endings = Enum.GetValues<BlundervilleEndingLocation>();
+        var selected = Array.IndexOf(endings, settings.PoeticsEndingLocation);
+        ImGui.SetNextItemWidth(UiLayout.AvailableWidth);
+        if (UiLayout.Combo("###PoeticsEndingLocation", ref selected, endings.Select(ending => Ui.T("BV_Inn" + ending)).ToArray(), endings.Length))
+        { settings.PoeticsEndingLocation = endings[selected]; changed = true; }
+        UiLayout.TextDisabled(Ui.T("Shop_PoeticsEndingHelp"));
+        return changed;
     }
 
     internal static Dictionary<uint, MoogleShopOffer> GridOffers(IReadOnlyList<MoogleShopOffer> catalog)

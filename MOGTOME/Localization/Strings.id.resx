@@ -2563,4 +2563,12 @@ Buka penyimpanan untuk memperbarui jumlah tercatat.</value></data>
   <data name="Config_GmcCombat" xml:space="preserve">
     <value>GMC memakai rotasi otomatis BMR dan rencana bos untuk job saat ini jika tersedia.</value>
   </data>
+  <data name="Shop_BuyPoeticsGear" xml:space="preserve"><value>Beli perlengkapan penyerahan dengan Poetics</value></data>
+  <data name="Shop_PoeticsHelp" xml:space="preserve"><value>Membeli perlengkapan yang belum dimiliki dan dapat diserahkan ke Grand Company dari pedagang yang sudah terbuka. Mengutamakan nilai seal per biaya Poetics hingga tidak ada lagi pembelian yang memenuhi syarat.</value></data>
+  <data name="Shop_DeliverPoeticsGear" xml:space="preserve"><value>Serahkan perlengkapan yang dibeli (/ays deliver)</value></data>
+  <data name="Shop_PoeticsDeliveryHelp" xml:space="preserve"><value>Setelah membeli, jalankan penyerahan sesuai pengaturan AutoRetainer. Kembali hanya setelah perlengkapan yang dibeli pada sesi ini sudah tidak ada dan AutoRetainer menganggur terus selama 10 detik.</value></data>
+  <data name="Shop_PoeticsDeliveryUnavailable" xml:space="preserve"><value>AutoRetainer harus dimuat dan statusnya dapat dibaca.</value></data>
+  <data name="Shop_PoeticsEndingLocation" xml:space="preserve"><value>Penginapan setelah belanja Poetics</value></data>
+  <data name="Shop_PoeticsEndingHelp" xml:space="preserve"><value>Pilihan penginapan ini hanya untuk belanja Poetics. Jika penyerahan aktif, status menganggur diperiksa sebelum kembali.</value></data>
+  <data name="Shop_PoeticsDelivering" xml:space="preserve"><value>Menunggu penyerahan dan 10 detik AutoRetainer menganggur.</value></data>
 </root>

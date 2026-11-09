@@ -2413,4 +2413,12 @@ Path: {0}
   <data name="Config_GmcCombat" xml:space="preserve">
     <value>GMC использует авторотацию BMR и доступный план боя с боссом для текущей профессии.</value>
   </data>
+  <data name="Shop_BuyPoeticsGear" xml:space="preserve"><value>Покупать за Поэтику снаряжение для сдачи Великой компании</value></data>
+  <data name="Shop_PoeticsHelp" xml:space="preserve"><value>Покупает у открытых торговцев отсутствующее снаряжение, которое можно сдать Великой компании. Выбирает лучшее соотношение печатей к цене в Поэтике, пока остаются допустимые покупки.</value></data>
+  <data name="Shop_DeliverPoeticsGear" xml:space="preserve"><value>Сдать купленное снаряжение (/ays deliver)</value></data>
+  <data name="Shop_PoeticsDeliveryHelp" xml:space="preserve"><value>После покупок запустить настроенную сдачу AutoRetainer. Возвращаться только после исчезновения купленного в этом сеансе снаряжения и 10 секунд непрерывного бездействия AutoRetainer.</value></data>
+  <data name="Shop_PoeticsDeliveryUnavailable" xml:space="preserve"><value>AutoRetainer должен быть загружен, а его состояние — доступно для чтения.</value></data>
+  <data name="Shop_PoeticsEndingLocation" xml:space="preserve"><value>Гостиница после покупок за Поэтику</value></data>
+  <data name="Shop_PoeticsEndingHelp" xml:space="preserve"><value>Эта гостиница относится только к покупкам за Поэтику. Если сдача включена, перед возвращением проверяется бездействие.</value></data>
+  <data name="Shop_PoeticsDelivering" xml:space="preserve"><value>Ожидание сдачи и 10 секунд бездействия AutoRetainer.</value></data>
 </root>

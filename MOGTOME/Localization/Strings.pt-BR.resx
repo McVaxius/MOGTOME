@@ -2563,4 +2563,12 @@ Abra os depósitos para atualizar as quantidades registradas.</value></data>
   <data name="Config_GmcCombat" xml:space="preserve">
     <value>O GMC usa a rotação automática do BMR e o plano do chefe para o job atual, quando disponível.</value>
   </data>
+  <data name="Shop_BuyPoeticsGear" xml:space="preserve"><value>Comprar com Poética equipamento para entregar à Grande Companhia</value></data>
+  <data name="Shop_PoeticsHelp" xml:space="preserve"><value>Compra de vendedores desbloqueados equipamentos não possuídos e aceitos pela Grande Companhia. Prioriza a melhor proporção de selos por custo em Poética até não restarem compras válidas.</value></data>
+  <data name="Shop_DeliverPoeticsGear" xml:space="preserve"><value>Entregar o equipamento comprado (/ays deliver)</value></data>
+  <data name="Shop_PoeticsDeliveryHelp" xml:space="preserve"><value>Após as compras, executar a entrega configurada do AutoRetainer. Retornar apenas quando os equipamentos comprados nesta sessão não estiverem mais presentes e o AutoRetainer permanecer ocioso por 10 segundos.</value></data>
+  <data name="Shop_PoeticsDeliveryUnavailable" xml:space="preserve"><value>O AutoRetainer deve estar carregado e seu estado deve ser legível.</value></data>
+  <data name="Shop_PoeticsEndingLocation" xml:space="preserve"><value>Estalagem após as compras com Poética</value></data>
+  <data name="Shop_PoeticsEndingHelp" xml:space="preserve"><value>Esta pousada vale apenas para compras com Poética. Se a entrega estiver ativada, a inatividade será verificada antes do retorno.</value></data>
+  <data name="Shop_PoeticsDelivering" xml:space="preserve"><value>Aguardando a entrega e 10 segundos de inatividade do AutoRetainer.</value></data>
 </root>

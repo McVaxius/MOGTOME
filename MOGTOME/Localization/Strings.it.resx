@@ -2413,4 +2413,12 @@ Apri i depositi per aggiornare le quantità registrate.</value></data>
   <data name="Config_GmcCombat" xml:space="preserve">
     <value>GMC usa la rotazione automatica di BMR e il piano del boss per il job attuale, se disponibile.</value>
   </data>
+  <data name="Shop_BuyPoeticsGear" xml:space="preserve"><value>Acquista con Poetica per la Grande Compagnia</value></data>
+  <data name="Shop_PoeticsHelp" xml:space="preserve"><value>Acquista dai venditori sbloccati equipaggiamento non posseduto e accettato dalla Grande Compagnia. Sceglie il miglior rapporto sigilli/costo in Poetica finché non restano acquisti validi.</value></data>
+  <data name="Shop_DeliverPoeticsGear" xml:space="preserve"><value>Consegna l’equipaggiamento acquistato (/ays deliver)</value></data>
+  <data name="Shop_PoeticsDeliveryHelp" xml:space="preserve"><value>Dopo gli acquisti, avvia la consegna configurata di AutoRetainer. Torna solo quando l&apos;equipaggiamento acquistato in questa sessione non è più presente e AutoRetainer è inattivo da 10 secondi.</value></data>
+  <data name="Shop_PoeticsDeliveryUnavailable" xml:space="preserve"><value>AutoRetainer deve essere caricato e il suo stato deve essere leggibile.</value></data>
+  <data name="Shop_PoeticsEndingLocation" xml:space="preserve"><value>Locanda dopo gli acquisti con Poetica</value></data>
+  <data name="Shop_PoeticsEndingHelp" xml:space="preserve"><value>Questa locanda riguarda solo gli acquisti con Poetica. Se la consegna è attiva, verifica l&apos;inattività prima del ritorno.</value></data>
+  <data name="Shop_PoeticsDelivering" xml:space="preserve"><value>In attesa della consegna e di 10 secondi di inattività di AutoRetainer.</value></data>
 </root>

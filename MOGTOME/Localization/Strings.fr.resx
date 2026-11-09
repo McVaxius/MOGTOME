@@ -2407,4 +2407,12 @@ Ouvrir les stockages pour actualiser les quantités enregistrées.</value></data
   <data name="Config_GmcCombat" xml:space="preserve">
     <value>GMC utilise la rotation automatique de BMR et, s'il existe, le plan du boss pour le job actuel.</value>
   </data>
+  <data name="Shop_BuyPoeticsGear" xml:space="preserve"><value>Acheter avec des poétiques pour la Grande Compagnie</value></data>
+  <data name="Shop_PoeticsHelp" xml:space="preserve"><value>Achète l’équipement non possédé échangeable contre des sceaux de Grande Compagnie auprès des vendeurs débloqués, au meilleur rapport sceaux/coût en mémoquartz poétiques, jusqu’à épuisement des achats éligibles.</value></data>
+  <data name="Shop_DeliverPoeticsGear" xml:space="preserve"><value>Livrer l’équipement acheté (/ays deliver)</value></data>
+  <data name="Shop_PoeticsDeliveryHelp" xml:space="preserve"><value>Après les achats, lancer la livraison configurée dans AutoRetainer. Revenir seulement lorsque l&apos;équipement acheté pendant cette session a disparu et qu&apos;AutoRetainer est resté inactif pendant 10 secondes.</value></data>
+  <data name="Shop_PoeticsDeliveryUnavailable" xml:space="preserve"><value>AutoRetainer doit être chargé et son état doit être lisible.</value></data>
+  <data name="Shop_PoeticsEndingLocation" xml:space="preserve"><value>Auberge après les achats en mémoquartz poétiques</value></data>
+  <data name="Shop_PoeticsEndingHelp" xml:space="preserve"><value>Cette auberge concerne uniquement les achats en Poétique. Si la livraison est activée, le contrôle d&apos;inactivité précède le retour.</value></data>
+  <data name="Shop_PoeticsDelivering" xml:space="preserve"><value>En attente de la livraison et de 10 secondes d&apos;inactivité d&apos;AutoRetainer.</value></data>
 </root>

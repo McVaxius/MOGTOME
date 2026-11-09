@@ -2413,4 +2413,12 @@ Open storage to refresh recorded quantities.</value></data>
   <data name="Config_GmcCombat" xml:space="preserve">
     <value>GMC uses BMR autorotation and the current job's boss plan when available.</value>
   </data>
+  <data name="Shop_BuyPoeticsGear" xml:space="preserve"><value>Buy Grand Company gear with Poetics</value></data>
+  <data name="Shop_PoeticsHelp" xml:space="preserve"><value>Buy unowned gear accepted for Grand Company turn-ins from unlocked vendors, choosing the best seals per Poetics cost until no eligible purchase remains.</value></data>
+  <data name="Shop_DeliverPoeticsGear" xml:space="preserve"><value>Deliver purchased gear (/ays deliver)</value></data>
+  <data name="Shop_PoeticsDeliveryHelp" xml:space="preserve"><value>After purchases, run AutoRetainer&apos;s configured delivery. Return only when this run&apos;s purchased gear is gone and AutoRetainer has stayed idle for 10 seconds.</value></data>
+  <data name="Shop_PoeticsDeliveryUnavailable" xml:space="preserve"><value>AutoRetainer must be loaded and its status readable.</value></data>
+  <data name="Shop_PoeticsEndingLocation" xml:space="preserve"><value>Inn after Poetics shopping</value></data>
+  <data name="Shop_PoeticsEndingHelp" xml:space="preserve"><value>This inn choice belongs only to Poetics shopping. Delivery, if enabled, uses the idle check before returning.</value></data>
+  <data name="Shop_PoeticsDelivering" xml:space="preserve"><value>Waiting for delivery and 10 seconds of AutoRetainer idle.</value></data>
 </root>

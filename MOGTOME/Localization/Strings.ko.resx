@@ -2413,4 +2413,12 @@ DictionaryPaths와 PathSelectionsByPath를 비교합니다.
   <data name="Config_GmcCombat" xml:space="preserve">
     <value>GMC는 BMR 자동 전투를 사용하며, 현재 직업의 보스 계획이 있으면 적용합니다.</value>
   </data>
+  <data name="Shop_BuyPoeticsGear" xml:space="preserve"><value>시학으로 총사령부 납품용 장비 구매</value></data>
+  <data name="Shop_PoeticsHelp" xml:space="preserve"><value>해금된 상인에게서 보유하지 않은 희귀품 조달 납품 가능 장비를 구매합니다. 시학 소모량 대비 군표 효율이 높은 장비부터 구매하며, 구매 가능한 대상이 없어지면 종료합니다.</value></data>
+  <data name="Shop_DeliverPoeticsGear" xml:space="preserve"><value>구매한 장비 납품 (/ays deliver)</value></data>
+  <data name="Shop_PoeticsDeliveryHelp" xml:space="preserve"><value>구매 후 AutoRetainer에 설정된 납품을 실행합니다. 이번 세션에서 구매한 장비가 없어지고 AutoRetainer의 유휴 상태가 10초간 유지된 뒤에만 돌아갑니다.</value></data>
+  <data name="Shop_PoeticsDeliveryUnavailable" xml:space="preserve"><value>AutoRetainer가 로드되어 있고 상태를 읽을 수 있어야 합니다.</value></data>
+  <data name="Shop_PoeticsEndingLocation" xml:space="preserve"><value>시학 구매 후 복귀할 여관</value></data>
+  <data name="Shop_PoeticsEndingHelp" xml:space="preserve"><value>이 여관 설정은 시학 구매 전용입니다. 납품을 켜면 돌아가기 전에 유휴 상태를 확인합니다.</value></data>
+  <data name="Shop_PoeticsDelivering" xml:space="preserve"><value>납품과 AutoRetainer의 10초 유휴 상태를 기다리는 중입니다.</value></data>
 </root>

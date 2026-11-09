@@ -13,6 +13,9 @@ public sealed class MoogleShopSettings
     public Dictionary<uint, int> PurchaseTargets { get; set; } = [];
     public bool PurchaseReviewRequired { get; set; }
     public bool HideOwned { get; set; }
+    public bool BuyPoeticsGear { get; set; }
+    public bool DeliverPoeticsGear { get; set; }
+    public BlundervilleEndingLocation PoeticsEndingLocation { get; set; } = BlundervilleEndingLocation.Stay;
 }
 
 internal sealed record MoogleShopCost(uint ItemId, uint Count);

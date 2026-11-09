@@ -9,11 +9,12 @@ using MOGTOME.Models;
 
 namespace MOGTOME.Services;
 
-public sealed class MoogleShopService : IDisposable
+public sealed partial class MoogleShopService : IDisposable
 {
     public const string BuildMarker = "mog-shop-0011";
     private readonly Plugin plugin;
     private readonly MoogleShopGameAdapter game;
+    private readonly PoeticsShopCatalog poetics = new();
     private readonly string marker = $"{BuildMarker}/pid={Environment.ProcessId}/utc={DateTimeOffset.UtcNow:O}";
     private bool disposed, catalogLoaded, catalogAvailable, running, movement, travel, travelSubmitted, closeSubmitted, confirmationSubmitted;
     private int stopRequested;
@@ -29,6 +30,15 @@ public sealed class MoogleShopService : IDisposable
     private string lastMenu = string.Empty;
     private ulong balanceCharacter;
     private IReadOnlyList<MoogleTomestoneBalance> tomestoneBalances = [];
+    private bool poeticsMode, poeticsDeliver, proceedSubmitted, equipmentWarningSubmitted, poeticsCatalogAvailable;
+    private BlundervilleEndingLocation poeticsEnding;
+    private string ownedAddon = "ShopExchangeItem";
+    private MoogleShopOffer? ownedPoeticsOffer;
+    private PoeticsShopVendor? poeticsVendor;
+    private uint categoryItem;
+    private bool AutoRetainerLoaded => Plugin.PluginInterface.InstalledPlugins.Any(installed =>
+        installed.IsLoaded && string.Equals(installed.InternalName, "AutoRetainer", StringComparison.OrdinalIgnoreCase));
+    internal bool PoeticsDeliveryAvailable => TryDeliveryBusy(out _);
     internal uint CurrentTomestoneId => game.CurrentTomestoneId;
     internal IReadOnlyList<MoogleTomestoneBalance> TomestoneBalances
         => balanceCharacter == Plugin.PlayerState.ContentId ? tomestoneBalances : [];
@@ -54,6 +64,8 @@ public sealed class MoogleShopService : IDisposable
         if (!Ready || running) return;
         catalogLoaded = true; // A failed automatic inspection stays failed until an explicit Refresh/Open/Buy.
         catalogAvailable = false;
+        poeticsCatalogAvailable = false;
+        var previousStatus = Status;
         try
         {
             game.LoadCatalog();
@@ -68,6 +80,18 @@ public sealed class MoogleShopService : IDisposable
             }
         }
         catch (Exception ex) { Plugin.Log.Warning(ex, "[MOGTOME][Shop] catalog unavailable"); Status = Ui.M("Shop_NoCatalog"); }
+        if (Settings.BuyPoeticsGear)
+        {
+            try
+            {
+                poetics.LoadCatalog();
+                poeticsCatalogAvailable = poetics.Offers.Count > 0;
+                ShopOfferEligibility.RefreshAchievements(poetics.Offers.Select(candidate => candidate.Offer.Gate));
+                if (!poeticsCatalogAvailable) Status = Ui.M("Shop_NoCatalog");
+                else if (!catalogAvailable) Status = previousStatus;
+            }
+            catch (Exception ex) { Plugin.Log.Warning(ex, "[MOGTOME][Poetics] catalog unavailable"); Status = Ui.M("Shop_NoCatalog"); }
+        }
     }
 
     internal (uint ItemId, int? Total) ReadCurrentTomestoneTotal()
@@ -120,19 +144,33 @@ public sealed class MoogleShopService : IDisposable
         var missingPlugins = GameHelpers.MissingXaDependencies();
         if (missingPlugins.Length > 0) return Reject("Plugin_RequiredXaPlugins", missingPlugins);
         if (Settings.PurchaseReviewRequired || plugin.Configuration.Blunderville.PurchaseReviewRequired) return Reject("Shop_ReviewRequired");
-        if (!Enum.IsDefined(Settings.City) || Plugin.Condition[ConditionFlag.BoundByDuty] || Plugin.Condition[ConditionFlag.InDutyQueue] ||
+        poeticsMode = Settings.BuyPoeticsGear;
+        poeticsDeliver = Settings.DeliverPoeticsGear;
+        poeticsEnding = Settings.PoeticsEndingLocation;
+        if (poeticsMode && poeticsDeliver && !PoeticsDeliveryAvailable) return Reject("Shop_EligibilityUnknown");
+        if ((!poeticsMode && !Enum.IsDefined(Settings.City)) || (poeticsMode && !Enum.IsDefined(poeticsEnding)) ||
+            Plugin.Condition[ConditionFlag.BoundByDuty] || Plugin.Condition[ConditionFlag.InDutyQueue] ||
             Plugin.Condition[ConditionFlag.InCombat] || BlundervilleGameAdapter.Visible("ContentsFinderConfirm") ||
             BlundervilleGameAdapter.Visible("SelectYesno") || BlundervilleGameAdapter.Visible("Talk") ||
             BlundervilleGameAdapter.Visible("ShopExchangeItemDialog") ||
             BlundervilleGameAdapter.Visible("ShopExchangeItem") || BlundervilleGameAdapter.Visible("ShopExchangeCurrency"))
             return Reject("BV_BusyClient");
         RefreshCatalog();
-        if (!catalogAvailable) return Reject("Shop_NoCatalog");
-        sessionCatalog = SelectedCatalog;
-        targets = new(Settings.PurchaseTargets ?? []);
+        if (poeticsMode)
+        {
+            if (!poeticsCatalogAvailable) return Reject("Shop_NoCatalog");
+            sessionCatalog = poetics.Offers.Select(candidate => candidate.Offer).ToArray();
+            targets = []; // Reused below for this run's receipt-verified Poetics purchases.
+        }
+        else
+        {
+            if (!catalogAvailable) return Reject("Shop_NoCatalog");
+            sessionCatalog = SelectedCatalog;
+            targets = new(Settings.PurchaseTargets ?? []);
+        }
         MoogleShopOffer? firstOffer = null;
         var storedStocks = plugin.XaDatabase.ReadStocks(targets.Keys);
-        foreach (var target in targets.Where(t => t.Value > 0))
+        foreach (var target in targets.Where(t => !poeticsMode && t.Value > 0))
         {
             if (!plugin.XaDatabase.TryCount(target.Key, storedStocks.GetValueOrDefault(target.Key), out var count)) return Reject("BV_NoInventory");
             if (count < target.Value && sessionCatalog.Count(o => o.ItemId == target.Key) != 1) return Reject("Shop_NoCatalog");
@@ -148,7 +186,7 @@ public sealed class MoogleShopService : IDisposable
         var menuOpen = BlundervilleGameAdapter.Visible("SelectString") || BlundervilleGameAdapter.Visible("SelectIconString");
         var existingTrader = menuOpen ? game.FindTrader() : null;
         // A manual retry may resume the preserved Moogle menu only after checking its NPC and exact exchange label.
-        if (menuOpen && (Plugin.ClientState.TerritoryType != new uint[] { 129, 130, 132 }[(int)Settings.City] ||
+        if (menuOpen && (poeticsMode || Plugin.ClientState.TerritoryType != new uint[] { 129, 130, 132 }[(int)Settings.City] ||
             existingTrader == null || Plugin.TargetManager.Target?.GameObjectId != existingTrader.GameObjectId ||
             firstOffer == null || !game.MatchesExchangeMenu(firstOffer))) return Reject("BV_BusyClient");
         sessionSettings = Settings;
@@ -156,6 +194,10 @@ public sealed class MoogleShopService : IDisposable
         pending = settling = null; pendingMove = null;
         npc = existingTrader?.GameObjectId ?? 0; lastMenu = string.Empty; shopSeen = menuSeen = default;
         movement = travel = travelSubmitted = closeSubmitted = confirmationSubmitted = false;
+        proceedSubmitted = equipmentWarningSubmitted = false;
+        ownedAddon = poeticsMode ? string.Empty : "ShopExchangeItem";
+        ownedPoeticsOffer = null; poeticsVendor = null; categoryItem = 0;
+        ResetPoeticsProgress();
         started = DateTime.UtcNow; nextInteraction = default;
         plugin.YesAlreadyIPC.Pause();
         if (!plugin.YesAlreadyIPC.IsPaused) return Reject("BV_DialogControl");
@@ -180,12 +222,15 @@ public sealed class MoogleShopService : IDisposable
         RefreshTomestoneBalances();
         try
         {
-            if (!Plugin.ClientState.IsLoggedIn || Plugin.PlayerState.ContentId != character || !ReferenceEquals(Settings, sessionSettings))
+            if (!Plugin.ClientState.IsLoggedIn || Plugin.PlayerState.ContentId != character || !ReferenceEquals(Settings, sessionSettings) ||
+                Settings.BuyPoeticsGear != poeticsMode || poeticsMode &&
+                (Settings.DeliverPoeticsGear != poeticsDeliver || Settings.PoeticsEndingLocation != poeticsEnding))
             { Fail("BV_SessionChanged"); return; }
             if (DateTime.UtcNow - started > TimeSpan.FromMinutes(10)) { Fail("BV_Timeout"); return; }
-            if (!Ready) return;
+            if (!Ready) { if (poeticsMode) deliveryIdleSince = null; return; }
             if (Plugin.Condition[ConditionFlag.BoundByDuty] || Plugin.Condition[ConditionFlag.InDutyQueue] || Plugin.Condition[ConditionFlag.InCombat])
             { Fail("BV_BusyClient"); return; }
+            if (poeticsMode && poeticsFinishing) { FinishPoetics(); return; }
             if (pendingMove != null) { VerifyMove(); return; }
             if (pending != null) { VerifyPurchase(); return; }
             if (settling != null)
@@ -193,18 +238,21 @@ public sealed class MoogleShopService : IDisposable
                 if (!closeSubmitted)
                 {
                     closeSubmitted = true;
-                    if (!MoogleShopGameAdapter.CancelPurchase(settling)) { Fail("BV_UiMismatch"); return; }
+                    if (!CancelPurchase(settling)) { Fail("BV_UiMismatch"); return; }
                 }
-                if (BlundervilleGameAdapter.Visible("SelectYesno") || BlundervilleGameAdapter.Visible("ShopExchangeItemDialog") ||
-                    !BlundervilleGameAdapter.ShopReady("ShopExchangeItem"))
+                if (PurchaseDialogVisible() || !BlundervilleGameAdapter.ShopReady(ownedAddon))
                 { if (DateTime.UtcNow - submitted > TimeSpan.FromSeconds(10)) Fail("BV_UiMismatch"); return; }
                 settling = null; closeSubmitted = false;
             }
             var next = NextOffer();
             if (!running) return;
             if (next == null) { Complete(); return; }
-            if (!MoogleShopGameAdapter.TryStacks(out var stacks)) { Fail("BV_NoInventory"); return; }
-            var merge = MoogleShopMath.PlanMove(stacks, next.TomestoneId);
+            TomestoneMove? merge = null;
+            if (!poeticsMode)
+            {
+                if (!MoogleShopGameAdapter.TryStacks(out var stacks)) { Fail("BV_NoInventory"); return; }
+                merge = MoogleShopMath.PlanMove(stacks, next.TomestoneId);
+            }
             if (merge != null)
             {
                 if (!CloseTraderForMerge()) return;
@@ -215,7 +263,8 @@ public sealed class MoogleShopService : IDisposable
                 return;
             }
             if (!ReachTrader(next)) return;
-            if (!MoogleShopGameAdapter.ValidateOffer(next, out purchaseRow))
+            if (poeticsMode && !PreparePoeticsOffer(next)) return;
+            if (!poeticsMode && !MoogleShopGameAdapter.ValidateOffer(next, out purchaseRow))
             {
                 BlundervilleGameAdapter.LogOfferMismatch(new(next.ShopId, next.ItemId, next.ReceiveCount, next.Costs[0].Count, next.ShopName), "ShopExchangeItem");
                 Fail("BV_UiMismatch"); return;
@@ -223,7 +272,7 @@ public sealed class MoogleShopService : IDisposable
             if (!BlundervilleGameAdapter.TryInventory(next.ItemId, out beforeItem, out var capacity) || !ReadBalances(next, out beforeBalances))
             { Fail("BV_NoInventory"); return; }
             if (!plugin.XaDatabase.TryCount(next.ItemId, out var ownedCount)) { Fail("BV_NoInventory"); return; }
-            if (ownedCount >= targets[next.ItemId]) return;
+            if (ownedCount >= (poeticsMode ? 1 : targets[next.ItemId])) return;
             var item = Plugin.DataManager.GetExcelSheet<Item>().GetRow(next.ItemId);
             var shortage = next.Costs.FirstOrDefault(c => beforeBalances[c.ItemId] < c.Count);
             if (shortage != null)
@@ -241,16 +290,31 @@ public sealed class MoogleShopService : IDisposable
             if (!CheckEligibility(next)) return;
             SetHold(true);
             pending = next; submitted = DateTime.UtcNow; confirmationSubmitted = false;
+            proceedSubmitted = equipmentWarningSubmitted = false;
             Plugin.Log.Information("[MOGTOME][Shop] purchase submitted item={Item}; before={Before}; receive={Receive}; row={Row}; costs={Costs}; balances={Balances}; marker={Marker}",
                 next.ItemId, beforeItem, next.ReceiveCount, purchaseRow, string.Join(',', next.Costs.Select(c => $"{c.ItemId}:{c.Count}")),
                 string.Join(',', beforeBalances.Select(c => $"{c.Key}:{c.Value}")), marker);
-            if (!BlundervilleGameAdapter.Callback("ShopExchangeItem", 0, purchaseRow, 1)) Fail("Shop_UncertainPurchase");
+            if (!(ownedAddon == "ShopExchangeCurrency"
+                ? BlundervilleGameAdapter.Callback(ownedAddon, 0, purchaseRow, 1, 0)
+                : BlundervilleGameAdapter.Callback(ownedAddon, 0, purchaseRow, 1))) Fail("Shop_UncertainPurchase");
         }
         catch (Exception ex) { Plugin.Log.Error(ex, "[MOGTOME][Shop] action failed; no resubmission"); Fail("BV_ActionFailed"); }
     }
 
     private MoogleShopOffer? NextOffer()
     {
+        if (poeticsMode)
+        {
+            if (!TryPoeticsWallet(out var wallet)) { Fail("BV_NoInventory"); return null; }
+            var candidates = poetics.Offers;
+            var stocks = plugin.XaDatabase.ReadStocks(candidates.Select(candidate => candidate.Offer.ItemId));
+            var next = PoeticsShopping.Select(candidates, PoeticsShopCatalog.CurrencyItemId, wallet,
+                id => plugin.XaDatabase.TryCount(id, stocks.GetValueOrDefault(id), out var count) ? count : (int?)null,
+                ReadPoeticsAvailability, out var inventoryKnown, out var eligibilityKnown, HasPoeticsVendor);
+            if (!inventoryKnown) Fail("BV_NoInventory");
+            else if (!eligibilityKnown) Fail("Shop_EligibilityUnknown");
+            return next;
+        }
         var storedStocks = plugin.XaDatabase.ReadStocks(targets.Keys);
         foreach (var target in targets.Where(t => t.Value > 0))
         {
@@ -266,18 +330,23 @@ public sealed class MoogleShopService : IDisposable
 
     private bool CheckEligibility(MoogleShopOffer offer)
     {
-        var availability = ShopOfferEligibility.Read(offer.Gate);
+        var availability = poeticsMode ? ReadPoeticsAvailability(offer) : ShopOfferEligibility.Read(offer.Gate);
         if (availability == ShopOfferAvailability.Available) return true;
         Fail(availability == ShopOfferAvailability.Locked ? "Shop_Locked" : "Shop_EligibilityUnknown");
         return false;
     }
 
-    private static bool ReadBalances(MoogleShopOffer offer, out Dictionary<uint, int> balances)
+    private bool ReadBalances(MoogleShopOffer offer, out Dictionary<uint, int> balances)
     {
         balances = [];
         foreach (var cost in offer.Costs)
         {
-            if (!BlundervilleGameAdapter.TryBagInventory(cost.ItemId, out var count, out _)) return false;
+            int count;
+            if (poeticsMode && cost.ItemId == PoeticsShopCatalog.CurrencyItemId)
+            {
+                if (!TryPoeticsWallet(out count)) return false;
+            }
+            else if (!BlundervilleGameAdapter.TryBagInventory(cost.ItemId, out count, out _)) return false;
             balances[cost.ItemId] = count;
         }
         return true;
@@ -285,6 +354,7 @@ public sealed class MoogleShopService : IDisposable
 
     private bool ReachTrader(MoogleShopOffer offer)
     {
+        if (poeticsMode) return ReachPoeticsTrader(offer);
         var territories = new uint[] { 129, 130, 132 };
         var destinations = new[] { "Limsa Lominsa", "Ul'dah", "Gridania" };
         if (Plugin.ClientState.TerritoryType != territories[(int)sessionSettings!.City])
@@ -377,12 +447,19 @@ public sealed class MoogleShopService : IDisposable
             Plugin.Log.Information("[MOGTOME][Shop] purchase verified item={Item}; count={Count}; costs={Costs}; marker={Marker}",
                 offer.ItemId, count, string.Join(',', balances.Select(c => $"{c.Key}:{c.Value}")), marker);
             settling = offer; pending = null; submitted = DateTime.UtcNow; closeSubmitted = false;
+            if (poeticsMode) targets[offer.ItemId] = 1;
             SetHold(false); return;
         }
-        if (!confirmationSubmitted && (BlundervilleGameAdapter.Visible("SelectYesno") || BlundervilleGameAdapter.Visible("ShopExchangeItemDialog")))
+        if (!confirmationSubmitted && PurchaseDialogVisible())
         {
             if (!OwnsTrader() || count != beforeItem || capacity < offer.ReceiveCount ||
                 !balances.OrderBy(c => c.Key).SequenceEqual(beforeBalances.OrderBy(c => c.Key))) { Fail("Shop_UncertainPurchase"); return; }
+            if (poeticsMode)
+            {
+                ConfirmPoeticsPurchase(offer);
+                if (running && DateTime.UtcNow - submitted > TimeSpan.FromSeconds(10)) Fail("Shop_UncertainPurchase");
+                return;
+            }
             confirmationSubmitted = true;
             if (!MoogleShopGameAdapter.Confirm(offer, purchaseRow))
             {
@@ -402,8 +479,8 @@ public sealed class MoogleShopService : IDisposable
     }
     public void AcknowledgeReview()
     {
-        if (!Ready || running || !Settings.PurchaseReviewRequired || BlundervilleGameAdapter.Visible("SelectYesno") ||
-            BlundervilleGameAdapter.Visible("ShopExchangeItemDialog") || !MoogleShopGameAdapter.TryStacks(out _)) return;
+        if (!Ready || running || !Settings.PurchaseReviewRequired || PurchaseDialogVisible() ||
+            !MoogleShopGameAdapter.TryStacks(out _)) return;
         Settings.PurchaseReviewRequired = false; plugin.ConfigManager.SaveCurrentAccount();
         if (!plugin.Configuration.Blunderville.PurchaseReviewRequired) plugin.YesAlreadyIPC.Unpause();
         Status = Ui.M("BV_Idle");
@@ -417,8 +494,7 @@ public sealed class MoogleShopService : IDisposable
     private void Cleanup()
     {
         running = false;
-        if ((pending != null || settling != null) && (BlundervilleGameAdapter.Visible("SelectYesno") ||
-            BlundervilleGameAdapter.Visible("ShopExchangeItemDialog"))) SetHold(true);
+        if ((pending != null || settling != null) && PurchaseDialogVisible()) SetHold(true);
         foreach (var cleanup in new System.Action[]
         {
             () => { if (movement) { movement = false; plugin.VNavIPC.Stop(); } },
@@ -426,19 +502,25 @@ public sealed class MoogleShopService : IDisposable
             () =>
             {
                 if (!OwnsTrader()) return;
-                var offer = pending ?? settling;
-                if (offer != null && !MoogleShopGameAdapter.CancelPurchase(offer)) { SetHold(true); return; }
-                BlundervilleGameAdapter.CloseOwnedShop("ShopExchangeItem");
+                var offer = pending ?? settling ?? ownedPoeticsOffer;
+                if (offer != null && !CancelPurchase(offer)) { SetHold(true); return; }
+                if (!string.IsNullOrEmpty(ownedAddon)) BlundervilleGameAdapter.CloseOwnedShop(ownedAddon);
                 if (!game.CancelExchangeMenu()) Plugin.Log.Warning("[MOGTOME][Shop] owned menu could not be cancelled; no further interaction");
             },
         }) try { cleanup(); } catch (Exception ex) { Plugin.Log.Warning(ex, "[MOGTOME][Shop] cleanup failed"); }
-        if (sessionSettings != null && !BlundervilleGameAdapter.Visible("SelectYesno") && !BlundervilleGameAdapter.Visible("ShopExchangeItemDialog") &&
+        if (sessionSettings != null && !PurchaseDialogVisible() &&
             !plugin.Configuration.Blunderville.PurchaseReviewRequired) plugin.YesAlreadyIPC.Unpause();
         pending = settling = null; pendingMove = null; npc = 0;
+        ownedPoeticsOffer = null; poeticsVendor = null; ResetPoeticsProgress();
     }
     private bool Reject(string key, params object?[] arguments) { Status = Ui.M(key, arguments); Plugin.Log.Warning("[MOGTOME][Shop] rejected: {Reason}", Status.English); return false; }
     private void Fail(string key, params object?[] arguments) { Cleanup(); Status = Ui.M(key, arguments); Plugin.Log.Warning("[MOGTOME][Shop] stopped: {Reason}; marker={Marker}", Status.English, marker); }
     private void Complete()
+    {
+        if (poeticsMode) { FinishPoetics(); return; }
+        CompleteNow();
+    }
+    private void CompleteNow()
     {
         Cleanup(); Status = Ui.M("BV_ShopDone"); Plugin.Log.Information("[MOGTOME][Shop] completed; marker={Marker}", marker);
     }

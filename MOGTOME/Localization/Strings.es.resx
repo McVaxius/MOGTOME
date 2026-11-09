@@ -2413,4 +2413,12 @@ Abre los almacenes para actualizar las cantidades registradas.</value></data>
   <data name="Config_GmcCombat" xml:space="preserve">
     <value>GMC usa la rotación automática de BMR y el plan del jefe para el trabajo actual, si está disponible.</value>
   </data>
+  <data name="Shop_BuyPoeticsGear" xml:space="preserve"><value>Comprar con Poética para la Gran Compañía</value></data>
+  <data name="Shop_PoeticsHelp" xml:space="preserve"><value>Compra equipo que no posees y que admite la Gran Compañía en vendedores desbloqueados. Prioriza la mejor proporción de sellos por coste en Poética hasta que no queden compras válidas.</value></data>
+  <data name="Shop_DeliverPoeticsGear" xml:space="preserve"><value>Entregar el equipo comprado (/ays deliver)</value></data>
+  <data name="Shop_PoeticsDeliveryHelp" xml:space="preserve"><value>Tras comprar, ejecutar la entrega configurada de AutoRetainer. Regresar solo cuando ya no quede equipo comprado en esta sesión y AutoRetainer lleve 10 segundos inactivo.</value></data>
+  <data name="Shop_PoeticsDeliveryUnavailable" xml:space="preserve"><value>AutoRetainer debe estar cargado y su estado debe poder leerse.</value></data>
+  <data name="Shop_PoeticsEndingLocation" xml:space="preserve"><value>Posada tras las compras con Poética</value></data>
+  <data name="Shop_PoeticsEndingHelp" xml:space="preserve"><value>Esta posada se aplica solo a las compras con Poética. Si se activa la entrega, se comprueba la inactividad antes de regresar.</value></data>
+  <data name="Shop_PoeticsDelivering" xml:space="preserve"><value>Esperando la entrega y 10 segundos de inactividad de AutoRetainer.</value></data>
 </root>

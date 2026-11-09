@@ -2563,4 +2563,12 @@ Kayıtlı miktarları yenilemek için depoları açın.</value></data>
   <data name="Config_GmcCombat" xml:space="preserve">
     <value>GMC, BMR otomatik rotasyonunu ve varsa mevcut mesleğin boss planını kullanır.</value>
   </data>
+  <data name="Shop_BuyPoeticsGear" xml:space="preserve"><value>Poetics ile Grand Company teslimatı için ekipman satın al</value></data>
+  <data name="Shop_PoeticsHelp" xml:space="preserve"><value>Açılmış satıcılardan sahip olunmayan ve Grand Company teslimatına uygun ekipman satın alır. Uygun alım kalmayana kadar Poetics maliyetine göre en çok mühür sağlayan ekipmanı seçer.</value></data>
+  <data name="Shop_DeliverPoeticsGear" xml:space="preserve"><value>Satın alınan ekipmanı teslim et (/ays deliver)</value></data>
+  <data name="Shop_PoeticsDeliveryHelp" xml:space="preserve"><value>Satın alımdan sonra AutoRetainer&apos;ın yapılandırılmış teslimini çalıştır. Yalnızca bu oturumda alınan ekipman artık mevcut olmadığında ve AutoRetainer kesintisiz 10 saniye boşta kaldığında dön.</value></data>
+  <data name="Shop_PoeticsDeliveryUnavailable" xml:space="preserve"><value>AutoRetainer yüklü olmalı ve durumu okunabilmelidir.</value></data>
+  <data name="Shop_PoeticsEndingLocation" xml:space="preserve"><value>Poetics alışverişinden sonraki han</value></data>
+  <data name="Shop_PoeticsEndingHelp" xml:space="preserve"><value>Bu han seçimi yalnızca Poetics alışverişi içindir. Teslim etkinse dönmeden önce boşta kalma durumu denetlenir.</value></data>
+  <data name="Shop_PoeticsDelivering" xml:space="preserve"><value>Teslim ve AutoRetainer&apos;ın 10 saniye boşta kalması bekleniyor.</value></data>
 </root>

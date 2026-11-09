@@ -2413,4 +2413,12 @@ Path: {0}
   <data name="Config_GmcCombat" xml:space="preserve">
     <value>GMC 使用 BMR 自动循环，并在有可用计划时使用当前职业的首领计划。</value>
   </data>
+  <data name="Shop_BuyPoeticsGear" xml:space="preserve"><value>使用诗学购买军票交纳用装备</value></data>
+  <data name="Shop_PoeticsHelp" xml:space="preserve"><value>从已解锁的商人处购买未持有、可作为稀有品交纳的装备，优先选择每单位诗学可换取最多军票的装备，直到没有符合条件的购买项目。</value></data>
+  <data name="Shop_DeliverPoeticsGear" xml:space="preserve"><value>交纳购买的装备（/ays deliver）</value></data>
+  <data name="Shop_PoeticsDeliveryHelp" xml:space="preserve"><value>购买后运行 AutoRetainer 配置的交纳流程。仅在本次购买的装备已不在身上且 AutoRetainer 连续空闲 10 秒后返回。</value></data>
+  <data name="Shop_PoeticsDeliveryUnavailable" xml:space="preserve"><value>必须加载 AutoRetainer，并能读取其状态。</value></data>
+  <data name="Shop_PoeticsEndingLocation" xml:space="preserve"><value>诗学购买后返回的旅馆</value></data>
+  <data name="Shop_PoeticsEndingHelp" xml:space="preserve"><value>此旅馆选项仅用于诗学购物。启用交纳后，返回前会检查空闲状态。</value></data>
+  <data name="Shop_PoeticsDelivering" xml:space="preserve"><value>正在等待交纳及 AutoRetainer 连续空闲 10 秒。</value></data>
 </root>

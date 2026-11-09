@@ -2563,4 +2563,12 @@ Otwórz magazyny, aby odświeżyć zapisane ilości.</value></data>
   <data name="Config_GmcCombat" xml:space="preserve">
     <value>GMC używa autorotacji BMR i dostępnego planu walki z bossem dla bieżącej profesji.</value>
   </data>
+  <data name="Shop_BuyPoeticsGear" xml:space="preserve"><value>Kupuj za Poetics wyposażenie do oddania</value></data>
+  <data name="Shop_PoeticsHelp" xml:space="preserve"><value>Kupuje u odblokowanych sprzedawców nieposiadane wyposażenie przyjmowane przez Grand Company. Wybiera najlepszy stosunek pieczęci do kosztu Poetics, aż nie będzie już dozwolonych zakupów.</value></data>
+  <data name="Shop_DeliverPoeticsGear" xml:space="preserve"><value>Oddaj kupione wyposażenie (/ays deliver)</value></data>
+  <data name="Shop_PoeticsDeliveryHelp" xml:space="preserve"><value>Po zakupach uruchom skonfigurowane oddawanie AutoRetainer. Wróć dopiero, gdy sprzęt kupiony w tej sesji zniknie, a AutoRetainer będzie bezczynny nieprzerwanie przez 10 sekund.</value></data>
+  <data name="Shop_PoeticsDeliveryUnavailable" xml:space="preserve"><value>AutoRetainer musi być załadowany, a jego stan musi być czytelny.</value></data>
+  <data name="Shop_PoeticsEndingLocation" xml:space="preserve"><value>Gospoda po zakupach za Poetics</value></data>
+  <data name="Shop_PoeticsEndingHelp" xml:space="preserve"><value>Ten wybór gospody dotyczy tylko zakupów za Poetykę. Jeśli oddawanie jest włączone, przed powrotem sprawdzana jest bezczynność.</value></data>
+  <data name="Shop_PoeticsDelivering" xml:space="preserve"><value>Oczekiwanie na oddanie i 10 sekund bezczynności AutoRetainer.</value></data>
 </root>

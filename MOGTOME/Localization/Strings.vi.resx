@@ -2563,4 +2563,12 @@ Mở kho để cập nhật số lượng đã ghi.</value></data>
   <data name="Config_GmcCombat" xml:space="preserve">
     <value>GMC dùng tự động xoay chiêu của BMR và kế hoạch đánh trùm cho nghề hiện tại nếu có.</value>
   </data>
+  <data name="Shop_BuyPoeticsGear" xml:space="preserve"><value>Mua trang bị nộp Grand Company bằng Poetics</value></data>
+  <data name="Shop_PoeticsHelp" xml:space="preserve"><value>Mua trang bị chưa sở hữu và đủ điều kiện nộp Grand Company từ các nhà bán đã mở khóa. Ưu tiên số quân phiếu nhận được trên mỗi Poetics, đến khi không còn món phù hợp để mua.</value></data>
+  <data name="Shop_DeliverPoeticsGear" xml:space="preserve"><value>Nộp trang bị đã mua (/ays deliver)</value></data>
+  <data name="Shop_PoeticsDeliveryHelp" xml:space="preserve"><value>Sau khi mua, chạy quy trình giao nộp đã cấu hình của AutoRetainer. Chỉ quay lại khi trang bị mua trong phiên này không còn và AutoRetainer đã nhàn rỗi liên tục 10 giây.</value></data>
+  <data name="Shop_PoeticsDeliveryUnavailable" xml:space="preserve"><value>AutoRetainer phải được tải và có thể đọc trạng thái.</value></data>
+  <data name="Shop_PoeticsEndingLocation" xml:space="preserve"><value>Nhà trọ sau khi mua bằng Poetics</value></data>
+  <data name="Shop_PoeticsEndingHelp" xml:space="preserve"><value>Lựa chọn quán trọ này chỉ dành cho mua sắm bằng Poetics. Nếu bật giao nộp, kiểm tra trạng thái nhàn rỗi trước khi quay lại.</value></data>
+  <data name="Shop_PoeticsDelivering" xml:space="preserve"><value>Đang chờ giao nộp và 10 giây nhàn rỗi của AutoRetainer.</value></data>
 </root>

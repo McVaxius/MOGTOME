@@ -2407,4 +2407,12 @@ Lager öffnen, um erfasste Mengen zu aktualisieren.</value></data>
   <data name="Config_GmcCombat" xml:space="preserve">
     <value>GMC verwendet die BMR-Autorotation und, falls verfügbar, den Bossplan für den aktuellen Job.</value>
   </data>
+  <data name="Shop_BuyPoeticsGear" xml:space="preserve"><value>Gesellschaftsausrüstung mit Poesie kaufen</value></data>
+  <data name="Shop_PoeticsHelp" xml:space="preserve"><value>Kauft noch nicht besessene Ausrüstung für Abgaben bei der Staatlichen Gesellschaft bei freigeschalteten Händlern. Bevorzugt das beste Verhältnis von Staatstalern zu Poesie-Kosten, bis kein zulässiger Kauf mehr möglich ist.</value></data>
+  <data name="Shop_DeliverPoeticsGear" xml:space="preserve"><value>Gekaufte Ausrüstung abgeben (/ays deliver)</value></data>
+  <data name="Shop_PoeticsDeliveryHelp" xml:space="preserve"><value>Nach dem Einkauf die konfigurierte AutoRetainer-Abgabe starten. Erst zurückkehren, wenn die in diesem Lauf gekaufte Ausrüstung verschwunden ist und AutoRetainer 10 Sekunden durchgehend inaktiv war.</value></data>
+  <data name="Shop_PoeticsDeliveryUnavailable" xml:space="preserve"><value>AutoRetainer muss geladen und sein Status lesbar sein.</value></data>
+  <data name="Shop_PoeticsEndingLocation" xml:space="preserve"><value>Unterkunft nach dem Poesie-Einkauf</value></data>
+  <data name="Shop_PoeticsEndingHelp" xml:space="preserve"><value>Diese Gasthauswahl gilt nur für den Poetik-Einkauf. Bei aktivierter Abgabe wird vor der Rückkehr die Inaktivität geprüft.</value></data>
+  <data name="Shop_PoeticsDelivering" xml:space="preserve"><value>Auf die Abgabe und 10 Sekunden AutoRetainer-Inaktivität warten.</value></data>
 </root>

@@ -144,7 +144,7 @@ internal sealed unsafe class MoogleShopGameAdapter
         return matches.Length == 1 ? matches[0].index : -1;
     }
 
-    private static bool TryReadExchangeMenu(out string addonName, out List<string> names)
+    internal static bool TryReadExchangeMenu(out string addonName, out List<string> names)
     {
         names = [];
         addonName = BlundervilleGameAdapter.Visible("SelectIconString") ? "SelectIconString" : "SelectString";

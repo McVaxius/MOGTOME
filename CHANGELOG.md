@@ -1,3 +1,9 @@
+2026-11-09 - 4.2.0.12 - Poetics Grand Company shopping
+
+- Add opt-in Poetics gear purchasing in SHOP, selecting affordable unowned expert-delivery gear by seals per cost from unlocked, reachable vendors. Recheck wallet, ownership, eligibility and exact transaction receipts after each purchase.
+- Add optional AutoRetainer delivery and an independent choice of Stay or the seven existing inns. Require an admitted handoff, run-purchased gear absence and ten continuous readable idle seconds before returning; busy, unknown and loading states reset the wait.
+- Preserve ordinary Moogle targets and other modes' destinations, purchase review holds and owned cleanup. Add focused selection, currency, configuration and delivery-settling regression coverage.
+
 2026-11-09 - 4.2.0.11 - Shared UI library update
 
 - Update shared text controls and glass rendering to the reviewed AethertekUI 0.3.1 baseline.
