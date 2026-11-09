@@ -81,6 +81,154 @@ public sealed class PoeticsShoppingTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AvailableVendorsPreferTheCurrentTerritoryThenNpcIdentity(bool reverse)
+    {
+        const uint here = 920001;
+        var remote = Vendor(910001, 920002);
+        var localHigherId = Vendor(910003, here);
+        var localLowerId = Vendor(910002, here);
+        var unknown = Vendor(910000, here);
+        var locked = Vendor(910004, here);
+        PoeticsShopVendor[] candidates = [remote, localHigherId, unknown, locked, localLowerId];
+        ShopOfferAvailability Availability(PoeticsShopVendor vendor)
+            => vendor == unknown ? ShopOfferAvailability.Unknown
+                : vendor == locked ? ShopOfferAvailability.Locked : ShopOfferAvailability.Available;
+
+        Assert.Same(localLowerId, PoeticsShopVendor.SelectAvailable(reverse ? candidates.Reverse() : candidates,
+            here, Availability));
+        Assert.Same(remote, PoeticsShopVendor.SelectAvailable(candidates, here, vendor =>
+            vendor.TerritoryId == here ? ShopOfferAvailability.Locked : ShopOfferAvailability.Available));
+    }
+
+    [Fact]
+    public void APrepurchaseVendorFailureUsesAnotherVendorForTheSameBestOffer()
+    {
+        const uint here = 920001;
+        var vendorA = Vendor(910010, here);
+        var vendorB = Vendor(910001, 920002);
+        var lowerValueVendor = Vendor(910000, here);
+        var best = Offer(100, 10, 1000, 10);
+        var lowerValue = Offer(101, 10, 100, 20);
+        PoeticsShopOffer[] offers = [best, lowerValue];
+        var vendors = new Dictionary<uint, PoeticsShopVendor[]>
+        {
+            [best.Offer.ShopId] = [vendorA, vendorB],
+            [lowerValue.Offer.ShopId] = [lowerValueVendor],
+        };
+        var failedNpcs = new HashSet<uint>();
+        ShopOfferAvailability Availability(PoeticsShopVendor vendor)
+            => failedNpcs.Contains(vendor.NpcId) ? ShopOfferAvailability.Unknown : ShopOfferAvailability.Available;
+        (MoogleShopOffer? Offer, PoeticsShopVendor? Vendor) Plan()
+        {
+            var selected = PoeticsShopping.Select(offers, Currency, 100, _ => 0,
+                offer => PoeticsShopping.ResolveVendorAvailability(ShopOfferAvailability.Available,
+                    vendors[offer.ShopId].Select(Availability)), out var inventoryKnown, out var eligibilityKnown);
+            Assert.True(inventoryKnown);
+            Assert.True(eligibilityKnown);
+            return (selected, selected == null ? null : PoeticsShopVendor.SelectAvailable(vendors[selected.ShopId], here, Availability));
+        }
+
+        var first = Plan();
+        Assert.Same(best.Offer, first.Offer);
+        Assert.Same(vendorA, first.Vendor);
+        Assert.True(PoeticsShopping.CanSkipVendor(false, false, false, false));
+        Assert.True(failedNpcs.Add(vendorA.NpcId));
+        var second = Plan();
+        Assert.Same(first.Offer, second.Offer);
+        Assert.Same(vendorB, second.Vendor);
+        Assert.Single(failedNpcs);
+        Assert.DoesNotContain(vendorB.NpcId, failedNpcs);
+    }
+
+    [Fact]
+    public void AnUnknownVendorCanBecomeAvailableWithoutDiscardingAKnownAlternative()
+    {
+        const uint here = 920001;
+        var local = Vendor(910001, here);
+        var remote = Vendor(910002, 920002);
+        var localAvailability = ShopOfferAvailability.Unknown;
+        ShopOfferAvailability Availability(PoeticsShopVendor vendor)
+            => vendor == local ? localAvailability : ShopOfferAvailability.Available;
+
+        Assert.Null(PoeticsShopVendor.SelectAvailable([local], here, Availability));
+        Assert.Same(remote, PoeticsShopVendor.SelectAvailable([local, remote], here, Availability));
+        Assert.Equal(ShopOfferAvailability.Available, PoeticsShopping.ResolveVendorAvailability(
+            ShopOfferAvailability.Available, new[] { local, remote }.Select(Availability)));
+        localAvailability = ShopOfferAvailability.Available;
+        Assert.Same(local, PoeticsShopVendor.SelectAvailable([remote, local], here, Availability));
+    }
+
+    [Fact]
+    public void ExhaustingAllVendorsTerminatesAfterEachNpcWasTriedOnce()
+    {
+        const uint here = 920001;
+        PoeticsShopVendor[] candidates = [Vendor(910003, 920002), Vendor(910002, here), Vendor(910001, here)];
+        var failedNpcs = new HashSet<uint>();
+        var attempted = new List<uint>();
+        PoeticsShopVendor? NextVendor() => PoeticsShopVendor.SelectAvailable(
+            candidates.Where(vendor => !failedNpcs.Contains(vendor.NpcId)), here, _ => ShopOfferAvailability.Available);
+
+        for (var attempt = 0; attempt < candidates.Length; attempt++)
+        {
+            var next = NextVendor();
+            Assert.NotNull(next);
+            attempted.Add(next!.NpcId);
+            Assert.True(failedNpcs.Add(next.NpcId));
+        }
+        Assert.Equal(new uint[] { 910001, 910002, 910003 }, attempted);
+        Assert.Null(NextVendor());
+        var selected = PoeticsShopping.Select([Offer(100, 10, 100)], Currency, 100,
+            _ => throw new Exception("Exhausted vendor stock must not be queried"), _ => ShopOfferAvailability.Available,
+            out var inventoryKnown, out var eligibilityKnown, _ => NextVendor() != null);
+        Assert.Null(selected);
+        Assert.True(inventoryKnown);
+        Assert.True(eligibilityKnown);
+    }
+
+    [Fact]
+    public void ANewRunsFailureSetDoesNotInheritThePreviousRunsExhaustion()
+    {
+        const uint here = 920001;
+        var local = Vendor(910001, here);
+        var remote = Vendor(910002, 920002);
+        PoeticsShopVendor[] candidates = [remote, local];
+        var firstRunFailures = candidates.Select(vendor => vendor.NpcId).ToHashSet();
+        PoeticsShopVendor? Plan(HashSet<uint> failures) => PoeticsShopVendor.SelectAvailable(
+            candidates.Where(vendor => !failures.Contains(vendor.NpcId)), here, _ => ShopOfferAvailability.Available);
+
+        Assert.Null(Plan(firstRunFailures));
+        var nextRunFailures = new HashSet<uint>();
+        Assert.Same(local, Plan(nextRunFailures));
+        Assert.Empty(nextRunFailures);
+        Assert.Equal(2, firstRunFailures.Count);
+    }
+
+    [Fact]
+    public void VendorRecoveryReopensOnlyAfterThePurchaseIsFullySettledAndBeforeFinishing()
+    {
+        Assert.True(PoeticsShopping.CanSkipVendor(false, false, false, false));
+        Assert.False(PoeticsShopping.CanSkipVendor(true, true, true, false));
+        Assert.False(PoeticsShopping.CanSkipVendor(true, false, false, false));
+        Assert.True(PoeticsShopping.CanSkipVendor(false, false, false, false));
+        Assert.False(PoeticsShopping.CanSkipVendor(false, false, false, true));
+    }
+
+    [Theory]
+    [InlineData("submitted purchase", true, false, false, false)]
+    [InlineData("pending receipt", true, false, false, false)]
+    [InlineData("settling purchase", true, false, false, false)]
+    [InlineData("pending inventory move", true, false, false, false)]
+    [InlineData("purchase review", false, true, false, false)]
+    [InlineData("purchase dialog", false, false, true, false)]
+    [InlineData("delivery or return finishing", false, false, false, true)]
+    [InlineData("overlapping owned work", true, true, true, true)]
+    public void OwnedTransactionStatesCannotBeReinterpretedAsPrepurchaseVendorFailures(
+        string state, bool purchaseInFlight, bool reviewRequired, bool purchaseDialogVisible, bool finishing)
+        => Assert.False(PoeticsShopping.CanSkipVendor(purchaseInFlight, reviewRequired, purchaseDialogVisible, finishing), state);
+
+    [Theory]
     [InlineData("Available", "Available", "Available")]
     [InlineData("Available", "Locked", "Locked")]
     [InlineData("Available", "Unknown", "Unknown")]
@@ -118,18 +266,19 @@ public sealed class PoeticsShoppingTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void AnUnresolvedVendorCannotEstablishTheBestPurchaseOrKnownCompletion(bool includeKnownAlternative)
+    public void AnUnresolvedVendorIsSkippedBeforeConsideringKnownAvailablePurchases(bool includeKnownAlternative)
     {
         var unresolved = Offer(100, 10, 1000);
         var alternative = Offer(101, 10, 100);
         var selected = PoeticsShopping.Select(includeKnownAlternative ? [unresolved, alternative] : [unresolved],
-            Currency, 100, _ => 0,
+            Currency, 100, id => id == unresolved.Offer.ItemId
+                ? throw new Exception("Unresolved vendor stock must not be queried") : 0,
             offer => PoeticsShopping.ResolveVendorAvailability(ShopOfferAvailability.Available,
                 offer.ItemId == unresolved.Offer.ItemId ? [] : [ShopOfferAvailability.Available]),
             out var inventoryKnown, out var eligibilityKnown, _ => true);
-        Assert.Null(selected);
+        Assert.Same(includeKnownAlternative ? alternative.Offer : null, selected);
         Assert.True(inventoryKnown);
-        Assert.False(eligibilityKnown);
+        Assert.True(eligibilityKnown);
     }
 
     [Fact]
@@ -150,7 +299,7 @@ public sealed class PoeticsShoppingTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void UnknownCandidatesOnlyBlockWhenTheyCanChangeTheCurrentBest(bool unknownInventory)
+    public void OnlyAvailableUnknownStockCanBlockAfterTheKnownBestPurchaseIsOwned(bool unknownInventory)
     {
         var best = Offer(100, 10, 1000);
         var unknown = Offer(101, 10, 100);
@@ -169,13 +318,13 @@ public sealed class PoeticsShoppingTests
             out inventoryKnown, out eligibilityKnown);
         Assert.Null(selected);
         Assert.Equal(!unknownInventory, inventoryKnown);
-        Assert.Equal(unknownInventory, eligibilityKnown);
+        Assert.True(eligibilityKnown);
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void AnUnknownCheaperPurchaseAtTheSameRatioStillBlocks(bool unknownInventory)
+    public void ACheaperAvailableUnknownStockContenderBlocksButAnUnknownUnlockIsSkipped(bool unknownInventory)
     {
         var known = Offer(100, 20, 200);
         var cheaper = Offer(101, 10, 100);
@@ -184,9 +333,9 @@ public sealed class PoeticsShoppingTests
             offer => offer.ItemId == cheaper.Offer.ItemId && !unknownInventory
                 ? ShopOfferAvailability.Unknown : ShopOfferAvailability.Available,
             out var inventoryKnown, out var eligibilityKnown);
-        Assert.Null(selected);
+        Assert.Same(unknownInventory ? null : known.Offer, selected);
         Assert.Equal(!unknownInventory, inventoryKnown);
-        Assert.Equal(unknownInventory, eligibilityKnown);
+        Assert.True(eligibilityKnown);
     }
 
     [Theory]
@@ -229,6 +378,9 @@ public sealed class PoeticsShoppingTests
         Assert.True(inventoryKnown);
         Assert.True(eligibilityKnown);
     }
+
+    private static PoeticsShopVendor Vendor(uint npc, uint territory)
+        => new(npc, territory, new(1, 2, 3), ["Fixture exchange"]);
 
     private static PoeticsShopOffer Offer(uint item, uint cost, uint seals, uint shop = 10)
         => new(new(shop, "Fixture exchange", item, 1, Currency, [new(Currency, cost)]), seals);
@@ -351,7 +503,7 @@ public sealed class PoeticsShoppingTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void UnknownEligibilityIsNotAProofOfBestValueOrNoLegalPurchase(bool includeAvailable)
+    public void UnknownEligibilityNeverAuthorizesAPurchaseOrBlocksKnownAvailableAlternatives(bool includeAvailable)
     {
         var unknown = Offer(100, 10, 1000);
         unknown = unknown with { Offer = unknown.Offer with { Gate = new(ShopQuest: 10) } };
@@ -359,9 +511,9 @@ public sealed class PoeticsShoppingTests
         var result = Select(includeAvailable ? [unknown, available] : [unknown],
             availability: gate => gate.ShopQuest == 10 ? ShopOfferAvailability.Unknown : ShopOfferAvailability.Available);
 
-        Assert.Null(result.Offer);
+        Assert.Same(includeAvailable ? available.Offer : null, result.Offer);
         Assert.True(result.InventoryKnown);
-        Assert.False(result.EligibilityKnown);
+        Assert.True(result.EligibilityKnown);
     }
 
     [Fact]

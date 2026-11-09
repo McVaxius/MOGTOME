@@ -205,6 +205,10 @@ public sealed partial class MoogleShopService : IDisposable
         Status = Ui.M("BV_Shopping");
         Plugin.Log.Information("[MOGTOME][Shop] Buy accepted; city={City}; currency={Currency}; targets={Targets}; marker={Marker}",
             Settings.City, CurrencyId, targets.Count, marker);
+        if (poeticsMode)
+            Plugin.Log.Information("[MOGTOME][Poetics] skipping unresolved vendor shops for this run: {Shops}; marker={Marker}",
+                string.Join(',', sessionCatalog.Where(offer => poetics.Vendors(offer).Count == 0)
+                    .Select(offer => offer.ShopId).Distinct()), marker);
         return true;
     }
 
@@ -226,7 +230,12 @@ public sealed partial class MoogleShopService : IDisposable
                 Settings.BuyPoeticsGear != poeticsMode || poeticsMode &&
                 (Settings.DeliverPoeticsGear != poeticsDeliver || Settings.PoeticsEndingLocation != poeticsEnding))
             { Fail("BV_SessionChanged"); return; }
-            if (DateTime.UtcNow - started > TimeSpan.FromMinutes(10)) { Fail("BV_Timeout"); return; }
+            if (DateTime.UtcNow - started > TimeSpan.FromMinutes(10))
+            {
+                if (poeticsMode && Ready && poeticsVendor != null && !poeticsVendorRecovery && CanSkipPoeticsVendor())
+                { SkipPoeticsVendor("BV_Timeout"); return; }
+                Fail("BV_Timeout"); return;
+            }
             if (!Ready) { if (poeticsMode) deliveryIdleSince = null; return; }
             if (Plugin.Condition[ConditionFlag.BoundByDuty] || Plugin.Condition[ConditionFlag.InDutyQueue] || Plugin.Condition[ConditionFlag.InCombat])
             { Fail("BV_BusyClient"); return; }
@@ -244,8 +253,12 @@ public sealed partial class MoogleShopService : IDisposable
                 { if (DateTime.UtcNow - submitted > TimeSpan.FromSeconds(10)) Fail("BV_UiMismatch"); return; }
                 settling = null; closeSubmitted = false;
             }
+            if (poeticsMode && poeticsVendorRecovery && !RecoverPoeticsVendor()) return;
             var next = NextOffer();
             if (!running) return;
+            if (poeticsMode && poeticsVendorRecovery) return;
+            if (next == null && poeticsMode && poeticsVendor != null && ownedPoeticsOffer == null)
+            { SkipPoeticsVendor("Shop_EligibilityUnknown", rejectVendor: false); return; }
             if (next == null) { Complete(); return; }
             TomestoneMove? merge = null;
             if (!poeticsMode)
@@ -310,7 +323,7 @@ public sealed partial class MoogleShopService : IDisposable
             var stocks = plugin.XaDatabase.ReadStocks(candidates.Select(candidate => candidate.Offer.ItemId));
             var next = PoeticsShopping.Select(candidates, PoeticsShopCatalog.CurrencyItemId, wallet,
                 id => plugin.XaDatabase.TryCount(id, stocks.GetValueOrDefault(id), out var count) ? count : (int?)null,
-                ReadPoeticsAvailability, out var inventoryKnown, out var eligibilityKnown, HasPoeticsVendor);
+                ReadPoeticsAvailability, out var inventoryKnown, out var eligibilityKnown);
             if (!inventoryKnown) Fail("BV_NoInventory");
             else if (!eligibilityKnown) Fail("Shop_EligibilityUnknown");
             return next;
@@ -331,7 +344,14 @@ public sealed partial class MoogleShopService : IDisposable
     private bool CheckEligibility(MoogleShopOffer offer)
     {
         var availability = poeticsMode ? ReadPoeticsAvailability(offer) : ShopOfferEligibility.Read(offer.Gate);
+        if (poeticsMode && poeticsVendorRecovery) return false;
         if (availability == ShopOfferAvailability.Available) return true;
+        if (poeticsMode)
+        {
+            // An offer's gate changing is not evidence that every shop on its NPC failed.
+            Status = Ui.M(availability == ShopOfferAvailability.Locked ? "Shop_Locked" : "Shop_EligibilityUnknown");
+            return false;
+        }
         Fail(availability == ShopOfferAvailability.Locked ? "Shop_Locked" : "Shop_EligibilityUnknown");
         return false;
     }

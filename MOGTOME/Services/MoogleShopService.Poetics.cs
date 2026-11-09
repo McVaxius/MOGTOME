@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading;
 using Dalamud.Game.ClientState.Objects.Enums;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.Sheets;
 using MOGTOME.Localization;
 using MOGTOME.Models;
@@ -14,8 +16,10 @@ namespace MOGTOME.Services;
 public sealed partial class MoogleShopService
 {
     private bool poeticsFinishing, poeticsShopClosed, deliveryAdmitted, positionApproach;
-    private int poeticsCloseStage;
+    private int poeticsCloseStage; // Consumed close commands: shop=1, menu=2, Talk=4.
     private DateTime? deliveryIdleSince;
+    private readonly HashSet<uint> rejectedPoeticsVendors = [];
+    private bool poeticsVendorRecovery;
 
     private static unsafe bool TryPoeticsWallet(out int balance)
     {
@@ -46,14 +50,120 @@ public sealed partial class MoogleShopService
     private static BlundervilleOffer ExchangeOffer(MoogleShopOffer offer)
         => new(offer.ShopId, offer.ItemId, offer.ReceiveCount, offer.Costs[0].Count, offer.ShopName);
 
-    private bool HasPoeticsVendor(MoogleShopOffer offer)
-        => poetics.Vendors(offer).Count == 0 || poetics.Vendors(offer).Any(CanReachPoeticsVendor);
-
     private static bool CanReachPoeticsVendor(PoeticsShopVendor vendor)
         => vendor.TerritoryId == Plugin.ClientState.TerritoryType || TryPoeticsDestination(vendor, out _);
 
     private ShopOfferAvailability ReadPoeticsAvailability(MoogleShopOffer offer)
-        => poetics.ReadAvailability(offer, CanReachPoeticsVendor);
+    {
+        var availability = poetics.ReadAvailability(offer, ReadPoeticsVendorAvailability);
+        if (poeticsVendor != null && rejectedPoeticsVendors.Contains(poeticsVendor.NpcId) && !poeticsVendorRecovery)
+            SkipPoeticsVendor("Shop_EligibilityUnknown", rejectVendor: false);
+        return availability;
+    }
+
+    private ShopOfferAvailability ReadPoeticsVendorAvailability(PoeticsShopVendor vendor)
+    {
+        if (rejectedPoeticsVendors.Contains(vendor.NpcId)) return ShopOfferAvailability.Unknown;
+        try
+        {
+            var availability = PoeticsShopCatalog.ReadVendorAvailability(vendor);
+            if (availability == ShopOfferAvailability.Unknown) RejectPoeticsVendor(vendor.NpcId, "Shop_EligibilityUnknown");
+            if (availability != ShopOfferAvailability.Available) return availability;
+            return CanReachPoeticsVendor(vendor) ? availability : ShopOfferAvailability.Locked;
+        }
+        catch (Exception ex)
+        {
+            RejectPoeticsVendor(vendor.NpcId, "BV_TravelUnavailable", ex);
+            return ShopOfferAvailability.Unknown;
+        }
+    }
+
+    private void RejectPoeticsVendor(uint npcId, string reason, Exception? error = null)
+    {
+        if (!rejectedPoeticsVendors.Add(npcId)) return;
+        const string message = "[MOGTOME][Poetics] skipping vendor {Npc} for this run; reason={Reason}; marker={Marker}";
+        if (error == null) Plugin.Log.Warning(message, npcId, reason, marker);
+        else Plugin.Log.Warning(error, message, npcId, reason, marker);
+    }
+
+    private bool CanSkipPoeticsVendor()
+        => PoeticsShopping.CanSkipVendor(pending != null || settling != null || pendingMove != null,
+            sessionSettings?.PurchaseReviewRequired == true || plugin.Configuration.Blunderville.PurchaseReviewRequired,
+            PurchaseDialogVisible(), poeticsFinishing);
+
+    private bool SkipPoeticsVendor(string reason, bool rejectVendor = true)
+    {
+        if (!CanSkipPoeticsVendor()) { Fail("Shop_UncertainPurchase"); return false; }
+        if (poeticsVendor != null && rejectVendor) RejectPoeticsVendor(poeticsVendor.NpcId, reason);
+        if (!poeticsVendorRecovery)
+        {
+            poeticsVendorRecovery = true;
+            travel = false; // Lifestream has no request-owner token; do not abort a possible foreign replacement.
+            started = DateTime.UtcNow; // Reuse the owner's existing deadline for bounded cleanup/next vendor.
+        }
+        Status = Ui.M("BV_Shopping");
+        return false;
+    }
+
+    private unsafe bool RecoverPoeticsVendor()
+    {
+        if (!ContinuePoetics()) return false;
+        if (!CanSkipPoeticsVendor()) { Fail("Shop_UncertainPurchase"); return false; }
+        if (movement)
+        {
+            if (!plugin.VNavIPC.Stop()) { Fail("BV_TravelUnavailable"); return false; }
+            movement = false;
+        }
+        // Observe travel idle without issuing Lifestream's global Abort.
+        if (Plugin.PluginInterface.GetIpcSubscriber<bool>("Lifestream.IsBusy").InvokeFunc()) return false;
+        var currencyShop = BlundervilleGameAdapter.Visible("ShopExchangeCurrency");
+        var itemShop = BlundervilleGameAdapter.Visible("ShopExchangeItem");
+        var menu = BlundervilleGameAdapter.Visible("SelectString") || BlundervilleGameAdapter.Visible("SelectIconString");
+        var talk = BlundervilleGameAdapter.Visible("Talk");
+        if ((currencyShop || itemShop || menu || talk) && !OwnsTrader())
+        { Fail("BV_UiMismatch"); return false; }
+        if (talk && (currencyShop || itemShop || menu)) { Fail("BV_UiMismatch"); return false; }
+        if (currencyShop || itemShop)
+        {
+            var addon = currencyShop ? "ShopExchangeCurrency" : "ShopExchangeItem";
+            if (currencyShop && itemShop || addon != ownedAddon)
+            { Fail("BV_UiMismatch"); return false; }
+            if ((poeticsCloseStage & 1) == 0)
+            {
+                BlundervilleGameAdapter.CloseOwnedShop(addon);
+                poeticsCloseStage |= 1;
+            }
+            return false;
+        }
+        if (menu)
+        {
+            if ((poeticsCloseStage & 2) == 0)
+            {
+                if (!game.CancelExchangeMenu()) { Fail("BV_UiMismatch"); return false; }
+                poeticsCloseStage |= 2;
+            }
+            return false;
+        }
+        if (talk)
+        {
+            if (ownedAddon != "Talk") { Fail("BV_UiMismatch"); return false; }
+            if ((poeticsCloseStage & 4) == 0)
+            {
+                var addon = (AtkUnitBase*)Plugin.GameGui.GetAddonByName("Talk").Address;
+                if (addon != null && addon->IsVisible) addon->Close(true);
+                poeticsCloseStage |= 4;
+            }
+            return false;
+        }
+        // Observe all owned UI closed before another vendor (or delivery) can start.
+        poeticsVendor = null; ownedPoeticsOffer = null; ownedAddon = string.Empty;
+        npc = 0; lastMenu = string.Empty; categoryItem = 0;
+        shopSeen = menuSeen = default; nextInteraction = default;
+        positionApproach = travelSubmitted = closeSubmitted = false;
+        poeticsCloseStage = 0; poeticsVendorRecovery = false;
+        started = DateTime.UtcNow;
+        return true;
+    }
 
     private bool PurchaseDialogVisible()
         => BlundervilleGameAdapter.Visible("SelectYesno") || BlundervilleGameAdapter.Visible("ShopExchangeItemDialog") ||
@@ -66,18 +176,26 @@ public sealed partial class MoogleShopService
 
     private bool PreparePoeticsOffer(MoogleShopOffer offer)
     {
-        var exchange = ExchangeOffer(offer);
-        if (BlundervilleGameAdapter.Visible("ShopExchangeCurrency"))
+        try
         {
-            if (!BlundervilleGameAdapter.EnsureOfferCategory(exchange, ref categoryItem, out var ready))
-            { Fail("BV_UiMismatch"); return false; }
-            if (!ready) return false;
+            var exchange = ExchangeOffer(offer);
+            if (BlundervilleGameAdapter.Visible("ShopExchangeCurrency"))
+            {
+                if (!BlundervilleGameAdapter.EnsureOfferCategory(exchange, ref categoryItem, out var ready))
+                { return SkipPoeticsVendor("BV_UiMismatch"); }
+                if (!ready) return false;
+            }
+            if (!BlundervilleGameAdapter.TryValidateOffer(exchange, out var addon, out purchaseRow, PoeticsShopCatalog.CurrencyItemId))
+            { return SkipPoeticsVendor("BV_UiMismatch"); }
+            ownedAddon = addon;
+            ownedPoeticsOffer = offer;
+            return true;
         }
-        if (!BlundervilleGameAdapter.TryValidateOffer(exchange, out var addon, out purchaseRow, PoeticsShopCatalog.CurrencyItemId))
-        { Fail("BV_UiMismatch"); return false; }
-        ownedAddon = addon;
-        ownedPoeticsOffer = offer;
-        return true;
+        catch (Exception ex)
+        {
+            Plugin.Log.Warning(ex, "[MOGTOME][Poetics] vendor offer validation failed; no purchase submitted");
+            return SkipPoeticsVendor("BV_UiMismatch");
+        }
     }
 
     private unsafe void ConfirmPoeticsPurchase(MoogleShopOffer offer)
@@ -120,128 +238,154 @@ public sealed partial class MoogleShopService
 
     private bool ReachPoeticsTrader(MoogleShopOffer offer)
     {
-        var shopVisible = BlundervilleGameAdapter.Visible("ShopExchangeItem") || BlundervilleGameAdapter.Visible("ShopExchangeCurrency");
-        if ((shopVisible || PurchaseDialogVisible() || BlundervilleGameAdapter.Visible("SelectString") ||
-            BlundervilleGameAdapter.Visible("SelectIconString") || BlundervilleGameAdapter.Visible("Talk")) && !OwnsTrader())
-        { Fail("BV_UiMismatch"); return false; }
-        if (ownedPoeticsOffer != null && ownedPoeticsOffer.ShopId != offer.ShopId)
+        try
         {
-            if (!ClosePoeticsTrader()) return false;
-            poeticsVendor = null;
-        }
-        if (poeticsVendor != null)
-        {
-            var currentVendor = poeticsVendor.MatchCurrent(poetics.Vendors(offer));
-            if (currentVendor == null) { Fail("Shop_EligibilityUnknown"); return false; }
-            // Keep the current offer's labels even when a catalog refresh replaced its records.
-            poeticsVendor = currentVendor;
-        }
-        if (poeticsVendor == null)
-        {
-            poeticsVendor = poetics.Vendors(offer)
-                .Where(vendor => CanReachPoeticsVendor(vendor) &&
-                    PoeticsShopCatalog.ReadVendorAvailability(vendor) == ShopOfferAvailability.Available)
-                .OrderBy(vendor => vendor.TerritoryId == Plugin.ClientState.TerritoryType ? 0 : 1)
-                .ThenBy(vendor => vendor.NpcId).ThenBy(vendor => vendor.TerritoryId).FirstOrDefault();
-            if (poeticsVendor == null) { Fail("Shop_NoTrader"); return false; }
-            travelSubmitted = false;
-        }
-        var vendorAvailability = PoeticsShopCatalog.ReadVendorAvailability(poeticsVendor);
-        if (vendorAvailability != ShopOfferAvailability.Available)
-        { Fail(vendorAvailability == ShopOfferAvailability.Locked ? "Shop_Locked" : "Shop_EligibilityUnknown"); return false; }
-        if (Plugin.ClientState.TerritoryType != poeticsVendor.TerritoryId)
-        {
-            if (!travelSubmitted)
-            {
-                if (Plugin.PluginInterface.GetIpcSubscriber<bool>("Lifestream.IsBusy").InvokeFunc() ||
-                    !TryPoeticsDestination(poeticsVendor, out var destination))
-                { Fail("BV_TravelUnavailable"); return false; }
-                travelSubmitted = true;
-                travel = Plugin.CommandManager.ProcessCommand("/li " + destination);
-                if (!travel) Fail("BV_TravelUnavailable");
-            }
-            Status = Ui.M("Shop_Travel");
-            return false;
-        }
-        if (travel && Plugin.PluginInterface.GetIpcSubscriber<bool>("Lifestream.IsBusy").InvokeFunc()) return false;
-        travel = false;
-        Status = Ui.M("BV_Shopping");
-        if (shopVisible)
-        {
-            if (!OwnsTrader()) { Fail("BV_UiMismatch"); return false; }
-            return BlundervilleGameAdapter.ShopReady(BlundervilleGameAdapter.Visible("ShopExchangeCurrency")
-                ? "ShopExchangeCurrency" : "ShopExchangeItem");
-        }
-        if (PurchaseDialogVisible() || BlundervilleGameAdapter.Visible("Talk")) { Fail("BV_UiMismatch"); return false; }
-        if (BlundervilleGameAdapter.Visible("SelectString") || BlundervilleGameAdapter.Visible("SelectIconString"))
-        {
-            if (!OwnsTrader() || !MoogleShopGameAdapter.TryReadExchangeMenu(out var addon, out var names))
+            var shopVisible = BlundervilleGameAdapter.Visible("ShopExchangeItem") || BlundervilleGameAdapter.Visible("ShopExchangeCurrency");
+            if ((shopVisible || PurchaseDialogVisible() || BlundervilleGameAdapter.Visible("SelectString") ||
+                BlundervilleGameAdapter.Visible("SelectIconString") || BlundervilleGameAdapter.Visible("Talk")) && !OwnsTrader())
             { Fail("BV_UiMismatch"); return false; }
-            var menu = addon + "\n" + string.Join('\n', names);
-            if (menu == lastMenu) return false;
-            var row = MoogleShopGameAdapter.FindExchangeRow(names, offer.ShopName, poeticsVendor.MenuLabels);
-            if (row < 0) { Fail("BV_UiMismatch"); return false; }
-            lastMenu = menu;
-            if (!BlundervilleGameAdapter.Callback(addon, row)) Fail("BV_UiMismatch");
-            return false;
-        }
-        if (DateTime.UtcNow < nextInteraction) return false;
-        var player = Plugin.ObjectTable.LocalPlayer;
-        if (player == null) return false;
-        var trader = Plugin.ObjectTable.FirstOrDefault(actor => actor.ObjectKind == ObjectKind.EventNpc &&
-            actor.BaseId == poeticsVendor.NpcId);
-        if (trader == null)
-        {
-            if (Vector3.Distance(player.Position, poeticsVendor.Position) <= 3)
-            { Fail("Shop_NoTrader"); return false; }
-            if (!movement)
+            if (ownedPoeticsOffer != null && ownedPoeticsOffer.ShopId != offer.ShopId)
             {
-                if (!Plugin.PluginInterface.GetIpcSubscriber<bool>("vnavmesh.Nav.IsReady").InvokeFunc()) return false;
-                movement = plugin.VNavIPC.MoveTo(poeticsVendor.Position);
-                if (!movement) { Fail("BV_TravelUnavailable"); return false; }
-                positionApproach = true;
+                if (!ClosePoeticsTrader()) return false;
+                poeticsVendor = null;
+            }
+            if (poeticsVendor != null)
+            {
+                var currentVendor = poeticsVendor.MatchCurrent(poetics.Vendors(offer)
+                    .Where(vendor => !rejectedPoeticsVendors.Contains(vendor.NpcId)));
+                if (currentVendor == null) return SkipPoeticsVendor("Shop_EligibilityUnknown", rejectVendor: false);
+                // Keep the current offer's labels even when a catalog refresh replaced its records.
+                poeticsVendor = currentVendor;
+            }
+            if (poeticsVendor == null)
+            {
+                poeticsVendor = PoeticsShopVendor.SelectAvailable(poetics.Vendors(offer), Plugin.ClientState.TerritoryType,
+                    ReadPoeticsVendorAvailability);
+                if (poeticsVendor == null) return SkipPoeticsVendor("Shop_NoTrader");
+                travelSubmitted = false;
+            }
+            var vendorAvailability = ReadPoeticsVendorAvailability(poeticsVendor);
+            if (vendorAvailability != ShopOfferAvailability.Available)
+                return SkipPoeticsVendor(vendorAvailability == ShopOfferAvailability.Locked ? "Shop_Locked" : "Shop_EligibilityUnknown");
+            if (Plugin.ClientState.TerritoryType != poeticsVendor.TerritoryId)
+            {
+                if (!travelSubmitted)
+                {
+                    if (Plugin.PluginInterface.GetIpcSubscriber<bool>("Lifestream.IsBusy").InvokeFunc() ||
+                        !TryPoeticsDestination(poeticsVendor, out var destination))
+                    { return SkipPoeticsVendor("BV_TravelUnavailable"); }
+                    travelSubmitted = true;
+                    travel = Plugin.CommandManager.ProcessCommand("/li " + destination);
+                    if (!travel) return SkipPoeticsVendor("BV_TravelUnavailable");
+                }
+                Status = Ui.M("Shop_Travel");
+                return false;
+            }
+            if (travel && Plugin.PluginInterface.GetIpcSubscriber<bool>("Lifestream.IsBusy").InvokeFunc()) return false;
+            travel = false;
+            Status = Ui.M("BV_Shopping");
+            if (shopVisible)
+            {
+                if (!OwnsTrader()) { Fail("BV_UiMismatch"); return false; }
+                var currencyShop = BlundervilleGameAdapter.Visible("ShopExchangeCurrency");
+                if (currencyShop && BlundervilleGameAdapter.Visible("ShopExchangeItem"))
+                { Fail("BV_UiMismatch"); return false; }
+                ownedAddon = currencyShop ? "ShopExchangeCurrency" : "ShopExchangeItem";
+                return BlundervilleGameAdapter.ShopReady(ownedAddon);
+            }
+            if (PurchaseDialogVisible()) { Fail("Shop_UncertainPurchase"); return false; }
+            if (BlundervilleGameAdapter.Visible("Talk"))
+            {
+                if (BlundervilleGameAdapter.Visible("SelectString") || BlundervilleGameAdapter.Visible("SelectIconString"))
+                { Fail("BV_UiMismatch"); return false; }
+                ownedAddon = "Talk";
+                return SkipPoeticsVendor("BV_UiMismatch");
+            }
+            if (BlundervilleGameAdapter.Visible("SelectString") || BlundervilleGameAdapter.Visible("SelectIconString"))
+            {
+                if (!OwnsTrader()) { Fail("BV_UiMismatch"); return false; }
+                if (!MoogleShopGameAdapter.TryReadExchangeMenu(out var addon, out var names))
+                    return SkipPoeticsVendor("BV_UiMismatch");
+                var menu = addon + "\n" + string.Join('\n', names);
+                if (menu == lastMenu) return false;
+                var row = MoogleShopGameAdapter.FindExchangeRow(names, offer.ShopName, poeticsVendor.MenuLabels);
+                if (row < 0) return SkipPoeticsVendor("BV_UiMismatch");
+                lastMenu = menu;
+                if (!BlundervilleGameAdapter.Callback(addon, row)) return SkipPoeticsVendor("BV_UiMismatch");
+                return false;
+            }
+            if (DateTime.UtcNow < nextInteraction) return false;
+            var player = Plugin.ObjectTable.LocalPlayer;
+            if (player == null) return false;
+            var trader = Plugin.ObjectTable.FirstOrDefault(actor => actor.ObjectKind == ObjectKind.EventNpc &&
+                actor.BaseId == poeticsVendor.NpcId);
+            if (trader == null)
+            {
+                if (Vector3.Distance(player.Position, poeticsVendor.Position) <= 3)
+                { return SkipPoeticsVendor("Shop_NoTrader"); }
+                if (!movement)
+                {
+                    if (!Plugin.PluginInterface.GetIpcSubscriber<bool>("vnavmesh.Nav.IsReady").InvokeFunc())
+                        return SkipPoeticsVendor("BV_TravelUnavailable");
+                    movement = plugin.VNavIPC.MoveTo(poeticsVendor.Position);
+                    if (!movement) return SkipPoeticsVendor("BV_TravelUnavailable");
+                    positionApproach = true;
+                }
+                return false;
+            }
+            if (positionApproach)
+            {
+                if (movement) plugin.VNavIPC.Stop();
+                positionApproach = movement = false;
+            }
+            if (game.Approach(trader, ref movement))
+            {
+                npc = trader.GameObjectId;
+                nextInteraction = DateTime.UtcNow.AddSeconds(3);
             }
             return false;
         }
-        if (positionApproach)
+        catch (Exception ex)
         {
-            if (movement) plugin.VNavIPC.Stop();
-            positionApproach = movement = false;
+            Plugin.Log.Warning(ex, "[MOGTOME][Poetics] vendor travel or interaction failed; no purchase submitted");
+            return SkipPoeticsVendor("BV_TravelUnavailable");
         }
-        if (game.Approach(trader, ref movement))
-        {
-            npc = trader.GameObjectId;
-            nextInteraction = DateTime.UtcNow.AddSeconds(3);
-        }
-        return false;
     }
 
     private bool ClosePoeticsTrader()
     {
         var shopVisible = BlundervilleGameAdapter.Visible("ShopExchangeItem") || BlundervilleGameAdapter.Visible("ShopExchangeCurrency");
         var menuVisible = BlundervilleGameAdapter.Visible("SelectString") || BlundervilleGameAdapter.Visible("SelectIconString");
-        if ((shopVisible || menuVisible || PurchaseDialogVisible()) && !OwnsTrader())
+        var talkVisible = BlundervilleGameAdapter.Visible("Talk");
+        if ((shopVisible || menuVisible || talkVisible || PurchaseDialogVisible()) && !OwnsTrader())
         { Fail("BV_UiMismatch"); return false; }
+        if (talkVisible)
+        {
+            if (shopVisible || menuVisible || PurchaseDialogVisible() || poeticsFinishing)
+            { Fail("BV_UiMismatch"); return false; }
+            ownedAddon = "Talk";
+            return SkipPoeticsVendor("BV_UiMismatch", rejectVendor: false);
+        }
         if (shopVisible || PurchaseDialogVisible())
         {
             if (ownedPoeticsOffer == null || string.IsNullOrEmpty(ownedAddon) ||
                 !BlundervilleGameAdapter.TryValidateOffer(ExchangeOffer(ownedPoeticsOffer), out var current, out _, PoeticsShopCatalog.CurrencyItemId) ||
                 current != ownedAddon)
-            { Fail("BV_UiMismatch"); return false; }
-            if (poeticsCloseStage == 0)
+                return SkipPoeticsVendor("BV_UiMismatch");
+            if ((poeticsCloseStage & 1) == 0)
             {
-                if (!CancelPurchase(ownedPoeticsOffer)) { Fail("Shop_UncertainPurchase"); return false; }
+                if (!CancelPurchase(ownedPoeticsOffer)) return SkipPoeticsVendor("Shop_UncertainPurchase");
                 BlundervilleGameAdapter.CloseOwnedShop(ownedAddon);
-                poeticsCloseStage = 1;
+                poeticsCloseStage |= 1;
             }
             return false;
         }
         if (menuVisible)
         {
-            if (poeticsCloseStage != 2)
+            if ((poeticsCloseStage & 2) == 0)
             {
-                if (!game.CancelExchangeMenu()) { Fail("BV_UiMismatch"); return false; }
-                poeticsCloseStage = 2;
+                if (!game.CancelExchangeMenu()) return SkipPoeticsVendor("BV_UiMismatch");
+                poeticsCloseStage |= 2;
             }
             return false;
         }
@@ -347,6 +491,7 @@ public sealed partial class MoogleShopService
     {
         poeticsFinishing = poeticsShopClosed = deliveryAdmitted = positionApproach = false;
         deliveryIdleSince = null; poeticsCloseStage = 0;
+        poeticsVendorRecovery = false; rejectedPoeticsVendors.Clear();
     }
 }
 

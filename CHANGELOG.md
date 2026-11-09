@@ -1,3 +1,8 @@
+2026-11-09 - 4.2.0.14 - Continue Poetics shopping after a vendor failure
+
+- Skip an unresolved or failing vendor for the current run and continue with other eligible vendors, including another vendor for the same item. Try vendors again on a fresh run.
+- Preserve submitted-purchase reconciliation, verified items and delivery/return checks; wait for travel and owned shop UI to settle before continuing.
+
 2026-11-09 - 4.2.0.12 - Poetics Grand Company shopping
 
 - Add opt-in Poetics gear purchasing in SHOP, selecting affordable unowned expert-delivery gear by seals per cost from unlocked, reachable vendors. Recheck wallet, ownership, eligibility and exact transaction receipts after each purchase.

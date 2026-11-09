@@ -17,6 +17,12 @@ internal sealed record PoeticsShopVendor(uint NpcId, uint TerritoryId, Vector3 P
     internal PoeticsShopVendor? MatchCurrent(IEnumerable<PoeticsShopVendor> candidates)
         => candidates.FirstOrDefault(candidate => candidate.NpcId == NpcId &&
             candidate.TerritoryId == TerritoryId && candidate.Position == Position);
+
+    internal static PoeticsShopVendor? SelectAvailable(IEnumerable<PoeticsShopVendor> candidates, uint territoryId,
+        Func<PoeticsShopVendor, ShopOfferAvailability> availability)
+        => candidates.Where(vendor => availability(vendor) == ShopOfferAvailability.Available)
+            .OrderBy(vendor => vendor.TerritoryId == territoryId ? 0 : 1)
+            .ThenBy(vendor => vendor.NpcId).ThenBy(vendor => vendor.TerritoryId).FirstOrDefault();
 }
 
 internal sealed unsafe class PoeticsShopCatalog
@@ -75,7 +81,8 @@ internal sealed unsafe class PoeticsShopCatalog
     internal IReadOnlyList<PoeticsShopVendor> Vendors(MoogleShopOffer offer)
         => vendors.TryGetValue(offer.ShopId, out var result) ? result : [];
 
-    internal ShopOfferAvailability ReadAvailability(MoogleShopOffer offer, Func<PoeticsShopVendor, bool> reachable)
+    internal ShopOfferAvailability ReadAvailability(MoogleShopOffer offer,
+        Func<PoeticsShopVendor, ShopOfferAvailability> vendorAvailability)
     {
         var availability = ShopOfferEligibility.Read(offer.Gate);
         if (availability == ShopOfferAvailability.Locked) return availability;
@@ -83,10 +90,7 @@ internal sealed unsafe class PoeticsShopCatalog
         var player = NativePlayerState.Instance();
         if (player == null) return ShopOfferAvailability.Unknown;
         if (player->GrandCompany == 0 || player->GetGrandCompanyRank() < 6) return ShopOfferAvailability.Locked;
-        var locations = Vendors(offer);
-        var reachableVendors = locations.Where(reachable).ToArray();
-        if (locations.Count > 0 && reachableVendors.Length == 0) return ShopOfferAvailability.Locked;
-        return PoeticsShopping.ResolveVendorAvailability(availability, reachableVendors.Select(ReadVendorAvailability));
+        return PoeticsShopping.ResolveVendorAvailability(availability, Vendors(offer).Select(vendorAvailability));
     }
 
     internal static ShopOfferAvailability ReadVendorAvailability(PoeticsShopVendor vendor)
@@ -126,25 +130,32 @@ internal sealed unsafe class PoeticsShopCatalog
         // Read actual 3D transforms; do not infer positions from 2D map markers.
         foreach (var territoryId in new uint[] { 156, 478, 635, 820, 963 })
         {
-            var territory = Plugin.DataManager.GetExcelSheet<TerritoryType>().GetRow(territoryId);
-            var bg = territory.Bg.ToString();
-            var index = bg.IndexOf("/level/", StringComparison.Ordinal);
-            if (index < 0) continue;
-            var file = Plugin.DataManager.GetFile<LgbFile>("bg/" + bg[..(index + 1)] + "level/planevent.lgb");
-            if (file == null) continue;
-            foreach (var layer in file.Layers)
+            try
             {
-                if (layer.FestivalID != 0) continue;
-                foreach (var entry in layer.InstanceObjects)
+                var territory = Plugin.DataManager.GetExcelSheet<TerritoryType>().GetRow(territoryId);
+                var bg = territory.Bg.ToString();
+                var index = bg.IndexOf("/level/", StringComparison.Ordinal);
+                if (index < 0) continue;
+                var file = Plugin.DataManager.GetFile<LgbFile>("bg/" + bg[..(index + 1)] + "level/planevent.lgb");
+                if (file == null) continue;
+                foreach (var layer in file.Layers)
                 {
-                    if (entry.AssetType != LayerEntryType.EventNPC || entry.Object is not LayerCommon.ENPCInstanceObject npc ||
-                        VerifiedVendorTerritory(npc.ParentData.ParentData.BaseId) != territoryId ||
-                        npc.ParentData.PopWeather != 0 || npc.ParentData.PopTimeStart != 0 || npc.ParentData.PopTimeEnd != 0)
-                        continue;
-                    var position = entry.Transform.Translation;
-                    if (float.IsFinite(position.X) && float.IsFinite(position.Y) && float.IsFinite(position.Z))
-                        locations.Add((npc.ParentData.ParentData.BaseId, territoryId, new(position.X, position.Y, position.Z)));
+                    if (layer.FestivalID != 0) continue;
+                    foreach (var entry in layer.InstanceObjects)
+                    {
+                        if (entry.AssetType != LayerEntryType.EventNPC || entry.Object is not LayerCommon.ENPCInstanceObject npc ||
+                            VerifiedVendorTerritory(npc.ParentData.ParentData.BaseId) != territoryId ||
+                            npc.ParentData.PopWeather != 0 || npc.ParentData.PopTimeStart != 0 || npc.ParentData.PopTimeEnd != 0)
+                            continue;
+                        var position = entry.Transform.Translation;
+                        if (float.IsFinite(position.X) && float.IsFinite(position.Y) && float.IsFinite(position.Z))
+                            locations.Add((npc.ParentData.ParentData.BaseId, territoryId, new(position.X, position.Y, position.Z)));
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log.Warning(ex, "[MOGTOME][Poetics] vendor placements unavailable in territory {Territory}; other vendors remain eligible", territoryId);
             }
         }
         return locations;

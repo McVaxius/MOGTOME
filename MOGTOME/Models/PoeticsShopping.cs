@@ -8,6 +8,9 @@ internal sealed record PoeticsShopOffer(MoogleShopOffer Offer, uint SealValue);
 
 internal static class PoeticsShopping
 {
+    internal static bool CanSkipVendor(bool purchaseInFlight, bool reviewRequired, bool purchaseDialogVisible, bool finishing)
+        => !purchaseInFlight && !reviewRequired && !purchaseDialogVisible && !finishing;
+
     internal static ShopOfferAvailability ResolveVendorAvailability(ShopOfferAvailability offer,
         IEnumerable<ShopOfferAvailability> vendors)
     {
@@ -57,7 +60,7 @@ internal static class PoeticsShopping
         if (!inventoryKnown) return null;
         if (currencyItemId == 0) { eligibilityKnown = false; return null; }
         PoeticsShopOffer? best = null;
-        var uncertain = new List<(PoeticsShopOffer Candidate, bool Inventory, bool Eligibility)>();
+        var uncertainInventory = new List<PoeticsShopOffer>();
         foreach (var candidate in offers)
         {
             var offer = candidate.Offer;
@@ -66,26 +69,20 @@ internal static class PoeticsShopping
                 offer.Costs[0].Count == 0 || offer.Costs[0].Count > wallet)
                 continue;
             var gate = availability(offer);
-            if (gate == ShopOfferAvailability.Locked) continue;
+            // An unresolved vendor or unlock is skipped; it is never treated as permission to buy.
+            if (gate != ShopOfferAvailability.Available) continue;
             if (reachable != null && !reachable(offer)) continue;
             var count = owned(offer.ItemId);
             if (!count.HasValue || count.Value < 0)
             {
-                uncertain.Add((candidate, true, gate == ShopOfferAvailability.Unknown));
+                uncertainInventory.Add(candidate);
                 continue;
             }
             if (count.Value != 0) continue;
-            if (gate == ShopOfferAvailability.Unknown)
-            {
-                uncertain.Add((candidate, false, true));
-                continue;
-            }
-            if (gate != ShopOfferAvailability.Available) continue;
             if (best == null || Better(candidate, best)) best = candidate;
         }
-        foreach (var entry in uncertain)
+        foreach (var candidate in uncertainInventory)
         {
-            var candidate = entry.Candidate;
             if (best != null)
             {
                 // Another shop offering the same purchase adds no better item or price.
@@ -94,11 +91,9 @@ internal static class PoeticsShopping
                     continue;
                 if (!Better(candidate, best)) continue;
             }
-            if (entry.Inventory) inventoryKnown = false;
-            if (entry.Eligibility) eligibilityKnown = false;
+            inventoryKnown = false;
         }
-        // Unknown truth blocks a purchase only when it could change the best choice.
-        // Without a known choice, it still prevents claiming shopping is complete.
+        // Inventory uncertainty on an eligible offer still prevents an unverified choice or completion.
         return inventoryKnown && eligibilityKnown ? best?.Offer : null;
     }
 
