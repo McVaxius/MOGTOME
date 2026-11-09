@@ -1,3 +1,8 @@
+2026-11-09 - 4.2.0.11 - Shared UI library update
+
+- Update shared text controls and glass rendering to the reviewed AethertekUI 0.3.1 baseline.
+- Poetics shopping and optional delivery/return are in progress and are not included in this update.
+
 2026-11-04 - 4.2.0.9 - God Mod Companion Dhog healer rotations (I745)
 
 - Use Dhog WHM, SCH, AST and SGE in the distributed ranged preset; remove Xan healer modules and duplicate HealerAI while preserving other job strategies.
