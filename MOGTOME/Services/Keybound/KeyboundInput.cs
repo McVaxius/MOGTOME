@@ -3,10 +3,10 @@ namespace MOGTOME.Services.Keybound;
 internal interface IKeyboundInput
 {
     void Reset() { }
-    void Read(BattleSnapshot snapshot);
+    void Read(BattleSnapshot snapshot, long now);
     bool Focus();
-    bool Character(char value);
-    bool KeyDown(GameKey key);
+    bool Character(char value, out long sentAt);
+    bool KeyDown(GameKey key, out long sentAt);
     bool KeyUp(GameKey key);
     bool WakeKeyDown(GameKey key) => false;
     bool WakeKeyUp(GameKey key) => false;
@@ -20,7 +20,7 @@ internal sealed class KeyboundInput : IKeyboundInput
     public void Reset() { memory.Clear(); inputLogged = false; }
     private static bool UiTextInput => !Dalamud.Bindings.ImGui.ImGui.GetCurrentContext().IsNull &&
         Dalamud.Bindings.ImGui.ImGui.GetIO().WantTextInput;
-    public void Read(BattleSnapshot snapshot)
+    public void Read(BattleSnapshot snapshot, long now)
     {
         KeyboundUi.Read(snapshot, cache, memory);
         if (UiTextInput) { snapshot.InputFocused = false; snapshot.OtherInputFocused = true; }
@@ -36,15 +36,17 @@ internal sealed class KeyboundInput : IKeyboundInput
         return sent;
     }
     public bool WakeKeyUp(GameKey key) => GameKeyboard.SendSystemKey(key, keyUp: true);
-    public bool Character(char value)
+    public bool Character(char value, out long sentAt)
     {
         var sent = GameKeyboard.PostCharacter(value);
+        sentAt = sent ? System.Environment.TickCount64 : 0;
         if (sent) NotifyActivity();
         return sent;
     }
-    public bool KeyDown(GameKey key)
+    public bool KeyDown(GameKey key, out long sentAt)
     {
         var sent = GameKeyboard.PostKeyDown(key);
+        sentAt = sent ? System.Environment.TickCount64 : 0;
         if (sent) NotifyActivity();
         return sent;
     }

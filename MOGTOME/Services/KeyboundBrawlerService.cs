@@ -176,7 +176,7 @@ public sealed class KeyboundBrawlerService : IDisposable
             if (SuppressGameplay) { ReleaseKey(); ResetTyping(); return; }
             if (!inEvent || completedRound)
             { ReleaseKey(); ResetTyping(); Status = Ui.M("KB_Queueing"); return; }
-            input.Read(snapshot);
+            input.Read(snapshot, now);
             ObserveSubmissionEcho();
             pace = snapshot.InputVisible && snapshot.Stage == 3 ? stage3Pace : stage12Pace;
             if (!snapshot.InputVisible)
@@ -251,7 +251,7 @@ public sealed class KeyboundBrawlerService : IDisposable
             Status = Ui.M("KB_Typing", CompletedRuns, SubmittedPhrases);
             if (text.Equals(typed, StringComparison.OrdinalIgnoreCase))
             {
-                if (!Press(GameKey.Enter, now)) { FailInput(); return; }
+                if (!Press(GameKey.Enter, now, out var sentAt)) { FailInput(); return; }
                 var index = TargetPicker.IndexOf(snapshot, target);
                 var signature = index < 0 ? 0 : snapshot.ProgressSignature(index);
                 repeatStreak = target.Equals(recentlySubmitted, StringComparison.OrdinalIgnoreCase) && MathF.Abs(signature - streakSignature) < 0.5f ? repeatStreak + 1 : 1;
@@ -260,25 +260,25 @@ public sealed class KeyboundBrawlerService : IDisposable
                 recentlySubmitted = target;
                 lastSubmittedAt = now;
                 target = targetTyped = null; submissionPending = true;
-                Expect(string.Empty, now); nextAction = now + 160;
+                Expect(string.Empty, sentAt); nextAction = now + 160;
             }
             else if (!typed.StartsWith(text, StringComparison.OrdinalIgnoreCase))
             {
-                if (!Press(GameKey.Backspace, now)) { FailInput(); return; }
-                Expect(text[..^1], now); nextAction = now + pace.CharacterDelay();
+                if (!Press(GameKey.Backspace, now, out var sentAt)) { FailInput(); return; }
+                Expect(text[..^1], sentAt); nextAction = now + pace.CharacterDelay();
             }
             else
             {
                 var character = typed[text.Length];
-                if (!input.Character(character)) { FailInput(); return; }
+                if (!input.Character(character, out var sentAt)) { FailInput(); return; }
                 var added = character.ToString();
                 if (char.IsHighSurrogate(character) && text.Length + 1 < typed.Length && char.IsLowSurrogate(typed[text.Length + 1]))
                 {
                     var low = typed[text.Length + 1];
-                    if (!input.Character(low)) { FailInput(); return; }
+                    if (!input.Character(low, out sentAt)) { FailInput(); return; }
                     added += low;
                 }
-                Expect(text + added, now); nextAction = now + (text.Length + added.Length == typed.Length ? pace.SubmitDelay() : pace.CharacterDelay());
+                Expect(text + added, sentAt); nextAction = now + (text.Length + added.Length == typed.Length ? pace.SubmitDelay() : pace.CharacterDelay());
             }
         }
         catch (Exception ex)
@@ -301,10 +301,10 @@ public sealed class KeyboundBrawlerService : IDisposable
         if (SubmittedPhrases == 1)
             Plugin.Log?.Information("[MOGTOME][KBB] First submitted phrase received the native clear echo.");
     }
-    private void Expect(string text, long now) { previousText = snapshot.InputText; expectedText = text; echoDeadline = now + 750; }
-    private bool Press(GameKey key, long now)
+    private void Expect(string text, long sentAt) { previousText = snapshot.InputText; expectedText = text; echoDeadline = sentAt + 750; }
+    private bool Press(GameKey key, long now, out long sentAt)
     {
-        if (!input.KeyDown(key)) return false;
+        if (!input.KeyDown(key, out sentAt)) return false;
         heldKey = key; heldKeyIsSystem = false; releaseAt = now + 35;
         return true;
     }

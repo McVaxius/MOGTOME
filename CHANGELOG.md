@@ -1,3 +1,7 @@
+2026-11-12 - 4.2.0.15 - Keybound acknowledgement timing
+
+- Start the existing 750 ms acknowledgement window when input is successfully posted, so work before the send cannot consume it. Preserve the missing-input stop, typing pace, key-release timing and control safeguards.
+
 2026-11-09 - 4.2.0.14 - Continue Poetics shopping after a vendor failure
 
 - Skip an unresolved or failing vendor for the current run and continue with other eligible vendors, including another vendor for the same item. Try vendors again on a fresh run.
