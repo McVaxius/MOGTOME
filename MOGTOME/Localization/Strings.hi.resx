@@ -2587,4 +2587,6 @@ Retainer और अन्य भंडारण: {3}
   <data name="Shop_PoeticsEndingLocation" xml:space="preserve"><value>Poetics खरीदारी के बाद लौटने की सराय</value></data>
   <data name="Shop_PoeticsEndingHelp" xml:space="preserve"><value>सराय का यह विकल्प केवल Poetics खरीदारी के लिए है। जमा प्रक्रिया चालू होने पर लौटने से पहले निष्क्रियता की जाँच होती है।</value></data>
   <data name="Shop_PoeticsDelivering" xml:space="preserve"><value>जमा प्रक्रिया और AutoRetainer की 10 सेकंड की निष्क्रियता की प्रतीक्षा है।</value></data>
+  <data name="Highlight contrast" xml:space="preserve"><value>हाइलाइट कंट्रास्ट</value></data>
+  <data name="Makes controls and selection states more distinct." xml:space="preserve"><value>नियंत्रणों और चयन स्थितियों को अधिक स्पष्ट बनाता है।</value></data>
 </root>

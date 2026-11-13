@@ -2421,4 +2421,6 @@ DictionaryPaths와 PathSelectionsByPath를 비교합니다.
   <data name="Shop_PoeticsEndingLocation" xml:space="preserve"><value>시학 구매 후 복귀할 여관</value></data>
   <data name="Shop_PoeticsEndingHelp" xml:space="preserve"><value>이 여관 설정은 시학 구매 전용입니다. 납품을 켜면 돌아가기 전에 유휴 상태를 확인합니다.</value></data>
   <data name="Shop_PoeticsDelivering" xml:space="preserve"><value>납품과 AutoRetainer의 10초 유휴 상태를 기다리는 중입니다.</value></data>
+  <data name="Highlight contrast" xml:space="preserve"><value>강조 대비</value></data>
+  <data name="Makes controls and selection states more distinct." xml:space="preserve"><value>컨트롤과 선택 상태를 더 뚜렷하게 표시합니다.</value></data>
 </root>

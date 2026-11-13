@@ -2415,4 +2415,6 @@ Ouvrir les stockages pour actualiser les quantités enregistrées.</value></data
   <data name="Shop_PoeticsEndingLocation" xml:space="preserve"><value>Auberge après les achats en mémoquartz poétiques</value></data>
   <data name="Shop_PoeticsEndingHelp" xml:space="preserve"><value>Cette auberge concerne uniquement les achats en Poétique. Si la livraison est activée, le contrôle d&apos;inactivité précède le retour.</value></data>
   <data name="Shop_PoeticsDelivering" xml:space="preserve"><value>En attente de la livraison et de 10 secondes d&apos;inactivité d&apos;AutoRetainer.</value></data>
+  <data name="Highlight contrast" xml:space="preserve"><value>Contraste des surbrillances</value></data>
+  <data name="Makes controls and selection states more distinct." xml:space="preserve"><value>Rend les commandes et les états de sélection plus distincts.</value></data>
 </root>

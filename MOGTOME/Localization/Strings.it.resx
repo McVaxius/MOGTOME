@@ -2421,4 +2421,6 @@ Apri i depositi per aggiornare le quantità registrate.</value></data>
   <data name="Shop_PoeticsEndingLocation" xml:space="preserve"><value>Locanda dopo gli acquisti con Poetica</value></data>
   <data name="Shop_PoeticsEndingHelp" xml:space="preserve"><value>Questa locanda riguarda solo gli acquisti con Poetica. Se la consegna è attiva, verifica l&apos;inattività prima del ritorno.</value></data>
   <data name="Shop_PoeticsDelivering" xml:space="preserve"><value>In attesa della consegna e di 10 secondi di inattività di AutoRetainer.</value></data>
+  <data name="Highlight contrast" xml:space="preserve"><value>Contrasto delle evidenziazioni</value></data>
+  <data name="Makes controls and selection states more distinct." xml:space="preserve"><value>Rende più distinti i controlli e gli stati di selezione.</value></data>
 </root>

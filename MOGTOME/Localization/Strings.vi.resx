@@ -2571,4 +2571,6 @@ Mở kho để cập nhật số lượng đã ghi.</value></data>
   <data name="Shop_PoeticsEndingLocation" xml:space="preserve"><value>Nhà trọ sau khi mua bằng Poetics</value></data>
   <data name="Shop_PoeticsEndingHelp" xml:space="preserve"><value>Lựa chọn quán trọ này chỉ dành cho mua sắm bằng Poetics. Nếu bật giao nộp, kiểm tra trạng thái nhàn rỗi trước khi quay lại.</value></data>
   <data name="Shop_PoeticsDelivering" xml:space="preserve"><value>Đang chờ giao nộp và 10 giây nhàn rỗi của AutoRetainer.</value></data>
+  <data name="Highlight contrast" xml:space="preserve"><value>Độ tương phản tô sáng</value></data>
+  <data name="Makes controls and selection states more distinct." xml:space="preserve"><value>Giúp phân biệt rõ hơn các điều khiển và trạng thái được chọn.</value></data>
 </root>

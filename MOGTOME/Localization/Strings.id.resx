@@ -2571,4 +2571,6 @@ Buka penyimpanan untuk memperbarui jumlah tercatat.</value></data>
   <data name="Shop_PoeticsEndingLocation" xml:space="preserve"><value>Penginapan setelah belanja Poetics</value></data>
   <data name="Shop_PoeticsEndingHelp" xml:space="preserve"><value>Pilihan penginapan ini hanya untuk belanja Poetics. Jika penyerahan aktif, status menganggur diperiksa sebelum kembali.</value></data>
   <data name="Shop_PoeticsDelivering" xml:space="preserve"><value>Menunggu penyerahan dan 10 detik AutoRetainer menganggur.</value></data>
+  <data name="Highlight contrast" xml:space="preserve"><value>Kontras sorotan</value></data>
+  <data name="Makes controls and selection states more distinct." xml:space="preserve"><value>Membuat kontrol dan status pilihan lebih mudah dibedakan.</value></data>
 </root>

@@ -2571,4 +2571,6 @@ Kayıtlı miktarları yenilemek için depoları açın.</value></data>
   <data name="Shop_PoeticsEndingLocation" xml:space="preserve"><value>Poetics alışverişinden sonraki han</value></data>
   <data name="Shop_PoeticsEndingHelp" xml:space="preserve"><value>Bu han seçimi yalnızca Poetics alışverişi içindir. Teslim etkinse dönmeden önce boşta kalma durumu denetlenir.</value></data>
   <data name="Shop_PoeticsDelivering" xml:space="preserve"><value>Teslim ve AutoRetainer&apos;ın 10 saniye boşta kalması bekleniyor.</value></data>
+  <data name="Highlight contrast" xml:space="preserve"><value>Vurgu karşıtlığı</value></data>
+  <data name="Makes controls and selection states more distinct." xml:space="preserve"><value>Denetimleri ve seçim durumlarını daha belirgin hâle getirir.</value></data>
 </root>

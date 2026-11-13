@@ -2421,4 +2421,6 @@ Path: {0}
   <data name="Shop_PoeticsEndingLocation" xml:space="preserve"><value>诗学购买后返回的旅馆</value></data>
   <data name="Shop_PoeticsEndingHelp" xml:space="preserve"><value>此旅馆选项仅用于诗学购物。启用交纳后，返回前会检查空闲状态。</value></data>
   <data name="Shop_PoeticsDelivering" xml:space="preserve"><value>正在等待交纳及 AutoRetainer 连续空闲 10 秒。</value></data>
+  <data name="Highlight contrast" xml:space="preserve"><value>高亮对比度</value></data>
+  <data name="Makes controls and selection states more distinct." xml:space="preserve"><value>让控件与选中状态更容易区分。</value></data>
 </root>

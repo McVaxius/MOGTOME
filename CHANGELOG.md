@@ -1,3 +1,8 @@
+2026-11-12 - 4.2.0.16 - Highlight contrast
+
+- Add Highlight contrast (0–100%) to Appearance and Colour, defaulting to 50% when absent. Preserve saved zero and custom values.
+- Use AethertekUI 0.3.2 for clearer controls and selection states while retaining palettes, native styling, opacity, language and existing plugin behavior.
+
 2026-11-12 - 4.2.0.15 - Keybound acknowledgement timing
 
 - Start the existing 750 ms acknowledgement window when input is successfully posted, so work before the send cannot consume it. Preserve the missing-input stop, typing pace, key-release timing and control safeguards.

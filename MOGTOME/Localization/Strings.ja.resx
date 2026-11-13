@@ -2415,4 +2415,6 @@ DictionaryPathsとPathSelectionsByPathを比較します。
   <data name="Shop_PoeticsEndingLocation" xml:space="preserve"><value>詩学での購入後に戻る宿屋</value></data>
   <data name="Shop_PoeticsEndingHelp" xml:space="preserve"><value>この宿屋の設定は詩学での購入専用です。納品を有効にした場合は、待機状態を確認してから戻ります。</value></data>
   <data name="Shop_PoeticsDelivering" xml:space="preserve"><value>納品とAutoRetainerの10秒間の待機を確認中。</value></data>
+  <data name="Highlight contrast" xml:space="preserve"><value>ハイライトのコントラスト</value></data>
+  <data name="Makes controls and selection states more distinct." xml:space="preserve"><value>コントロールと選択状態を見分けやすくします。</value></data>
 </root>

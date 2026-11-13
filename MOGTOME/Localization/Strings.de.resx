@@ -2415,4 +2415,6 @@ Lager öffnen, um erfasste Mengen zu aktualisieren.</value></data>
   <data name="Shop_PoeticsEndingLocation" xml:space="preserve"><value>Unterkunft nach dem Poesie-Einkauf</value></data>
   <data name="Shop_PoeticsEndingHelp" xml:space="preserve"><value>Diese Gasthauswahl gilt nur für den Poetik-Einkauf. Bei aktivierter Abgabe wird vor der Rückkehr die Inaktivität geprüft.</value></data>
   <data name="Shop_PoeticsDelivering" xml:space="preserve"><value>Auf die Abgabe und 10 Sekunden AutoRetainer-Inaktivität warten.</value></data>
+  <data name="Highlight contrast" xml:space="preserve"><value>Hervorhebungskontrast</value></data>
+  <data name="Makes controls and selection states more distinct." xml:space="preserve"><value>Hebt Steuerelemente und Auswahlzustände deutlicher hervor.</value></data>
 </root>

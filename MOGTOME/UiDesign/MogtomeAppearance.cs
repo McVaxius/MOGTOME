@@ -347,6 +347,7 @@ internal sealed class MogtomeAppearance : IDisposable
             var rgb = MogtomePresentation.Rgb(appliedAccent);
             accentDraft = new(rgb.X, rgb.Y, rgb.Z);
         }
+        theme.HighlightContrastPercent = config.UiHighlightContrastPercent;
         theme.Density = config.UiCompact ? MaterialDensity.Compact : MaterialDensity.Standard;
         if (appliedSoundsMuted != config.UiLcarsSoundsMuted)
         {
@@ -643,7 +644,21 @@ internal sealed class MogtomeAppearance : IDisposable
             var rgb = MogtomePresentation.Rgb(config.UiAccentRgb);
             accentDraft = new(rgb.X, rgb.Y, rgb.Z);
         }
-        var changed = MaterialAppearanceSelector.DrawColors(id, ref colorDraft, ref accentDraft,
+        var contrast = config.UiHighlightContrastPercent;
+        bool contrastChanged;
+        ImGui.PushID(id);
+        try
+        {
+            if (MaterialSettings.Field("##UiHighlightContrastPercent", Ui.T("Highlight contrast"), 180 * MaterialTheme.Metrics.Scale,
+                native => { using var field = MaterialSkin.NativeFieldStyle(); return ImGui.SliderInt(native, ref contrast, 0, 100, "%d%%", ImGuiSliderFlags.AlwaysClamp); }))
+                config.UiHighlightContrastPercent = contrast;
+            contrastChanged = ImGui.IsItemDeactivatedAfterEdit();
+            MaterialText.Text(Ui.T("Makes controls and selection states more distinct."), Math.Max(1, ImGui.GetContentRegionAvail().X));
+            ImGui.Spacing();
+        }
+        finally { ImGui.PopID(); }
+        var changed = contrastChanged;
+        changed |= MaterialAppearanceSelector.DrawColors(id, ref colorDraft, ref accentDraft,
             new(Ui.T("Ui_Color"), Ui.T("Language_Label"), Ui.T("Ui_Teal"), Ui.T("Ui_Blue"), Ui.T("Ui_Pink"), Ui.T("Ui_CustomRgb")),
             new(Ui.T("Auto"), Ui.T("Picker"), Ui.T("Default"), Ui.T("Background, controls and text follow your theme."), Ui.T("Theme colour"), Ui.T("Choose each colour independently."), Ui.T("Background"), Ui.T("Controls"), Ui.T("Text"), Ui.T("Aa  Preview text"), Ui.T("Control"), Ui.T("Switch to Picker to set each colour yourself."), Ui.T("Switch back to Auto to use the automatic theme."))
             {

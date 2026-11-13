@@ -2571,4 +2571,6 @@ Otwórz magazyny, aby odświeżyć zapisane ilości.</value></data>
   <data name="Shop_PoeticsEndingLocation" xml:space="preserve"><value>Gospoda po zakupach za Poetics</value></data>
   <data name="Shop_PoeticsEndingHelp" xml:space="preserve"><value>Ten wybór gospody dotyczy tylko zakupów za Poetykę. Jeśli oddawanie jest włączone, przed powrotem sprawdzana jest bezczynność.</value></data>
   <data name="Shop_PoeticsDelivering" xml:space="preserve"><value>Oczekiwanie na oddanie i 10 sekund bezczynności AutoRetainer.</value></data>
+  <data name="Highlight contrast" xml:space="preserve"><value>Kontrast wyróżnienia</value></data>
+  <data name="Makes controls and selection states more distinct." xml:space="preserve"><value>Wyraźniej rozróżnia elementy sterujące i stany zaznaczenia.</value></data>
 </root>

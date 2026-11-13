@@ -2421,4 +2421,6 @@ Path: {0}
   <data name="Shop_PoeticsEndingLocation" xml:space="preserve"><value>Гостиница после покупок за Поэтику</value></data>
   <data name="Shop_PoeticsEndingHelp" xml:space="preserve"><value>Эта гостиница относится только к покупкам за Поэтику. Если сдача включена, перед возвращением проверяется бездействие.</value></data>
   <data name="Shop_PoeticsDelivering" xml:space="preserve"><value>Ожидание сдачи и 10 секунд бездействия AutoRetainer.</value></data>
+  <data name="Highlight contrast" xml:space="preserve"><value>Контраст выделения</value></data>
+  <data name="Makes controls and selection states more distinct." xml:space="preserve"><value>Делает элементы управления и состояния выбора более различимыми.</value></data>
 </root>

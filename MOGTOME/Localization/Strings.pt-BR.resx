@@ -2571,4 +2571,6 @@ Abra os depósitos para atualizar as quantidades registradas.</value></data>
   <data name="Shop_PoeticsEndingLocation" xml:space="preserve"><value>Estalagem após as compras com Poética</value></data>
   <data name="Shop_PoeticsEndingHelp" xml:space="preserve"><value>Esta pousada vale apenas para compras com Poética. Se a entrega estiver ativada, a inatividade será verificada antes do retorno.</value></data>
   <data name="Shop_PoeticsDelivering" xml:space="preserve"><value>Aguardando a entrega e 10 segundos de inatividade do AutoRetainer.</value></data>
+  <data name="Highlight contrast" xml:space="preserve"><value>Contraste de destaque</value></data>
+  <data name="Makes controls and selection states more distinct." xml:space="preserve"><value>Torna os controles e os estados de seleção mais distintos.</value></data>
 </root>
