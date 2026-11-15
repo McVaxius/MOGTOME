@@ -85,7 +85,7 @@ copies remain owned regardless of snapshot age until the data is refreshed.
 - **YesAlready** - Auto-confirm dialogs
 ### Optional Plugins
 
-- **God Mod Companion (GMC / BMRVariantLoader)** - Optional; Public and Private are both supported. GMC currently supports BMR. With GMC loaded, MogTome uses temporary copies of the existing job-group autorotation presets with movement modules omitted and switches to an injected current-job boss plan when one is ready in Praetorium or Porta Decumana. Missing plans, including the not-yet-authored Decumana plans, keep the normal group rotation running. GMC owns plan installation; MogTome retains saved combat-provider preferences and restores its temporary native selections during cleanup.
+- **God Mod Companion (GMC / BMRVariantLoader)** - Optional; Public and Private are both supported with a compatible GodMod or BMR host. With GMC loaded, MogTome uses temporary copies of the existing job-group autorotation presets with movement modules omitted and switches to an injected current-job boss plan when one is ready in Praetorium or Porta Decumana. Missing plans, including the not-yet-authored Decumana plans, keep the normal group rotation running. GMC owns plan installation; MogTome retains saved combat-provider preferences and restores its temporary native selections during cleanup.
 - **ADS (AI Duty Solver)** - Optional in AutoDuty mode; enables `/mog inn` delegation
 - **Lifestream** and **TextAdvance** - Optional; neither is required for MOGTOME setup
 
@@ -317,7 +317,7 @@ R: development bundle: `R:\XIVLauncher\devPlugins\MOGTOME-Blunderville\MOGTOME.d
 
 ### Starting the Bot
 
-BMR is the default combat provider. Existing provider selections migrate once; choices made afterward are retained. Choose another provider in Settings: BMR or VBM handles attacks and movement; RSR handles attacks with the loaded BossMod variant for avoidance; Wrath uses its current attack settings. BMR/VBM can use an existing named preset with **Use manual BossMod preset** enabled, or MOGTOME's packaged preset selected by job role when disabled. The per-account Setup Wizard reviews the selected backend, provider, dependencies and party setup before applying its draft.
+BMR is the default combat provider. Existing provider selections migrate once; choices made afterward are retained. MOGTOME detects an available compatible GodMod, BMR or VBM host without rewriting that preference. Startup resolves conflicting native hosts and reloads the selected host to restore its shared IPC; the run and its cleanup remain tied to that exact instance. Choose another provider in Settings: the compatible native host handles attacks and movement for BMR/VBM selections; RSR handles attacks with the native host for avoidance; Wrath uses its current attack settings. BMR/VBM can use an existing named preset with **Use manual BossMod preset** enabled, or MOGTOME's packaged preset selected by job role when disabled. The per-account Setup Wizard reviews the selected backend, provider, dependencies and party setup before applying its draft.
 
 Both traveling NPC repair modes offer Automatic, Ul'dah, Gridania, Limsa Lominsa, Ishgard, the Crystarium, Old Sharlayan and Tuliyollal. A no-inn trip stops after ADS confirms repair; repair-then-inn also waits for room entry. City-specific no-inn travel requires an ADS version advertising that exact repair mode. ADS validates native unlocks and selects an eligible starting-city fallback when the preferred route is unavailable.
 

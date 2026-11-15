@@ -357,7 +357,8 @@ public class MogtomeEngine
             if (!IsCurrentStartup(operation)) return;
 
             Status = Ui.M("Engine_PreparingBossModSupport");
-            var bossModReady = await conflictPluginService.EnsureBossModReadyAsync(() => IsCurrentStartup(operation)).ConfigureAwait(false);
+            var bossModReady = await conflictPluginService.EnsureBossModReadyAsync(() => IsCurrentStartup(operation),
+                config.CombatProvider, rotationService.UsesGmc).ConfigureAwait(false);
             if (!bossModReady.Ready)
             {
                 await GameHelpers.RunOnFrameworkThreadAsync(() => { if (IsCurrentStartup(operation)) StopWithCombatFailureMessage(bossModReady.Reason); }).ConfigureAwait(false);
@@ -370,7 +371,7 @@ public class MogtomeEngine
             {
                 if (!IsCurrentStartup(operation))
                     return false;
-                return rotationService.Initialize(bossModReady.PreferBmr);
+                return rotationService.Initialize(nativeHost: bossModReady.NativeHost);
             }).ConfigureAwait(false);
             if (!IsCurrentStartup(operation))
                 return;
@@ -425,7 +426,7 @@ public class MogtomeEngine
                 if (!IsCurrentStartup(operation))
                     return new StartupPreparationResult(EnteredRepairMode: false);
                 rotationService.RestoreRsrHealingForStart();
-                if (!rotationService.UsesGmc)
+                if (!rotationService.UsesGmc && rotationService.SupportsBmrObstacleMaps)
                     commandManager.ProcessCommand(
                         config.ObstacleMapsOn
                             ? "/bmrai obstaclemaps on"

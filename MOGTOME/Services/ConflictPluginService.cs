@@ -1,11 +1,13 @@
 using MOGTOME.Localization;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Dalamud.Game.Command;
 using Dalamud.Plugin.Services;
 using MOGTOME.IPC;
+using MOGTOME.Models;
 
 namespace MOGTOME.Services;
 
@@ -50,41 +52,45 @@ public sealed class ConflictPluginService
         return (status.IsInstalled, status.IsLoaded);
     }
 
-    public async Task<(bool Ready, bool PreferBmr, UiText Reason)> EnsureBossModReadyAsync(Func<bool> isStarting)
+    public async Task<(bool Ready, string? NativeHost, UiText Reason)> EnsureBossModReadyAsync(Func<bool> isStarting,
+        CombatProvider preferred = CombatProvider.Bmr, bool gmc = false)
     {
-        var bmr = GetPluginStatus(MatchesBmr);
-        var vbm = GetPluginStatus(MatchesVbm);
-        if (!bmr.IsLoaded || !vbm.IsLoaded)
-            return (true, false, string.Empty);
+        var hosts = new[] { "GodMod", "BossModReborn", "BossMod" }
+            .Select(name => GetPluginStatus((internalName, _) => internalName == name))
+            .Where(status => status.IsLoaded).ToArray();
+        var selected = BossModIPC.SelectNativeHost(hosts.Select(status => status.InternalName), preferred, gmc);
+        if (hosts.Length < 2)
+            return (true, selected, string.Empty);
 
         if (!isStarting())
-            return (false, false, Ui.M("Conflict_StartupWasStoppedBeforeBossModCleanup"));
+            return (false, selected, Ui.M("Conflict_StartupWasStoppedBeforeBossModCleanup"));
+        foreach (var host in hosts.Where(status => status.InternalName != selected))
+        {
+            var name = host.InternalName;
+            var disabled = await EnsurePluginDisabledAsync("MOGTOME start", name, $"/xldisableplugintemp {name}",
+                (internalName, _) => internalName == name, isStarting).ConfigureAwait(false);
+            if (!isStarting() || disabled.FinalStatus.LoadState != "Unloaded")
+                return (false, selected, Ui.M("Rotation_BossModSettingsUnconfirmed"));
+        }
 
-        var disabledVbm = await EnsurePluginDisabledAsync("MOGTOME start", "VBM", "/xldisableplugin BossMod", MatchesVbm, isStarting).ConfigureAwait(false);
-        if (!isStarting()) return (false, false, Ui.M("Conflict_StartupCancelledDuringVBMCleanup"));
-        if (disabledVbm.FinalStatus.LoadState != "Unloaded")
-            return (false, false, Ui.M("Conflict_VBMCouldNotBeDisabledWhileBoth"));
+        // Any native host's disposal unregisters the shared BossMod IPC gates.
+        // Restore the selected host's gates, retaining the saved combat preference.
+        var disabledSelected = await EnsurePluginDisabledAsync("BossMod IPC recovery", selected!, $"/xldisableplugintemp {selected}",
+            (internalName, _) => internalName == selected, isStarting).ConfigureAwait(false);
+        if (!isStarting() || disabledSelected.FinalStatus.LoadState != "Unloaded")
+            return (false, selected, Ui.M("Rotation_BossModSettingsUnconfirmed"));
+        if (!await GameHelpers.RunOnFrameworkThreadAsync(() => isStarting()
+            && commandManager.ProcessCommand($"/xlenableplugintemp {selected}")).ConfigureAwait(false))
+            return (false, selected, Ui.M("Rotation_BossModSettingsUnconfirmed"));
+        var ready = await WaitForPluginStateAsync((internalName, _) => internalName == selected,
+            loaded: true, isStarting).ConfigureAwait(false);
+        if (!isStarting() || ready.LoadState != "Loaded" || hosts.Where(status => status.InternalName != selected)
+            .Any(status => GetPluginStatus((internalName, _) => internalName == status.InternalName).IsLoaded))
+            return (false, selected, Ui.M("Rotation_BossModSettingsUnconfirmed"));
 
-        // VBM disposal unregisters the shared BossMod IPC gates. Reload BMR once to restore them.
-        var disabledBmr = await EnsurePluginDisabledAsync("BossMod IPC recovery", "BMR", "/xldisableplugintemp BossModReborn", MatchesBmr, isStarting).ConfigureAwait(false);
-        if (!isStarting()) return (false, false, Ui.M("Conflict_StartupCancelledDuringBMRCleanup"));
-        if (disabledBmr.FinalStatus.LoadState != "Unloaded")
-            return (false, false, Ui.M("Conflict_BMRCouldNotBeTemporarilyDisabledTo"));
-
-        if (!await GameHelpers.RunOnFrameworkThreadAsync(() => isStarting() && commandManager.ProcessCommand("/xlenableplugintemp BossModReborn")).ConfigureAwait(false))
-            return (false, false, Ui.M("Conflict_TheNativeTemporaryBMREnableCommandWas"));
-
-        var readyBmr = await WaitForPluginStateAsync(MatchesBmr, loaded: true, isStarting).ConfigureAwait(false);
-        if (!isStarting()) return (false, false, Ui.M("Conflict_StartupCancelledDuringBMRReadiness"));
-        if (readyBmr.LoadState != "Loaded" || GetPluginStatus(MatchesVbm).LoadState != "Unloaded")
-            return (false, false, Ui.M("Conflict_BMRDidNotBecomeReadyAfterIts"));
-
-        log.Information("[MOGTOME][Conflict] Disabled VBM and reloaded BMR to restore shared BossMod IPC");
-        return (true, true, string.Empty);
+        log.Information($"[MOGTOME][Conflict] Reloaded selected host {selected} to restore shared BossMod IPC");
+        return (true, selected, string.Empty);
     }
-
-    private static bool MatchesBmr(string? internalName, string? displayName) => internalName == "BossModReborn";
-    private static bool MatchesVbm(string? internalName, string? displayName) => internalName == "BossMod";
 
     public async Task DisableStartupAutomationAsync(Func<bool> isCurrent)
     {
@@ -277,7 +283,7 @@ public sealed class ConflictPluginService
         while (isCurrent?.Invoke() != false && DateTime.UtcNow < deadline)
         {
             var status = GetPluginStatus(matcher);
-            var isBossMod = status.InternalName is "BossMod" or "BossModReborn";
+            var isBossMod = BossModIPC.IsBossModHost(status.InternalName);
             if (status.IsInstalled && (isBossMod
                     ? status.LoadState == (loaded ? "Loaded" : "Unloaded")
                     : status.IsLoaded == loaded))
@@ -298,7 +304,7 @@ public sealed class ConflictPluginService
                 if (!matcher(plugin.InternalName, plugin.Name))
                     continue;
 
-                var bossModPlugin = plugin.InternalName is "BossMod" or "BossModReborn"
+                var bossModPlugin = BossModIPC.IsBossModHost(plugin.InternalName)
                     ? BossModIPC.FindDalamudPlugin(plugin.InternalName, out _)
                     : null;
                 return new PluginStatus(

@@ -1117,11 +1117,273 @@ public sealed class DutyRecoveryTests
     {
         var native = new NativeBossModProvider(provider, "Original") { UnavailableChannel = channel };
         using var service = native.CreateService();
-        Assert.True(service.BeginOwnedBossModSettings(provider, "account", "character", new Configuration()));
+        Assert.False(service.BeginOwnedBossModSettings(provider, "account", "character", new Configuration()));
         Assert.False(service.ApplyOwnedBossModPreset("null"));
         Assert.Equal(new[] { "Original" }, native.Active);
         Assert.Equal("Original", native.Selector);
         Assert.Empty(native.Writes);
+        native.UnavailableChannel = null;
+        Assert.True(service.BeginOwnedBossModSettings(provider, "account", "character", new Configuration()));
+        Assert.True(service.ApplyOwnedBossModPreset("null"));
+        Assert.True(service.BeginOwnedBossModCleanup());
+        Assert.True(service.ClearActivePreset());
+        Assert.Equal(new[] { "Original" }, native.Active);
+    }
+
+    [Theory]
+    [InlineData("GodMod", CombatProvider.Bmr, false, "GodMod")]
+    [InlineData("GodMod", CombatProvider.Vbm, false, "GodMod")]
+    [InlineData("GodMod,BossModReborn", CombatProvider.Bmr, false, "BossModReborn")]
+    [InlineData("GodMod,BossMod", CombatProvider.Vbm, false, "BossMod")]
+    [InlineData("GodMod,BossModReborn,BossMod", CombatProvider.Vbm, true, "GodMod")]
+    [InlineData("BossMod", CombatProvider.Bmr, false, "BossMod")]
+    public void AvailableNativeHostSelectionRetainsTheSavedPreferenceWhenAvailable(string available, CombatProvider saved,
+        bool gmc, string expected)
+        => Assert.Equal(expected, BossModIPC.SelectNativeHost(available.Split(','), saved, gmc));
+
+    [Theory]
+    [InlineData(CombatProvider.Bmr, false)]
+    [InlineData(CombatProvider.Vbm, false)]
+    [InlineData(CombatProvider.Wrath, true)]
+    public void GodModUsesCompatibleIpcAndOnlyItsOwnCommandsWithoutChangingSavedProviders(CombatProvider saved, bool gmc)
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: "GodMod") { AiEnabled = gmc };
+        using var run = new Run(native) { GmcLoaded = gmc, Territory = 1044 };
+        run.Config.CombatProvider = saved;
+        run.Config.UseManualBossModPreset = true;
+        run.Config.ManualBossModPresetName = "null";
+        Assert.True(run.Rotation.Initialize());
+        Assert.Equal("GodMod", run.BossMod.NativeHost);
+        Assert.False(run.Rotation.SupportsBmrObstacleMaps);
+        Assert.False(run.BossMod.SendCommand("/bmrai obstaclemaps on", "unsupported GM command"));
+        Assert.True(run.Rotation.EnableRotationOncePerDuty("GM compatible host"));
+        Assert.Equal(saved, run.Config.CombatProvider);
+        Assert.Equal(new[] { gmc ? "FRENRIDER - TANK" : "null" }, native.Active);
+        Assert.Contains(gmc ? "/gmai off" : "/gmai on", run.Commands);
+        Assert.DoesNotContain(run.Commands, command => command.StartsWith("/bmrai", StringComparison.Ordinal)
+            || command.StartsWith("/vbmai", StringComparison.Ordinal));
+        Assert.True(run.Rotation.DisableRotationForDutyEnd("GM cleanup"));
+        Assert.Equal(new[] { "Original" }, native.Active);
+        Assert.DoesNotContain(native.Writes, write => write.StartsWith("GodMod.", StringComparison.Ordinal)
+            || write.Contains("ActiveList", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void GodModAsynchronousReadinessNeverCapturesAnUnreadableFirstBaseline()
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: "GodMod") { Ready = false };
+        using var service = native.CreateService();
+        Assert.False(service.ResolveReadyHost(CombatProvider.Vbm, out _));
+        Assert.False(service.BeginOwnedBossModSettings(CombatProvider.Bmr, "account", "character", new Configuration()));
+        Assert.Empty(native.Writes);
+        native.Ready = true;
+        native.UnavailableChannel = "BossMod.Presets.GetForceDisabled";
+        Assert.False(service.ResolveReadyHost(CombatProvider.Bmr, out _));
+        Assert.False(service.BeginOwnedBossModSettings(CombatProvider.Bmr, "account", "character", new Configuration()));
+        native.UnavailableChannel = null;
+        native.Active = ["External"];
+        native.Selector = "External";
+        Assert.True(service.ResolveReadyHost(CombatProvider.Vbm, out var provider));
+        Assert.Equal(CombatProvider.Bmr, provider);
+        Assert.True(service.BeginOwnedBossModSettings(provider, "account", "character", new Configuration()));
+        Assert.True(service.ApplyOwnedBossModPreset("null"));
+        Assert.True(service.BeginOwnedBossModCleanup());
+        Assert.True(service.ClearActivePreset());
+        Assert.Equal(new[] { "External" }, native.Active);
+        Assert.Equal("External", native.Selector);
+    }
+
+    [Theory]
+    [InlineData("BossModReborn")]
+    [InlineData("BossMod")]
+    public void GodModSharedIpcAmbiguityNeverAuthorizesPresetWrites(string competing)
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: "GodMod")
+            { AdditionalHost = competing };
+        using var service = native.CreateService();
+        Assert.False(service.ResolveReadyHost(CombatProvider.Bmr, out _));
+        Assert.False(service.ReadPresetCatalog(CombatProvider.Bmr).Readable);
+        Assert.False(service.BeginOwnedBossModSettings(CombatProvider.Bmr, "account", "character", new Configuration()));
+        Assert.Empty(native.Writes);
+    }
+
+    [Fact]
+    public void GodModReadyHostReplacementCannotBeAdoptedByAPendingStart()
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: "GodMod");
+        using var service = native.CreateService();
+        Assert.True(service.ResolveReadyHost(CombatProvider.Bmr, out _));
+        native.Reload();
+        Assert.False(service.BeginOwnedBossModSettings(CombatProvider.Bmr, "account", "character", new Configuration()));
+        Assert.Empty(native.Writes);
+        Assert.True(service.ResolveReadyHost(CombatProvider.Bmr, out _));
+        Assert.True(service.BeginOwnedBossModSettings(CombatProvider.Bmr, "account", "character", new Configuration()));
+    }
+
+    [Fact]
+    public void GodModCommandFailureNeverRetriesTheBmrPrefix()
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: "GodMod");
+        using var run = new Run(native);
+        run.Config.UseManualBossModPreset = true;
+        run.Config.ManualBossModPresetName = "null";
+        Assert.True(run.Rotation.Initialize());
+        run.ThrowOnCommand = "/gmai on";
+        Assert.False(run.Rotation.EnableRotationOncePerDuty("rejected GM command"));
+        Assert.Single(run.Commands.Where(command => command == "/gmai on"));
+        Assert.DoesNotContain(run.Commands, command => command.StartsWith("/bmrai", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData("GodMod", true)]
+    [InlineData("BossModReborn", true)]
+    [InlineData("BossModReborn", false)]
+    public void MissingStandardPresetInstallationUsesLegacyBmrMutationOnlyForTheSelectedBmrHost(string name, bool selected)
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: name)
+            { UnavailableChannel = "BossMod.Presets.Create", LegacyBmrPresetCreate = true };
+        using var run = new Run(native);
+        var expected = selected && name == "BossModReborn";
+        if (selected) Assert.Equal(expected, run.Rotation.Initialize());
+        else
+        {
+            Assert.Null(run.BossMod.NativeHost);
+            Assert.False((bool)Invoke(run.BossMod, "TryCreatePreset", "Unowned", "{\"Name\":\"Unowned\"}", false)!);
+        }
+        Assert.Equal(expected ? 6 : 0, native.Writes.Count(write => write == "BossModReborn.Presets.Create"));
+        Assert.DoesNotContain(run.Commands, command => name == "GodMod" && command.StartsWith("/bmrai", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData("success", false)]
+    [InlineData("success", true)]
+    [InlineData("ai-off", false)]
+    [InlineData("preset", false)]
+    [InlineData("stop", false)]
+    [InlineData("settings", false)]
+    [InlineData("session", false)]
+    [InlineData("host", false)]
+    public void GodModDeathReceiptSurvivesHpZeroBeforeNativeClearAndRetainsInvalidators(string change, bool clearBeforeObservation)
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: "GodMod");
+        using var run = new Run(native);
+        run.Config.UseManualBossModPreset = true;
+        run.Config.ManualBossModPresetName = "null";
+        Assert.True(run.Rotation.Initialize());
+        var (startup, _) = run.BindAdsStartup(() => false);
+        var now = new DateTime(2026, 11, 14, 12, 0, 0, DateTimeKind.Utc);
+        Assert.Equal(DutyStartupResult.Pending, startup.Update(true, (1044, 16), Ready, now));
+        Assert.Equal(DutyStartupResult.Confirmed, startup.Update(true, (1044, 16), Ready, now.AddSeconds(2)));
+        if (clearBeforeObservation) native.Die();
+        var hpZero = Ready with { IsPlayerAlive = false, IsUnconscious = true };
+        startup.ObserveReadiness(true, (1044, 16), hpZero, now.AddSeconds(3));
+        startup.ObserveReadiness(true, (1044, 16), hpZero, now.AddSeconds(3.1));
+        run.Rotation.ObserveSessionDeparture();
+        native.Writes.Clear();
+        run.Commands.Clear();
+        if (!clearBeforeObservation)
+        {
+            Assert.False(native.Rotation.Player.IsDead); // Consumer HP0 precedes native actor processing.
+            Assert.False(run.Rotation.EnableRotationOncePerDuty("native death clear still pending"));
+            Assert.Empty(native.Writes);
+            Assert.Empty(run.Commands);
+        }
+        switch (change)
+        {
+            case "ai-off": native.AiEnabled = false; break;
+            case "preset": native.Active = ["External"]; break;
+            case "stop": Assert.True(run.Rotation.DisableRotationForDutyEnd("Stop while native death is pending")); break;
+            case "settings": run.Config.ManualBossModPresetName = "External"; break;
+            case "session": run.CurrentContentId = 2; break;
+            case "host": native.Reload(); break;
+        }
+        run.Rotation.ObserveSessionDeparture();
+        if (!clearBeforeObservation) native.Die();
+        Assert.True(native.ForceDisabled);
+        Assert.Empty(native.Active);
+        run.Rotation.ObserveSessionDeparture();
+        native.Rotation.Player.IsDead = false;
+        native.Writes.Clear();
+        run.Commands.Clear();
+        Assert.Equal(change == "success", run.Rotation.EnableRotationOncePerDuty("ready after delayed native clear"));
+        if (change == "success")
+        {
+            Assert.Equal(new[] { "null" }, native.Active);
+            Assert.Single(native.Writes.Where(write => write == "BossMod.Presets.SetActive null"));
+            Assert.True(run.Rotation.EnableRotationOncePerDuty("duplicate ready after delayed clear"));
+            Assert.Single(native.Writes.Where(write => write == "BossMod.Presets.SetActive null"));
+        }
+        else
+        {
+            Assert.False(run.Rotation.EnableRotationOncePerDuty("invalid death receipt remains terminal"));
+            Assert.DoesNotContain(native.Writes, write => write.StartsWith("BossMod.Presets.SetActive", StringComparison.Ordinal));
+        }
+        Assert.DoesNotContain(run.Commands, command => command.StartsWith("/bmrai", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData("success")]
+    [InlineData("before-force")]
+    [InlineData("before-none")]
+    [InlineData("before-ai-off")]
+    [InlineData("after-ai-off")]
+    [InlineData("after-none")]
+    [InlineData("after-preset")]
+    [InlineData("settings")]
+    [InlineData("native-settings")]
+    [InlineData("native-death-setting")]
+    [InlineData("provider")]
+    [InlineData("host")]
+    [InlineData("stop")]
+    public void GodModNativeDeathRearmsOnlyThePreviouslyOwnedActiveRuntime(string change)
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: "GodMod");
+        using var run = new Run(native);
+        run.Config.UseManualBossModPreset = true;
+        run.Config.ManualBossModPresetName = "null";
+        Assert.True(run.Rotation.Initialize());
+        Assert.True(run.Rotation.EnableRotationOncePerDuty("before native death"));
+        if (change.StartsWith("before-", StringComparison.Ordinal))
+        {
+            if (change == "before-ai-off") native.AiEnabled = false;
+            else { native.Active.Clear(); native.ForceDisabled = change == "before-force"; }
+            run.Rotation.ObserveSessionDeparture();
+        }
+        native.Die();
+        Assert.True(native.ForceDisabled);
+        Assert.Empty(native.Active);
+        run.Rotation.InvalidateCombatActivation();
+        native.Rotation.Player.IsDead = false;
+        switch (change)
+        {
+            case "after-ai-off": native.AiEnabled = false; break;
+            case "after-none": native.ForceDisabled = false; break;
+            case "after-preset": native.ForceDisabled = false; native.Active = ["External"]; break;
+            case "settings": run.Config.ManualBossModPresetName = "External"; break;
+            case "native-settings": native.ManualTarget = true; break;
+            case "native-death-setting": native.ClearPresetOnDeath = false; break;
+            case "provider": run.Config.CombatProvider = CombatProvider.Vbm; break;
+            case "host": native.Reload(); break;
+            case "stop": Assert.True(run.Rotation.DisableRotationForDutyEnd("Stop after death")); break;
+        }
+        native.Writes.Clear();
+        run.Commands.Clear();
+        Assert.Equal(change == "success", run.Rotation.EnableRotationOncePerDuty("ready after native death"));
+        if (change == "success")
+        {
+            Assert.False(native.ForceDisabled);
+            Assert.Equal(new[] { "null" }, native.Active);
+            Assert.Single(native.Writes.Where(write => write == "BossMod.Presets.SetActive null"));
+            Assert.True(run.Rotation.EnableRotationOncePerDuty("duplicate readiness"));
+            Assert.Single(native.Writes.Where(write => write == "BossMod.Presets.SetActive null"));
+        }
+        else
+        {
+            Assert.DoesNotContain(native.Writes, write => write.StartsWith("BossMod.Presets.SetActive", StringComparison.Ordinal));
+            Assert.False(run.Rotation.EnableRotationOncePerDuty("later readiness cannot reclaim external off"));
+            Assert.DoesNotContain(native.Writes, write => write.StartsWith("BossMod.Presets.SetActive", StringComparison.Ordinal));
+        }
+        Assert.DoesNotContain(run.Commands, command => command.StartsWith("/bmrai", StringComparison.Ordinal));
     }
 
     [Theory]
@@ -1648,8 +1910,15 @@ public sealed class DutyRecoveryTests
         if (recovery)
         {
             Assert.Equal(DutyStartupResult.Confirmed, startup.Update(true, (1044, 16), Ready, now.AddSeconds(2)));
+            if (provider == CombatProvider.Bmr)
+            {
+                native.Rotation.Preset = native.Presets.AllPresets.Single(preset => preset.Name == native.Selector);
+                run.Rotation.ObserveSessionDeparture();
+                native.Die();
+            }
             startup.ObserveReadiness(true, (1044, 16), Ready with { IsPlayerAlive = false, IsUnconscious = true }, now.AddSeconds(3));
-            native.AiEnabled = false;
+            if (provider == CombatProvider.Bmr) native.Rotation.Player.IsDead = false;
+            else native.AiEnabled = false;
             now = now.AddSeconds(4);
             Assert.Equal(DutyStartupResult.Pending, startup.Update(true, (1044, 16), Ready, now));
         }
@@ -2184,7 +2453,7 @@ public sealed class DutyRecoveryTests
     {
         public NativePlanDatabase Plans = new();
     }
-    private sealed class NativeActor { public NativeJob Class = NativeJob.WAR; public bool InCombat = true; }
+    private sealed class NativeActor { public NativeJob Class = NativeJob.WAR; public bool InCombat = true; public bool IsDead; }
     private sealed class NativeBossmods { public object? ActiveModule; public List<object> LoadedModules = []; }
     private sealed record NativePlanner(object Module, NativePlan Plan);
     private sealed class NativeRotationManager(NativeRotationDatabase database, Action<NativePreset?> onPreset)
@@ -2211,6 +2480,7 @@ public sealed class DutyRecoveryTests
     private sealed class NativeBossModProvider
     {
         internal readonly CombatProvider Provider;
+        internal readonly string InternalName;
         internal readonly IDalamudPluginInterface Interface;
         internal readonly IPluginLog Log;
         internal readonly NativePresetDatabase Presets = new();
@@ -2224,7 +2494,9 @@ public sealed class DutyRecoveryTests
         internal bool ThrowAfterRuntimeWrite;
         internal bool RejectAiEffect;
         internal bool Ambiguous;
+        internal string? AdditionalHost;
         internal string? UnavailableChannel;
+        internal bool LegacyBmrPresetCreate;
         internal double Distance = 7.5;
         internal int AccountSaveAttempts;
         internal Action? AfterPackagedRefresh;
@@ -2232,6 +2504,8 @@ public sealed class DutyRecoveryTests
         private readonly Dictionary<string, string> presetDefinitions = new(StringComparer.Ordinal);
         internal Action? AfterSelectorWrite;
         private readonly object node;
+        private readonly object autorotationConfig;
+        private bool ready = true;
         private readonly object? aiManager;
         private readonly object wrapper;
         private readonly Type pluginType;
@@ -2243,6 +2517,22 @@ public sealed class DutyRecoveryTests
         {
             get => (bool)wrapper.GetType().GetField("Loaded")!.GetValue(wrapper)!;
             set => wrapper.GetType().GetField("Loaded")!.SetValue(wrapper, value);
+        }
+        internal bool Ready { get => ready; set { ready = value; Reload(); } }
+        internal bool ClearPresetOnDeath
+        {
+            get => (bool)autorotationConfig.GetType().GetField("ClearPresetOnDeath")!.GetValue(autorotationConfig)!;
+            set => autorotationConfig.GetType().GetField("ClearPresetOnDeath")!.SetValue(autorotationConfig, value);
+        }
+        internal void Die()
+        {
+            Rotation.Player.IsDead = true;
+            if (Rotation.Player.InCombat && ClearPresetOnDeath)
+            {
+                Rotation.Preset = null;
+                Active.Clear();
+                ForceDisabled = true;
+            }
         }
         internal string? Selector
         {
@@ -2264,9 +2554,10 @@ public sealed class DutyRecoveryTests
             set => node.GetType().GetField("ManualTarget")!.SetValue(node, value);
         }
 
-        internal NativeBossModProvider(CombatProvider provider, string names, bool disabled = false)
+        internal NativeBossModProvider(CombatProvider provider, string names, bool disabled = false, string? internalName = null)
         {
             Provider = provider;
+            InternalName = internalName ?? (provider == CombatProvider.Vbm ? "BossMod" : "BossModReborn");
             Active = names.Length == 0 ? [] : names.Split('|').ToList();
             ForceDisabled = disabled;
             var module = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("MogtomeNativeBossMod" + Guid.NewGuid().ToString("N")),
@@ -2275,9 +2566,14 @@ public sealed class DutyRecoveryTests
             var nodeBuilder = module.DefineType("BossMod.AI.AIConfig", TypeAttributes.Public, configNodeType);
             nodeBuilder.DefineField("Enabled", typeof(bool), FieldAttributes.Public);
             nodeBuilder.DefineField("ManualTarget", typeof(bool), FieldAttributes.Public);
+            nodeBuilder.DefineField("ForbidActions", typeof(bool), FieldAttributes.Public);
             nodeBuilder.DefineField("AIAutorotPresetName", typeof(string), FieldAttributes.Public);
             var nodeType = nodeBuilder.CreateType()!;
             node = Activator.CreateInstance(nodeType)!;
+            var autorotationBuilder = module.DefineType("BossMod.Autorotation.AutorotationConfig", TypeAttributes.Public, configNodeType);
+            autorotationBuilder.DefineField("ClearPresetOnDeath", typeof(bool), FieldAttributes.Public);
+            autorotationConfig = Activator.CreateInstance(autorotationBuilder.CreateType()!)!;
+            ClearPresetOnDeath = true;
             Selector = "Original";
             var dictionaryType = typeof(Dictionary<,>).MakeGenericType(typeof(Type), configNodeType);
             var configBuilder = module.DefineType("BossMod.ConfigRoot", TypeAttributes.Public);
@@ -2325,6 +2621,7 @@ public sealed class DutyRecoveryTests
             var configRoot = Activator.CreateInstance(configType)!;
             var nodes = (System.Collections.IDictionary)Activator.CreateInstance(dictionaryType)!;
             nodes.Add(nodeType, node);
+            nodes.Add(autorotationConfig.GetType(), autorotationConfig);
             configType.GetField("_nodes", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(configRoot, nodes);
             var serviceBuilder = module.DefineType("BossMod.Service", TypeAttributes.Public);
             serviceBuilder.DefineField("Config", configType, FieldAttributes.Public | FieldAttributes.Static);
@@ -2373,7 +2670,7 @@ public sealed class DutyRecoveryTests
                     method.ReturnType, method.GetParameters().Select(parameter => parameter.ParameterType).ToArray());
                 var il = getter.GetILGenerator();
                 if (method.Name == "get_InternalName")
-                    il.Emit(OpCodes.Ldstr, provider == CombatProvider.Vbm ? "BossMod" : "BossModReborn");
+                    il.Emit(OpCodes.Ldstr, InternalName);
                 else if (method.Name == "get_IsLoaded")
                 {
                     il.Emit(OpCodes.Ldarg_0);
@@ -2404,9 +2701,9 @@ public sealed class DutyRecoveryTests
             });
             Interface = Fake<IDalamudPluginInterface>((method, args) => method.Name switch
             {
-                "get_InstalledPlugins" => Ambiguous ? new[] { (IExposedPlugin)wrapper, Fake<IExposedPlugin>((member, _) => member.Name switch
+                "get_InstalledPlugins" => Ambiguous || AdditionalHost is not null ? new[] { (IExposedPlugin)wrapper, Fake<IExposedPlugin>((member, _) => member.Name switch
                 {
-                    "get_InternalName" => provider == CombatProvider.Vbm ? "BossModReborn" : "BossMod",
+                    "get_InternalName" => AdditionalHost ?? (provider == CombatProvider.Vbm ? "BossModReborn" : "BossMod"),
                     "get_IsLoaded" => true,
                     _ => Default(member.ReturnType),
                 }) } : new[] { (IExposedPlugin)wrapper },
@@ -2422,8 +2719,8 @@ public sealed class DutyRecoveryTests
         internal void Reload()
         {
             var plugin = Activator.CreateInstance(pluginType)!;
-            pluginType.GetField("_rotationDB")!.SetValue(plugin, database);
-            pluginType.GetField("_rotation")!.SetValue(plugin, Rotation);
+            pluginType.GetField("_rotationDB")!.SetValue(plugin, ready ? database : null);
+            pluginType.GetField("_rotation")!.SetValue(plugin, ready ? Rotation : null);
             pluginType.GetField("Host")!.SetValue(plugin, host);
             wrapper.GetType().GetField("instance")!.SetValue(wrapper, plugin);
         }
@@ -2431,6 +2728,20 @@ public sealed class DutyRecoveryTests
         internal bool SendCommand(string command)
         {
             Writes.Add(command);
+            if (InternalName == "GodMod")
+            {
+                if (command.StartsWith("/bmrai", StringComparison.Ordinal) || command.StartsWith("/vbmai", StringComparison.Ordinal)) return false;
+                if (command.StartsWith("/gmai prefdistance ", StringComparison.Ordinal))
+                    Distance = double.Parse(command["/gmai prefdistance ".Length..], CultureInfo.InvariantCulture);
+                else if (command is "/gmai manualtarget on" or "/gmai manualtarget off") ManualTarget = command.EndsWith(" on", StringComparison.Ordinal);
+                else if (!RejectAiEffect && command is "/gmai on" or "/gmai off")
+                {
+                    AiEnabled = command.EndsWith(" on", StringComparison.Ordinal);
+                    if (AiEnabled) Rotation.Preset = Presets.AllPresets.SingleOrDefault(preset => preset.Name == Selector);
+                    else if (Active.Count == 1 && Active[0] == Selector) Rotation.Preset = null;
+                }
+                return true;
+            }
             if (command.StartsWith("/bmrai prefdistance ", StringComparison.Ordinal))
                 Distance = double.Parse(command["/bmrai prefdistance ".Length..], CultureInfo.InvariantCulture);
             else if (command is "/bmrai manualtarget on" or "/bmrai manualtarget off")
@@ -2449,7 +2760,16 @@ public sealed class DutyRecoveryTests
 
         internal object? Invoke(string channel, MethodInfo call, object?[]? values)
         {
+            if (InternalName == "GodMod" && channel is "BossMod.Presets.GetActiveList" or "BossMod.Presets.SetActiveList")
+                throw new InvalidOperationException("GodMod exposes a single active preset");
             if (UnavailableChannel == channel) throw new InvalidOperationException("native endpoint unavailable");
+            var legacyBmrCreate = channel == "BossModReborn.Presets.Create";
+            if (legacyBmrCreate)
+            {
+                Writes.Add(channel);
+                if (!LegacyBmrPresetCreate) throw new InvalidOperationException("legacy BMR preset endpoint unavailable");
+                channel = "BossMod.Presets.Create";
+            }
             if (channel == "BossMod.Presets.GetForceDisabled") return ForceDisabled;
             if (channel == "BossMod.Presets.GetActive") return Active.Count == 1 ? Active[0] : null;
             if (channel == "BossMod.Presets.GetActiveList") return Active.ToList();
@@ -2504,6 +2824,7 @@ public sealed class DutyRecoveryTests
                 Presets.AllPresets.Add(preset);
                 Presets.DefaultPresets.Add(preset);
                 if (preset.Name == "FRENRIDER - RANGED") AfterPackagedRefresh?.Invoke();
+                if (legacyBmrCreate) return string.Empty;
                 return true;
             }
             if (RejectRuntimeWrite) return false;

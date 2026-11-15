@@ -1,3 +1,9 @@
+2026-11-14 - 4.2.0.17 - GodMod compatibility
+
+- **Added GodMod support:** Automatically uses an available compatible GodMod, BMR or VBM host while preserving saved combat preferences.
+- **Updated Combat startup:** Blocks startup when native hosts conflict and keeps presets, companion rotations, commands and cleanup with the selected host.
+- **Fixed Combat recovery:** Restores MOGTOME's previously active rotation when native death handling clears it, respecting observed manual changes, settings and Stop.
+
 2026-11-12 - 4.2.0.16 - Highlight contrast
 
 - Add Highlight contrast (0–100%) to Appearance and Colour, defaulting to 50% when absent. Preserve saved zero and custom values.

@@ -15,6 +15,7 @@ public class RotationService : IDisposable
     private readonly BossModIPC bossModIPC;
     private bool rotationEnableSentForDuty;
     private bool rotationDisableSentForDuty;
+    private bool deathRearmPending;
     private readonly HashSet<CombatProvider> enabledComponents = [];
     private CombatProvider? preparedBossMod;
     private Configuration? preparedConfig;
@@ -54,6 +55,7 @@ public class RotationService : IDisposable
     internal void SetAdsDutyIpcService(AdsDutyIpcService service) => bossModIPC.SetAdsDutyIpcService(service);
     internal bool IsVbmActivationDeferred => preparedBossMod == CombatProvider.Vbm && bossModIPC.IsVbmInteractionPauseActive;
     internal bool UsesGmc => bossModIPC.IsGmcLoaded;
+    internal bool SupportsBmrObstacleMaps => bossModIPC.SupportsBmrObstacleMaps;
 
     private string ReadCharacterIdentity()
     {
@@ -77,6 +79,8 @@ public class RotationService : IDisposable
             sessionEnded = true;
             Fail(Ui.M("Rotation_BossModSessionChanged"));
         }
+        else if ((rotationEnableSentForDuty || deathRearmPending) && !rotationDisableSentForDuty)
+            bossModIPC.ObserveOwnedCombatState();
     }
 
     internal void EndSessionForLogout()
@@ -153,7 +157,7 @@ public class RotationService : IDisposable
         return true;
     }
 
-    public bool Initialize(bool preferBmr = false)
+    public bool Initialize(bool preferBmr = false, string? nativeHost = null)
     {
         if (!DisableEnabledComponents())
         {
@@ -174,27 +178,13 @@ public class RotationService : IDisposable
 
         var config = configManager.GetActiveConfig();
         gmcSession = bossModIPC.IsGmcLoaded;
-        if (!gmcSession && preferBmr && config.CombatProvider == CombatProvider.Vbm)
-        {
-            config.CombatProvider = CombatProvider.Bmr;
-            configManager.SaveCurrentAccount();
-            configManager.NotifyConfigurationChanged(force: true);
-        }
-        var bmrLoaded = bossModIPC.IsPluginLoaded("BossModReborn");
-        var vbmLoaded = bossModIPC.IsPluginLoaded("BossMod");
-        if (bmrLoaded && vbmLoaded)
-            return Fail(Ui.M("Rotation_BothBossModVariantsAreStillLoadedConflict"));
-
         var provider = gmcSession ? CombatProvider.Bmr : config.CombatProvider;
         if (provider != CombatProvider.Wrath)
         {
-            preparedBossMod = provider == CombatProvider.Rsr
-                ? bmrLoaded ? CombatProvider.Bmr : vbmLoaded ? CombatProvider.Vbm : null
-                : provider;
-            if (preparedBossMod == null ||
-                (preparedBossMod == CombatProvider.Bmr && !bmrLoaded) ||
-                (preparedBossMod == CombatProvider.Vbm && !vbmLoaded))
-                return Fail(Ui.M("Rotation_RequiresLoadedBossModSupport", provider, (provider == CombatProvider.Rsr ? Ui.M("Rotation_BMROrVBM") : (UiText)provider.ToString())));
+            if (!bossModIPC.ResolveReadyHost(provider, out var resolved, nativeHost)
+                || gmcSession && resolved != CombatProvider.Bmr)
+                return Fail(Ui.M("Rotation_BossModSettingsUnconfirmed"));
+            preparedBossMod = resolved;
 
             var character = ReadCharacterIdentity();
             if (string.IsNullOrEmpty(configManager.CurrentAccountId) || string.IsNullOrEmpty(character)
@@ -235,6 +225,7 @@ public class RotationService : IDisposable
     {
         rotationEnableSentForDuty = false;
         rotationDisableSentForDuty = false;
+        deathRearmPending = false;
         ResetRsrHealthState();
         rsrMapTransitionPending = false;
         log.Debug($"[MOGTOME][Rotation] Reset duty rotation lifecycle state ({reason})");
@@ -245,6 +236,11 @@ public class RotationService : IDisposable
         if (rotationDisableSentForDuty)
             return;
 
+        if (rotationEnableSentForDuty)
+        {
+            bossModIPC.ObserveOwnedCombatDeath();
+            deathRearmPending = true;
+        }
         rotationEnableSentForDuty = false;
         ResetRsrHealthState();
     }
@@ -262,25 +258,45 @@ public class RotationService : IDisposable
         }
         if (IsVbmActivationDeferred)
             return false;
+        if (preparedConfig is not null && !MatchesPreparedSession(configManager.GetActiveConfig()))
+        {
+            ObserveSessionDeparture();
+            return Fail(Ui.M("Rotation_BossModSessionChanged"));
+        }
 
         var provider = gmcSession ? CombatProvider.Bmr : configManager.GetActiveConfig().CombatProvider;
+        var recoveringDeath = deathRearmPending;
+        deathRearmPending = false;
         try
         {
-            if (!EnableSelectedProvider() || rotationDisableSentForDuty)
+            var deathRecovery = bossModIPC.RecoverOwnedCombatDeath(appliedPresetSettings is null
+                || appliedPresetSettings == CurrentPresetSettings(configManager.GetActiveConfig()));
+            if (deathRecovery is null)
+            {
+                deathRearmPending = recoveringDeath;
+                return false;
+            }
+            if (deathRecovery == false || !EnableSelectedProvider() || rotationDisableSentForDuty)
             {
                 if (!rotationDisableSentForDuty && IsVbmActivationDeferred)
+                {
+                    deathRearmPending = recoveringDeath;
                     return false;
-                DisableEnabledComponents();
+                }
+                if (recoveringDeath) DisableRotationForDutyEnd("death recovery ownership or native state changed");
+                else DisableEnabledComponents();
                 return false;
             }
         }
         catch (Exception ex)
         {
-            DisableEnabledComponents();
+            if (recoveringDeath) DisableRotationForDutyEnd("death recovery activation failed");
+            else DisableEnabledComponents();
             return Fail(Ui.M("Rotation_CombatActivationFailed", ex.Message));
         }
         rotationEnableSentForDuty = true;
         rotationDisableSentForDuty = false;
+        bossModIPC.ObserveOwnedCombatState();
         // Full activation also restored RSR; suppress its independent Off probe
         // while the provider applies that command.
         rsrRecoveryCommandSuppressedUntilUtc = DateTime.UtcNow + RsrRecoveryCommandSuppression;
@@ -435,19 +451,15 @@ public class RotationService : IDisposable
         if (gmcSession)
         {
             if (!bossModIPC.IsGmcLoaded || preparedBossMod != CombatProvider.Bmr
-                || !bossModIPC.IsPluginLoaded("BossModReborn") || bossModIPC.IsPluginLoaded("BossMod")
+                || bossModIPC.NativeHost is not ("BossModReborn" or "GodMod")
+                || !bossModIPC.IsOwnedProviderCurrent
                 || !bossModIPC.BeginOwnedBossModSettings(CombatProvider.Bmr, configManager.CurrentAccountId, ReadCharacterIdentity(), config))
                 return Fail(Ui.M("Rotation_BossModSettingsUnconfirmed"));
             return bossModIPC.BeginGmcAutorotation();
         }
         if (provider != CombatProvider.Wrath)
         {
-            var bmrLoaded = bossModIPC.IsPluginLoaded("BossModReborn");
-            var vbmLoaded = bossModIPC.IsPluginLoaded("BossMod");
-            if ((bmrLoaded && vbmLoaded) || preparedBossMod == null ||
-                (preparedBossMod == CombatProvider.Bmr && !bmrLoaded) ||
-                (preparedBossMod == CombatProvider.Vbm && !vbmLoaded) ||
-                (provider != CombatProvider.Rsr && provider != preparedBossMod))
+            if (preparedBossMod is null || !bossModIPC.IsOwnedProviderCurrent)
                 return Fail(Ui.M("Rotation_BossModAvailabilityOrSelectionChangedAfterStartup"));
 
             var character = ReadCharacterIdentity();

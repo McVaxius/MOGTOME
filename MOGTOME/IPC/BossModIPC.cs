@@ -77,6 +77,13 @@ public partial class BossModIPC : IDisposable
     private AdsDutyIpcService? adsDutyIpcService;
     private BossModSettingsOwnership? ownedSettings;
     private WeakReference<object>? ownedProvider;
+    private string? selectedNativeHost;
+    private WeakReference<object>? selectedProvider;
+    private string? ownedNativeHost;
+    private BossModSettingsSnapshot? lastAliveOwnedState;
+    private BossModSettingsSnapshot? deathRecoveryExpected;
+    private BossModRuntimePresetState? deathRecoveryTarget;
+    private bool ownedDeathObserved;
     private (string Account, string Character, Configuration Config, string Provider) ownedIdentity;
     private bool cleanupStarted;
     private bool cleanupFailed;
@@ -95,6 +102,63 @@ public partial class BossModIPC : IDisposable
 
     public bool IsPluginLoaded(string internalName)
         => pluginInterface.InstalledPlugins.Any(p => p.IsLoaded && p.InternalName == internalName);
+
+    internal static bool IsBossModHost(string? name) => name is "GodMod" or "BossModReborn" or "BossMod";
+
+    internal static string? SelectNativeHost(IEnumerable<string> available, CombatProvider preferred, bool gmc)
+    {
+        var names = available.Where(IsBossModHost).ToHashSet(StringComparer.Ordinal);
+        if (gmc && names.Contains("GodMod")) return "GodMod";
+        var requested = preferred == CombatProvider.Vbm && !gmc ? "BossMod" : "BossModReborn";
+        return names.Contains(requested) ? requested : names.Contains("GodMod") ? "GodMod"
+            : names.Contains("BossModReborn") ? "BossModReborn" : names.Contains("BossMod") ? "BossMod" : null;
+    }
+
+    internal string? NativeHost => ownedNativeHost ?? selectedNativeHost;
+    internal bool SupportsBmrObstacleMaps => NativeHost == "BossModReborn";
+
+    internal bool ResolveReadyHost(CombatProvider preferred, out CombatProvider provider, string? expectedHost = null)
+    {
+        provider = preferred;
+        selectedNativeHost = null;
+        selectedProvider = null;
+        var loaded = pluginInterface.InstalledPlugins.Where(p => p.IsLoaded && IsBossModHost(p.InternalName)).ToArray();
+        if (loaded.Length != 1 || expectedHost is not null && loaded[0].InternalName != expectedHost)
+        {
+            LastStatus = loaded.Length > 1 ? "Multiple BossMod hosts are loaded; their shared IPC is ambiguous."
+                : "The selected native BossMod host is not ready.";
+            return false;
+        }
+        var name = loaded[0].InternalName;
+        provider = name == "BossMod" ? CombatProvider.Vbm : CombatProvider.Bmr;
+        var kind = provider == CombatProvider.Vbm ? "VBM" : "BMR";
+        if (!TryGetLiveBossMod(kind, out var instance, out var assembly, out var detail)
+            || name != "BossMod" && (LiveMember(instance, "_rotationDB") is null || LiveMember(instance, "_rotation") is null)
+            || !ReadableBaseline(kind, ReadBossModSettings(kind, assembly!)))
+        {
+            LastStatus = string.IsNullOrEmpty(detail) ? $"{name} is still initializing." : detail;
+            return false;
+        }
+        selectedNativeHost = name;
+        selectedProvider = new WeakReference<object>(instance!);
+        return true;
+    }
+
+    private static bool ReadableBaseline(string provider, BossModSettingsSnapshot baseline)
+        => baseline.Runtime is not null && baseline.AiEnabled is not null
+            && (provider != "BMR" || baseline.StoredSelectorReadable && baseline.ManualTarget is not null
+                && baseline.PreferredDistance is { } distance && double.IsFinite(distance));
+
+    private string ResolveProvider(string requested)
+    {
+        if (ownedSettings is not null) return ownedIdentity.Provider;
+        var loaded = pluginInterface.InstalledPlugins.Where(p => p.IsLoaded && IsBossModHost(p.InternalName)).ToArray();
+        return loaded.Length == 1 ? loaded[0].InternalName == "BossMod" ? "VBM" : "BMR" : GetBossModProvider(requested);
+    }
+
+    private string RouteNativeCommand(string command)
+        => command.StartsWith("/bmrai ", StringComparison.Ordinal) && NativeHost == "GodMod"
+            ? "/gmai " + command[7..] : command;
 
     internal static IReadOnlySet<string> ReadDhogHealerModules(Type? registry)
     {
@@ -198,6 +262,12 @@ public partial class BossModIPC : IDisposable
         log.Warning($"[MOGTOME] Owned BossMod settings cleanup was incomplete: {LastStatus}");
         ownedSettings = null;
         ownedProvider = null;
+        ownedNativeHost = null;
+        selectedNativeHost = null;
+        selectedProvider = null;
+        lastAliveOwnedState = deathRecoveryExpected = null;
+        deathRecoveryTarget = null;
+        ownedDeathObserved = false;
         ForgetGmcPlan();
         cleanupStarted = cleanupFailed = false;
         cleanupRuntimeExpected = cleanupRuntimeTarget = null;
@@ -234,7 +304,7 @@ public partial class BossModIPC : IDisposable
 
     private BossModPresetCatalog ReadPresetCatalog(string rotationProvider)
     {
-        var provider = GetBossModProvider(rotationProvider);
+        var provider = ResolveProvider(rotationProvider);
         if (!TryGetLiveBossMod(provider, out var instance, out var assembly, out var detail))
             return BossModPresetCatalog.Unavailable(provider, detail);
         try
@@ -302,11 +372,12 @@ public partial class BossModIPC : IDisposable
         try
         {
             var loaded = pluginInterface.InstalledPlugins.Where(plugin => plugin.IsLoaded
-                && plugin.InternalName is "BossModReborn" or "BossMod").ToArray();
-            var expectedName = provider == "VBM" ? "BossMod" : "BossModReborn";
+                && IsBossModHost(plugin.InternalName)).ToArray();
+            var expectedName = (ownedSettings is not null ? ownedNativeHost : selectedNativeHost)
+                ?? (loaded.Length == 1 ? loaded[0].InternalName : provider == "VBM" ? "BossMod" : "BossModReborn");
             if (loaded.Length != 1 || loaded[0].InternalName != expectedName)
             {
-                detail = loaded.Length > 1 ? "Both BossMod providers are loaded; their shared IPC is ambiguous."
+                detail = loaded.Length > 1 ? "Multiple BossMod hosts are loaded; their shared IPC is ambiguous."
                     : "The selected BossMod provider is not loaded.";
                 return false;
             }
@@ -314,6 +385,12 @@ public partial class BossModIPC : IDisposable
             detail = string.Empty;
             if (instance is null) instance = FindDalamudPluginInstance(expectedName, out detail);
             assembly = instance?.GetType().Assembly;
+            if (ownedSettings is null && selectedProvider is not null
+                && (!selectedProvider.TryGetTarget(out var selected) || !ReferenceEquals(selected, instance)))
+            {
+                detail = "The ready native BossMod instance changed before settings acquisition.";
+                return false;
+            }
             return instance is not null && assembly is not null;
         }
         catch (Exception ex)
@@ -349,7 +426,7 @@ public partial class BossModIPC : IDisposable
     internal bool PrepareOwnedBossModSettings(string rotationProvider, string account, string character,
         Configuration config)
     {
-        var provider = GetBossModProvider(rotationProvider);
+        var provider = ResolveProvider(rotationProvider);
         var identity = (Account: account, Character: character, Config: config, Provider: provider);
         if (!TryGetLiveBossMod(provider, out var live, out var assembly, out var detail))
         {
@@ -376,9 +453,24 @@ public partial class BossModIPC : IDisposable
         }
         if (ownedSettings is null)
         {
+            if (provider == "BMR" && (LiveMember(live, "_rotationDB") is null || LiveMember(live, "_rotation") is null))
+            {
+                LastStatus = "The native BossMod host is still initializing.";
+                return false;
+            }
+            var baseline = ReadBossModSettings(provider, assembly!);
+            if (!ReadableBaseline(provider, baseline))
+            {
+                LastStatus = "The native BossMod host has no complete readable settings baseline yet.";
+                return false;
+            }
             ownedIdentity = identity;
+            ownedNativeHost = pluginInterface.InstalledPlugins.Single(p => p.IsLoaded && IsBossModHost(p.InternalName)).InternalName;
             ownedProvider = new WeakReference<object>(live!);
-            ownedSettings = new BossModSettingsOwnership(provider, ReadBossModSettings(provider, assembly!));
+            ownedSettings = new BossModSettingsOwnership(provider, baseline);
+            lastAliveOwnedState = deathRecoveryExpected = null;
+            deathRecoveryTarget = null;
+            ownedDeathObserved = false;
             ForgetGmcPlan();
         }
         return true;
@@ -447,12 +539,15 @@ public partial class BossModIPC : IDisposable
     }
 
     private static object? ReadAiConfig(Assembly assembly)
+        => ReadConfigNode(assembly, "BossMod.AI.AIConfig");
+
+    private static object? ReadConfigNode(Assembly assembly, string nodeName)
     {
         try
         {
             var service = assembly.GetType("BossMod.Service");
             var rootType = assembly.GetType("BossMod.ConfigRoot");
-            var aiConfigType = assembly.GetType("BossMod.AI.AIConfig");
+            var aiConfigType = assembly.GetType(nodeName);
             const BindingFlags flags = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
             var root = service?.GetProperty("Config", flags)?.GetValue(null) ?? service?.GetField("Config", flags)?.GetValue(null);
             if (rootType is null || aiConfigType is null || rootType.Assembly != assembly
@@ -466,6 +561,104 @@ public partial class BossModIPC : IDisposable
         }
         catch { }
         return null;
+    }
+
+    private bool ReadNativeDeathState(bool? dead, bool requireCombat = false)
+    {
+        if (ownedIdentity.Provider != "BMR" || !TryGetLiveBossMod("BMR", out var instance, out var assembly, out _))
+            return false;
+        var player = LiveMember(LiveMember(instance, "_rotation"), "Player");
+        return LiveMember(player, "IsDead") is bool isDead && (dead is null || isDead == dead)
+            && (!(dead == true || requireCombat) || LiveMember(player, "InCombat") is true)
+            && LiveMember(ReadAiConfig(assembly!), "ForbidActions") is false
+            && LiveMember(ReadConfigNode(assembly!, "BossMod.Autorotation.AutorotationConfig"), "ClearPresetOnDeath") is true;
+    }
+
+    private static bool SameNonRuntimeSettings(BossModSettingsSnapshot before, BossModSettingsSnapshot after)
+        => before.StoredSelectorReadable == after.StoredSelectorReadable && before.StoredAiSelector == after.StoredAiSelector
+            && before.PreferredDistance == after.PreferredDistance && before.AiEnabled == after.AiEnabled
+            && before.ManualTarget == after.ManualTarget;
+
+    internal void ObserveOwnedCombatState()
+    {
+        if (ownedDeathObserved)
+        {
+            RefreshOwnedCombatDeath();
+            return;
+        }
+        if (ownedSettings is null
+            || !TryGetLiveBossMod(ownedIdentity.Provider, out var instance, out _, out _)
+            || LiveMember(LiveMember(instance, "_rotation"), "Player") is not { } player
+            || LiveMember(player, "IsDead") is not false) return;
+        lastAliveOwnedState = ReadNativeDeathState(dead: false) && TryReadOwnedBossModSettings(out var current)
+            && current.Runtime is { ForceDisabled: false, Names.Count: > 0 } && ownedSettings.MatchesOwnedRuntime(current)
+            && ownedSettings.MatchesNativeAuthority(current)
+            ? current : null;
+    }
+
+    internal void ObserveOwnedCombatDeath()
+    {
+        var previous = lastAliveOwnedState;
+        lastAliveOwnedState = null;
+        deathRecoveryExpected = null;
+        deathRecoveryTarget = null;
+        ownedDeathObserved = ownedSettings is not null && ownedIdentity.Provider == "BMR";
+        if (previous is null || previous.Runtime is not { ForceDisabled: false, Names.Count: > 0 } target
+            || !ownedDeathObserved || !ownedSettings!.MatchesOwnedRuntime(previous)
+            || !ReadNativeDeathState(dead: null, requireCombat: true)
+            || !TryReadOwnedBossModSettings(out var current)
+            || !(BossModRuntimePresetState.Matches(previous.Runtime, current.Runtime)
+                || current.Runtime is { ForceDisabled: true, Names.Count: 0 })
+            || !SameNonRuntimeSettings(previous, current)) return;
+        // The consumer can observe HP0 before native actor/death processing.
+        // Retain this qualified handoff until its native clear is observed.
+        deathRecoveryExpected = current;
+        deathRecoveryTarget = target;
+    }
+
+    private void RefreshOwnedCombatDeath()
+    {
+        if (deathRecoveryExpected is not { } expected || deathRecoveryTarget is not { } target) return;
+        if (ownedSettings is not { } ownership || !ReadNativeDeathState(dead: null)
+            || !TryReadOwnedBossModSettings(out var current) || !SameNonRuntimeSettings(expected, current)
+            || !ownership.MatchesOwnedRuntime(expected with { Runtime = target })
+            || !ownership.MatchesNativeAuthority(current)
+            || !(BossModRuntimePresetState.Matches(expected.Runtime, current.Runtime)
+                || expected.Runtime is { ForceDisabled: false }
+                    && current.Runtime is { ForceDisabled: true, Names.Count: 0 }))
+        {
+            deathRecoveryExpected = null;
+            deathRecoveryTarget = null;
+            return;
+        }
+        deathRecoveryExpected = current;
+    }
+
+    internal bool? RecoverOwnedCombatDeath(bool settingsUnchanged)
+    {
+        if (!ownedDeathObserved) return true;
+        RefreshOwnedCombatDeath();
+        if (settingsUnchanged && deathRecoveryExpected is { } pending && deathRecoveryTarget is not null)
+        {
+            if (pending.Runtime is { ForceDisabled: false } || !ReadNativeDeathState(dead: false)) return null;
+        }
+        // Consume only on ready acceptance or a known invalidator. Pending
+        // native death processing uses the existing readiness/update calls.
+        ownedDeathObserved = false;
+        var expected = deathRecoveryExpected;
+        var target = deathRecoveryTarget;
+        deathRecoveryExpected = null;
+        deathRecoveryTarget = null;
+        if (!settingsUnchanged || expected is null || target is null || ownedSettings is not { } ownership
+            || !ReadNativeDeathState(dead: false)
+            || !TryReadOwnedBossModSettings(out var current) || !SameNonRuntimeSettings(expected, current)
+            || !BossModRuntimePresetState.Matches(expected.Runtime, current.Runtime)
+            || !ownership.MatchesOwnedRuntime(expected with { Runtime = target })
+            || target.Names.Any(name => !IsExactRuntimePreset(name))) return false;
+        // Admit this verified native death effect to the existing activation
+        // path. That path performs the one preset write and its usual readback.
+        ownership.OwnRuntime(current.Runtime!);
+        return true;
     }
 
     internal static bool TryParsePreferredDistance(IReadOnlyList<string>? values, CultureInfo culture, out double distance)
@@ -655,11 +848,17 @@ public partial class BossModIPC : IDisposable
 
     internal bool SendBossModAiCommand(string command, Func<string, bool> sendCommand)
     {
+        if (command.StartsWith("/bmrai obstaclemaps", StringComparison.Ordinal) && !SupportsBmrObstacleMaps) return false;
+        command = RouteNativeCommand(command);
+        if (command.StartsWith("/gmai ", StringComparison.Ordinal) && NativeHost != "GodMod"
+            || command.StartsWith("/bmrai ", StringComparison.Ordinal) && NativeHost is ("GodMod" or "BossMod")
+            || command.StartsWith("/vbmai ", StringComparison.Ordinal) && NativeHost is ("GodMod" or "BossModReborn")) return false;
         var relevant = ownedSettings is not null
-            && (command is "/bmrai on" or "/bmrai off" or "/vbmai on" or "/vbmai off"
+            && (command is "/bmrai on" or "/bmrai off" or "/gmai on" or "/gmai off" or "/vbmai on" or "/vbmai off"
                 || command.StartsWith("/bmrai follow ", StringComparison.Ordinal)
+                || command.StartsWith("/gmai follow ", StringComparison.Ordinal)
                 || command.StartsWith("/vbmai follow ", StringComparison.Ordinal))
-            && command.StartsWith(ownedIdentity.Provider == "VBM" ? "/vbmai " : "/bmrai ", StringComparison.Ordinal);
+            && command.StartsWith(ownedIdentity.Provider == "VBM" ? "/vbmai " : NativeHost == "GodMod" ? "/gmai " : "/bmrai ", StringComparison.Ordinal);
         var before = BossModSettingsSnapshot.Unavailable;
         if (relevant && (cleanupStarted || cleanupFailed) && !command.EndsWith(" off", StringComparison.Ordinal))
             return false;
@@ -685,6 +884,9 @@ public partial class BossModIPC : IDisposable
 
     internal bool BeginOwnedBossModCleanup(string account, string character)
     {
+        lastAliveOwnedState = deathRecoveryExpected = null;
+        deathRecoveryTarget = null;
+        ownedDeathObserved = false;
         cleanupStarted = ownedSettings is not null && ownedIdentity.Account == account && ownedIdentity.Character == character;
         cleanupRuntimeExpected = null;
         cleanupRuntimeTarget = null;
@@ -803,6 +1005,9 @@ public partial class BossModIPC : IDisposable
         {
             ownedSettings = null;
             ownedProvider = null;
+            ownedNativeHost = null;
+            selectedNativeHost = null;
+            selectedProvider = null;
             ForgetGmcPlan();
         }
         cleanupStarted = false;
@@ -1218,6 +1423,7 @@ public partial class BossModIPC : IDisposable
             return legacyResult.Length == 0;
         }
 
+        if (NativeHost != "BossModReborn") return false;
         legacyResult = TryStringIpc("BossModReborn.Presets.Create", json);
         if (legacyResult != null)
         {
@@ -1535,6 +1741,12 @@ internal sealed class BossModSettingsOwnership(string provider, BossModSettingsS
     internal bool? GetManualTargetCleanupTarget(bool? current)
         => OwnedManualTarget is { } owned && current == owned ? Original.ManualTarget : null;
     internal void OwnRuntime(BossModRuntimePresetState state) => OwnedRuntime = state;
+    internal bool MatchesAiAuthority(BossModSettingsSnapshot current)
+        => current.AiEnabled == (ownedAiEnabled ?? Original.AiEnabled);
+    internal bool MatchesNativeAuthority(BossModSettingsSnapshot current)
+        => MatchesAiAuthority(current) && (provider != "BMR" || CanChangeStoredSelector(current)
+            && current.PreferredDistance == (OwnedDistance ?? Original.PreferredDistance)
+            && current.ManualTarget == (OwnedManualTarget ?? Original.ManualTarget));
     internal void OwnStoredSelector(string? selector) => OwnedStoredSelector = selector;
     internal void OwnDistance(double distance) => OwnedDistance = distance;
     internal void OwnManualTarget(bool manualTarget) => OwnedManualTarget = manualTarget;

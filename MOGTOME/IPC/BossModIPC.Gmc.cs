@@ -35,7 +35,8 @@ public partial class BossModIPC
 
     internal bool UpdateGmcAutorotation()
     {
-        if (!IsGmcLoaded || ownedIdentity.Provider != "BMR" || !TryReadOwnedBossModSettings(out var before)
+        if (!IsGmcLoaded || NativeHost is not ("BossModReborn" or "GodMod")
+            || ownedIdentity.Provider != "BMR" || !TryReadOwnedBossModSettings(out var before)
             || before.AiEnabled != false || !ownedSettings!.CanChangeRuntime(before))
             return false;
         try
