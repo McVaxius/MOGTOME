@@ -54,8 +54,7 @@ public class RotationService : IDisposable
 
     internal void SetAdsDutyIpcService(AdsDutyIpcService service) => bossModIPC.SetAdsDutyIpcService(service);
     internal bool IsVbmActivationDeferred => preparedBossMod == CombatProvider.Vbm && bossModIPC.IsVbmInteractionPauseActive;
-    internal bool IsCombatActivationDeferred => IsVbmActivationDeferred || bossModIPC.IsBeastmasterPreparationPending
-        || bossModIPC.IsOwnedCombatReturnPlayerMissing;
+    internal bool IsCombatActivationDeferred => IsVbmActivationDeferred || bossModIPC.IsOwnedCombatReturnPlayerMissing;
     internal bool UsesGmc => bossModIPC.IsGmcLoaded;
     internal bool SupportsBmrObstacleMaps => bossModIPC.SupportsBmrObstacleMaps;
 
@@ -70,15 +69,6 @@ public class RotationService : IDisposable
         => ReferenceEquals(preparedConfig, config) && preparedProvider == config.CombatProvider
             && preparedAccount == configManager.CurrentAccountId && preparedCharacter == ReadCharacterIdentity();
 
-    private bool PrepareRegularBeastmaster(bool advance)
-    {
-        var config = configManager.GetActiveConfig();
-        return preparedBossMod != CombatProvider.Bmr || !gmcSession && config.CombatProvider != CombatProvider.Bmr
-            ? bossModIPC.CancelBeastmasterPreparation(false)
-            : bossModIPC.PrepareRegularBeastmaster(advance,
-                !gmcSession && config.UseManualBossModPreset ? config.ManualBossModPresetName : null);
-    }
-
     internal void ObserveSessionDeparture()
     {
         if (preparedConfig is null) return;
@@ -89,14 +79,6 @@ public class RotationService : IDisposable
             preparedConfig = null;
             sessionEnded = true;
             Fail(Ui.M("Rotation_BossModSessionChanged"));
-        }
-        else if (!rotationDisableSentForDuty && (!rotationEnableSentForDuty || bossModIPC.IsBeastmasterPreparationPending)
-            && !PrepareRegularBeastmaster(advance: true) && !bossModIPC.IsBeastmasterPreparationPending
-            && !bossModIPC.IsOwnedCombatReturnPlayerMissing)
-        {
-            DisableRotationForDutyEnd("regular Beastmaster preparation could not be confirmed");
-            sessionEnded = true;
-            Fail(Ui.M("Rotation_BossModSettingsUnconfirmed"));
         }
         else if ((rotationEnableSentForDuty || deathRearmPending) && !rotationDisableSentForDuty)
         {
@@ -216,6 +198,11 @@ public class RotationService : IDisposable
             if (string.IsNullOrEmpty(configManager.CurrentAccountId) || string.IsNullOrEmpty(character)
                 || !bossModIPC.BeginOwnedBossModSettings(preparedBossMod.Value, configManager.CurrentAccountId, character, config))
                 return Fail(Ui.M("Rotation_BossModSettingsUnconfirmed"));
+            if (!bossModIPC.RefreshPackagedPresets())
+            {
+                DisableEnabledComponents();
+                return Fail(Ui.M("Rotation_BossModPackagedPresetInstallationFailedCheckThat"));
+            }
         }
 
         preparedConfig = config;
@@ -223,22 +210,9 @@ public class RotationService : IDisposable
         preparedAccount = configManager.CurrentAccountId;
         preparedCharacter = ReadCharacterIdentity();
 
-        if (!CompleteStartupPreparation()) return false;
         Failure = string.Empty;
         log.Information($"[MOGTOME][Rotation] Initialized selected combat provider: {provider}; GMC={gmcSession}");
         return true;
-    }
-
-    internal bool CompleteStartupPreparation()
-    {
-        if (preparedConfig is null || !MatchesPreparedSession(configManager.GetActiveConfig()) || sessionEnded)
-            return Fail(Ui.M("Rotation_BossModSessionChanged"));
-        if (preparedBossMod is null) return true;
-        if (!PrepareRegularBeastmaster(advance: false))
-            return bossModIPC.IsBeastmasterPreparationPending ? false : Fail(Ui.M("Rotation_BossModSettingsUnconfirmed"));
-        if (bossModIPC.RefreshPackagedPresets()) return true;
-        DisableEnabledComponents();
-        return Fail(Ui.M("Rotation_BossModPackagedPresetInstallationFailedCheckThat"));
     }
 
     internal void RestoreRsrHealingForStart()
@@ -272,8 +246,6 @@ public class RotationService : IDisposable
 
         if (rotationEnableSentForDuty)
         {
-            bossModIPC.CancelBeastmasterPreparation(preparedConfig is not null && MatchesPreparedSession(configManager.GetActiveConfig())
-                && bossModIPC.IsOwnedProviderCurrent);
             bossModIPC.ObserveOwnedCombatDeath();
             deathRearmPending = true;
         }
@@ -300,9 +272,6 @@ public class RotationService : IDisposable
             return Fail(Ui.M("Rotation_BossModSessionChanged"));
         }
 
-        if (!PrepareRegularBeastmaster(advance: false))
-            return bossModIPC.IsBeastmasterPreparationPending || bossModIPC.IsOwnedCombatReturnPlayerMissing
-                ? false : Fail(Ui.M("Rotation_BossModSettingsUnconfirmed"));
         var provider = gmcSession ? CombatProvider.Bmr : configManager.GetActiveConfig().CombatProvider;
         var recoveringDeath = deathRearmPending;
         deathRearmPending = false;
@@ -335,7 +304,6 @@ public class RotationService : IDisposable
         }
         rotationEnableSentForDuty = true;
         rotationDisableSentForDuty = false;
-        bossModIPC.CancelBeastmasterPreparation(allowUiActions: true);
         bossModIPC.ObserveOwnedCombatState();
         // Full activation also restored RSR; suppress its independent Off probe
         // while the provider applies that command.
@@ -394,7 +362,6 @@ public class RotationService : IDisposable
             ObserveSessionDeparture();
             if (!rotationDisableSentForDuty && !bossModIPC.UpdateGmcAutorotation())
             {
-                if (bossModIPC.IsBeastmasterPreparationPending) return;
                 DisableRotationForDutyEnd("GMC combat ownership or native state changed");
                 Fail(Ui.M("Rotation_BossModSettingsUnconfirmed"));
             }
@@ -432,8 +399,6 @@ public class RotationService : IDisposable
         var account = configManager.CurrentAccountId;
         var character = ReadCharacterIdentity();
         var sameIdentity = preparedConfig is null || preparedAccount == account && preparedCharacter == character;
-        var preparationReleased = bossModIPC.CancelBeastmasterPreparation(restoreAi && preparedConfig is not null
-            && MatchesPreparedSession(configManager.GetActiveConfig()) && bossModIPC.IsOwnedProviderCurrent);
         var restored = bossModIPC.BeginOwnedBossModCleanup(account, character,
             restoreAi && preparedConfig is not null && MatchesPreparedSession(configManager.GetActiveConfig())
                 && (!gmcSession || bossModIPC.IsGmcLoaded));
@@ -470,7 +435,7 @@ public class RotationService : IDisposable
         var presetCleared = false;
         try { presetCleared = bossModIPC.ClearActivePreset(releaseSession: enabledComponents.Count == 0); }
         catch (Exception ex) { log.Warning($"[MOGTOME][Rotation] Could not clear preset: {ex.Message}"); }
-        return enabledComponents.Count == 0 && presetCleared && restored && preparationReleased;
+        return enabledComponents.Count == 0 && presetCleared && restored;
     }
 
     private void LogRsrReflectionFailure(string detail, DateTime now, string reason)
@@ -499,7 +464,6 @@ public class RotationService : IDisposable
         var provider = config.CombatProvider;
         if (preparedConfig is not null && !MatchesPreparedSession(config))
             return Fail(Ui.M("Rotation_BossModSessionChanged"));
-        if (!PrepareRegularBeastmaster(advance: false)) return false;
         if (gmcSession)
         {
             if (!bossModIPC.IsGmcLoaded || preparedBossMod != CombatProvider.Bmr

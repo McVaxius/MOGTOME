@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Linq;
 using System.Reflection;
-using System.Text.Json;
 using MOGTOME.Models;
 
 namespace MOGTOME.IPC;
@@ -22,16 +21,6 @@ public partial class BossModIPC
     private bool gmcRotationSelected;
     private bool gmcRestoreActiveAi, gmcKeepCleanupRotation;
     private object? gmcCleanupRotation;
-    private object? beastmasterPreparation, beastmasterFuturePreset, beastmasterSource;
-    private string? beastmasterSavedJson;
-    private BossModSettingsOwnership? beastmasterOwnership;
-    private WeakReference<object>? beastmasterProvider;
-    private Type? beastmasterModuleType;
-    private object? beastmasterManager, beastmasterPlayer;
-
-    internal bool IsBeastmasterPreparationPending
-        => LiveMember(beastmasterPreparation, "Status")?.ToString() == "Pending";
-
     internal bool IsOwnedCombatReturnPlayerMissing
         => ownedDeathObserved && ownedSettings is not null && ownedIdentity.Provider == "BMR"
             && !cleanupStarted && !cleanupFailed
@@ -40,157 +29,10 @@ public partial class BossModIPC
             && ReferenceEquals(captured, instance) && LiveMember(instance, "_rotation") is { } manager
             && LiveMember(manager, "Player") is null;
 
-    internal bool CancelBeastmasterPreparation(bool allowUiActions)
-    {
-        try
-        {
-            if (allowUiActions && beastmasterPreparation is not null)
-                allowUiActions = ownedSettings is not null && ReferenceEquals(beastmasterOwnership, ownedSettings)
-                    && ReferenceEquals(beastmasterProvider, ownedProvider)
-                    && ownedProvider is not null && ownedProvider.TryGetTarget(out var provider)
-                    && ReferenceEquals(LiveMember(provider, "_rotation"), beastmasterManager)
-                    && ReferenceEquals(LiveMember(beastmasterManager, "Player"), beastmasterPlayer)
-                    && ReferenceEquals(RegisteredBeastmasterType(provider.GetType().Assembly), beastmasterModuleType)
-                    && TryReadOwnedBossModSettings(out var current, allowCleanup: true)
-                    && ownedSettings.CanChangeForbidActions(current.ForbidActions)
-                    && (ownedSettings.CanChangeRuntime(current)
-                        || gmcRotationSelected && HasOwnedGmcAi() && MatchesGmcRuntime(current)
-                        || deathRecoveryExpected is { } death && BossModRuntimePresetState.Matches(death.Runtime, current.Runtime));
-            beastmasterPreparation?.GetType().GetMethod("Dispose", [typeof(bool)])!
-                .Invoke(beastmasterPreparation, [allowUiActions]);
-            beastmasterPreparation = beastmasterFuturePreset = beastmasterSource = null;
-            beastmasterSavedJson = null;
-            beastmasterOwnership = null;
-            beastmasterProvider = null;
-            beastmasterModuleType = null;
-            beastmasterManager = beastmasterPlayer = null;
-            return true;
-        }
-        catch (Exception ex)
-        {
-            LastStatus = "Regular Beastmaster preparation cleanup was incomplete: " + ex.GetBaseException().Message;
-            log.Warning($"[MOGTOME][Rotation] {LastStatus}");
-            return false;
-        }
-    }
-
-    internal bool PrepareRegularBeastmaster(bool advance, string? manualPresetName = null)
-    {
-        try
-        {
-            if (NativeHost is not ("BossModReborn" or "GodMod") || ownedIdentity.Provider != "BMR")
-                return CancelBeastmasterPreparation(false);
-            if (ownedSettings is null || !TryGetLiveBossMod("BMR", out var instance, out var assembly, out _))
-            {
-                CancelBeastmasterPreparation(false);
-                return false;
-            }
-            var manager = LiveMember(instance, "_rotation");
-            var player = LiveMember(manager, "Player");
-            if (player is null)
-            {
-                CancelBeastmasterPreparation(false);
-                return false;
-            }
-            if (Convert.ToUInt32(LiveMember(player, "Class")) != 43)
-                return CancelBeastmasterPreparation(false);
-            var world = LiveMember(manager, "WorldState");
-            if (LiveMember(world, "CurrentZone") is { } zone && Convert.ToUInt32(zone) is >= 1339 and <= 1343)
-                return CancelBeastmasterPreparation(false);
-            if (ownedDeathObserved) RefreshOwnedCombatDeath();
-            if (!TryReadOwnedBossModSettings(out var before) || !ownedSettings.MatchesNativeAuthority(before)
-                || !ownedSettings.CanChangeForbidActions(before.ForbidActions)
-                || !(ownedSettings.CanChangeRuntime(before)
-                    || gmcRotationSelected && HasOwnedGmcAi() && MatchesGmcRuntime(before)
-                    || deathRecoveryExpected is { } death && BossModRuntimePresetState.Matches(death.Runtime, before.Runtime)))
-            {
-                CancelBeastmasterPreparation(false);
-                LastStatus = "A newer or unreadable native combat selection was retained.";
-                return false;
-            }
-            var registeredType = RegisteredBeastmasterType(assembly!);
-            if (registeredType is null)
-            {
-                CancelBeastmasterPreparation(false);
-                LastStatus = MissingGodModCompanionRotations + ": regular Beastmaster preparation is unavailable.";
-                return false;
-            }
-            if (beastmasterPreparation is not null && (!ReferenceEquals(beastmasterOwnership, ownedSettings)
-                || !ReferenceEquals(beastmasterProvider, ownedProvider) || !ReferenceEquals(beastmasterModuleType, registeredType)
-                || !ReferenceEquals(beastmasterManager, manager) || !ReferenceEquals(beastmasterPlayer, player)))
-                if (!CancelBeastmasterPreparation(false)) return false;
-            var name = manualPresetName ?? ActiveMeleePreset;
-            var presets = LiveMember(LiveMember(manager, "Database"), "Presets");
-            var source = ((IEnumerable)LiveMember(presets, "AllPresets")!).Cast<object>()
-                .SingleOrDefault(preset => Equals(LiveMember(preset, "Name"), name));
-            var saved = pluginInterface.GetIpcSubscriber<string, string>("BossMod.Presets.Get").InvokeFunc(name);
-            var future = beastmasterFuturePreset;
-            if (future is null || !Equals(LiveMember(future, "Name"), name)
-                || !ReferenceEquals(source, beastmasterSource) || saved != beastmasterSavedJson)
-            {
-                var json = manualPresetName is null
-                    ? AdaptDhogBeastmasterPreset(ReadPackagedPresetJson(name)
-                        ?? throw new InvalidOperationException("The packaged melee preset is unavailable."), saved)
-                    : source is not null && saved is not null ? saved
-                        : throw new InvalidOperationException("The selected manual Beastmaster preset is unavailable.");
-                var type = assembly!.GetType("BossMod.Autorotation.Preset")
-                    ?? throw new InvalidOperationException("The native preset type is unavailable.");
-                var options = NativePresetSerializationOptions(assembly);
-                future = JsonSerializer.Deserialize(json, type, options)
-                    ?? throw new InvalidOperationException("The native Beastmaster preset could not be read.");
-                if (!MatchesDhogBeastmasterPreset(json, JsonSerializer.Serialize(future, type, options), type, options))
-                    throw new InvalidOperationException("The native host did not retain the saved Beastmaster settings.");
-            }
-            CopyBeastmasterTransientSettings(source, future);
-            var modules = (IList)LiveMember(future, "Modules")!;
-            var index = Enumerable.Range(0, modules.Count).Single(i => ReferenceEquals(LiveMember(modules[i], "Type"), registeredType));
-            var registry = assembly!.GetType("BossMod.Autorotation.RotationModuleRegistry")!;
-            var registrations = (IDictionary)registry.GetField("Modules", BindingFlags.Public | BindingFlags.Static)!.GetValue(null)!;
-            if (!ReferenceEquals(LiveMember(modules[index], "Definition"), LiveMember(registrations[registeredType], "Definition")))
-                throw new InvalidOperationException("The selected Beastmaster definition is not the registered native definition.");
-            var strategy = future.GetType().GetMethod("ActiveStrategyOverrides", [typeof(int)])!.Invoke(future, [index])!;
-            const string owner = "MOGTOME";
-            if (beastmasterPreparation is not null && beastmasterPreparation.GetType().GetMethod("MatchesRequest")!
-                    .Invoke(beastmasterPreparation, [owner, manager, player, strategy]) is not true)
-                if (!CancelBeastmasterPreparation(true)) return false;
-            beastmasterPreparation ??= registeredType.GetMethod("CreatePreparation", BindingFlags.Public | BindingFlags.Static)!
-                .Invoke(null, [owner, manager, player, strategy]);
-            beastmasterOwnership = ownedSettings;
-            beastmasterProvider = ownedProvider;
-            beastmasterModuleType = registeredType;
-            beastmasterManager = manager;
-            beastmasterPlayer = player;
-            beastmasterFuturePreset = future;
-            beastmasterSource = source;
-            beastmasterSavedJson = saved;
-            var status = LiveMember(beastmasterPreparation, "Status")?.ToString();
-            // Only the framework observer advances pending actions. Ready is
-            // checked again without action permission before publication.
-            if (advance || status == "Ready")
-            {
-                var permitted = advance && ownedSettings.CanChangeForbidActions(before.ForbidActions) && Plugin.ClientState.IsLoggedIn
-                    && !Plugin.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas]
-                    && !Plugin.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas51]
-                    && !Plugin.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.LoggingOut];
-                status = beastmasterPreparation!.GetType().GetMethod("Step", [typeof(bool)])!
-                    .Invoke(beastmasterPreparation, [permitted])?.ToString();
-            }
-            LastStatus = LiveMember(beastmasterPreparation, "Reason")?.ToString() ?? "Regular Beastmaster preparation is unavailable.";
-            return status == "Ready";
-        }
-        catch (Exception ex)
-        {
-            CancelBeastmasterPreparation(false);
-            LastStatus = "Regular Beastmaster preparation failed: " + ex.GetBaseException().Message;
-            return false;
-        }
-    }
-
     internal bool IsGmcLoaded => IsPluginLoaded(GmcInternalName);
 
     private void ForgetGmcPlan()
     {
-        CancelBeastmasterPreparation(false);
         gmcPlan = null;
         gmcPlanChoiceChanged = false;
         gmcGroupSource = gmcGroupRotation = gmcOwnedRotation = null;
@@ -208,7 +50,7 @@ public partial class BossModIPC
         if (!IsGmcLoaded || NativeHost is not ("BossModReborn" or "GodMod")
             || !TryReadOwnedBossModSettings(out var before) || before.AiEnabled is null
             || before.ForbidActions is null || before.ForbidMovement is null
-            || !ownedSettings!.MatchesNativeAuthority(before) || !PrepareRegularBeastmaster(advance: false)) return false;
+            || !ownedSettings!.MatchesNativeAuthority(before)) return false;
         if (gmcAiManager is null)
         {
             if (!ownedSettings.CanChangeRuntime(before)
@@ -329,14 +171,6 @@ public partial class BossModIPC
             var planner = LiveMember(manager!, "Planner");
             var usePlan = plan is not null && ReferenceEquals(LiveMember(planner!, "Plan"), plan)
                 && ReferenceEquals(LiveMember(planner!, "Module"), module);
-            if (row == 43 && !usePlan)
-            {
-                var source = ((IEnumerable)LiveMember(LiveMember(LiveMember(manager, "Database"), "Presets"), "AllPresets")!)
-                    .Cast<object>().SingleOrDefault(candidate => Equals(LiveMember(candidate, "Name"), preset));
-                if ((!gmcRotationSelected || !Equals(lastAliveGmcSelection?.Job, job)
-                        || !ReferenceEquals(gmcGroupSource, source))
-                    && !PrepareRegularBeastmaster(advance: false)) return false;
-            }
             if (usePlan && gmcPlan is null && !gmcPlanChoiceChanged)
                 gmcPlan = (list!, plan, plan);
             var requested = new BossModRuntimePresetState(false, usePlan ? Array.Empty<string>() : new[] { preset });
@@ -356,7 +190,7 @@ public partial class BossModIPC
             gmcRotationSelected = true;
             ownership.OwnRuntime(requested);
             LastStatus = usePlan ? $"GMC boss plan confirmed for {job}." : $"GMC group rotation '{preset}' confirmed.";
-            return CancelBeastmasterPreparation(allowUiActions: true);
+            return true;
         }
         catch (Exception ex)
         {
@@ -573,19 +407,6 @@ public partial class BossModIPC
         {
             var rotation = source.GetType().GetMethod("MakeClone", new[] { typeof(bool) })!.Invoke(source, new object[] { true })!;
             var modules = (IList)LiveMember(rotation, "Modules")!;
-            if (modules.Cast<object>().Any(module => LiveMember(module, "Type") is Type type && type.FullName == DhogBeastmasterModule))
-            {
-                var options = NativePresetSerializationOptions(source.GetType().Assembly);
-                var sourceModule = ((IEnumerable)LiveMember(source, "Modules")!).Cast<object>().Single(module =>
-                    LiveMember(module, "Type") is Type type && type.FullName == DhogBeastmasterModule);
-                var cloneModule = modules.Cast<object>().Single(module =>
-                    LiveMember(module, "Type") is Type type && type.FullName == DhogBeastmasterModule);
-                if (!MatchesDhogBeastmasterPreset(JsonSerializer.Serialize(source, source.GetType(), options),
-                        JsonSerializer.Serialize(rotation, rotation.GetType(), options), source.GetType(), options)
-                    || !((IEnumerable)LiveMember(sourceModule, "TransientSettings")!).Cast<object>()
-                        .SequenceEqual(((IEnumerable)LiveMember(cloneModule, "TransientSettings")!).Cast<object>()))
-                    throw new InvalidOperationException("The native clone did not retain the saved Beastmaster settings and transient overrides.");
-            }
             for (var index = modules.Count - 1; index >= 0; --index)
                 if (LiveMember(LiveMember(modules[index], "Definition"), "Order")?.ToString() == "Movement")
                     modules.RemoveAt(index);

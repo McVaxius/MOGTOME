@@ -375,12 +375,6 @@ public class MogtomeEngine
             }).ConfigureAwait(false);
             if (!IsCurrentStartup(operation))
                 return;
-            while (!rotationReady && IsCurrentStartup(operation) && rotationService.IsCombatActivationDeferred)
-            {
-                rotationReady = await Plugin.Framework.RunOnTick(() => IsCurrentStartup(operation)
-                    && rotationService.CompleteStartupPreparation(), delayTicks: 1).ConfigureAwait(false);
-            }
-            if (!IsCurrentStartup(operation)) return;
             if (!rotationReady)
             {
                 await GameHelpers.RunOnFrameworkThreadAsync(() => { if (IsCurrentStartup(operation)) StopWithCombatFailureMessage(rotationService.Failure); }).ConfigureAwait(false);

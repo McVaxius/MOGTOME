@@ -1,3 +1,7 @@
+2026-11-17 - 4.2.0.20 - Beastmaster combat startup
+
+- **Fixed Beastmaster combat startup** by using the standard duty startup flow. GMC or GodMod handles familiar setup.
+
 2026-11-17 - 4.2.0.19 - Beastmaster preparation
 
 - **Added Beastmaster preparation:** Confirm the familiar loadout and active familiar before starting GodMod or BossModReborn combat.

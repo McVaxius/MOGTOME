@@ -564,7 +564,6 @@ public partial class BossModIPC : IDisposable
         {
             LastStatus = "BossMod provider reloaded; the departed session cannot be restored into its replacement.";
             log.Warning($"[MOGTOME] Owned BossMod settings cleanup was incomplete: {LastStatus}");
-            CancelBeastmasterPreparation(false);
             ownedSettings = null;
             ownedProvider = null;
             cleanupStarted = cleanupFailed = false;
@@ -1071,7 +1070,6 @@ public partial class BossModIPC : IDisposable
         cleanupRuntimeExpected = cleanupRuntimeTarget = null;
         if (!cleanupStarted)
         {
-            CancelBeastmasterPreparation(false);
             if (ownedSettings is not null && !cleanupFailed)
             {
                 // A different account/character cannot receive the old run's writes.
@@ -1258,10 +1256,7 @@ public partial class BossModIPC : IDisposable
     internal void ReleaseOwnedBossModSettings(bool turnEverythingOff)
     {
         if (ownedSettings is null)
-        {
-            CancelBeastmasterPreparation(false);
             return;
-        }
         var succeeded = BeginOwnedBossModCleanup(ownedIdentity.Account, ownedIdentity.Character);
         succeeded &= EndOwnedBossModCleanup(turnEverythingOff);
         if (!succeeded)
@@ -1331,8 +1326,6 @@ public partial class BossModIPC : IDisposable
             var presetName = manualPresetSelected
                 ? manualPresetName
                 : SelectPresetForCurrentJob(passive);
-            if (!passive && provider == CombatProvider.Bmr
-                && !PrepareRegularBeastmaster(advance: false, manualPresetSelected ? presetName : null)) return false;
 
             if (!ApplyOwnedBossModPreset(presetName))
             {
@@ -1644,8 +1637,6 @@ public partial class BossModIPC : IDisposable
             : forceRecreate ? TryStringIpc("BossMod.Presets.Get", name) : null;
         if (regularBeastmaster)
         {
-            if ((IsGmcLoaded || ownedIdentity.Config is { CombatProvider: CombatProvider.Bmr, UseManualBossModPreset: false })
-                && !PrepareRegularBeastmaster(advance: false)) return false;
             json = AdaptDhogBeastmasterPreset(json, existingPreset);
             if (!TryGetLiveBossMod("BMR", out _, out var assembly, out _)) return false;
             var type = assembly!.GetType("BossMod.Autorotation.Preset")
