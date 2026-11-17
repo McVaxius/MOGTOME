@@ -1,3 +1,9 @@
+2026-11-17 - 4.2.0.19 - Beastmaster preparation
+
+- **Added Beastmaster preparation:** Confirm the familiar loadout and active familiar before starting GodMod or BossModReborn combat.
+- **Fixed familiar preferences:** Preserve saved familiar choices and strategy overrides when refreshing combat presets, and wait for the selected loadout and active familiar to be confirmed before starting combat.
+- **Fixed preparation cleanup:** Limit preparation and cleanup to the current combat session while preserving newer manual choices.
+
 2026-11-16 - 4.2.0.18 - GMC combat and recovery
 
 - **Fixed GMC combat handoff:** Keep the selected duty backend for routing while the active GodMod or BossModReborn host handles combat movement and rotations.

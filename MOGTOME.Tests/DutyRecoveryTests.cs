@@ -3,6 +3,7 @@ using System.Reflection.Emit;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using System.Runtime.CompilerServices;
 using Dalamud.Game;
 using Dalamud.Game.Text.Evaluator;
@@ -58,6 +59,528 @@ public sealed class DutyRecoveryTests
                              or "BossMod.Autorotation.xan.AST" or "BossMod.Autorotation.xan.SGE" or "BossMod.Autorotation.xan.HealerAI")))
                 Assert.True(JsonElement.DeepEquals(module.Value, modules.GetProperty(module.Name)));
         }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void RegularBeastmasterRefreshPreservesOrderedSavedSettingsAcrossRepeatedRefreshes(bool hasBurst)
+    {
+        // This exercises the MOG merge/readback boundary, not native execution.
+        const string module = "BMRVariantModulePack.Autorotation.Dhog.DhogBST";
+        var path = Path.Combine(Path.GetDirectoryName(typeof(BossModIPC).Assembly.Location)!, "data", "bm", "FRENRIDER - MELEE.json");
+        var packaged = File.ReadAllText(path);
+        var original = JsonNode.Parse(packaged)!;
+        var settings = JsonNode.Parse("""
+            [
+              {"Track":"Targeting","Option":"Auto"},
+              {"Track":"DhogFirstBeast","Option":"Familiar01"},
+              {"Track":"DhogSecondBeast","Option":"Familiar32"},
+              {"Track":"DhogThirdBeast","Option":"Familiar34"},
+              {"Track":"DhogFirstBeast","Option":"Familiar06","Mod":"Shift, Ctrl","PriorityOverride":4500},
+              {"Track":"DhogFamiliar","Option":"Second"}
+            ]
+            """)!.AsArray();
+        if (hasBurst) settings.Add(JsonNode.Parse("""{"Track":"DhogBurst","Option":"Hold"}"""));
+        var saved = new JsonObject
+        {
+            ["Name"] = "FRENRIDER - MELEE",
+            ["Modules"] = new JsonObject { [module] = settings.DeepClone() }
+        }.ToJsonString();
+
+        for (var refresh = 0; refresh < 2; ++refresh)
+        {
+            var merged = BossModIPC.AdaptDhogBeastmasterPreset(packaged, saved);
+            var actual = JsonNode.Parse(merged)!;
+            Assert.False(actual["Modules"]!.AsObject().ContainsKey("BossMod.Autorotation.xan.BST"));
+            Assert.True(JsonNode.DeepEquals(settings, actual["Modules"]![module]));
+            foreach (var other in original["Modules"]!.AsObject().Where(entry => entry.Key != "BossMod.Autorotation.xan.BST"))
+                Assert.True(JsonNode.DeepEquals(other.Value, actual["Modules"]![other.Key]));
+            Assert.Equal(hasBurst, actual["Modules"]![module]!.AsArray().Any(entry => entry!["Track"]!.GetValue<string>() == "DhogBurst"));
+            Assert.True(BossModIPC.MatchesDhogBeastmasterPreset(merged, actual.ToJsonString()));
+            var dropped = actual.DeepClone();
+            dropped["Modules"]![module]!.AsArray().RemoveAt(4);
+            Assert.False(BossModIPC.MatchesDhogBeastmasterPreset(merged, dropped.ToJsonString()));
+            // Repeated refresh receives the saved serialized definition and
+            // must not duplicate or flatten its ordered settings.
+            saved = JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonNode>(actual.ToJsonString()));
+        }
+        Assert.Throws<InvalidOperationException>(() => BossModIPC.AdaptDhogBeastmasterPreset(packaged,
+            """{"Name":"Other preset","Modules":{}}"""));
+    }
+
+    [Theory]
+    [InlineData("BossModReborn")]
+    [InlineData("GodMod")]
+    public void ModifierOnlyBeastEntriesUseNativeDefaultsAndLastMatchOrder(string host)
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: host);
+        native.EnableRegularBeastmaster();
+        const string packaged = """
+            {"Name":"FRENRIDER - MELEE","Modules":{"BMRVariantModulePack.Autorotation.Dhog.DhogBST":[
+              {"Track":"Targeting","Option":"Auto"}
+            ]}}
+            """;
+        var savedObject = JsonNode.Parse("""
+            {"Name":"FRENRIDER - MELEE","Modules":{"BMRVariantModulePack.Autorotation.Dhog.DhogBST":[
+              {"Track":"DhogFirstBeast","Option":"Familiar01","Mod":"Shift"},
+              {"Track":"DhogFirstBeast","Option":"Familiar29","Mod":"Shift, Ctrl","PriorityOverride":4500},
+              {"Track":"DhogFirstBeast","Option":"Familiar50","Mod":"Ctrl"}
+            ]}}
+            """)!;
+        var before = savedObject.DeepClone();
+        var modifierTargeting = savedObject.DeepClone();
+        modifierTargeting["Modules"]![NativeBossModProvider.BstModule]!.AsArray().Add(
+            JsonNode.Parse("""{"Track":"Targeting","Option":"Auto","Mod":"Alt"}"""));
+        var targetRows = JsonNode.Parse(BossModIPC.AdaptDhogBeastmasterPreset(packaged, modifierTargeting.ToJsonString()))!
+            ["Modules"]![NativeBossModProvider.BstModule]!.AsArray();
+        Assert.Equal(4, targetRows.Count);
+        Assert.DoesNotContain(targetRows, row => row!["Track"]!.GetValue<string>() == "Targeting" && row["Mod"] is null);
+        var saved = savedObject.ToJsonString();
+        for (var reload = 0; reload < 2; ++reload)
+        {
+            var merged = BossModIPC.AdaptDhogBeastmasterPreset(packaged, saved);
+            var preset = native.DeserializePreset(merged);
+            var index = preset.Modules.FindIndex(module => module.ModuleName == NativeBossModProvider.BstModule);
+            Assert.Equal("Auto", preset.ActiveStrategyOverrides(index).Option("DhogFirstBeast"));
+            Assert.DoesNotContain(preset.Modules[index].SerializedSettings, entry => entry.Track ==
+                preset.Modules[index].Definition.Configs.FindIndex(config => config.InternalName == "DhogFirstBeast")
+                && entry.Mod == NativeModifier.None);
+            Assert.Equal("Familiar01", preset.ActiveStrategyOverrides(index, NativeModifier.Shift).Option("DhogFirstBeast"));
+            Assert.Equal("Familiar50", preset.ActiveStrategyOverrides(index, NativeModifier.Ctrl).Option("DhogFirstBeast"));
+            // Ctrl is later than Shift|Ctrl: native order, not specificity, wins.
+            Assert.Equal("Familiar50", preset.ActiveStrategyOverrides(index, NativeModifier.Shift | NativeModifier.Ctrl).Option("DhogFirstBeast"));
+            var serialized = native.SerializePreset(preset);
+            var rows = JsonNode.Parse(serialized)!["Modules"]![NativeBossModProvider.BstModule]!.AsArray();
+            Assert.Equal(4, rows.Count);
+            Assert.Null(rows[0]!["Mod"]);
+            Assert.Equal(new[] { "Shift", "Shift, Ctrl", "Ctrl" }, rows.Skip(1).Select(row => row!["Mod"]!.GetValue<string>()));
+            Assert.True(JsonNode.DeepEquals(before, savedObject));
+            saved = serialized;
+        }
+    }
+
+    [Theory]
+    [InlineData("BossModReborn")]
+    [InlineData("GodMod")]
+    public void BeastmasterReadbackAcceptsHostNormalizationButRejectsOrderedEntryOrValueLoss(string host)
+    {
+        // The existing synthetic host models the selected serializer contract;
+        // execution against the real native host remains a separate boundary.
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "", internalName: host);
+        native.EnableRegularBeastmaster();
+        const string intended = """
+            {"Name":"FRENRIDER - MELEE","Modules":{"BMRVariantModulePack.Autorotation.Dhog.DhogBST":[
+              {"Track":"Targeting","Option":"Auto","Mod":"None"},
+              {"Track":"DhogFirstBeast","Option":"Familiar01","Mod":"Ctrl, Shift","PriorityOverride":4500},
+              {"Track":"DhogFirstBeast","Option":"Familiar50","Mod":"Ctrl"}
+            ]}}
+            """;
+        var future = native.DeserializePreset(intended);
+        var normalized = native.SerializePreset(future);
+        var options = native.BuildNativeOptions();
+        Assert.True(BossModIPC.MatchesDhogBeastmasterPreset(intended, normalized, future.GetType(), options));
+        var actual = JsonNode.Parse(normalized)!;
+        var rows = actual["Modules"]![NativeBossModProvider.BstModule]!.AsArray();
+        Assert.Null(rows[0]!["Mod"]);
+        Assert.Equal("Shift, Ctrl", rows[1]!["Mod"]!.GetValue<string>());
+        var reordered = actual.DeepClone();
+        var orderedRows = reordered["Modules"]![NativeBossModProvider.BstModule]!.AsArray();
+        var first = orderedRows[1]!.DeepClone();
+        orderedRows.RemoveAt(1);
+        orderedRows.Add(first);
+        Assert.False(BossModIPC.MatchesDhogBeastmasterPreset(intended, reordered.ToJsonString(), future.GetType(), options));
+        rows[1]!["PriorityOverride"] = 4400;
+        Assert.False(BossModIPC.MatchesDhogBeastmasterPreset(intended, actual.ToJsonString(), future.GetType(), options));
+        rows.RemoveAt(1);
+        Assert.False(BossModIPC.MatchesDhogBeastmasterPreset(intended, actual.ToJsonString(), future.GetType(), options));
+        var unsupported = JsonNode.Parse(intended)!;
+        unsupported["Modules"]![NativeBossModProvider.BstModule]!.AsArray().Add(
+            JsonNode.Parse("""{"Track":"UnavailableTrack","Option":"Auto"}"""));
+        var lossy = native.SerializePreset(native.DeserializePreset(unsupported.ToJsonString()));
+        Assert.False(BossModIPC.MatchesDhogBeastmasterPreset(unsupported.ToJsonString(), lossy, future.GetType(), options));
+    }
+
+    [Fact]
+    public void NativeBeastmasterMigrationPreservesSavedDataAndRejectsMissingOrCompetingModules()
+    {
+        const string packaged = """{"Name":"FRENRIDER - MELEE","Modules":{"BossMod.Autorotation.xan.BST":[{"Track":"Targeting","Option":"Auto"}],"Other.Module":[]}}""";
+        var saved = JsonNode.Parse("""
+            {"Name":"FRENRIDER - MELEE","Modules":{"BossMod.Autorotation.xan.BST":[
+              {"Track":"Targeting","Option":"Auto"},
+              {"Track":"Targeting","Option":"Auto","Mod":"Alt","PriorityOverride":4321}
+            ]}}
+            """)!;
+        var before = saved.DeepClone();
+        var migrated = JsonNode.Parse(BossModIPC.AdaptDhogBeastmasterPreset(packaged, saved.ToJsonString()))!;
+        Assert.False(migrated["Modules"]!.AsObject().ContainsKey("BossMod.Autorotation.xan.BST"));
+        Assert.True(JsonNode.DeepEquals(before["Modules"]!["BossMod.Autorotation.xan.BST"], migrated["Modules"]![NativeBossModProvider.BstModule]));
+        Assert.True(JsonNode.DeepEquals(before, saved));
+        Assert.Throws<InvalidOperationException>(() => BossModIPC.AdaptDhogBeastmasterPreset(
+            """{"Name":"FRENRIDER - MELEE","Modules":{}}""", saved.ToJsonString()));
+        var competing = saved.DeepClone();
+        competing["Modules"]![NativeBossModProvider.BstModule] = new JsonArray();
+        Assert.Throws<InvalidOperationException>(() => BossModIPC.AdaptDhogBeastmasterPreset(packaged, competing.ToJsonString()));
+        Assert.False(BossModIPC.MatchesDhogBeastmasterPreset(migrated.ToJsonString(),
+            """{"Name":"FRENRIDER - MELEE","Modules":{}}"""));
+        var badPackage = JsonNode.Parse(packaged)!;
+        badPackage["Modules"]![NativeBossModProvider.BstModule] = new JsonArray();
+        Assert.Throws<InvalidOperationException>(() => BossModIPC.AdaptDhogBeastmasterPreset(badPackage.ToJsonString(), saved.ToJsonString()));
+        Assert.Throws<InvalidOperationException>(() => BossModIPC.AdaptDhogBeastmasterPreset(packaged,
+            """{"Name":"FRENRIDER - MELEE","Modules":{"BMRVariantModulePack.Autorotation.Dhog.DhogBST":null}}"""));
+        Assert.True(JsonNode.DeepEquals(before, saved));
+    }
+
+    [Theory]
+    [InlineData("BossModReborn")]
+    [InlineData("GodMod")]
+    public void BeastmasterPreferencesSurviveTwoMogActivationsAndHostSaveReload(string host)
+    {
+        // Real MOG services with the existing synthetic host. This verifies
+        // publication gating and persistence, not game/UI acknowledgement itself.
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "", internalName: host);
+        native.EnableRegularBeastmaster();
+        var saved = JsonNode.Parse("""
+            {"Name":"FRENRIDER - MELEE","Modules":{"BMRVariantModulePack.Autorotation.Dhog.DhogBST":[
+              {"Track":"Targeting","Option":"Auto"},
+              {"Track":"DhogFirstBeast","Option":"Familiar01"},
+              {"Track":"DhogSecondBeast","Option":"Familiar32"},
+              {"Track":"DhogThirdBeast","Option":"Familiar34"},
+              {"Track":"DhogFirstBeast","Option":"Familiar06","Mod":"Shift"},
+              {"Track":"DhogFirstBeast","Option":"Familiar29","Mod":"Shift, Ctrl","PriorityOverride":4500},
+              {"Track":"DhogFirstBeast","Option":"Familiar50","Mod":"Ctrl"}
+            ]}}
+            """)!;
+        if (host != "GodMod") saved["Modules"]![NativeBossModProvider.BstModule]!.AsArray().Add(
+            JsonNode.Parse("""{"Track":"DhogBurst","Option":"Hold"}"""));
+        var expectedSettings = saved["Modules"]![NativeBossModProvider.BstModule]!.DeepClone();
+        native.SavePreset(saved.ToJsonString());
+        var other = saved.DeepClone();
+        other["Name"] = "Other";
+        other["Modules"]![NativeBossModProvider.BstModule] = JsonNode.Parse("""
+            [{"Track":"DhogFirstBeast","Option":"Familiar50"},{"Track":"DhogSecondBeast","Option":"Familiar29"},
+             {"Track":"DhogThirdBeast","Option":"Familiar01"}]
+            """);
+        native.SavePreset(other.ToJsonString());
+        native.Selector = "Other";
+        var otherBefore = native.SerializePreset(native.Presets.AllPresets.Single(preset => preset.Name == "Other"));
+        using var run = new Run(native) { GmcLoaded = true };
+        run.Config.CombatProvider = CombatProvider.Wrath;
+        run.Config.UseManualBossModPreset = true;
+        run.Config.ManualBossModPresetName = "Other";
+        for (var activation = 0; activation < 2; ++activation)
+        {
+            native.CurrentModifiers = activation == 0 ? NativeModifier.Shift : NativeModifier.Ctrl;
+            var savedSource = native.Presets.AllPresets.Single(preset => preset.Name == "FRENRIDER - MELEE");
+            var savedModule = savedSource.Modules.Single(module => module.ModuleName == NativeBossModProvider.BstModule);
+            Assert.Empty(savedModule.TransientSettings); // JSON/save-reload never persists transients.
+            if (activation == 0)
+            {
+                var targetingTrack = savedModule.Definition.Configs.FindIndex(config => config.InternalName == "Targeting");
+                savedModule.TransientSettings.Add(new(NativeModifier.Shift, targetingTrack,
+                    new JsonObject { ["Option"] = "Auto", ["PriorityOverride"] = 4400 }));
+                savedModule.TransientSettings.Add(new(NativeModifier.Shift, targetingTrack,
+                    new JsonObject { ["Option"] = "Auto", ["PriorityOverride"] = 4500 }));
+            }
+            native.Selector = "Other";
+            native.AiEnabled = true;
+            native.AiEnabled = false;
+            Assert.Equal("Other", native.AiPreset!.Name);
+            native.Rotation.Player.InCombat = false;
+            native.AcknowledgedSlots = [];
+            native.AcknowledgedHorn = 0;
+            native.AcknowledgedOwnedPet = false;
+            native.Writes.Clear();
+            Assert.Null(native.Rotation.Preset); // Native targetless/Idle start.
+            Assert.False(run.Rotation.Initialize());
+            Assert.True(run.Rotation.IsCombatActivationDeferred);
+            Assert.Empty(native.Writes); // Neither preset replacement nor AI publication before acknowledgement.
+            var desiredFirst = activation == 0 ? (byte)6 : (byte)50;
+            var intended = Assert.IsType<NativeStrategyValues>(native.LastPreparationStrategy);
+            Assert.Equal("Familiar" + desiredFirst.ToString("D2", CultureInfo.InvariantCulture), intended.Option("DhogFirstBeast"));
+            Assert.Equal("Familiar32", intended.Option("DhogSecondBeast"));
+            Assert.Equal("Familiar34", intended.Option("DhogThirdBeast"));
+            var targeting = intended.Values[intended.Configs.FindIndex(config => config.InternalName == "Targeting")];
+            if (activation == 0) Assert.Equal(4500, targeting["PriorityOverride"]!.GetValue<int>());
+            else Assert.Null(targeting["PriorityOverride"]);
+            var source = native.Presets.AllPresets.Single(preset => preset.Name == "FRENRIDER - MELEE");
+            var sourceBefore = native.SerializePreset(source);
+            native.AcknowledgedSlots = [desiredFirst, 32, 34];
+            native.AcknowledgedHorn = 1;
+            native.AcknowledgedOwnedPet = true;
+            run.Rotation.ObserveSessionDeparture();
+            Assert.True(run.Rotation.CompleteStartupPreparation());
+            native.Rotation.Player.InCombat = true;
+            Assert.True(run.Rotation.EnableRotation());
+            var clone = Assert.IsAssignableFrom<NativePreset>(native.Rotation.Preset);
+            Assert.NotSame(source, clone);
+            Assert.DoesNotContain(clone.Modules, module => module.Definition.Order == NativeModuleOrder.Movement);
+            var cloneModule = clone.Modules.Single(module => module.ModuleName == NativeBossModProvider.BstModule);
+            Assert.True(savedModule.TransientSettings.SequenceEqual(cloneModule.TransientSettings));
+            Assert.NotSame(savedModule.TransientSettings, cloneModule.TransientSettings);
+            Assert.Equal(activation == 0 ? 2 : 0, cloneModule.TransientSettings.Count);
+            Assert.Equal(sourceBefore, native.SerializePreset(source));
+            var current = native.Presets.AllPresets.Single(preset => preset.Name == "FRENRIDER - MELEE");
+            var actual = JsonNode.Parse(native.SerializePreset(current))!;
+            Assert.True(JsonNode.DeepEquals(expectedSettings, actual["Modules"]![NativeBossModProvider.BstModule]));
+            Assert.True(run.Rotation.DisableRotation());
+            Assert.Equal(CombatProvider.Wrath, run.Config.CombatProvider);
+            Assert.True(run.Config.UseManualBossModPreset);
+            Assert.Equal("Other", run.Config.ManualBossModPresetName);
+            Assert.Equal(otherBefore, native.SerializePreset(native.Presets.AllPresets.Single(preset => preset.Name == "Other")));
+            if (activation == 0) native.ReloadSavedPresets();
+        }
+        Assert.Equal(2, native.NativeClones);
+        Assert.Equal(2, native.PreparationRequests);
+        Assert.True(native.NativeDeserializations > 2);
+        Assert.True(native.NativeSerializations > 2);
+        Assert.True(native.NativeResolutions >= 2);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void UnavailableOrCompetingBeastmasterModulesCannotReplaceTheSavedPresetOrPublishAi(bool competing)
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "");
+        native.EnableRegularBeastmaster();
+        var saved = JsonNode.Parse("""{"Name":"FRENRIDER - MELEE","Modules":{"BMRVariantModulePack.Autorotation.Dhog.DhogBST":[{"Track":"DhogFirstBeast","Option":"Familiar01"}]}}""")!;
+        if (competing) saved["Modules"]!["BossMod.Autorotation.xan.BST"] = JsonNode.Parse("""[{"Track":"Targeting","Option":"Auto"}]""");
+        native.SavePreset(saved.ToJsonString());
+        var source = native.Presets.AllPresets.Single(preset => preset.Name == "FRENRIDER - MELEE");
+        var before = native.SerializePreset(source);
+        native.DropBstModule = !competing;
+        using var run = new Run(native) { GmcLoaded = true };
+        native.Writes.Clear();
+        Assert.False(run.Rotation.Initialize());
+        Assert.False(run.Rotation.IsCombatActivationDeferred);
+        Assert.Empty(native.Writes);
+        Assert.Same(source, native.Presets.AllPresets.Single(preset => preset.Name == "FRENRIDER - MELEE"));
+        Assert.Equal(before, native.SerializePreset(source));
+        Assert.Equal(0, native.PreparationRequests);
+    }
+
+    [Theory]
+    [InlineData("BossModReborn")]
+    [InlineData("GodMod")]
+    public void NativeRegisteredBeastmasterPreparesTheManualPresetWithoutGmc(string host)
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "", internalName: host);
+        native.EnableRegularBeastmaster();
+        native.SavePreset("""{"Name":"Other","Modules":{"BMRVariantModulePack.Autorotation.Dhog.DhogBST":[{"Track":"DhogFirstBeast","Option":"Familiar50"},{"Track":"DhogSecondBeast","Option":"Familiar29"},{"Track":"DhogThirdBeast","Option":"Familiar01"}]}}""");
+        var manual = native.Presets.AllPresets.Single(preset => preset.Name == "Other");
+        var module = manual.Modules.Single();
+        module.TransientSettings.Add(new(NativeModifier.Shift, module.Definition.Configs.FindIndex(config => config.InternalName == "DhogFirstBeast"),
+            new JsonObject { ["Option"] = "Familiar06" }));
+        native.CurrentModifiers = NativeModifier.Shift;
+        var saved = native.SerializePreset(manual);
+        using var run = new Run(native);
+        run.Config.UseManualBossModPreset = true;
+        run.Config.ManualBossModPresetName = "Other";
+        native.Writes.Clear();
+        Assert.False(run.Rotation.Initialize());
+        Assert.True(run.Rotation.IsCombatActivationDeferred);
+        Assert.Empty(native.Writes);
+        Assert.Equal("Familiar06", native.LastPreparationStrategy!.Option("DhogFirstBeast"));
+        Assert.Equal("Familiar29", native.LastPreparationStrategy.Option("DhogSecondBeast"));
+        native.AcknowledgedSlots = [6, 29, 1];
+        native.AcknowledgedHorn = 1;
+        native.AcknowledgedOwnedPet = true;
+        run.Rotation.ObserveSessionDeparture();
+        Assert.True(run.Rotation.CompleteStartupPreparation());
+        Assert.True(run.Rotation.EnableRotation());
+        Assert.Equal("Other", native.Selector);
+        Assert.Same(manual, native.AiPreset);
+        var aiManager = Get(native, "aiManager")!;
+        var behavior = Assert.IsType<NativeAiBehavior>(aiManager.GetType().GetField("Beh")!.GetValue(aiManager));
+        Assert.Same(manual, behavior.AIPreset);
+        if (host == "BossModReborn")
+        {
+            Assert.Empty(native.Active); // Existing /bmrai on clears targetless runtime.
+            Assert.Null(native.Rotation.Preset);
+        }
+        else
+        {
+            Assert.Equal(new[] { "Other" }, native.Active);
+            Assert.Same(manual, native.Rotation.Preset);
+        }
+        var intended = Assert.IsType<NativeStrategyValues>(native.LastPreparationStrategy);
+        var expected = manual.ActiveStrategyOverrides(manual.Modules.IndexOf(module));
+        Assert.Same(module.Definition.Configs, intended.Configs);
+        Assert.Equal(expected.Values.Length, intended.Values.Length);
+        for (var index = 0; index < expected.Values.Length; ++index)
+            Assert.True(JsonNode.DeepEquals(expected.Values[index], intended.Values[index]));
+        Assert.Same(manual, native.Presets.AllPresets.Single(preset => preset.Name == "Other"));
+        Assert.Single(module.TransientSettings);
+        Assert.Equal(saved, native.SerializePreset(manual));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void BeastmasterPreparationDistinguishesOwnedAndExternalActionPolicies(bool initiallyForbidden)
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "") { ForbidActions = initiallyForbidden };
+        native.EnableRegularBeastmaster();
+        native.SavePreset("""{"Name":"FRENRIDER - MELEE","Modules":{"BMRVariantModulePack.Autorotation.Dhog.DhogBST":[{"Track":"DhogFirstBeast","Option":"Familiar01"},{"Track":"DhogSecondBeast","Option":"Familiar32"},{"Track":"DhogThirdBeast","Option":"Familiar34"}]}}""");
+        using var run = new Run(native) { GmcLoaded = true };
+        Assert.False(run.Rotation.Initialize());
+        native.Writes.Clear();
+        if (!initiallyForbidden) native.ForbidActions = true; // Later external ownership wins.
+        run.Rotation.ObserveSessionDeparture();
+        Assert.True(native.ForbidActions); // Preparation never clears the native AI policy.
+        Assert.Empty(native.Writes);
+        Assert.False((bool)Get(run.Rotation, "rotationEnableSentForDuty")!);
+        if (!initiallyForbidden)
+        {
+            Assert.DoesNotContain(true, native.PreparationSteps);
+            Assert.DoesNotContain(true, native.PreparationDisposals);
+            return;
+        }
+        // The captured true policy is still owned: setup may advance before
+        // BeginGmcAutorotation reaches its existing owned flag transition.
+        Assert.Contains(true, native.PreparationSteps);
+        Assert.True(run.Rotation.IsCombatActivationDeferred);
+        native.AcknowledgedSlots = [1, 32, 34];
+        native.AcknowledgedHorn = 1;
+        native.AcknowledgedOwnedPet = true;
+        run.Rotation.ObserveSessionDeparture();
+        Assert.True(run.Rotation.CompleteStartupPreparation());
+        Assert.True(run.Rotation.EnableRotation());
+        Assert.False(native.ForbidActions);
+        Assert.True(run.Rotation.DisableRotation());
+        Assert.True(native.ForbidActions);
+    }
+
+    [Theory]
+    [InlineData("foreign")]
+    [InlineData("missing")]
+    [InlineData("release")]
+    [InlineData("forget")]
+    [InlineData("reload")]
+    [InlineData("actor")]
+    [InlineData("unloaded")]
+    [InlineData("reload-retired")]
+    [InlineData("missing-ui")]
+    [InlineData("runtime")]
+    public void BeastmasterPreparationRetiresStaleReceiptsWithoutUiWrites(string departure)
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "");
+        native.EnableRegularBeastmaster();
+        using var run = new Run(native) { GmcLoaded = true };
+        Assert.False(run.Rotation.Initialize());
+        Assert.NotNull(Get(run.BossMod, "beastmasterPreparation"));
+        native.Writes.Clear();
+        switch (departure)
+        {
+            case "foreign": Assert.True(run.BossMod.BeginOwnedBossModCleanup("foreign", "foreign")); break;
+            case "missing":
+                Set(run.BossMod, "ownedSettings", null);
+                Assert.True(run.BossMod.BeginOwnedBossModCleanup("foreign", "foreign"));
+                break;
+            case "release":
+                Set(run.BossMod, "ownedSettings", null);
+                run.BossMod.ReleaseOwnedBossModSettings(false);
+                break;
+            case "forget": Invoke(run.BossMod, "ForgetGmcPlan"); break;
+            case "reload-retired":
+                native.Reload();
+                Assert.True(run.BossMod.RetireDepartedOwnedBossModSettings());
+                Assert.Null(Get(run.BossMod, "ownedSettings"));
+                Assert.True(run.BossMod.IsOwnedProviderCurrent); // Null is not token ownership.
+                Assert.True(run.BossMod.CancelBeastmasterPreparation(true));
+                break;
+            case "missing-ui":
+                Set(run.BossMod, "ownedSettings", null);
+                Assert.True(run.BossMod.IsOwnedProviderCurrent);
+                Assert.True(run.BossMod.CancelBeastmasterPreparation(true));
+                break;
+            case "runtime":
+                native.Rotation.Preset = new NativePreset("Other");
+                Assert.True(run.BossMod.CancelBeastmasterPreparation(true));
+                Assert.Equal(new[] { "Other" }, native.Active);
+                break;
+            case "actor":
+                native.Rotation.Player = new() { Class = NativeJob.BST };
+                Assert.True(run.BossMod.CancelBeastmasterPreparation(true));
+                break;
+            case "unloaded":
+                native.Loaded = false;
+                Assert.True(run.BossMod.CancelBeastmasterPreparation(true));
+                break;
+            default:
+                native.Reload();
+                Assert.False(run.BossMod.PrepareRegularBeastmaster(true));
+                break;
+        }
+        Assert.Equal(new[] { false }, native.PreparationDisposals);
+        Assert.Null(Get(run.BossMod, "beastmasterPreparation"));
+        Assert.Empty(native.Writes);
+    }
+
+    [Theory]
+    [InlineData(0, "D141Colossus")]
+    [InlineData(1, "D142Nero")]
+    [InlineData(2, "D143Gaius")]
+    public void NativePraetoriumTypesUseOnlyTheirExactStablePlanName(int encounter, string stableBoss)
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original");
+        using var run = new Run(native) { GmcLoaded = true, Territory = 1044 };
+        var boss = native.NativePraetoriumEncounters[encounter];
+        var module = Activator.CreateInstance(boss)!;
+        native.Rotation.Bossmods.ActiveModule = module;
+        var stable = new NativePlan($"BMRV-{stableBoss}-Tank-WAR", NativeJob.WAR, boss);
+        var foreign = new NativePlan($"BMRV-{stableBoss}-Tank-WAR", NativeJob.WAR, typeof(D141Colossus));
+        var wrongJob = new NativePlan($"BMRV-{stableBoss}-Tank-WAR", NativeJob.BST, boss);
+        var list = new NativePlanList { Plans = [foreign, wrongJob, stable] };
+        native.Rotation.Database.Plans.Plans[boss] = new() { [NativeJob.WAR] = list };
+        Assert.True(run.Rotation.Initialize());
+        Assert.True(run.Rotation.EnableRotation());
+        Assert.Equal(2, list.SelectedIndex);
+        Assert.Equal(new[] { "FRENRIDER - TANK" }, native.Active);
+        native.Rotation.Planner = new(module, stable);
+        Assert.True(run.BossMod.UpdateGmcAutorotation());
+        Assert.Empty(native.Active);
+    }
+
+    [Fact]
+    public void BeastmasterPlanToGroupRequiresAcknowledgementOfTheChangedSource()
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "");
+        native.EnableRegularBeastmaster();
+        native.SavePreset("""{"Name":"FRENRIDER - MELEE","Modules":{"BMRVariantModulePack.Autorotation.Dhog.DhogBST":[{"Track":"DhogFirstBeast","Option":"Familiar01"},{"Track":"DhogSecondBeast","Option":"Familiar32"},{"Track":"DhogThirdBeast","Option":"Familiar34"}]}}""");
+        using var run = new Run(native) { GmcLoaded = true, Territory = 1044 };
+        Assert.False(run.Rotation.Initialize());
+        native.AcknowledgedSlots = [1, 32, 34];
+        native.AcknowledgedHorn = 1;
+        native.AcknowledgedOwnedPet = true;
+        run.Rotation.ObserveSessionDeparture();
+        Assert.True(run.Rotation.CompleteStartupPreparation());
+        Assert.True(run.Rotation.EnableRotation());
+        var module = new D141Colossus();
+        var plan = new NativePlan("BMRV-D141Colossus-Melee-BST", NativeJob.BST, typeof(D141Colossus));
+        native.Rotation.Bossmods.ActiveModule = module;
+        native.Rotation.Database.Plans.Plans[typeof(D141Colossus)] = new() { [NativeJob.BST] = new() { Plans = [plan] } };
+        Assert.True(run.BossMod.UpdateGmcAutorotation());
+        native.Rotation.Planner = new(module, plan);
+        Assert.True(run.BossMod.UpdateGmcAutorotation());
+        Assert.Null(Get(run.BossMod, "gmcOwnedRotation"));
+        Assert.Null(native.Rotation.Preset);
+        var changed = JsonNode.Parse(native.SerializePreset(native.Presets.AllPresets.Single(preset => preset.Name == "FRENRIDER - MELEE")))!;
+        changed["Modules"]![NativeBossModProvider.BstModule]!.AsArray()
+            .Single(row => row!["Track"]!.GetValue<string>() == "DhogFirstBeast")!["Option"] = "Familiar50";
+        native.SavePreset(changed.ToJsonString());
+        native.Rotation.Planner = null;
+        native.Writes.Clear();
+        Assert.False(run.BossMod.UpdateGmcAutorotation());
+        Assert.True(run.BossMod.IsBeastmasterPreparationPending);
+        Assert.Null(native.Rotation.Preset);
+        Assert.Empty(native.Writes);
+        Assert.Equal("Familiar50", native.LastPreparationStrategy!.Option("DhogFirstBeast"));
+        native.AcknowledgedSlots = [50, 32, 34];
+        Assert.True(run.BossMod.PrepareRegularBeastmaster(true));
+        Assert.True(run.BossMod.UpdateGmcAutorotation());
+        Assert.Equal("FRENRIDER - MELEE", native.Rotation.Preset!.Name);
     }
 
     [Theory]
@@ -408,8 +931,16 @@ public sealed class DutyRecoveryTests
         native.Die();
         run.Rotation.ObserveSessionDeparture();
         var player = native.Rotation.Player;
+        var ownership = Get(run.BossMod, "ownedSettings");
+        var beforeReturn = native.Writes.ToArray();
         typeof(NativeRotationManager).GetField("Player")!.SetValue(native.Rotation, null);
         run.Rotation.ObserveSessionDeparture(); // Return/loading must not discard the receipt.
+        Assert.True(run.Rotation.IsCombatActivationDeferred);
+        Assert.False(run.Rotation.EnableRotationOncePerDuty("return player is unknown"));
+        Assert.Same(ownership, Get(run.BossMod, "ownedSettings"));
+        Assert.True((bool)Get(run.BossMod, "ownedDeathObserved")!);
+        Assert.False((bool)Get(run.Rotation, "sessionEnded")!);
+        Assert.Equal(beforeReturn, native.Writes);
         typeof(NativeRotationManager).GetField("Player")!.SetValue(native.Rotation, player);
         player.IsDead = false;
         player.InCombat = false;
@@ -2331,6 +2862,8 @@ public sealed class DutyRecoveryTests
         run.Config.ManualBossModPresetName = "null";
         Assert.True(run.Rotation.Initialize());
         Assert.True(run.Rotation.EnableRotation());
+        var preparation = new NativePreparationReceipt();
+        Set(run.BossMod, "beastmasterPreparation", preparation);
         native.Writes.Clear();
         var beforeDeparture = (Runtime: native.Active.ToArray(), native.Selector, native.Distance, native.AiEnabled);
         switch (departure)
@@ -2352,6 +2885,7 @@ public sealed class DutyRecoveryTests
                 break;
             default: native.Reload(); native.Active = ["Reloaded"]; native.Selector = "Reloaded"; run.Rotation.ObserveSessionDeparture(); break;
         }
+        Assert.Equal(new[] { false }, preparation.Disposals);
         if (departure == "reload")
         {
             Assert.Empty(native.Writes);
@@ -2704,14 +3238,175 @@ public sealed class DutyRecoveryTests
         }
     }
 
-    private enum NativeModuleOrder { Rotation, Movement }
-    private sealed record NativeModuleDefinition(NativeModuleOrder Order);
-    private sealed record NativePresetModule(NativeModuleDefinition Definition);
-    private sealed record NativePreset(string Name, bool HiddenByDefault = false)
+    private sealed class NativePreparationReceipt
+    {
+        internal readonly List<bool> Disposals = [];
+        public void Dispose(bool allowUiActions) => Disposals.Add(allowUiActions);
+    }
+
+    public enum NativeModuleOrder { Rotation, Movement }
+    [Flags]
+    public enum NativeModifier { None = 0, Shift = 1, Ctrl = 2, Alt = 4 }
+    public sealed record NativeStrategyConfig(string InternalName);
+    public sealed record NativeModuleDefinition(NativeModuleOrder Order)
+    {
+        public readonly List<NativeStrategyConfig> Configs = [];
+    }
+    public record struct NativeSetting(NativeModifier Mod, int Track, JsonObject Value)
+    {
+        public NativeModifier Mod = Mod;
+        public JsonObject Value = Value;
+    }
+    public sealed record NativePresetModule(NativeModuleDefinition Definition)
+    {
+        public string ModuleName = "";
+        public Type Type = typeof(object);
+        public readonly List<NativeSetting> SerializedSettings = [], TransientSettings = [];
+    }
+    public sealed record NativeStrategyValues(List<NativeStrategyConfig> Configs, JsonObject[] Values)
+    {
+        public string Option(string track) => Values[Configs.FindIndex(config => config.InternalName == track)]["Option"]!.GetValue<string>();
+    }
+    public record NativePreset(string Name, bool HiddenByDefault = false)
     {
         public static readonly NativePreset ForceDisable = new("Fixture force disabled");
         public List<NativePresetModule> Modules = [new(new(NativeModuleOrder.Rotation)), new(new(NativeModuleOrder.Movement))];
-        public NativePreset MakeClone(bool includeTransient) => new(Name) { Modules = [.. Modules] };
+        public Func<NativeModifier> Modifiers = () => NativeModifier.None;
+        public Action? OnClone, OnResolve;
+        public NativePreset MakeClone(bool includeTransient)
+        {
+            OnClone?.Invoke();
+            var clone = (NativePreset)Activator.CreateInstance(GetType(), Name, HiddenByDefault)!;
+            clone.Modules = [];
+            clone.Modifiers = Modifiers;
+            clone.OnClone = OnClone;
+            clone.OnResolve = OnResolve;
+            foreach (var module in Modules)
+            {
+                var copy = new NativePresetModule(module.Definition) { ModuleName = module.ModuleName, Type = module.Type };
+                copy.SerializedSettings.AddRange(module.SerializedSettings);
+                if (includeTransient) copy.TransientSettings.AddRange(module.TransientSettings);
+                clone.Modules.Add(copy);
+            }
+            return clone;
+        }
+        public NativeStrategyValues ActiveStrategyOverrides(int index)
+        {
+            OnResolve?.Invoke();
+            return ActiveStrategyOverrides(index, Modifiers());
+        }
+        public NativeStrategyValues ActiveStrategyOverrides(int index, NativeModifier modifiers)
+        {
+            var module = Modules[index];
+            var values = module.Definition.Configs.Select(_ => new JsonObject { ["Option"] = "Auto" }).ToArray();
+            // Model the selected frozen resolver: serialized order, then transient
+            // order; subset matching and last matching entry wins (5e2727).
+            foreach (var setting in module.SerializedSettings.Concat(module.TransientSettings))
+                if ((setting.Mod & modifiers) == setting.Mod) values[setting.Track] = setting.Value;
+            return new(module.Definition.Configs, values);
+        }
+    }
+
+    // Only the existing in-memory provider is extended here. This converter and
+    // preparation acknowledgement are synthetic contracts, not native execution.
+    private sealed class NativePresetConverterFactory(NativeBossModProvider provider) : JsonConverterFactory
+    {
+        public override bool CanConvert(Type type) => typeof(NativePreset).IsAssignableFrom(type);
+        public override JsonConverter CreateConverter(Type type, JsonSerializerOptions options)
+            => (JsonConverter)Activator.CreateInstance(typeof(NativePresetConverter<>).MakeGenericType(type),
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, [provider], CultureInfo.InvariantCulture)!;
+    }
+    private sealed class NativePresetConverter<T>(NativeBossModProvider provider) : JsonConverter<T> where T : NativePreset
+    {
+        public override T? Read(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options)
+        {
+            ++provider.NativeDeserializations;
+            using var document = JsonDocument.ParseValue(ref reader);
+            var preset = (T)Activator.CreateInstance(type, document.RootElement.GetProperty("Name").GetString()!, false)!;
+            preset.Modules = [];
+            preset.Modifiers = () => provider.CurrentModifiers;
+            preset.OnClone = () => ++provider.NativeClones;
+            preset.OnResolve = () => ++provider.NativeResolutions;
+            foreach (var item in document.RootElement.GetProperty("Modules").EnumerateObject())
+            {
+                var regular = item.Name == NativeBossModProvider.BstModule;
+                if (regular && provider.DropBstModule) continue;
+                var definition = regular ? provider.BeastmasterDefinition
+                    : new NativeModuleDefinition(item.Name.Contains("MiscAI", StringComparison.Ordinal)
+                        ? NativeModuleOrder.Movement : NativeModuleOrder.Rotation);
+                var module = new NativePresetModule(definition)
+                {
+                    ModuleName = item.Name,
+                    Type = regular ? provider.BeastmasterType : item.Name == "BossMod.Autorotation.xan.BST"
+                        ? provider.NativeBeastmasterType : typeof(object)
+                };
+                foreach (var entry in item.Value.EnumerateArray())
+                {
+                    var name = entry.GetProperty("Track").GetString()!;
+                    var track = definition.Configs.FindIndex(config => config.InternalName == name);
+                    if (track < 0 && regular) continue;
+                    if (track < 0) { track = definition.Configs.Count; definition.Configs.Add(new(name)); }
+                    var value = JsonNode.Parse(entry.GetRawText())!.AsObject();
+                    var modifier = value["Mod"] is { } mod ? Enum.Parse<NativeModifier>(mod.GetValue<string>()) : NativeModifier.None;
+                    value.Remove("Track");
+                    value.Remove("Mod");
+                    module.SerializedSettings.Add(new(modifier, track, value));
+                }
+                preset.Modules.Add(module);
+            }
+            return preset;
+        }
+        public override void Write(Utf8JsonWriter writer, T preset, JsonSerializerOptions options)
+        {
+            ++provider.NativeSerializations;
+            writer.WriteStartObject();
+            writer.WriteString("Name", preset.Name);
+            writer.WriteStartObject("Modules");
+            foreach (var module in preset.Modules.Where(module => module.ModuleName.Length > 0))
+            {
+                writer.WriteStartArray(module.ModuleName);
+                foreach (var setting in module.SerializedSettings)
+                {
+                    writer.WriteStartObject();
+                    writer.WriteString("Track", module.Definition.Configs[setting.Track].InternalName);
+                    foreach (var field in setting.Value)
+                    {
+                        writer.WritePropertyName(field.Key);
+                        if (field.Value is null) writer.WriteNullValue(); else field.Value.WriteTo(writer);
+                    }
+                    if (setting.Mod != NativeModifier.None) writer.WriteString("Mod", setting.Mod.ToString());
+                    writer.WriteEndObject();
+                }
+                writer.WriteEndArray();
+            }
+            writer.WriteEndObject();
+            writer.WriteEndObject();
+        }
+    }
+    private sealed class NativeBeastmasterPreparation(NativeBossModProvider provider, string owner, object manager, object actor,
+        NativeStrategyValues strategy) : IDisposable
+    {
+        private readonly JsonObject[] snapshot = strategy.Values.Select(value => value.DeepClone().AsObject()).ToArray();
+        private readonly string[] tracks = strategy.Configs.Select(config => config.InternalName).ToArray();
+        public string Status { get; private set; } = "Pending";
+        public string Reason => "Synthetic native acknowledgement boundary";
+        public bool MatchesRequest(string nextOwner, object nextManager, object nextActor, NativeStrategyValues next)
+            => owner == nextOwner && ReferenceEquals(manager, nextManager) && ReferenceEquals(actor, nextActor)
+                && tracks.SequenceEqual(next.Configs.Select(config => config.InternalName))
+                && snapshot.Zip(next.Values).All(pair => JsonNode.DeepEquals(pair.First, pair.Second));
+        public string Step(bool actionsPermitted)
+        {
+            provider.PreparationSteps.Add(actionsPermitted);
+            if (Status == "Pending" && !actionsPermitted) return Status;
+            var desired = new[] { "DhogFirstBeast", "DhogSecondBeast", "DhogThirdBeast" }
+                .Select(track => byte.Parse(snapshot[Array.IndexOf(tracks, track)]["Option"]!.GetValue<string>()["Familiar".Length..],
+                    CultureInfo.InvariantCulture)).ToArray();
+            if (provider.AcknowledgedSlots.SequenceEqual(desired) && provider.AcknowledgedHorn == 1 && provider.AcknowledgedOwnedPet)
+                return Status = "Ready";
+            return Status = Status == "Ready" ? "Unavailable" : "Pending";
+        }
+        public void Dispose() => Dispose(true);
+        public void Dispose(bool allowUiActions) { provider.PreparationDisposals.Add(allowUiActions); Status = "Disposed"; }
     }
     private sealed class NativePresetDatabase
     {
@@ -2719,7 +3414,7 @@ public sealed class DutyRecoveryTests
         public List<NativePreset> DefaultPresets { get; set; } = [];
         public List<NativePreset> UserPresets { get; set; } = [];
     }
-    private enum NativeJob : uint { WAR = 21, NIN = 30, GNB = 37, SGE = 40 }
+    private enum NativeJob : uint { WAR = 21, NIN = 30, GNB = 37, SGE = 40, BST = 43 }
     private sealed record NativePlan(string Name, NativeJob Class, Type Encounter)
     {
         public List<object> Modules = [new object()];
@@ -2749,7 +3444,7 @@ public sealed class DutyRecoveryTests
         public NativeActor?[] Members = Enumerable.Range(0, 4).Select(i => (NativeActor?)new NativeActor { InstanceID = (ulong)(101 + i) }).ToArray();
         public NativeActor? this[int slot] => slot >= 0 && slot < Members.Length ? Members[slot] : null;
     }
-    private sealed class NativeWorld { public NativeParty Party = new(); }
+    private sealed class NativeWorld { public NativeParty Party = new(); public uint CurrentZone = 0; }
     private sealed class NativeAiBehavior(NativePreset? preset) { public NativePreset? AIPreset = preset; }
     private sealed class NativeHints { public bool ScriptedDeath; }
     private sealed class NativeBossmods { public object? ActiveModule; public List<object> LoadedModules = []; }
@@ -2757,6 +3452,7 @@ public sealed class DutyRecoveryTests
     private sealed class NativeRotationManager(NativeRotationDatabase database, Action<NativePreset?> onPreset)
     {
         public NativeRotationDatabase Database = database;
+        public NativeWorld WorldState = new();
         public NativeActor Player = new();
         public NativeBossmods Bossmods = new();
         public NativePlanner? Planner;
@@ -2808,6 +3504,56 @@ public sealed class DutyRecoveryTests
         private readonly object? aiManager;
         private readonly System.Collections.IDictionary dhogModules;
         private readonly Type[] dhogTypes;
+        internal const string BstModule = "BMRVariantModulePack.Autorotation.Dhog.DhogBST";
+        internal readonly Type BeastmasterType, NativeBeastmasterType;
+        internal readonly NativeModuleDefinition BeastmasterDefinition = new(NativeModuleOrder.Rotation);
+        internal readonly Type[] NativePraetoriumEncounters;
+        private readonly Type nativePresetType;
+        internal bool RegularBeastmasterAvailable, DropBstModule;
+        internal NativeModifier CurrentModifiers;
+        internal int NativeSerializations, NativeDeserializations, NativeClones, NativeResolutions, PreparationRequests;
+        internal readonly List<bool> PreparationSteps = [];
+        internal NativeStrategyValues? LastPreparationStrategy;
+        internal byte[] AcknowledgedSlots = [];
+        internal int AcknowledgedHorn;
+        internal bool AcknowledgedOwnedPet;
+        internal readonly List<bool> PreparationDisposals = [];
+
+        internal JsonSerializerOptions BuildNativeOptions() => new()
+        {
+            IncludeFields = true,
+            Converters = { new NativePresetConverterFactory(this) }
+        };
+        internal string SerializePreset(NativePreset preset)
+            => JsonSerializer.Serialize(preset, preset.GetType(), BuildNativeOptions());
+        internal NativePreset DeserializePreset(string json)
+            => (NativePreset)JsonSerializer.Deserialize(json, nativePresetType, BuildNativeOptions())!;
+        internal void SavePreset(string json)
+        {
+            var preset = DeserializePreset(json);
+            Presets.AllPresets.RemoveAll(previous => previous.Name == preset.Name);
+            Presets.DefaultPresets.RemoveAll(previous => previous.Name == preset.Name);
+            Presets.UserPresets.RemoveAll(previous => previous.Name == preset.Name);
+            Presets.AllPresets.Add(preset);
+            Presets.UserPresets.Add(preset);
+            presetDefinitions[preset.Name] = SerializePreset(preset);
+        }
+        internal void ReloadSavedPresets()
+        {
+            var saved = Presets.UserPresets.Select(SerializePreset).ToArray();
+            Presets.UserPresets = saved.Select(DeserializePreset).ToList();
+            Presets.AllPresets = [.. Presets.DefaultPresets, .. Presets.UserPresets];
+            Rotation.Preset = Rotation.Preset is { } active ? Presets.AllPresets.Single(preset => preset.Name == active.Name) : null;
+            AiPreset = AiPreset is { } ai ? Presets.AllPresets.Single(preset => preset.Name == ai.Name) : null;
+        }
+        internal void EnableRegularBeastmaster()
+        {
+            RegularBeastmasterAvailable = true;
+            dhogModules.Add(BeastmasterType, new { Definition = BeastmasterDefinition });
+            Rotation.Player.Class = NativeJob.BST;
+            Rotation.WorldState = World;
+            World.Party.Members[0] = Rotation.Player;
+        }
         internal readonly NativeWorld World = new();
         private readonly object wrapper;
         private readonly Type pluginType;
@@ -2905,6 +3651,49 @@ public sealed class DutyRecoveryTests
             nodeBuilder.DefineField("ForbidActions", typeof(bool), FieldAttributes.Public);
             nodeBuilder.DefineField("ForbidMovement", typeof(bool), FieldAttributes.Public);
             nodeBuilder.DefineField("AIAutorotPresetName", typeof(string), FieldAttributes.Public);
+            var presetBuilder = module.DefineType("BossMod.Autorotation.Preset", TypeAttributes.Public, typeof(NativePreset));
+            var presetCtor = presetBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard,
+                [typeof(string), typeof(bool)]).GetILGenerator();
+            presetCtor.Emit(OpCodes.Ldarg_0);
+            presetCtor.Emit(OpCodes.Ldarg_1);
+            presetCtor.Emit(OpCodes.Ldarg_2);
+            presetCtor.Emit(OpCodes.Call, typeof(NativePreset).GetConstructor([typeof(string), typeof(bool)])!);
+            presetCtor.Emit(OpCodes.Ret);
+            nativePresetType = presetBuilder.CreateType()!;
+            NativePraetoriumEncounters = new[]
+            {
+                "BossMod.RealmReborn.Dungeon.D15Praetorium.D151Colossus.D151Colossus",
+                "BossMod.RealmReborn.Dungeon.D15Praetorium.D152Nero.D152Nero",
+                "BossMod.RealmReborn.Dungeon.D15Praetorium.D153Gaius.D153Gaius",
+            }.Select(name => module.DefineType(name, TypeAttributes.Public).CreateType()!).ToArray();
+            BeastmasterDefinition.Configs.AddRange((InternalName == "GodMod"
+                ? new[] { "Targeting", "DhogThirdBeast", "DhogFirstBeast", "DhogSecondBeast", "AOE", "Combo", "TemperedRelease" }
+                : new[] { "DhogBurst", "Targeting", "DhogSecondBeast", "DhogThirdBeast", "DhogFirstBeast", "AOE", "Combo" })
+                .Select(name => new NativeStrategyConfig(name)));
+            NativeBeastmasterType = module.DefineType("BossMod.Autorotation.xan.BST", TypeAttributes.Public).CreateType()!;
+            var beastBuilder = module.DefineType(BstModule, TypeAttributes.Public);
+            var creator = beastBuilder.DefineField("Creator", typeof(Func<string, object, object, object, object>), FieldAttributes.Public | FieldAttributes.Static);
+            var create = beastBuilder.DefineMethod("CreatePreparation", MethodAttributes.Public | MethodAttributes.Static,
+                typeof(object), [typeof(string), typeof(object), typeof(object), typeof(object)]).GetILGenerator();
+            create.Emit(OpCodes.Ldsfld, creator);
+            for (short argument = 0; argument < 4; ++argument) create.Emit(OpCodes.Ldarg, argument);
+            create.Emit(OpCodes.Callvirt, typeof(Func<string, object, object, object, object>).GetMethod("Invoke")!);
+            create.Emit(OpCodes.Ret);
+            BeastmasterType = beastBuilder.CreateType()!;
+            BeastmasterType.GetField("Creator")!.SetValue(null, (Func<string, object, object, object, object>)((owner, manager, actor, strategy) =>
+            {
+                ++PreparationRequests;
+                LastPreparationStrategy = (NativeStrategyValues)strategy;
+                return new NativeBeastmasterPreparation(this, owner, manager, actor, (NativeStrategyValues)strategy);
+            }));
+            var serialization = module.DefineType("BossMod.Serialization", TypeAttributes.Public | TypeAttributes.Abstract | TypeAttributes.Sealed);
+            var optionsFactory = serialization.DefineField("OptionsFactory", typeof(Func<JsonSerializerOptions>), FieldAttributes.Public | FieldAttributes.Static);
+            var optionsMethod = serialization.DefineMethod("BuildSerializationOptions", MethodAttributes.Public | MethodAttributes.Static,
+                typeof(JsonSerializerOptions), Type.EmptyTypes).GetILGenerator();
+            optionsMethod.Emit(OpCodes.Ldsfld, optionsFactory);
+            optionsMethod.Emit(OpCodes.Callvirt, typeof(Func<JsonSerializerOptions>).GetMethod("Invoke")!);
+            optionsMethod.Emit(OpCodes.Ret);
+            serialization.CreateType()!.GetField("OptionsFactory")!.SetValue(null, (Func<JsonSerializerOptions>)BuildNativeOptions);
             var nodeType = nodeBuilder.CreateType()!;
             node = Activator.CreateInstance(nodeType)!;
             var autorotationBuilder = module.DefineType("BossMod.Autorotation.AutorotationConfig", TypeAttributes.Public, configNodeType);
@@ -2977,7 +3766,8 @@ public sealed class DutyRecoveryTests
             findIl.Emit(OpCodes.Ret);
             var registry = registryBuilder.CreateType()!;
             registry.GetField("Modules")!.SetValue(null, dhogModules);
-            registry.GetField("Resolver")!.SetValue(null, (Func<string, Type?>)(name => dhogTypes.SingleOrDefault(type => type.FullName == name)));
+            registry.GetField("Resolver")!.SetValue(null, (Func<string, Type?>)(name => name == BstModule
+                ? BeastmasterType : dhogTypes.SingleOrDefault(type => type.FullName == name)));
             if (provider == CombatProvider.Bmr)
             {
                 var managerBuilder = module.DefineType("BossMod.AI.AIManager", TypeAttributes.Public);
@@ -3177,7 +3967,8 @@ public sealed class DutyRecoveryTests
             if (channel == "BossMod.Presets.Get")
             {
                 var found = Presets.AllPresets.FirstOrDefault(preset => string.Equals(preset.Name, (string)values![0]!, StringComparison.CurrentCultureIgnoreCase));
-                return found is null ? null : presetDefinitions.GetValueOrDefault(found.Name) ?? JsonSerializer.Serialize(new { found.Name });
+                return found is null ? null : RegularBeastmasterAvailable ? SerializePreset(found)
+                    : presetDefinitions.GetValueOrDefault(found.Name) ?? JsonSerializer.Serialize(new { found.Name });
             }
             if (channel == "BossMod.Configuration")
             {
@@ -3224,16 +4015,24 @@ public sealed class DutyRecoveryTests
                 presetDefinitions.Remove(name);
                 Presets.AllPresets.RemoveAll(preset => preset.Name == name);
                 Presets.DefaultPresets.RemoveAll(preset => preset.Name == name);
+                Presets.UserPresets.RemoveAll(preset => preset.Name == name);
                 Active.RemoveAll(preset => preset == name);
                 return true;
             }
             if (channel == "BossMod.Presets.Create")
             {
                 using var json = JsonDocument.Parse((string)values![0]!);
-                var preset = new NativePreset(json.RootElement.GetProperty("Name").GetString()!);
+                var preset = RegularBeastmasterAvailable ? DeserializePreset((string)values![0]!)
+                    : new NativePreset(json.RootElement.GetProperty("Name").GetString()!);
                 presetDefinitions[preset.Name] = CreatedPresetTransform?.Invoke((string)values![0]!) ?? (string)values![0]!;
+                if (RegularBeastmasterAvailable)
+                {
+                    Presets.AllPresets.RemoveAll(previous => previous.Name == preset.Name);
+                    Presets.UserPresets.RemoveAll(previous => previous.Name == preset.Name);
+                    Presets.UserPresets.Add(preset);
+                }
+                else Presets.DefaultPresets.Add(preset);
                 Presets.AllPresets.Add(preset);
-                Presets.DefaultPresets.Add(preset);
                 if (preset.Name == "FRENRIDER - RANGED") AfterPackagedRefresh?.Invoke();
                 if (legacyBmrCreate) return string.Empty;
                 return true;

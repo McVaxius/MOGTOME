@@ -68,6 +68,7 @@ public partial class BossModIPC : IDisposable
     internal const string MissingGodModCompanionRotations = "Could not find God Mod Companion rotations";
     private const string DhogModulePrefix = "BMRVariantModulePack.Autorotation.Dhog.Dhog";
     private static readonly string[] DhogHealerJobs = ["WHM", "SCH", "AST", "SGE"];
+    private const string DhogBeastmasterModule = DhogModulePrefix + "BST";
     private bool? packagedDhogHealers;
     private bool warnedMissingDhogHealers;
 
@@ -189,6 +190,83 @@ public partial class BossModIPC : IDisposable
         return DhogHealerJobs.All(job => modules.Contains(DhogModulePrefix + job));
     }
 
+    private Type? RegisteredBeastmasterType(Assembly assembly)
+    {
+        var registry = assembly.GetType("BossMod.Autorotation.RotationModuleRegistry");
+        const BindingFlags flags = BindingFlags.Static | BindingFlags.Public;
+        return registry?.GetMethod("FindType", flags, [typeof(string)])?.Invoke(null, [DhogBeastmasterModule]) is Type type
+            && type.FullName == DhogBeastmasterModule
+            && (IsGmcLoaded || ReferenceEquals(type.Assembly, assembly))
+            && registry.GetField("Modules", flags)?.GetValue(null) is IDictionary modules && modules.Contains(type)
+            && LiveMember(modules[type], "Definition") is not null ? type : null;
+    }
+
+    private bool HasDhogBeastmaster()
+        => TryGetLiveBossMod("BMR", out _, out var assembly, out _) && RegisteredBeastmasterType(assembly!) is not null;
+
+    private static JsonSerializerOptions NativePresetSerializationOptions(Assembly assembly)
+        => assembly.GetType("BossMod.Serialization")?.GetMethod("BuildSerializationOptions", BindingFlags.Public | BindingFlags.Static,
+            Type.EmptyTypes)?.Invoke(null, null) as JsonSerializerOptions
+            ?? throw new InvalidOperationException("The native preset serializer is unavailable.");
+
+    private static void CopyBeastmasterTransientSettings(object? source, object target)
+    {
+        if (source is null) return;
+        var from = ((IEnumerable)LiveMember(source, "Modules")!).Cast<object>().SingleOrDefault(module =>
+            LiveMember(module, "Type") is Type type
+                && type.FullName is DhogBeastmasterModule or "BossMod.Autorotation.xan.BST");
+        var to = ((IEnumerable)LiveMember(target, "Modules")!).Cast<object>().Single(module =>
+            LiveMember(module, "Type") is Type type && type.FullName == DhogBeastmasterModule);
+        var destination = (IList)LiveMember(to, "TransientSettings")!;
+        destination.Clear();
+        if (from is null) return;
+        var fromConfigs = ((IEnumerable)LiveMember(LiveMember(from, "Definition"), "Configs")!).Cast<object>().ToArray();
+        var toConfigs = ((IEnumerable)LiveMember(LiveMember(to, "Definition"), "Configs")!).Cast<object>().ToArray();
+        foreach (var setting in (IEnumerable)LiveMember(from, "TransientSettings")!)
+        {
+            var track = Convert.ToInt32(LiveMember(setting, "Track"));
+            var name = LiveMember(fromConfigs[track], "InternalName");
+            var mapped = Array.FindIndex(toConfigs, config => Equals(LiveMember(config, "InternalName"), name));
+            if (mapped < 0) throw new InvalidOperationException("A transient Beastmaster strategy is unavailable in the new preset.");
+            // ModuleSetting is a value type: this updates the boxed copy, not
+            // the original source entry. Transients are never written to JSON.
+            setting.GetType().GetProperty("Track")!.SetValue(setting, mapped);
+            destination.Add(setting);
+        }
+    }
+
+    internal static bool MatchesDhogBeastmasterPreset(string expectedJson, string? actualJson,
+        Type? nativePresetType = null, JsonSerializerOptions? nativeOptions = null)
+    {
+        if (actualJson is null) return false;
+        using var expected = JsonDocument.Parse(expectedJson);
+        using var actual = JsonDocument.Parse(actualJson);
+        if (!actual.RootElement.TryGetProperty("Name", out var name)
+            || !JsonElement.DeepEquals(expected.RootElement.GetProperty("Name"), name)
+            || !actual.RootElement.TryGetProperty("Modules", out var modules)
+            || modules.TryGetProperty("BossMod.Autorotation.xan.BST", out _)
+            || !modules.TryGetProperty(DhogBeastmasterModule, out var settings)
+            || settings.ValueKind != JsonValueKind.Array) return false;
+        var intended = expected.RootElement.GetProperty("Modules").GetProperty(DhogBeastmasterModule);
+        if (intended.ValueKind != JsonValueKind.Array || intended.GetArrayLength() != settings.GetArrayLength()) return false;
+        if (nativePresetType is null) return JsonElement.DeepEquals(intended, settings);
+
+        // Let this host normalize enum spelling and omitted default fields, but
+        // never allow its parser to silently drop an ordered strategy entry.
+        if (nativeOptions is null) throw new InvalidOperationException("The native preset serializer is unavailable.");
+        var normalizedExpected = JsonSerializer.Serialize(
+            JsonSerializer.Deserialize(expectedJson, nativePresetType, nativeOptions), nativePresetType, nativeOptions);
+        var normalizedActual = JsonSerializer.Serialize(
+            JsonSerializer.Deserialize(actualJson, nativePresetType, nativeOptions), nativePresetType, nativeOptions);
+        using var expectedNative = JsonDocument.Parse(normalizedExpected);
+        using var actualNative = JsonDocument.Parse(normalizedActual);
+        return expectedNative.RootElement.GetProperty("Modules").TryGetProperty(DhogBeastmasterModule, out var expectedSettings)
+            && actualNative.RootElement.GetProperty("Modules").TryGetProperty(DhogBeastmasterModule, out var actualSettings)
+            && expectedSettings.GetArrayLength() == intended.GetArrayLength()
+            && actualSettings.GetArrayLength() == settings.GetArrayLength()
+            && JsonElement.DeepEquals(expectedSettings, actualSettings);
+    }
+
     internal static string AdaptDhogHealerPreset(string json, bool available)
     {
         if (!available) return json;
@@ -202,6 +280,50 @@ public partial class BossModIPC : IDisposable
             modules[DhogModulePrefix + job] = settings;
         }
         modules.Remove("BossMod.Autorotation.xan.HealerAI");
+        return root.ToJsonString();
+    }
+
+    internal static string AdaptDhogBeastmasterPreset(string json, string? savedJson)
+    {
+        var root = JsonNode.Parse(json)!.AsObject();
+        var modules = root["Modules"]!.AsObject();
+        const string nativeModule = "BossMod.Autorotation.xan.BST";
+        if (modules.ContainsKey(nativeModule) && modules.ContainsKey(DhogBeastmasterModule))
+            throw new InvalidOperationException("The packaged preset contains competing Beastmaster rotations.");
+        if (!modules.Remove(nativeModule, out var defaults))
+            defaults = modules[DhogBeastmasterModule]?.DeepClone();
+        if (defaults is not JsonArray defaultSettings)
+            throw new InvalidOperationException("The packaged Beastmaster settings are unavailable.");
+
+        JsonArray? savedSettings = null;
+        if (savedJson is not null)
+        {
+            var saved = JsonNode.Parse(savedJson)!.AsObject();
+            if (!JsonNode.DeepEquals(root["Name"], saved["Name"]))
+                throw new InvalidOperationException("The saved Beastmaster preset has a different name.");
+            var savedModules = saved["Modules"]!.AsObject();
+            if (savedModules.ContainsKey(nativeModule) && savedModules.ContainsKey(DhogBeastmasterModule))
+                throw new InvalidOperationException("The saved preset contains competing Beastmaster rotations.");
+            var savedModule = savedModules.ContainsKey(DhogBeastmasterModule) ? DhogBeastmasterModule
+                : savedModules.ContainsKey(nativeModule) ? nativeModule : null;
+            if (savedModule is not null)
+                savedSettings = savedModules[savedModule] as JsonArray
+                    ?? throw new InvalidOperationException("The saved Beastmaster settings are unavailable.");
+        }
+
+        // Saved entries own their tracks, including modifier-only choices.
+        // Unmatched modifiers keep the native config default. Preserve every
+        // saved entry, including repeated tracks, in its original order.
+        var savedTracks = savedSettings?.Select(setting => setting!["Track"]!.GetValue<string>()).ToHashSet(StringComparer.Ordinal)
+            ?? new HashSet<string>(StringComparer.Ordinal);
+        var merged = new JsonArray();
+        foreach (var setting in defaultSettings)
+            if (!savedTracks.Contains(setting!["Track"]!.GetValue<string>()))
+                merged.Add(setting!.DeepClone());
+        if (savedSettings is not null)
+            foreach (var setting in savedSettings)
+                merged.Add(setting!.DeepClone());
+        modules[DhogBeastmasterModule] = merged;
         return root.ToJsonString();
     }
 
@@ -442,6 +564,7 @@ public partial class BossModIPC : IDisposable
         {
             LastStatus = "BossMod provider reloaded; the departed session cannot be restored into its replacement.";
             log.Warning($"[MOGTOME] Owned BossMod settings cleanup was incomplete: {LastStatus}");
+            CancelBeastmasterPreparation(false);
             ownedSettings = null;
             ownedProvider = null;
             cleanupStarted = cleanupFailed = false;
@@ -948,6 +1071,7 @@ public partial class BossModIPC : IDisposable
         cleanupRuntimeExpected = cleanupRuntimeTarget = null;
         if (!cleanupStarted)
         {
+            CancelBeastmasterPreparation(false);
             if (ownedSettings is not null && !cleanupFailed)
             {
                 // A different account/character cannot receive the old run's writes.
@@ -1134,7 +1258,10 @@ public partial class BossModIPC : IDisposable
     internal void ReleaseOwnedBossModSettings(bool turnEverythingOff)
     {
         if (ownedSettings is null)
+        {
+            CancelBeastmasterPreparation(false);
             return;
+        }
         var succeeded = BeginOwnedBossModCleanup(ownedIdentity.Account, ownedIdentity.Character);
         succeeded &= EndOwnedBossModCleanup(turnEverythingOff);
         if (!succeeded)
@@ -1204,6 +1331,8 @@ public partial class BossModIPC : IDisposable
             var presetName = manualPresetSelected
                 ? manualPresetName
                 : SelectPresetForCurrentJob(passive);
+            if (!passive && provider == CombatProvider.Bmr
+                && !PrepareRegularBeastmaster(advance: false, manualPresetSelected ? presetName : null)) return false;
 
             if (!ApplyOwnedBossModPreset(presetName))
             {
@@ -1499,9 +1628,59 @@ public partial class BossModIPC : IDisposable
     private bool TryCreatePreset(string name, string json, bool forceRecreate)
     {
 
+        var regularBeastmaster = name == ActiveMeleePreset && HasDhogBeastmaster();
+        object? futureBeastmaster = null;
+        JsonSerializerOptions? beastmasterOptions = null;
+        object? ReadSource()
+        {
+            if (!TryGetLiveBossMod("BMR", out var instance, out var assembly, out _)) return null;
+            var presets = ReadRotationDatabase("BMR", instance!, assembly!);
+            return ((IEnumerable)LiveMember(LiveMember(presets, "Presets"), "AllPresets")!).Cast<object>()
+                .SingleOrDefault(preset => Equals(LiveMember(preset, "Name"), name));
+        }
+        var transientSource = regularBeastmaster ? ReadSource() : null;
+        var existingPreset = regularBeastmaster
+            ? pluginInterface.GetIpcSubscriber<string, string>("BossMod.Presets.Get").InvokeFunc(name)
+            : forceRecreate ? TryStringIpc("BossMod.Presets.Get", name) : null;
+        if (regularBeastmaster)
+        {
+            if ((IsGmcLoaded || ownedIdentity.Config is { CombatProvider: CombatProvider.Bmr, UseManualBossModPreset: false })
+                && !PrepareRegularBeastmaster(advance: false)) return false;
+            json = AdaptDhogBeastmasterPreset(json, existingPreset);
+            if (!TryGetLiveBossMod("BMR", out _, out var assembly, out _)) return false;
+            var type = assembly!.GetType("BossMod.Autorotation.Preset")
+                ?? throw new InvalidOperationException("The native preset type is unavailable.");
+            var options = beastmasterOptions = NativePresetSerializationOptions(assembly);
+            futureBeastmaster = JsonSerializer.Deserialize(json, type, options)
+                ?? throw new InvalidOperationException("The native Beastmaster preset could not be read.");
+            CopyBeastmasterTransientSettings(transientSource, futureBeastmaster);
+            var roundtrip = JsonSerializer.Serialize(futureBeastmaster, type, options);
+            if (!MatchesDhogBeastmasterPreset(json, roundtrip, type, options))
+            {
+                LastStatus = "The native host did not retain the saved Beastmaster settings; the previous definition was preserved.";
+                return false;
+            }
+        }
+        bool VerifyBeastmaster()
+        {
+            if (!regularBeastmaster) return true;
+            CopyBeastmasterTransientSettings(futureBeastmaster, ReadSource()
+                ?? throw new InvalidOperationException("The created Beastmaster preset is unavailable."));
+            if (MatchesDhogBeastmasterPreset(json,
+                    pluginInterface.GetIpcSubscriber<string, string>("BossMod.Presets.Get").InvokeFunc(name),
+                    futureBeastmaster!.GetType(), beastmasterOptions)) return true;
+            LastStatus = "The created preset did not retain the saved Beastmaster settings.";
+            return false;
+        }
+
+        if (regularBeastmaster && (existingPreset != pluginInterface.GetIpcSubscriber<string, string>("BossMod.Presets.Get").InvokeFunc(name)
+                || !ReferenceEquals(transientSource, ReadSource())))
+        {
+            LastStatus = "The saved Beastmaster preset changed while it was being prepared; the new definition was preserved.";
+            return false;
+        }
         if (forceRecreate)
         {
-            var existingPreset = TryStringIpc("BossMod.Presets.Get", name);
             if (existingPreset != null)
             {
 
@@ -1524,7 +1703,7 @@ public partial class BossModIPC : IDisposable
                 log.Information($"[MOGTOME][BossMod] Preset '{name}' created via BossMod-compatible IPC");
 
 
-                return true;
+                return VerifyBeastmaster();
             }
 
             log.Warning($"[MOGTOME][BossMod] BossMod.Presets.Create returned false for preset '{name}'");
@@ -1535,7 +1714,7 @@ public partial class BossModIPC : IDisposable
         if (legacyResult != null)
         {
             LogLegacyPresetResult("BossMod.Presets.Create", name, legacyResult);
-            return legacyResult.Length == 0;
+            return legacyResult.Length == 0 && VerifyBeastmaster();
         }
 
         if (NativeHost != "BossModReborn") return false;
@@ -1543,7 +1722,7 @@ public partial class BossModIPC : IDisposable
         if (legacyResult != null)
         {
             LogLegacyPresetResult("BossModReborn.Presets.Create", name, legacyResult);
-            return legacyResult.Length == 0;
+            return legacyResult.Length == 0 && VerifyBeastmaster();
         }
 
         return false;
