@@ -137,7 +137,7 @@ public sealed class DutyRecoveryTests
     [InlineData(CombatProvider.Rsr)]
     [InlineData(CombatProvider.Wrath)]
     [InlineData(CombatProvider.Vbm)]
-    public void GmcUsesOnlyBmrAutorotationAndPreservesSavedProvider(CombatProvider saved)
+    public void GmcUsesOwnedNativeCombatAiAndPreservesSavedProvider(CombatProvider saved)
     {
         var native = new NativeBossModProvider(CombatProvider.Bmr, "Original");
         using var run = new Run(native) { GmcLoaded = true, Territory = 1044 };
@@ -148,8 +148,8 @@ public sealed class DutyRecoveryTests
         Assert.True(run.Rotation.EnableRotationOncePerDuty("GMC test"));
         Assert.Equal(saved, run.Config.CombatProvider);
         Assert.Equal(new[] { "FRENRIDER - TANK" }, native.Active);
-        Assert.False(native.AiEnabled);
-        Assert.Equal("Original", native.Selector);
+        Assert.True(native.AiEnabled);
+        Assert.Equal("FRENRIDER - TANK", native.Selector);
         Assert.NotSame(native.Presets.AllPresets.Single(preset => preset.Name == "FRENRIDER - TANK"), native.Rotation.Preset);
         Assert.All(native.Rotation.Preset!.Modules, module => Assert.NotEqual(NativeModuleOrder.Movement, module.Definition.Order));
         Assert.Contains(native.Presets.AllPresets.Single(preset => preset.Name == "FRENRIDER - TANK").Modules,
@@ -186,7 +186,8 @@ public sealed class DutyRecoveryTests
         run.Rotation.UpdateDutyRotationHealth(territory, true, false, false, "boss plan ready");
         Assert.Empty(native.Active);
         Assert.False(native.ForceDisabled);
-        Assert.False(native.AiEnabled);
+        Assert.True(native.AiEnabled);
+        Assert.Null(native.Selector); // A bound plan owns an explicit null selector.
         Assert.True(run.Rotation.DisableRotationForDutyEnd("GMC Stop"));
         Assert.Equal(0, list.SelectedIndex);
         Assert.Equal(new[] { "Original" }, native.Active);
@@ -237,9 +238,11 @@ public sealed class DutyRecoveryTests
         run.Rotation.UpdateDutyRotationHealth(1044, true, false, false, "native user choice");
         run.Rotation.UpdateDutyRotationHealth(1044, true, false, false, "no reselection");
         Assert.Equal(-1, list.SelectedIndex);
-        native.Active = ["External"];
+        var external = native.Presets.AllPresets.Single(preset => preset.Name == "External");
+        native.Rotation.Preset = external;
         run.Rotation.UpdateDutyRotationHealth(1044, true, false, false, "native preset choice");
         Assert.Equal(new[] { "External" }, native.Active);
+        Assert.Same(external, native.Rotation.Preset);
     }
 
     [Fact]
@@ -250,13 +253,279 @@ public sealed class DutyRecoveryTests
         run.Config.CombatProvider = CombatProvider.Rsr;
         Assert.True(run.Rotation.Initialize());
         Assert.True(run.Rotation.EnableRotationOncePerDuty("GMC start"));
-        Assert.False(native.AiEnabled);
-        Assert.Equal(new[] { "/bmrai off" }, run.Commands);
+        Assert.True(native.AiEnabled);
+        Assert.Empty(run.Commands);
         run.GmcLoaded = false;
         run.Rotation.ObserveSessionDeparture();
         Assert.Equal(new[] { "Original" }, native.Active);
         Assert.False(run.Rotation.EnableRotationOncePerDuty("departed GMC"));
-        Assert.Equal(new[] { "/bmrai off" }, run.Commands);
+        Assert.False(native.AiEnabled);
+        Assert.Empty(run.Commands);
+    }
+
+    [Theory]
+    [InlineData("BossModReborn", false)]
+    [InlineData("GodMod", false)]
+    [InlineData("BossModReborn", true)]
+    [InlineData("GodMod", true)]
+    public void GmcFightAuthorityLeavesRouteIdleAndRestoresPriorModeAndFlags(string host, bool originallyActive)
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: host)
+            { AiEnabled = originallyActive, ManualTarget = true, ForbidActions = true, ForbidMovement = true };
+        native.AiMasterSlot = originallyActive ? 2 : 0;
+        native.Rotation.Player.InCombat = false;
+        using var run = new Run(native) { GmcLoaded = true, Territory = 1044 };
+        Assert.True(run.Rotation.Initialize());
+        Assert.True(run.Rotation.EnableRotationOncePerDuty("route ready"));
+        Assert.False(native.AiEnabled); // State oracle, not proof of native controller quiescence.
+        Assert.False(native.ManualTarget);
+        Assert.False(native.ForbidActions);
+        Assert.False(native.ForbidMovement);
+        var group = native.Rotation.Preset;
+        native.Rotation.Player.InCombat = true;
+        run.Rotation.ObserveSessionDeparture();
+        Assert.True(native.AiEnabled);
+        Assert.Same(group, native.AiPreset);
+        Assert.Same(group, native.Rotation.Preset);
+        native.Rotation.Player.InCombat = false;
+        run.Rotation.ObserveSessionDeparture();
+        Assert.False(native.AiEnabled);
+        Assert.Same(group, native.Rotation.Preset);
+        Assert.True(run.Rotation.DisableRotationForDutyEnd("Stop"));
+        Assert.Equal(originallyActive, native.AiEnabled);
+        Assert.Equal(originallyActive ? 2 : 0, native.AiMasterSlot);
+        Assert.True(native.ManualTarget);
+        Assert.True(native.ForbidActions);
+        Assert.True(native.ForbidMovement);
+        Assert.Equal("Original", native.Selector);
+        Assert.Equal(new[] { "Original" }, native.Active);
+        var writes = native.Writes.ToArray();
+        Assert.False(run.Rotation.EnableRotationOncePerDuty("after Stop"));
+        Assert.Equal(writes, native.Writes);
+    }
+
+    [Theory]
+    [InlineData(40u, "FRENRIDER - RANGED")]
+    [InlineData(37u, "FRENRIDER - TANK")]
+    public void GmcSelectsAutomaticSageOrTankGroupWithoutApplyingSavedManualOrProviderChoice(uint job, string expected)
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original") { DhogHealersAvailable = true };
+        native.Rotation.Player.Class = (NativeJob)job;
+        using var run = new Run(native) { GmcLoaded = true, Territory = 1044 };
+        run.Config.CombatProvider = CombatProvider.Wrath;
+        run.Config.UseManualBossModPreset = true;
+        run.Config.ManualBossModPresetName = "Other";
+        Assert.True(run.Rotation.Initialize());
+        Assert.True(run.Rotation.EnableRotationOncePerDuty("automatic GMC role"));
+        Assert.Equal(new[] { expected }, native.Active);
+        Assert.Same(native.Rotation.Preset, native.AiPreset);
+        Assert.Equal(CombatProvider.Wrath, run.Config.CombatProvider);
+        Assert.True(run.Config.UseManualBossModPreset);
+        Assert.Equal("Other", run.Config.ManualBossModPresetName);
+        using var json = JsonDocument.Parse(native.Interface.GetIpcSubscriber<string, string>("BossMod.Presets.Get").InvokeFunc(expected));
+        var modules = json.RootElement.GetProperty("Modules");
+        if (job == 40)
+        {
+            Assert.True(modules.TryGetProperty("BMRVariantModulePack.Autorotation.Dhog.DhogSGE", out _));
+            Assert.False(modules.TryGetProperty("BossMod.Autorotation.xan.HealerAI", out _));
+        }
+        else
+            Assert.DoesNotContain(modules.GetProperty("BossMod.Autorotation.xan.TankAI").EnumerateArray(),
+                option => option.GetProperty("Track").GetString() == "Stance" && option.GetProperty("Option").GetString() == "Disabled");
+        // These assert selection/strategy preservation, not native healing or stance execution.
+    }
+
+    [Fact]
+    public void GmcSageRejectsMissingRegisteredHealersBeforeEnablingNativeAi()
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original");
+        native.Rotation.Player.Class = NativeJob.SGE;
+        using var run = new Run(native) { GmcLoaded = true, Territory = 1044 };
+        Assert.True(run.Rotation.Initialize());
+        Assert.False(run.Rotation.EnableRotationOncePerDuty("missing companion healer"));
+        Assert.False(native.AiEnabled);
+        Assert.Equal(new[] { "Original" }, native.Active);
+        Assert.Contains(native.Warnings, warning => warning.Contains("Could not find God Mod Companion rotations", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData("BossModReborn", true, false)]
+    [InlineData("BossModReborn", false, false)]
+    [InlineData("GodMod", true, false)]
+    [InlineData("GodMod", false, false)]
+    [InlineData("GodMod", true, true)]
+    public void GmcBoundSagePlanDeathPreservesModulesAndRecoversWithoutAssumingNativeClear(string host, bool clear, bool scripted)
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: host)
+            { DhogHealersAvailable = true, ClearPresetOnDeath = clear };
+        native.Rotation.Player.Class = NativeJob.SGE;
+        native.Rotation.Hints.ScriptedDeath = scripted;
+        using var run = new Run(native) { GmcLoaded = true, Territory = 1044 };
+        var module = new D142Nero();
+        var plan = new NativePlan("BMRV-D142Nero-Healer-SGE", NativeJob.SGE, typeof(D142Nero))
+            { Modules = ["native SGE", "native HealerAI", "native SGE utility"] };
+        var modules = plan.Modules.ToArray();
+        var list = new NativePlanList { Plans = [plan] };
+        native.Rotation.Database.Plans.Plans[typeof(D142Nero)] = new() { [NativeJob.SGE] = list };
+        native.Rotation.Bossmods.ActiveModule = module;
+        Assert.True(run.Rotation.Initialize());
+        Assert.True(run.Rotation.EnableRotationOncePerDuty("Sage group"));
+        native.Rotation.Planner = new(module, plan);
+        run.Rotation.UpdateDutyRotationHealth(1044, true, false, false, "plan bound");
+        Assert.Null(native.Rotation.Preset);
+        Assert.Null(native.AiPreset);
+        Assert.Null(native.Selector);
+        native.Die();
+        Assert.Equal(clear && !scripted, native.ForceDisabled);
+        run.Rotation.InvalidateCombatActivation();
+        run.Rotation.ObserveSessionDeparture();
+        native.Rotation.Player.IsDead = false;
+        Assert.True(run.Rotation.EnableRotationOncePerDuty("raise"));
+        Assert.False(native.ForceDisabled);
+        Assert.Null(native.Rotation.Preset);
+        Assert.Same(plan, native.Rotation.Planner.Plan);
+        Assert.Equal(modules, plan.Modules);
+        Assert.True(run.Rotation.DisableRotationForDutyEnd("Stop"));
+        Assert.Equal(-1, list.SelectedIndex);
+        Assert.Equal(new[] { "Original" }, native.Active);
+        Assert.Equal("Original", native.Selector);
+    }
+
+    [Theory]
+    [InlineData("BossModReborn", true)]
+    [InlineData("BossModReborn", false)]
+    [InlineData("GodMod", true)]
+    [InlineData("GodMod", false)]
+    public void GmcGroupDeathWaitsForNativeWitnessAndAllowsUnchangedRuntime(string host, bool clear)
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: host)
+            { ClearPresetOnDeath = clear };
+        using var run = new Run(native) { GmcLoaded = true, Territory = 1044 };
+        Assert.True(run.Rotation.Initialize());
+        Assert.True(run.Rotation.EnableRotationOncePerDuty("before HP0"));
+        run.Rotation.InvalidateCombatActivation(); // Consumer HP0 precedes native actor processing.
+        Assert.False(run.Rotation.EnableRotationOncePerDuty("native death still pending"));
+        native.Die();
+        run.Rotation.ObserveSessionDeparture();
+        var player = native.Rotation.Player;
+        typeof(NativeRotationManager).GetField("Player")!.SetValue(native.Rotation, null);
+        run.Rotation.ObserveSessionDeparture(); // Return/loading must not discard the receipt.
+        typeof(NativeRotationManager).GetField("Player")!.SetValue(native.Rotation, player);
+        player.IsDead = false;
+        player.InCombat = false;
+        Assert.True(run.Rotation.EnableRotationOncePerDuty("entrance respawn"));
+        Assert.False(native.AiEnabled);
+        Assert.Equal(new[] { "FRENRIDER - TANK" }, native.Active);
+        var writes = native.Writes.ToArray();
+        Assert.True(run.Rotation.EnableRotationOncePerDuty("duplicate ready"));
+        Assert.Equal(writes, native.Writes);
+    }
+
+    [Theory]
+    [InlineData("death-setting")]
+    [InlineData("manual-target")]
+    [InlineData("actions")]
+    [InlineData("AI-off")]
+    [InlineData("plan-choice")]
+    public void GmcChangedNativeAuthorityDuringDeathCannotReopenCombat(string change)
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original") { ClearPresetOnDeath = false };
+        using var run = new Run(native) { GmcLoaded = true, Territory = 1044 };
+        var module = new D142Nero();
+        var plan = new NativePlan("BMRV-D142Nero-Tank-WAR", NativeJob.WAR, typeof(D142Nero));
+        var list = new NativePlanList { Plans = [plan] };
+        native.Rotation.Database.Plans.Plans[typeof(D142Nero)] = new() { [NativeJob.WAR] = list };
+        native.Rotation.Bossmods.ActiveModule = module;
+        Assert.True(run.Rotation.Initialize());
+        Assert.True(run.Rotation.EnableRotationOncePerDuty("start"));
+        native.Rotation.Planner = new(module, plan);
+        run.Rotation.UpdateDutyRotationHealth(1044, true, false, false, "bound");
+        native.Die();
+        run.Rotation.InvalidateCombatActivation();
+        switch (change)
+        {
+            case "death-setting": native.ClearPresetOnDeath = true; break;
+            case "manual-target": native.ManualTarget = true; break;
+            case "actions": native.ForbidActions = true; break;
+            case "AI-off": native.AiEnabled = false; break;
+            case "plan-choice": list.SelectedIndex = -1; break;
+        }
+        run.Rotation.ObserveSessionDeparture();
+        native.Rotation.Player.IsDead = false;
+        Assert.False(run.Rotation.EnableRotationOncePerDuty("newer native choice"));
+        var writes = native.Writes.ToArray();
+        Assert.False(run.Rotation.EnableRotationOncePerDuty("still terminal"));
+        Assert.Equal(writes, native.Writes);
+        if (change == "plan-choice") Assert.Equal(-1, list.SelectedIndex);
+        if (change == "manual-target") Assert.True(native.ManualTarget);
+        if (change == "actions") Assert.True(native.ForbidActions);
+    }
+
+    [Fact]
+    public void GmcNativeNoTargetClearIsNotATimedGroupReassertion()
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original");
+        using var run = new Run(native) { GmcLoaded = true, Territory = 1044 };
+        Assert.True(run.Rotation.Initialize());
+        Assert.True(run.Rotation.EnableRotationOncePerDuty("group"));
+        var group = native.AiPreset;
+        native.PublishAiPreset(false);
+        var writes = native.Writes.ToArray();
+        run.Rotation.UpdateDutyRotationHealth(1044, true, false, false, "no target");
+        Assert.Null(native.Rotation.Preset);
+        Assert.Same(group, native.AiPreset);
+        Assert.Equal(writes, native.Writes);
+        native.PublishAiPreset(true);
+        Assert.Same(group, native.Rotation.Preset);
+    }
+
+    [Fact]
+    public void GmcPreservesALaterRuntimeObjectEvenWithTheSamePresetName()
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original");
+        using var run = new Run(native) { GmcLoaded = true, Territory = 1044 };
+        Assert.True(run.Rotation.Initialize());
+        Assert.True(run.Rotation.EnableRotationOncePerDuty("group"));
+        var later = new NativePreset("FRENRIDER - TANK");
+        native.Rotation.Preset = later;
+        run.Rotation.ObserveSessionDeparture();
+        Assert.Same(later, native.Rotation.Preset);
+        Assert.False(native.AiEnabled);
+        Assert.False(run.Rotation.EnableRotationOncePerDuty("later manual runtime"));
+    }
+
+    [Fact]
+    public void GmcInactiveNativeNoneAndNewNativeFollowChoiceRemainAuthoritative()
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original");
+        native.Rotation.Player.InCombat = false;
+        using var run = new Run(native) { GmcLoaded = true, Territory = 1044 };
+        Assert.True(run.Rotation.Initialize());
+        Assert.True(run.Rotation.EnableRotationOncePerDuty("route"));
+        native.Rotation.Preset = null; // No active native AI can explain this clear.
+        run.Rotation.ObserveSessionDeparture();
+        Assert.Null(native.Rotation.Preset);
+        Assert.False(run.Rotation.EnableRotationOncePerDuty("native None"));
+
+        var module = new D142Nero();
+        var originalPlan = new NativePlan("Earlier plan", NativeJob.WAR, typeof(D142Nero));
+        var bundledPlan = new NativePlan("BMRV-D142Nero-Tank-WAR", NativeJob.WAR, typeof(D142Nero));
+        var list = new NativePlanList { SelectedIndex = 0, Plans = [originalPlan, bundledPlan] };
+        native.Rotation.Bossmods.ActiveModule = module;
+        native.Rotation.Database.Plans.Plans[typeof(D142Nero)] = new() { [NativeJob.WAR] = list };
+        Assert.True(run.Rotation.Initialize());
+        native.Rotation.Player.InCombat = true;
+        Assert.True(run.Rotation.EnableRotationOncePerDuty("new run"));
+        Assert.Equal(1, list.SelectedIndex);
+        native.AiEnabled = true; // Replaces the captured native behavior.
+        native.AiMasterSlot = 2;
+        var later = native.AiPreset;
+        run.Rotation.ObserveSessionDeparture();
+        Assert.True(native.AiEnabled);
+        Assert.Equal(2, native.AiMasterSlot);
+        Assert.Same(later, native.AiPreset);
+        Assert.Equal(0, list.SelectedIndex); // Only the unchanged owned plan selection is restored.
+        Assert.False(run.Rotation.EnableRotationOncePerDuty("new native follow"));
     }
 
     [Fact]
@@ -1159,7 +1428,12 @@ public sealed class DutyRecoveryTests
         Assert.True(run.Rotation.EnableRotationOncePerDuty("GM compatible host"));
         Assert.Equal(saved, run.Config.CombatProvider);
         Assert.Equal(new[] { gmc ? "FRENRIDER - TANK" : "null" }, native.Active);
-        Assert.Contains(gmc ? "/gmai off" : "/gmai on", run.Commands);
+        if (gmc)
+        {
+            Assert.True(native.AiEnabled);
+            Assert.DoesNotContain(run.Commands, command => command.StartsWith("/gmai ", StringComparison.Ordinal));
+        }
+        else Assert.Contains("/gmai on", run.Commands);
         Assert.DoesNotContain(run.Commands, command => command.StartsWith("/bmrai", StringComparison.Ordinal)
             || command.StartsWith("/vbmai", StringComparison.Ordinal));
         Assert.True(run.Rotation.DisableRotationForDutyEnd("GM cleanup"));
@@ -2058,6 +2332,7 @@ public sealed class DutyRecoveryTests
         Assert.True(run.Rotation.Initialize());
         Assert.True(run.Rotation.EnableRotation());
         native.Writes.Clear();
+        var beforeDeparture = (Runtime: native.Active.ToArray(), native.Selector, native.Distance, native.AiEnabled);
         switch (departure)
         {
             case "provider": run.Config.CombatProvider = CombatProvider.Wrath; run.Manager.NotifyConfigurationChanged(); break;
@@ -2082,6 +2357,14 @@ public sealed class DutyRecoveryTests
             Assert.Empty(native.Writes);
             Assert.Equal(new[] { "Reloaded" }, native.Active);
             Assert.Equal("Reloaded", native.Selector);
+        }
+        else if (departure is "account" or "character")
+        {
+            Assert.Empty(native.Writes);
+            Assert.Equal(beforeDeparture.Runtime, native.Active);
+            Assert.Equal(beforeDeparture.Selector, native.Selector);
+            Assert.Equal(beforeDeparture.Distance, native.Distance);
+            Assert.Equal(beforeDeparture.AiEnabled, native.AiEnabled);
         }
         else
         {
@@ -2426,8 +2709,9 @@ public sealed class DutyRecoveryTests
     private sealed record NativePresetModule(NativeModuleDefinition Definition);
     private sealed record NativePreset(string Name, bool HiddenByDefault = false)
     {
+        public static readonly NativePreset ForceDisable = new("Fixture force disabled");
         public List<NativePresetModule> Modules = [new(new(NativeModuleOrder.Rotation)), new(new(NativeModuleOrder.Movement))];
-        public NativePreset MakeClone(bool includeTransient) => new(Name, HiddenByDefault) { Modules = [.. Modules] };
+        public NativePreset MakeClone(bool includeTransient) => new(Name) { Modules = [.. Modules] };
     }
     private sealed class NativePresetDatabase
     {
@@ -2435,7 +2719,7 @@ public sealed class DutyRecoveryTests
         public List<NativePreset> DefaultPresets { get; set; } = [];
         public List<NativePreset> UserPresets { get; set; } = [];
     }
-    private enum NativeJob : uint { WAR = 21, NIN = 30 }
+    private enum NativeJob : uint { WAR = 21, NIN = 30, GNB = 37, SGE = 40 }
     private sealed record NativePlan(string Name, NativeJob Class, Type Encounter)
     {
         public List<object> Modules = [new object()];
@@ -2453,7 +2737,21 @@ public sealed class DutyRecoveryTests
     {
         public NativePlanDatabase Plans = new();
     }
-    private sealed class NativeActor { public NativeJob Class = NativeJob.WAR; public bool InCombat = true; public bool IsDead; }
+    private sealed class NativeActor
+    {
+        public NativeJob Class = NativeJob.WAR;
+        public bool InCombat = true, IsDead;
+        public ulong InstanceID = 101;
+        public string Name = "Fixture actor";
+    }
+    private sealed class NativeParty
+    {
+        public NativeActor?[] Members = Enumerable.Range(0, 4).Select(i => (NativeActor?)new NativeActor { InstanceID = (ulong)(101 + i) }).ToArray();
+        public NativeActor? this[int slot] => slot >= 0 && slot < Members.Length ? Members[slot] : null;
+    }
+    private sealed class NativeWorld { public NativeParty Party = new(); }
+    private sealed class NativeAiBehavior(NativePreset? preset) { public NativePreset? AIPreset = preset; }
+    private sealed class NativeHints { public bool ScriptedDeath; }
     private sealed class NativeBossmods { public object? ActiveModule; public List<object> LoadedModules = []; }
     private sealed record NativePlanner(object Module, NativePlan Plan);
     private sealed class NativeRotationManager(NativeRotationDatabase database, Action<NativePreset?> onPreset)
@@ -2462,6 +2760,7 @@ public sealed class DutyRecoveryTests
         public NativeActor Player = new();
         public NativeBossmods Bossmods = new();
         public NativePlanner? Planner;
+        public NativeHints Hints = new();
         public NativePreset? Preset { get; set { field = value; onPreset(value); } }
     }
     private sealed class D141Colossus { }
@@ -2507,6 +2806,9 @@ public sealed class DutyRecoveryTests
         private readonly object autorotationConfig;
         private bool ready = true;
         private readonly object? aiManager;
+        private readonly System.Collections.IDictionary dhogModules;
+        private readonly Type[] dhogTypes;
+        internal readonly NativeWorld World = new();
         private readonly object wrapper;
         private readonly Type pluginType;
         private readonly object database;
@@ -2527,12 +2829,8 @@ public sealed class DutyRecoveryTests
         internal void Die()
         {
             Rotation.Player.IsDead = true;
-            if (Rotation.Player.InCombat && ClearPresetOnDeath)
-            {
-                Rotation.Preset = null;
-                Active.Clear();
-                ForceDisabled = true;
-            }
+            if (Rotation.Player.InCombat && ClearPresetOnDeath && !(InternalName == "GodMod" && Rotation.Hints.ScriptedDeath))
+                Rotation.Preset = NativePreset.ForceDisable;
         }
         internal string? Selector
         {
@@ -2545,9 +2843,47 @@ public sealed class DutyRecoveryTests
             set
             {
                 node.GetType().GetField("Enabled")!.SetValue(node, value);
-                aiManager?.GetType().GetField("Beh")!.SetValue(aiManager, value ? new object() : null);
+                if (aiManager is null) return;
+                var preset = value ? Presets.AllPresets.SingleOrDefault(p => p.Name == Selector) : AiPreset;
+                if (value) AiPreset = preset;
+                aiManager.GetType().GetField("Beh")!.SetValue(aiManager, value ? new NativeAiBehavior(preset) : null);
+                AiMasterSlot = 0;
             }
         }
+        internal NativePreset? AiPreset
+        {
+            get => aiManager?.GetType().GetField("AiPreset")!.GetValue(aiManager) as NativePreset;
+            private set => aiManager?.GetType().GetField("AiPreset")!.SetValue(aiManager, value);
+        }
+        internal int AiMasterSlot
+        {
+            get => (int)(aiManager?.GetType().GetField("MasterSlot")!.GetValue(aiManager) ?? 0);
+            set => aiManager?.GetType().GetField("MasterSlot")!.SetValue(aiManager, value);
+        }
+        internal bool ForbidActions
+        {
+            get => (bool)node.GetType().GetField("ForbidActions")!.GetValue(node)!;
+            set => node.GetType().GetField("ForbidActions")!.SetValue(node, value);
+        }
+        internal bool ForbidMovement
+        {
+            get => (bool)node.GetType().GetField("ForbidMovement")!.GetValue(node)!;
+            set => node.GetType().GetField("ForbidMovement")!.SetValue(node, value);
+        }
+        internal bool DhogHealersAvailable
+        {
+            get => dhogModules.Count == dhogTypes.Length;
+            set { dhogModules.Clear(); if (value) foreach (var type in dhogTypes) dhogModules.Add(type, new object()); }
+        }
+
+        // Only the qualified publication branch is modeled. No navigation,
+        // native job/healer module, action queue or game action executes here.
+        internal void PublishAiPreset(bool hasTarget)
+        {
+            if (AiEnabled && !ForbidActions && !Rotation.Player.IsDead)
+                Rotation.Preset = hasTarget ? AiPreset : null;
+        }
+
         internal bool ManualTarget
         {
             get => (bool)node.GetType().GetField("ManualTarget")!.GetValue(node)!;
@@ -2567,6 +2903,7 @@ public sealed class DutyRecoveryTests
             nodeBuilder.DefineField("Enabled", typeof(bool), FieldAttributes.Public);
             nodeBuilder.DefineField("ManualTarget", typeof(bool), FieldAttributes.Public);
             nodeBuilder.DefineField("ForbidActions", typeof(bool), FieldAttributes.Public);
+            nodeBuilder.DefineField("ForbidMovement", typeof(bool), FieldAttributes.Public);
             nodeBuilder.DefineField("AIAutorotPresetName", typeof(string), FieldAttributes.Public);
             var nodeType = nodeBuilder.CreateType()!;
             node = Activator.CreateInstance(nodeType)!;
@@ -2626,14 +2963,75 @@ public sealed class DutyRecoveryTests
             var serviceBuilder = module.DefineType("BossMod.Service", TypeAttributes.Public);
             serviceBuilder.DefineField("Config", configType, FieldAttributes.Public | FieldAttributes.Static);
             serviceBuilder.CreateType()!.GetField("Config")!.SetValue(null, configRoot);
+            dhogTypes = new[] { "WHM", "SCH", "AST", "SGE" }.Select(job =>
+                module.DefineType("BMRVariantModulePack.Autorotation.Dhog.Dhog" + job, TypeAttributes.Public).CreateType()!).ToArray();
+            dhogModules = new Dictionary<Type, object>();
+            var registryBuilder = module.DefineType("BossMod.Autorotation.RotationModuleRegistry", TypeAttributes.Public);
+            registryBuilder.DefineField("Modules", typeof(System.Collections.IDictionary), FieldAttributes.Public | FieldAttributes.Static);
+            var resolver = registryBuilder.DefineField("Resolver", typeof(Func<string, Type>), FieldAttributes.Public | FieldAttributes.Static);
+            var find = registryBuilder.DefineMethod("FindType", MethodAttributes.Public | MethodAttributes.Static, typeof(Type), [typeof(string)]);
+            var findIl = find.GetILGenerator();
+            findIl.Emit(OpCodes.Ldsfld, resolver);
+            findIl.Emit(OpCodes.Ldarg_0);
+            findIl.Emit(OpCodes.Callvirt, typeof(Func<string, Type>).GetMethod("Invoke")!);
+            findIl.Emit(OpCodes.Ret);
+            var registry = registryBuilder.CreateType()!;
+            registry.GetField("Modules")!.SetValue(null, dhogModules);
+            registry.GetField("Resolver")!.SetValue(null, (Func<string, Type?>)(name => dhogTypes.SingleOrDefault(type => type.FullName == name)));
             if (provider == CombatProvider.Bmr)
             {
                 var managerBuilder = module.DefineType("BossMod.AI.AIManager", TypeAttributes.Public);
                 managerBuilder.DefineField("Instance", managerBuilder, FieldAttributes.Public | FieldAttributes.Static);
                 managerBuilder.DefineField("Beh", typeof(object), FieldAttributes.Public);
+                managerBuilder.DefineField("AiPreset", typeof(object), FieldAttributes.Public);
+                managerBuilder.DefineField("MasterSlot", typeof(int), FieldAttributes.Public);
+                managerBuilder.DefineField("WorldState", typeof(object), FieldAttributes.Public);
+                foreach (var (name, callbackType, arguments) in new[]
+                {
+                    ("SetAIPreset", typeof(Action<object?>), new[] { typeof(object) }),
+                    ("SwitchToFollow", typeof(Action<int>), new[] { typeof(int) }),
+                    ("SwitchToIdle", typeof(Action), Type.EmptyTypes),
+                })
+                {
+                    var callback = managerBuilder.DefineField(name + "Callback", callbackType, FieldAttributes.Public);
+                    var method = managerBuilder.DefineMethod(name, MethodAttributes.Public, typeof(void), arguments);
+                    var il = method.GetILGenerator();
+                    il.Emit(OpCodes.Ldarg_0);
+                    il.Emit(OpCodes.Ldfld, callback);
+                    if (arguments.Length != 0) il.Emit(OpCodes.Ldarg_1);
+                    il.Emit(OpCodes.Callvirt, callbackType.GetMethod("Invoke")!);
+                    il.Emit(OpCodes.Ret);
+                }
                 var managerType = managerBuilder.CreateType()!;
                 aiManager = Activator.CreateInstance(managerType)!;
                 managerType.GetField("Instance")!.SetValue(null, aiManager);
+                managerType.GetField("WorldState")!.SetValue(aiManager, World);
+                managerType.GetField("SetAIPresetCallback")!.SetValue(aiManager, (Action<object?>)(value =>
+                {
+                    var preset = (NativePreset?)value;
+                    Writes.Add("AI.SetAIPreset " + (preset?.Name ?? "<none>"));
+                    AiPreset = preset;
+                    Selector = preset?.Name;
+                    if (managerType.GetField("Beh")!.GetValue(aiManager) is NativeAiBehavior behavior) behavior.AIPreset = preset;
+                }));
+                managerType.GetField("SwitchToIdleCallback")!.SetValue(aiManager, (Action)(() =>
+                {
+                    Writes.Add("AI.SwitchToIdle");
+                    AiEnabled = false;
+                    Rotation.Preset = null; // Frozen Idle always clears the runtime.
+                }));
+                managerType.GetField("SwitchToFollowCallback")!.SetValue(aiManager, (Action<int>)(slot =>
+                {
+                    Writes.Add("AI.SwitchToFollow " + slot);
+                    AiEnabled = false;
+                    Rotation.Preset = null;
+                    var actualSlot = World.Party[slot]?.Name is not null ? slot : 0;
+                    var preset = Presets.AllPresets.SingleOrDefault(p => p.Name == Selector);
+                    AiPreset = preset;
+                    node.GetType().GetField("Enabled")!.SetValue(node, true);
+                    managerType.GetField("Beh")!.SetValue(aiManager, new NativeAiBehavior(preset));
+                    AiMasterSlot = actualSlot;
+                }));
             }
             Presets.AllPresets = new[] { "Original", "Other", "null", "none", "Literal##name###suffix", "Next", "External", "Reloaded", "VBM Multibox",
                 "passive - tank", "passive - melee", "passive - ranged", "FRENRIDER - TANK", "FRENRIDER - MELEE", "FRENRIDER - RANGED" }
@@ -2642,9 +3040,12 @@ public sealed class DutyRecoveryTests
             database = new NativeRotationDatabase(Presets);
             Rotation = new((NativeRotationDatabase)database, preset =>
             {
-                Active = preset is null ? [] : [preset.Name];
-                ForceDisabled = false;
+                ForceDisabled = ReferenceEquals(preset, NativePreset.ForceDisable);
+                Active = preset is null || ForceDisabled ? [] : [preset.Name];
             });
+            if (disabled) Rotation.Preset = NativePreset.ForceDisable;
+            else if (Active.Count == 1)
+                Rotation.Preset = Presets.AllPresets.FirstOrDefault(p => p.Name == Active[0]) ?? new NativePreset(Active[0]);
             if (provider == CombatProvider.Vbm)
             {
                 var tickBuilder = module.DefineType("BossMod.Services.TickService", TypeAttributes.Public);
@@ -2781,6 +3182,16 @@ public sealed class DutyRecoveryTests
             if (channel == "BossMod.Configuration")
             {
                 var arguments = (List<string>)values![0]!;
+                if (arguments[1] is "ForbidActions" or "ForbidMovement")
+                {
+                    var field = node.GetType().GetField(arguments[1])!;
+                    if ((bool)values[1]!)
+                    {
+                        Writes.Add("Configuration " + arguments[1] + " " + arguments[2]);
+                        field.SetValue(node, bool.Parse(arguments[2]));
+                    }
+                    return new List<string> { field.GetValue(node)!.ToString()! };
+                }
                 if (arguments[1] == "ManualTarget")
                 {
                     if ((bool)values[1]!)
@@ -2835,7 +3246,7 @@ public sealed class DutyRecoveryTests
             }
             else if (channel == "BossMod.Presets.SetActiveList") { Active = ((List<string>)values![0]!).ToList(); ForceDisabled = false; }
             else if (channel == "BossMod.Presets.ClearActive") { Rotation.Preset = null; Active.Clear(); ForceDisabled = false; }
-            else if (channel == "BossMod.Presets.SetForceDisabled") { Rotation.Preset = null; Active.Clear(); ForceDisabled = true; }
+            else if (channel == "BossMod.Presets.SetForceDisabled") Rotation.Preset = NativePreset.ForceDisable;
             else throw new InvalidOperationException("unexpected native endpoint " + channel);
             if (ThrowAfterRuntimeWrite) throw new InvalidOperationException("native write completed before endpoint failure");
             return true;

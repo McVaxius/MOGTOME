@@ -84,6 +84,8 @@ public partial class BossModIPC : IDisposable
     private BossModSettingsSnapshot? deathRecoveryExpected;
     private BossModRuntimePresetState? deathRecoveryTarget;
     private bool ownedDeathObserved;
+    private bool deathNativeObserved, deathNativeClearAllowed;
+    private (object Selection, object Job, bool Plan)? lastAliveGmcSelection, deathGmcSelection;
     private (string Account, string Character, Configuration Config, string Provider) ownedIdentity;
     private bool cleanupStarted;
     private bool cleanupFailed;
@@ -268,6 +270,8 @@ public partial class BossModIPC : IDisposable
         lastAliveOwnedState = deathRecoveryExpected = null;
         deathRecoveryTarget = null;
         ownedDeathObserved = false;
+        deathNativeObserved = deathNativeClearAllowed = false;
+        lastAliveGmcSelection = deathGmcSelection = null;
         ForgetGmcPlan();
         cleanupStarted = cleanupFailed = false;
         cleanupRuntimeExpected = cleanupRuntimeTarget = null;
@@ -471,6 +475,8 @@ public partial class BossModIPC : IDisposable
             lastAliveOwnedState = deathRecoveryExpected = null;
             deathRecoveryTarget = null;
             ownedDeathObserved = false;
+            deathNativeObserved = deathNativeClearAllowed = false;
+            lastAliveGmcSelection = deathGmcSelection = null;
             ForgetGmcPlan();
         }
         return true;
@@ -535,7 +541,11 @@ public partial class BossModIPC : IDisposable
             }
             catch (Exception ex) { log.Debug($"BossMod preferred-distance read unavailable: {ex.GetBaseException().Message}"); }
         }
-        return new BossModSettingsSnapshot(runtime, storedReadable, stored, distance, aiEnabled, manualTarget);
+        var clearOnDeath = provider == "BMR"
+            ? LiveMember(ReadConfigNode(assembly, "BossMod.Autorotation.AutorotationConfig"), "ClearPresetOnDeath") as bool? : null;
+        return new BossModSettingsSnapshot(runtime, storedReadable, stored, distance, aiEnabled, manualTarget,
+            clearOnDeath, provider == "BMR" ? LiveMember(node, "ForbidActions") as bool? : null,
+            provider == "BMR" ? LiveMember(node, "ForbidMovement") as bool? : null);
     }
 
     private static object? ReadAiConfig(Assembly assembly)
@@ -569,15 +579,18 @@ public partial class BossModIPC : IDisposable
             return false;
         var player = LiveMember(LiveMember(instance, "_rotation"), "Player");
         return LiveMember(player, "IsDead") is bool isDead && (dead is null || isDead == dead)
-            && (!(dead == true || requireCombat) || LiveMember(player, "InCombat") is true)
-            && LiveMember(ReadAiConfig(assembly!), "ForbidActions") is false
-            && LiveMember(ReadConfigNode(assembly!, "BossMod.Autorotation.AutorotationConfig"), "ClearPresetOnDeath") is true;
+            && (dead != false || LiveMember(player, "Class") is { } nativeJob && Convert.ToUInt32(nativeJob) != 0)
+            && (!requireCombat || LiveMember(player, "InCombat") is true
+                && LiveMember(ReadConfigNode(assembly!, "BossMod.Autorotation.AutorotationConfig"), "ClearPresetOnDeath") is true
+                && (NativeHost != "GodMod" || LiveMember(LiveMember(LiveMember(instance, "_rotation"), "Hints"), "ScriptedDeath") is false))
+            && LiveMember(ReadAiConfig(assembly!), "ForbidActions") is false;
     }
 
     private static bool SameNonRuntimeSettings(BossModSettingsSnapshot before, BossModSettingsSnapshot after)
         => before.StoredSelectorReadable == after.StoredSelectorReadable && before.StoredAiSelector == after.StoredAiSelector
             && before.PreferredDistance == after.PreferredDistance && before.AiEnabled == after.AiEnabled
-            && before.ManualTarget == after.ManualTarget;
+            && before.ManualTarget == after.ManualTarget && before.ClearPresetOnDeath == after.ClearPresetOnDeath
+            && before.ForbidActions == after.ForbidActions && before.ForbidMovement == after.ForbidMovement;
 
     internal void ObserveOwnedCombatState()
     {
@@ -586,49 +599,71 @@ public partial class BossModIPC : IDisposable
             RefreshOwnedCombatDeath();
             return;
         }
-        if (ownedSettings is null
-            || !TryGetLiveBossMod(ownedIdentity.Provider, out var instance, out _, out _)
-            || LiveMember(LiveMember(instance, "_rotation"), "Player") is not { } player
-            || LiveMember(player, "IsDead") is not false) return;
-        lastAliveOwnedState = ReadNativeDeathState(dead: false) && TryReadOwnedBossModSettings(out var current)
-            && current.Runtime is { ForceDisabled: false, Names.Count: > 0 } && ownedSettings.MatchesOwnedRuntime(current)
-            && ownedSettings.MatchesNativeAuthority(current)
-            ? current : null;
+        if (ownedSettings is null || !ReadNativeDeathState(dead: false)) return;
+        var selection = ReadOwnedGmcSelection(requireBound: true);
+        lastAliveOwnedState = TryReadOwnedBossModSettings(out var current) && current.ClearPresetOnDeath is not null
+            && current.Runtime is { ForceDisabled: false } runtime
+            && (selection is not null ? MatchesGmcRuntime(current) : runtime.Names.Count > 0 && ownedSettings.MatchesOwnedRuntime(current))
+            && ownedSettings.MatchesNativeAuthority(current) ? current : null;
+        lastAliveGmcSelection = lastAliveOwnedState is not null ? selection : null;
     }
 
     internal void ObserveOwnedCombatDeath()
     {
         var previous = lastAliveOwnedState;
+        var selection = lastAliveGmcSelection;
         lastAliveOwnedState = null;
+        lastAliveGmcSelection = null;
         deathRecoveryExpected = null;
         deathRecoveryTarget = null;
+        deathGmcSelection = null;
+        deathNativeObserved = ReadNativeDeathState(dead: true);
+        deathNativeClearAllowed = deathNativeObserved && ReadNativeDeathState(dead: true, requireCombat: true);
         ownedDeathObserved = ownedSettings is not null && ownedIdentity.Provider == "BMR";
-        if (previous is null || previous.Runtime is not { ForceDisabled: false, Names.Count: > 0 } target
-            || !ownedDeathObserved || !ownedSettings!.MatchesOwnedRuntime(previous)
-            || !ReadNativeDeathState(dead: null, requireCombat: true)
-            || !TryReadOwnedBossModSettings(out var current)
-            || !(BossModRuntimePresetState.Matches(previous.Runtime, current.Runtime)
-                || current.Runtime is { ForceDisabled: true, Names.Count: 0 })
-            || !SameNonRuntimeSettings(previous, current)) return;
-        // The consumer can observe HP0 before native actor/death processing.
-        // Retain this qualified handoff until its native clear is observed.
+        if (previous is null || previous.Runtime is not { ForceDisabled: false } target || !ownedDeathObserved
+            || !(selection is { } selected ? MatchesGmcSelection(selected) : target.Names.Count > 0 && ownedSettings!.MatchesOwnedRuntime(previous))
+            || !TryReadOwnedBossModSettings(out var current) || !SameNonRuntimeSettings(previous, current)
+            || !ownedSettings!.MatchesNativeAuthority(current)
+            || !(BossModRuntimePresetState.Matches(target, current.Runtime)
+                || deathNativeClearAllowed && current.Runtime is { ForceDisabled: true, Names.Count: 0 }
+                || selection is not null && MatchesGmcRuntime(current))) return;
+        // HP0 can precede native death processing. Preserve this qualified receipt
+        // through readiness/loading; a clear is not required for every native death.
         deathRecoveryExpected = current;
         deathRecoveryTarget = target;
+        deathGmcSelection = selection;
     }
 
     private void RefreshOwnedCombatDeath()
     {
         if (deathRecoveryExpected is not { } expected || deathRecoveryTarget is not { } target) return;
-        if (ownedSettings is not { } ownership || !ReadNativeDeathState(dead: null)
-            || !TryReadOwnedBossModSettings(out var current) || !SameNonRuntimeSettings(expected, current)
-            || !ownership.MatchesOwnedRuntime(expected with { Runtime = target })
-            || !ownership.MatchesNativeAuthority(current)
+        if (!deathNativeObserved && ReadNativeDeathState(dead: true))
+        {
+            deathNativeObserved = true;
+            deathNativeClearAllowed = ReadNativeDeathState(dead: true, requireCombat: true);
+        }
+        if (ownedSettings is not { } ownership || !TryReadOwnedBossModSettings(out var current)
+            || !SameNonRuntimeSettings(expected, current) || !ownership.MatchesNativeAuthority(current)
             || !(BossModRuntimePresetState.Matches(expected.Runtime, current.Runtime)
-                || expected.Runtime is { ForceDisabled: false }
-                    && current.Runtime is { ForceDisabled: true, Names.Count: 0 }))
+                || deathNativeClearAllowed && current.Runtime is { ForceDisabled: true, Names.Count: 0 }
+                || deathGmcSelection is not null && MatchesGmcRuntime(current)))
         {
             deathRecoveryExpected = null;
             deathRecoveryTarget = null;
+            deathGmcSelection = null;
+            return;
+        }
+        // A temporarily missing native player or job during Return is readiness,
+        // not permission to reclaim a different native selection.
+        if (!TryGetLiveBossMod("BMR", out var instance, out _, out _)
+            || LiveMember(LiveMember(instance, "_rotation"), "Player") is not { } player
+            || LiveMember(player, "Class") is not { } job || Convert.ToUInt32(job) == 0) return;
+        if (!(deathGmcSelection is { } selected ? MatchesGmcSelection(selected)
+            : ownership.MatchesOwnedRuntime(expected with { Runtime = target })))
+        {
+            deathRecoveryExpected = null;
+            deathRecoveryTarget = null;
+            deathGmcSelection = null;
             return;
         }
         deathRecoveryExpected = current;
@@ -640,24 +675,33 @@ public partial class BossModIPC : IDisposable
         RefreshOwnedCombatDeath();
         if (settingsUnchanged && deathRecoveryExpected is { } pending && deathRecoveryTarget is not null)
         {
-            if (pending.Runtime is { ForceDisabled: false } || !ReadNativeDeathState(dead: false)) return null;
+            if (!ReadNativeDeathState(dead: false)
+                || pending.Runtime is { ForceDisabled: false } && !deathNativeObserved) return null;
         }
-        // Consume only on ready acceptance or a known invalidator. Pending
-        // native death processing uses the existing readiness/update calls.
         ownedDeathObserved = false;
         var expected = deathRecoveryExpected;
         var target = deathRecoveryTarget;
+        var selection = deathGmcSelection;
         deathRecoveryExpected = null;
         deathRecoveryTarget = null;
+        deathGmcSelection = null;
+        deathNativeObserved = deathNativeClearAllowed = false;
         if (!settingsUnchanged || expected is null || target is null || ownedSettings is not { } ownership
-            || !ReadNativeDeathState(dead: false)
-            || !TryReadOwnedBossModSettings(out var current) || !SameNonRuntimeSettings(expected, current)
+            || !ReadNativeDeathState(dead: false) || !TryReadOwnedBossModSettings(out var current)
+            || !SameNonRuntimeSettings(expected, current) || !ownership.MatchesNativeAuthority(current)
             || !BossModRuntimePresetState.Matches(expected.Runtime, current.Runtime)
-            || !ownership.MatchesOwnedRuntime(expected with { Runtime = target })
+            || !(selection is { } selected ? MatchesGmcSelection(selected) : ownership.MatchesOwnedRuntime(expected with { Runtime = target }))
             || target.Names.Any(name => !IsExactRuntimePreset(name))) return false;
-        // Admit this verified native death effect to the existing activation
-        // path. That path performs the one preset write and its usual readback.
+        // Admit only the verified native clear or unchanged owned selection.
+        // Existing activation/readback owns the subsequent write, if one is needed.
         ownership.OwnRuntime(current.Runtime!);
+        if (selection is not null)
+        {
+            // Re-enter activation from this verified native result, including
+            // ForceDisable. It is not an unexplained later user selection.
+            gmcOwnedRotation = LiveMember(gmcRotationManager, "Preset");
+            gmcRotationSelected = false;
+        }
         return true;
     }
 
@@ -755,7 +799,20 @@ public partial class BossModIPC : IDisposable
     {
         try
         {
-            pluginInterface.GetIpcSubscriber<string, object>("BossMod.AI.SetPreset").InvokeAction(name);
+            if (gmcAiManager is not null)
+            {
+                object? preset = null;
+                if (!string.IsNullOrEmpty(name))
+                {
+                    preset = gmcOriginalAiActive && Equals(LiveMember(gmcOriginalPreset, "Name"), name)
+                        ? gmcOriginalPreset
+                        : ((IEnumerable)LiveMember(LiveMember(LiveMember(gmcRotationManager, "Database"), "Presets"), "AllPresets")!)
+                            .Cast<object>().Single(candidate => Equals(LiveMember(candidate, "Name"), name));
+                }
+                SetGmcAiPreset(preset);
+            }
+            else
+                pluginInterface.GetIpcSubscriber<string, object>("BossMod.AI.SetPreset").InvokeAction(name);
         }
         catch (Exception ex) { log.Debug($"BossMod AI preset setter unavailable: {ex.GetBaseException().Message}"); }
     }
@@ -882,22 +939,78 @@ public partial class BossModIPC : IDisposable
         return submitted;
     }
 
-    internal bool BeginOwnedBossModCleanup(string account, string character)
+    internal bool BeginOwnedBossModCleanup(string account, string character, bool restoreAi = true)
     {
-        lastAliveOwnedState = deathRecoveryExpected = null;
-        deathRecoveryTarget = null;
-        ownedDeathObserved = false;
+        if (!ownedDeathObserved && gmcAiManager is not null && ReadNativeDeathState(dead: true))
+            ObserveOwnedCombatDeath();
+        if (ownedDeathObserved) RefreshOwnedCombatDeath();
         cleanupStarted = ownedSettings is not null && ownedIdentity.Account == account && ownedIdentity.Character == character;
-        cleanupRuntimeExpected = null;
-        cleanupRuntimeTarget = null;
+        cleanupRuntimeExpected = cleanupRuntimeTarget = null;
         if (!cleanupStarted)
+        {
+            if (ownedSettings is not null && !cleanupFailed)
+            {
+                // A different account/character cannot receive the old run's writes.
+                ownedSettings = null;
+                ownedProvider = null;
+                ownedNativeHost = selectedNativeHost = null;
+                selectedProvider = null;
+                ForgetGmcPlan();
+                cleanupFailed = false;
+            }
             return !cleanupFailed;
+        }
         cleanupFailed = false;
         if (!TryReadOwnedBossModSettings(out var current, allowCleanup: true))
         {
             cleanupFailed = true;
             return false;
         }
+        if (gmcAiManager is not null)
+        {
+            if (!HasOwnedGmcAi())
+            {
+                // The native AI or its captured policy was replaced. Preserve that
+                // newer runtime/selector while restoring other still-owned fields.
+                if (!RestoreGmcPlan())
+                {
+                    cleanupFailed = true;
+                    return false;
+                }
+                ownedSettings!.ReleaseRuntimeAndSelector();
+                ForgetGmcPlan();
+            }
+            else
+            {
+                if (current.Runtime is null)
+                {
+                    cleanupFailed = true;
+                    return false;
+                }
+                var knownRuntime = MatchesGmcRuntime(current);
+                var knownDeath = deathRecoveryExpected is { } expected && deathRecoveryTarget is { } target
+                    && SameNonRuntimeSettings(expected, current) && ownedSettings!.MatchesNativeAuthority(current)
+                    && (BossModRuntimePresetState.Matches(expected.Runtime, current.Runtime)
+                        || deathNativeClearAllowed && current.Runtime is { ForceDisabled: true, Names.Count: 0 })
+                    && (deathGmcSelection is { } selection
+                        ? MatchesGmcSelection(selection, allowMissingJob: true)
+                        : ownedSettings.MatchesOwnedRuntime(expected with { Runtime = target }));
+                if ((knownRuntime || knownDeath) && current.Runtime is { } runtime)
+                    ownedSettings!.OwnRuntime(runtime);
+                else
+                {
+                    gmcCleanupRotation = LiveMember(gmcRotationManager, "Preset");
+                    gmcKeepCleanupRotation = true;
+                    ownedSettings!.ReleaseRuntime();
+                }
+                gmcRestoreActiveAi = restoreAi && gmcOriginalAiActive && (knownRuntime || knownDeath)
+                    && ownedSettings!.MatchesNativeAuthority(current);
+            }
+        }
+        lastAliveOwnedState = deathRecoveryExpected = null;
+        deathRecoveryTarget = null;
+        ownedDeathObserved = deathNativeObserved = deathNativeClearAllowed = false;
+        lastAliveGmcSelection = deathGmcSelection = null;
         cleanupRuntimeExpected = current.Runtime;
         cleanupRuntimeTarget = ownedSettings!.GetRuntimeCleanupTarget(current, turnEverythingOff: false);
         if (!RestoreGmcPlan())
@@ -907,8 +1020,8 @@ public partial class BossModIPC : IDisposable
             LastStatus = "BossMod runtime preset restoration retained: current state is unreadable.";
             cleanupFailed = true;
         }
-        if (ownedSettings.OwnedStoredSelector is { } selector
-            && current.StoredSelectorReadable && current.StoredAiSelector == selector
+        if (ownedSettings.OwnsStoredSelector
+            && current.StoredSelectorReadable && current.StoredAiSelector == ownedSettings.OwnedStoredSelector
             && ownedSettings.Original.StoredSelectorReadable)
         {
             var ownership = ownedSettings;
@@ -944,7 +1057,7 @@ public partial class BossModIPC : IDisposable
                     ownership.OwnStoredSelector(originalSelector);
             }
         }
-        else if (ownedSettings.OwnedStoredSelector is not null && !current.StoredSelectorReadable)
+        else if (ownedSettings.OwnsStoredSelector && !current.StoredSelectorReadable)
         {
             LastStatus = "BMR saved AI selector restoration retained: current state is unreadable.";
             cleanupFailed = true;
@@ -970,6 +1083,8 @@ public partial class BossModIPC : IDisposable
             cleanupFailed = true;
         }
         if (!RestoreOwnedAutomaticTargeting())
+            cleanupFailed = true;
+        if (!RestoreGmcCombatSettings())
             cleanupFailed = true;
         return !cleanupFailed;
     }
@@ -1276,7 +1391,7 @@ public partial class BossModIPC : IDisposable
     private int InstallPackagedPresets(bool forceRecreate)
     {
         var createdCount = 0;
-        var useDhogHealers = ownedIdentity.Config is { CombatProvider: CombatProvider.Bmr, UseManualBossModPreset: false }
+        var useDhogHealers = (IsGmcLoaded || ownedIdentity.Config is { CombatProvider: CombatProvider.Bmr, UseManualBossModPreset: false })
                             && HasDhogHealers();
 
         foreach (var presetName in PackagedPresetNames)
@@ -1711,7 +1826,7 @@ internal sealed record BossModRuntimePresetState(bool ForceDisabled, IReadOnlyLi
 
 internal sealed record BossModSettingsSnapshot(BossModRuntimePresetState? Runtime,
     bool StoredSelectorReadable, string? StoredAiSelector, double? PreferredDistance, bool? AiEnabled,
-    bool? ManualTarget = null)
+    bool? ManualTarget = null, bool? ClearPresetOnDeath = null, bool? ForbidActions = null, bool? ForbidMovement = null)
 {
     internal static BossModSettingsSnapshot Unavailable { get; } = new(null, false, null, null, null);
 }
@@ -1721,6 +1836,9 @@ internal sealed class BossModSettingsOwnership(string provider, BossModSettingsS
     internal BossModSettingsSnapshot Original { get; } = original;
     internal BossModRuntimePresetState? OwnedRuntime { get; private set; }
     internal string? OwnedStoredSelector { get; private set; }
+    internal bool OwnsStoredSelector { get; private set; }
+    internal bool? OwnedForbidActions { get; private set; }
+    internal bool? OwnedForbidMovement { get; private set; }
     internal double? OwnedDistance { get; private set; }
     internal bool? OwnedManualTarget { get; private set; }
     private bool? ownedAiEnabled;
@@ -1731,7 +1849,7 @@ internal sealed class BossModSettingsOwnership(string provider, BossModSettingsS
                 : MatchesOwnedRuntime(current));
     internal bool CanChangeStoredSelector(BossModSettingsSnapshot current)
         => Original.StoredSelectorReadable && current.StoredSelectorReadable
-            && string.Equals(current.StoredAiSelector, OwnedStoredSelector ?? Original.StoredAiSelector, StringComparison.Ordinal);
+            && string.Equals(current.StoredAiSelector, OwnsStoredSelector ? OwnedStoredSelector : Original.StoredAiSelector, StringComparison.Ordinal);
     internal bool CanChangeDistance(double? current)
         => Original.PreferredDistance is { } originalDistance && double.IsFinite(originalDistance)
             && current == (OwnedDistance ?? originalDistance);
@@ -1741,13 +1859,30 @@ internal sealed class BossModSettingsOwnership(string provider, BossModSettingsS
     internal bool? GetManualTargetCleanupTarget(bool? current)
         => OwnedManualTarget is { } owned && current == owned ? Original.ManualTarget : null;
     internal void OwnRuntime(BossModRuntimePresetState state) => OwnedRuntime = state;
+    internal void ReleaseRuntime() => OwnedRuntime = null;
+    internal void ReleaseRuntimeAndSelector()
+    {
+        OwnedRuntime = null;
+        OwnedStoredSelector = null;
+        OwnsStoredSelector = false;
+    }
     internal bool MatchesAiAuthority(BossModSettingsSnapshot current)
         => current.AiEnabled == (ownedAiEnabled ?? Original.AiEnabled);
     internal bool MatchesNativeAuthority(BossModSettingsSnapshot current)
         => MatchesAiAuthority(current) && (provider != "BMR" || CanChangeStoredSelector(current)
             && current.PreferredDistance == (OwnedDistance ?? Original.PreferredDistance)
-            && current.ManualTarget == (OwnedManualTarget ?? Original.ManualTarget));
-    internal void OwnStoredSelector(string? selector) => OwnedStoredSelector = selector;
+            && current.ManualTarget == (OwnedManualTarget ?? Original.ManualTarget)
+            && (OwnedForbidActions is null || current.ForbidActions == OwnedForbidActions)
+            && (OwnedForbidMovement is null || current.ForbidMovement == OwnedForbidMovement));
+    internal void OwnStoredSelector(string? selector)
+    {
+        OwnedStoredSelector = selector;
+        OwnsStoredSelector = true;
+    }
+    internal bool CanChangeForbidActions(bool? current) => current is not null && current == (OwnedForbidActions ?? Original.ForbidActions);
+    internal bool CanChangeForbidMovement(bool? current) => current is not null && current == (OwnedForbidMovement ?? Original.ForbidMovement);
+    internal void OwnForbidActions(bool value) => OwnedForbidActions = value;
+    internal void OwnForbidMovement(bool value) => OwnedForbidMovement = value;
     internal void OwnDistance(double distance) => OwnedDistance = distance;
     internal void OwnManualTarget(bool manualTarget) => OwnedManualTarget = manualTarget;
     internal void ReleaseManualTarget() => OwnedManualTarget = null;

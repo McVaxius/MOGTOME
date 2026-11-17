@@ -1,3 +1,11 @@
+2026-11-16 - 4.2.0.18 - GMC combat and recovery
+
+- **Fixed GMC combat handoff:** Keep the selected duty backend for routing while the active GodMod or BossModReborn host handles combat movement and rotations.
+- **Fixed GMC healing presets:** Confirm GMC healer rotations are available and use the matching job preset or encounter plan, retaining its healing and cooldown modules.
+- **Fixed death recovery:** Restore MOGTOME's combat presets and boss plans after death, including plans without a named runtime preset, while preserving newer manual choices.
+- **Fixed combat cleanup:** Restore only settings changed by MOGTOME when stopping or leaving a duty, respecting logout, account and character changes.
+- **Added Beastmaster fallback:** Include the native Beastmaster rotation with automatic targeting in the fallback melee preset.
+
 2026-11-14 - 4.2.0.17 - GodMod compatibility
 
 - **Added GodMod support:** Automatically uses an available compatible GodMod, BMR or VBM host while preserving saved combat preferences.

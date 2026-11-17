@@ -85,7 +85,9 @@ copies remain owned regardless of snapshot age until the data is refreshed.
 - **YesAlready** - Auto-confirm dialogs
 ### Optional Plugins
 
-- **God Mod Companion (GMC / BMRVariantLoader)** - Optional; Public and Private are both supported with a compatible GodMod or BMR host. With GMC loaded, MogTome uses temporary copies of the existing job-group autorotation presets with movement modules omitted and switches to an injected current-job boss plan when one is ready in Praetorium or Porta Decumana. Missing plans, including the not-yet-authored Decumana plans, keep the normal group rotation running. GMC owns plan installation; MogTome retains saved combat-provider preferences and restores its temporary native selections during cleanup.
+- **God Mod Companion (GMC / BMRVariantLoader)** - Optional; Public and Private are supported with a compatible GodMod or BMR host. MogTome keeps the selected dungeon route backend and enables native combat AI only during fights. It uses a temporary copy of the current job-group preset with movement modules omitted, or an injected current-job boss plan after native binding; the full preset and plan are never combined. Missing plans, including Decumana, retain the group rotation. GMC owns plan installation. Saved combat-provider and manual-preset preferences remain unchanged; later observed native choices take precedence. Cleanup conditionally restores owned settings and the prior AI mode/follow target when that target still has the captured identity.
+
+The frozen BMR host can publish an already pending movement result after AI is switched off. This integration does not guarantee native controller quiescence or establish live healing/movement acceptance.
 - **ADS (AI Duty Solver)** - Optional in AutoDuty mode; enables `/mog inn` delegation
 - **Lifestream** and **TextAdvance** - Optional; neither is required for MOGTOME setup
 

@@ -1,6 +1,12 @@
 {
   "Name": "FRENRIDER - MELEE",
   "Modules": {
+    "BossMod.Autorotation.xan.BST": [
+      {
+        "Track": "Targeting",
+        "Option": "Auto"
+      }
+    ],
     "BossMod.Autorotation.xan.BLM": [
       {
         "Track": "Targeting",
