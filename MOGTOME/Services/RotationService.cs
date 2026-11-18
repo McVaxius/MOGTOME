@@ -61,6 +61,7 @@ public class RotationService : IDisposable
     internal bool UsesNativeAutorotation => gmcSession;
     internal bool OwnedCombatProviderDeparted { get; private set; }
     internal bool HasUsableAutomationHost(bool allowHostCleanup = false) => bossModIPC.HasUsableAutomationHost(allowHostCleanup);
+    internal bool IsOwnedCombatHostCurrent => bossModIPC.IsOwnedProviderCurrent;
     internal bool SupportsBmrObstacleMaps => bossModIPC.SupportsBmrObstacleMaps;
 
     private string ReadCharacterIdentity()

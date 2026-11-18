@@ -1,3 +1,7 @@
+## Unreleased
+
+- Recheck the combat provider before dispatching startup actions and leave unowned duty backends alone if startup is cancelled.
+
 2026-11-18 - 4.2.0.21 - Follower combat and duty transitions
 
 - **Fixed follower combat:** Start attacking eligible enemies when the party engages. The duty backend keeps control of movement until the follower enters combat.

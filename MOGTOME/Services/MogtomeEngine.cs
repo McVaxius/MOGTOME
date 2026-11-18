@@ -355,14 +355,19 @@ public class MogtomeEngine
             }).ConfigureAwait(false);
             if (!IsCurrentStartup(operation)) return;
 
-            await conflictPluginService.DisableStartupAutomationAsync(() => IsCurrentStartup(operation)).ConfigureAwait(false);
+            await conflictPluginService.DisableStartupAutomationAsync(() => IsCurrentStartup(operation),
+                () => CanDispatchStartupAction(operation, allowHostCleanup: true, checkOwnedHost: false)).ConfigureAwait(false);
             if (!IsCurrentStartup(operation)) return;
 
             Status = Ui.M("Engine_PreparingBossModSupport");
             var bossModReady = await conflictPluginService.EnsureBossModReadyAsync(() => IsCurrentStartup(operation)).ConfigureAwait(false);
             if (!bossModReady.Ready)
             {
-                await GameHelpers.RunOnFrameworkThreadAsync(() => { if (IsCurrentStartup(operation)) StopWithCombatFailureMessage(bossModReady.Reason); }).ConfigureAwait(false);
+                await GameHelpers.RunOnFrameworkThreadAsync(() =>
+                {
+                    if (CanDispatchStartupAction(operation, allowHostCleanup: true, checkOwnedHost: false))
+                        StopWithCombatFailureMessage(bossModReady.Reason);
+                }).ConfigureAwait(false);
                 return;
             }
             if (!IsCurrentStartup(operation))
@@ -372,11 +377,8 @@ public class MogtomeEngine
             {
                 if (!IsCurrentStartup(operation))
                     return false;
-                if (!rotationService.HasUsableAutomationHost())
-                {
-                    StopWithCombatFailureMessage(Ui.M("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency));
+                if (!CanDispatchStartupAction(operation, checkOwnedHost: false))
                     return false;
-                }
                 return rotationService.Initialize(nativeHost: bossModReady.NativeHost);
             }).ConfigureAwait(false);
             if (!IsCurrentStartup(operation))
@@ -388,7 +390,8 @@ public class MogtomeEngine
             }
 
             Status = Ui.M("Engine_CheckingConflictingPlugins");
-            var conflictingPluginsReady = await conflictPluginService.EnsureTwistOfFayteDisabledAsync("MOGTOME start", showPopup: true, () => IsCurrentStartup(operation));
+            var conflictingPluginsReady = await conflictPluginService.EnsureTwistOfFayteDisabledAsync("MOGTOME start",
+                showPopup: true, () => IsCurrentStartup(operation), () => CanDispatchStartupAction(operation));
             if (!IsCurrentStartup(operation))
             {
                 log.Warning("[MOGTOME][Engine] Start aborted while resolving conflicting plugins");
@@ -411,7 +414,7 @@ public class MogtomeEngine
             Status = dutyAutomationService.UseAdsExperimental
                 ? Ui.M("Engine_PreparingADS")
                 : Ui.M("Engine_PreparingAutoDuty");
-            var backendReady = await dutyAutomationService.PrepareForStartAsync(startupSnapshot.IsPartyLeader, startupSnapshot.StartingInsideDuty, () => IsCurrentStartup(operation)).ConfigureAwait(false);
+            var backendReady = await PrepareStartupBackendAsync(operation, startupSnapshot).ConfigureAwait(false);
             if (!IsCurrentStartup(operation))
             {
                 log.Warning("[MOGTOME][Engine] Start aborted while preparing automation backend");
@@ -422,7 +425,8 @@ public class MogtomeEngine
             {
                 await GameHelpers.RunOnFrameworkThreadAsync(() =>
                 {
-                    if (IsCurrentStartup(operation)) StopWithCombatFailureMessage(dutyAutomationService.PreparationFailure);
+                    if (CanDispatchStartupAction(operation))
+                        StopWithCombatFailureMessage(dutyAutomationService.PreparationFailure);
                 }).ConfigureAwait(false);
                 return;
             }
@@ -527,8 +531,9 @@ public class MogtomeEngine
 
     public void Stop(string? reason = null) => StopWithReason(reason == null ? Ui.M("Engine_ManualStop") : (UiText)reason);
 
-    internal void StopWithReason(UiText reason)
+    internal void StopWithReason(UiText reason, bool providerLost = false)
     {
+        var stopBackend = !providerLost || CurrentState != EngineState.Initializing;
         ++sessionId;
         cancelQueuedStart();
         log.Information("[MOGTOME][Engine] Stopping MOGTOME engine");
@@ -539,7 +544,10 @@ public class MogtomeEngine
 
         StopReason = reason;
         CleanupStep("opener", () => firstRoomSkip.Cancel("engine stop"));
-        CleanupStep("backend", dutyAutomationService.StopDuty);
+        if (stopBackend)
+            CleanupStep("backend", dutyAutomationService.StopDuty);
+        else
+            CleanupStep("backend", () => dutyAutomationService.CancelPendingOperations("startup combat provider lost"));
         CleanupStep("dialogs", dialogHandler.Stop);
         CleanupStep("repair queue", dutyQueue.ClearRepairQueuePauseOnStop);
         ResetLeaveTracking();
@@ -698,13 +706,25 @@ public class MogtomeEngine
         StartDutyBackendInsideDuty($"resuming territory {state.DutyStartTerritory}");
     }
 
-    private bool CanDispatchStartupAction(int operation)
+    private bool CanDispatchStartupAction(int operation, bool allowHostCleanup = false, bool checkOwnedHost = true)
     {
         if (!IsCurrentStartup(operation)) return false;
-        if (rotationService.HasUsableAutomationHost()) return true;
-        StopWithCombatFailureMessage(Ui.M("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency));
-        return false;
+        if (!rotationService.HasUsableAutomationHost(allowHostCleanup))
+        {
+            StopWithCombatFailureMessage(Ui.M("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency), providerLost: true);
+            return false;
+        }
+        if (checkOwnedHost && !rotationService.IsOwnedCombatHostCurrent)
+        {
+            StopWithCombatFailureMessage(Ui.M("Rotation_BossModSessionChanged"), providerLost: true);
+            return false;
+        }
+        return true;
     }
+
+    private Task<bool> PrepareStartupBackendAsync(int operation, StartupSnapshot snapshot)
+        => dutyAutomationService.PrepareForStartAsync(snapshot.IsPartyLeader, snapshot.StartingInsideDuty,
+            () => IsCurrentStartup(operation), () => CanDispatchStartupAction(operation));
 
     private Task RunStartupActionAsync(int operation, Action action)
         => GameHelpers.RunOnFrameworkThreadAsync(() =>
@@ -1737,9 +1757,9 @@ public class MogtomeEngine
 
     private void StopWithCombatFailure(string reason) => StopWithCombatFailureMessage(reason);
 
-    private void StopWithCombatFailureMessage(UiText reason)
+    private void StopWithCombatFailureMessage(UiText reason, bool providerLost = false)
     {
-        StopWithReason(Ui.M("Engine_InitializationFailed", reason));
+        StopWithReason(Ui.M("Engine_InitializationFailed", reason), providerLost);
         log.Error($"[MOGTOME][Engine] {StatusMessage}");
         Plugin.ChatGui.PrintError(Ui.GameT("Chat_MOGTOME", Status));
     }

@@ -161,14 +161,14 @@ public sealed class DutyAutomationService
     public UiText PreparationFailure { get; private set; } = string.Empty;
     internal Func<bool>? QueueEligibility { get; set; }
 
-    public async Task<bool> PrepareForStartAsync(bool isLeader, bool startingInsideDuty, Func<bool> isCurrent)
+    public async Task<bool> PrepareForStartAsync(bool isLeader, bool startingInsideDuty, Func<bool> isCurrent, Func<bool> canDispatch)
     {
         if (!isCurrent()) return false;
         PreparationFailure = string.Empty;
         if (UseAdsExperimental)
         {
             log.Information("[MOGTOME][Automation] Preparing ADS backend");
-            await conflictPluginService.EnsureAutoDutyDisabledAsync("MOGTOME ADS start", showPopup: true, isCurrent).ConfigureAwait(false);
+            await conflictPluginService.EnsureAutoDutyDisabledAsync("MOGTOME ADS start", showPopup: true, isCurrent, canDispatch).ConfigureAwait(false);
             if (!isCurrent()) return false;
 
             if (!IsAdsLoaded())
@@ -183,7 +183,7 @@ public sealed class DutyAutomationService
             var sentStartupStop = false;
             await GameHelpers.RunOnFrameworkThreadAsync(() =>
             {
-                if (!isCurrent()) return;
+                if (!canDispatch()) return;
                 SetAdsRuntimeRole(isLeader, startingInsideDuty);
                 CancelAdsRepairHandoff("ads startup reset");
                 InvalidateAdsQueueOperations("ads startup reset");
@@ -222,7 +222,11 @@ public sealed class DutyAutomationService
             return false;
         }
 
-        var bundledPathsReady = await autoDutyPathService.EnsurePathExists().ConfigureAwait(false);
+        var bundledPathsReady = await GameHelpers.RunOnFrameworkThreadAsync(() =>
+        {
+            if (!canDispatch()) return Task.FromResult(false);
+            return autoDutyPathService.EnsurePathExists();
+        }).Unwrap().ConfigureAwait(false);
         if (!isCurrent()) return false;
         if (!bundledPathsReady)
         {
@@ -235,7 +239,7 @@ public sealed class DutyAutomationService
 
         var pathSelectionReady = await GameHelpers.RunOnFrameworkThreadAsync(() =>
         {
-            if (!isCurrent()) return false;
+            if (!canDispatch()) return false;
             autoDutyIPC.StopDuty();
             autoDutyIPC.ConfigureForMogtome(isLeader);
 

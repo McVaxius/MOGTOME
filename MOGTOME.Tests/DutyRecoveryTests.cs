@@ -1368,15 +1368,22 @@ public sealed class DutyRecoveryTests
         Assert.True(run.Rotation.Initialize());
         Set(run.Engine, "<CurrentState>k__BackingField", EngineState.Initializing);
         var operation = (int)Get(run.Engine, "sessionId")!;
+        var snapshotType = typeof(MogtomeEngine).GetNestedType("StartupSnapshot", BindingFlags.NonPublic)!;
+        var snapshot = Activator.CreateInstance(snapshotType, false, true);
+        var backend = (Task<bool>)Invoke(run.Engine, "PrepareStartupBackendAsync", operation, snapshot)!;
+        Assert.False(backend.IsCompleted);
         var dispatched = false;
         var action = (Task)Invoke(run.Engine, "RunStartupActionAsync", operation, (Action)(() => dispatched = true))!;
 
         native.Loaded = false;
         run.Pump();
+        Assert.False(await backend);
         var invocation = await Assert.ThrowsAsync<TargetInvocationException>(() => action);
         Assert.IsType<OperationCanceledException>(invocation.InnerException);
         Assert.False(dispatched);
         Assert.False(run.Engine.IsRunning);
+        Assert.DoesNotContain("/ads stop", run.Commands);
+        Assert.DoesNotContain("/ad stop", run.Commands);
         Assert.Contains(MOGTOME.Localization.Ui.M("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency).English,
             run.Engine.LastStopReason);
     }
@@ -3204,7 +3211,7 @@ public sealed class DutyRecoveryTests
                 return Default(method.ReturnType);
             });
             var requests = new HashSet<string>();
-            var dependencies = new[] { "XADatabase", "XASlave", "BMRVariantLoader" }.Select(name =>
+            var dependencies = new[] { "XADatabase", "XASlave", "BMRVariantLoader", "ADS" }.Select(name =>
                 Fake<IExposedPlugin>((member, _) => member.Name switch
                 {
                     "get_InternalName" or "get_Name" => name,
@@ -3285,7 +3292,7 @@ public sealed class DutyRecoveryTests
             var deaths = new DeathTrackingService(log, framework, objects, party, player, condition, client);
             History = new RunHistoryService(log, Config, State, player, manager, null!, deaths);
             var autoDuty = new AutoDutyIPC(log, command, History);
-            Automation = new DutyAutomationService(log, manager, autoDuty, null!, null!, command, History);
+            Automation = new DutyAutomationService(log, manager, autoDuty, null!, new ConflictPluginService(log, command), command, History);
             Queue = new DutyQueueService(log, State, Automation, condition, manager);
             BossMod = new BossModIPC(pi, log, command);
             Rotation = new RotationService(log, manager, BossMod, State);

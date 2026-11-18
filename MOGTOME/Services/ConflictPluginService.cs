@@ -93,21 +93,21 @@ public sealed class ConflictPluginService
         return (true, selected, string.Empty);
     }
 
-    public async Task DisableStartupAutomationAsync(Func<bool> isCurrent)
+    public async Task DisableStartupAutomationAsync(Func<bool> isCurrent, Func<bool> canDispatch)
     {
         // Use the normal disable flow and deliberately leave QSTCompanion disabled on Stop.
         var result = await EnsurePluginDisabledAsync(
             "MOGTOME start", "QSTCompanion", "/xldisableplugin QSTCompanion",
             static (internalName, _) => string.Equals(internalName, "QSTCompanion", StringComparison.OrdinalIgnoreCase),
-            isCurrent).ConfigureAwait(false);
+            isCurrent, canDispatch).ConfigureAwait(false);
         if (!isCurrent()) return;
         if (result.FinalStatus.IsLoaded)
             log.Warning("[MOGTOME][Conflict] QSTCompanion is still loaded after the startup disable attempt.");
 
         await GameHelpers.RunOnFrameworkThreadAsync(() =>
         {
-            if (!isCurrent() || !GetPluginStatus(static (internalName, _) =>
-                    string.Equals(internalName, "Coppelia", StringComparison.OrdinalIgnoreCase)).IsLoaded)
+            if (!GetPluginStatus(static (internalName, _) =>
+                    string.Equals(internalName, "Coppelia", StringComparison.OrdinalIgnoreCase)).IsLoaded || !canDispatch())
                 return;
 
             log.Information("[MOGTOME][Conflict] Sending /healbot off for loaded HealBot during startup.");
@@ -115,13 +115,14 @@ public sealed class ConflictPluginService
         }).ConfigureAwait(false);
     }
 
-    public async Task<bool> EnsureTwistOfFayteDisabledAsync(string triggerSource, bool showPopup, Func<bool>? isCurrent = null)
+    public async Task<bool> EnsureTwistOfFayteDisabledAsync(string triggerSource, bool showPopup, Func<bool>? isCurrent = null,
+        Func<bool>? canDispatch = null)
     {
         var result = await EnsurePluginDisabledAsync(
             triggerSource,
             TwistOfFayteDisplayName,
             TwistOfFayteDisableCommand,
-            MatchesTwistOfFayte, isCurrent).ConfigureAwait(false);
+            MatchesTwistOfFayte, isCurrent, canDispatch).ConfigureAwait(false);
         if (isCurrent?.Invoke() == false) return false;
         if (!result.InitialStatus.IsInstalled)
         {
@@ -165,13 +166,14 @@ public sealed class ConflictPluginService
         return false;
     }
 
-    public async Task<bool> EnsureAutoDutyDisabledAsync(string triggerSource, bool showPopup, Func<bool>? isCurrent = null)
+    public async Task<bool> EnsureAutoDutyDisabledAsync(string triggerSource, bool showPopup, Func<bool>? isCurrent = null,
+        Func<bool>? canDispatch = null)
     {
         var result = await EnsurePluginDisabledAsync(
             triggerSource,
             AutoDutyDisplayName,
             AutoDutyDisableCommand,
-            MatchesAutoDuty, isCurrent).ConfigureAwait(false);
+            MatchesAutoDuty, isCurrent, canDispatch).ConfigureAwait(false);
         if (isCurrent?.Invoke() == false) return false;
         if (!result.InitialStatus.IsInstalled)
         {
@@ -243,7 +245,7 @@ public sealed class ConflictPluginService
         string triggerSource,
         string displayName,
         string disableCommand,
-        Func<string?, string?, bool> matcher, Func<bool>? isCurrent = null)
+        Func<string?, string?, bool> matcher, Func<bool>? isCurrent = null, Func<bool>? canDispatch = null)
     {
         var initialStatus = GetPluginStatus(matcher);
         if (!initialStatus.IsLoaded)
@@ -263,7 +265,8 @@ public sealed class ConflictPluginService
         if (shouldSendDisable)
         {
             log.Warning($"[MOGTOME][Conflict] {displayName} is enabled during {triggerSource}; matched {DescribePluginStatus(initialStatus)}; sending {disableCommand}");
-            if (!await GameHelpers.RunOnFrameworkThreadAsync(() => isCurrent?.Invoke() != false && commandManager.ProcessCommand(disableCommand)).ConfigureAwait(false))
+            if (!await GameHelpers.RunOnFrameworkThreadAsync(() => isCurrent?.Invoke() != false
+                && canDispatch?.Invoke() != false && commandManager.ProcessCommand(disableCommand)).ConfigureAwait(false))
             {
                 log.Error($"[MOGTOME][Conflict] Native plugin command was not handled: {disableCommand}");
                 return new PluginDisableResult(initialStatus, initialStatus, true);
