@@ -1,3 +1,7 @@
+## Unreleased
+
+- **Fixed GodMod manual preset selection** so an exact saved preset chosen after MOGTOME starts applies at duty startup or during an active duty.
+
 2026-11-18 - 4.2.0.22 - Combat provider checks during startup
 
 - **Fixed startup provider changes** so queued setup stops if the selected combat provider unloads or switches to another host. MOGTOME leaves the duty backend alone if the provider is lost during startup.

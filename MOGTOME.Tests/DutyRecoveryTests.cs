@@ -202,11 +202,13 @@ public sealed class DutyRecoveryTests
         Assert.Equal(0, notifications);
     }
 
-    [Fact]
-    public void GmcUsesLiveManualPresetChangesAndPreservesTheNativePlanSelection()
+    [Theory]
+    [InlineData("BossModReborn")]
+    [InlineData("GodMod")]
+    public void GmcUsesLiveManualPresetChangesAndPreservesTheNativePlanSelection(string host)
     {
-        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original");
-        using var run = new Run(native) { GmcLoaded = true, Territory = 1044 };
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: host);
+        using var run = new Run(native) { GmcLoaded = host == "BossModReborn", Territory = 1044 };
         var manual = new NativePreset("Exact saved choice");
         native.Presets.AllPresets.Add(manual);
         var boss = new D141Colossus();
@@ -244,6 +246,34 @@ public sealed class DutyRecoveryTests
         Assert.Equal(new[] { "FRENRIDER - TANK" }, native.Active);
         Assert.True(run.Rotation.DisableRotationForDutyEnd("GMC cleanup"));
         Assert.Equal(0, list.SelectedIndex);
+        Assert.Equal(new[] { "Original" }, native.Active);
+        Assert.DoesNotContain(native.Writes, write => write.Contains("Presets.Create") || write.Contains("Presets.Delete"));
+    }
+
+    [Fact]
+    public void GodModUsesManualPresetChosenBeforeFirstDutyWithoutAutomaticDefault()
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: "GodMod");
+        using var run = new Run(native);
+        const string automatic = "FRENRIDER - TANK";
+        native.Presets.AllPresets.RemoveAll(preset => preset.Name == automatic);
+        native.Presets.DefaultPresets.RemoveAll(preset => preset.Name == automatic);
+        var manual = new NativePreset("Exact saved choice");
+        native.Presets.UserPresets.Add(manual);
+        native.Presets.AllPresets.Add(manual);
+
+        Assert.False(run.BossMod.IsExactRuntimePreset(automatic));
+        Assert.True(run.Rotation.Initialize());
+        run.Config.UseManualBossModPreset = true;
+        run.Config.ManualBossModPresetName = manual.Name;
+        run.Manager.NotifyConfigurationChanged();
+        run.Territory = 1044;
+
+        Assert.True(run.Rotation.EnableRotationOncePerDuty("first duty"));
+        Assert.Same(manual, native.Rotation.Preset);
+        Assert.Same(manual, native.AiPreset);
+        Assert.Equal(manual.Name, native.Selector);
+        Assert.True(run.Rotation.DisableRotationForDutyEnd("GodMod cleanup"));
         Assert.Equal(new[] { "Original" }, native.Active);
         Assert.DoesNotContain(native.Writes, write => write.Contains("Presets.Create") || write.Contains("Presets.Delete"));
     }

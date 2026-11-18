@@ -129,7 +129,7 @@ public class RotationService : IDisposable
         => (config.UseManualBossModPreset, config.UseManualBossModPreset ? config.ManualBossModPresetName : string.Empty);
 
     private string? GetGmcManualPreset((bool Manual, string Name)? settings)
-        => bossModIPC.NativeHost == "BossModReborn" && preparedProvider is (CombatProvider.Bmr or CombatProvider.Vbm)
+        => bossModIPC.NativeHost is ("BossModReborn" or "GodMod") && preparedProvider is (CombatProvider.Bmr or CombatProvider.Vbm)
             && settings is { Manual: true } manual ? manual.Name : null;
 
     internal bool ValidateManualPresetSelection(Configuration config)
