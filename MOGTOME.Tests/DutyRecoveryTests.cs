@@ -1509,14 +1509,46 @@ public sealed class DutyRecoveryTests
         Assert.Empty(components);
     }
 
-    [Fact]
-    public void InitializationFailureRetainsSpecificCauseAfterCleanup()
+    [Theory]
+    [InlineData(null, "ready")]
+    [InlineData(null, "departed")]
+    [InlineData("GodMod", "ready")]
+    [InlineData("GodMod", "departed")]
+    [InlineData("GodMod", "replaced")]
+    public async Task QueuedInitializationFailureRechecksCombatHostBeforeCleanup(string? expectedHost, string outcome)
     {
-        using var run = new Run();
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: "GodMod");
+        using var run = new Run(native);
+        if (expectedHost is not null && outcome != "replaced") Assert.True(run.Rotation.Initialize());
         Set(run.Engine, "<CurrentState>k__BackingField", EngineState.Initializing);
-        Invoke(run.Engine, "StopWithCombatFailure", "ADS is not loaded");
+        var operation = (int)Get(run.Engine, "sessionId")!;
+        const string reason = "ADS is not loaded";
+        var failure = (Task)Invoke(run.Engine, "StopStartupWithCombatFailureAsync", operation,
+            (MOGTOME.Localization.UiText)reason, expectedHost!)!;
+        Assert.False(failure.IsCompleted);
+
+        var providerReady = outcome == "ready";
+        native.Loaded = providerReady;
+        if (outcome == "replaced")
+        {
+            run.ReplacementAutomationHost = new NativeBossModProvider(CombatProvider.Bmr, "Other");
+            run.GmcLoaded = true;
+            Assert.True(run.BossMod.HasUsableAutomationHost());
+            Assert.True(run.BossMod.IsOwnedProviderCurrent);
+        }
+        run.Pump();
+        await failure;
+
         Assert.False(run.Engine.IsRunning);
-        Assert.Contains("ADS is not loaded", run.Engine.LastStopReason);
+        Assert.Equal(providerReady, run.Commands.Contains("/ads stop"));
+        Assert.DoesNotContain("/ad stop", run.Commands);
+        var expectedReason = outcome switch
+        {
+            "ready" => reason,
+            "replaced" => MOGTOME.Localization.Ui.M("Rotation_BossModSessionChanged").English,
+            _ => MOGTOME.Localization.Ui.M("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency).English,
+        };
+        Assert.Contains(expectedReason, run.Engine.LastStopReason);
         Assert.Contains(run.Engine.LastStopReason, run.Engine.StatusMessage);
     }
 

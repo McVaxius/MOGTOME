@@ -346,6 +346,7 @@ public class MogtomeEngine
     private async Task StartCoreAsync(int operation)
     {
         var testingModeUnsynced = config.TestingModeUnsynced;
+        string? startupHost = null;
 
         try
         {
@@ -363,29 +364,24 @@ public class MogtomeEngine
             var bossModReady = await conflictPluginService.EnsureBossModReadyAsync(() => IsCurrentStartup(operation)).ConfigureAwait(false);
             if (!bossModReady.Ready)
             {
-                await GameHelpers.RunOnFrameworkThreadAsync(() =>
-                {
-                    if (CanDispatchStartupAction(operation, allowHostCleanup: true, checkOwnedHost: false))
-                        StopWithCombatFailureMessage(bossModReady.Reason);
-                }).ConfigureAwait(false);
+                await StopStartupWithCombatFailureAsync(operation, bossModReady.Reason, startupHost).ConfigureAwait(false);
                 return;
             }
+            startupHost = bossModReady.NativeHost;
             if (!IsCurrentStartup(operation))
                 return;
 
             var rotationReady = await GameHelpers.RunOnFrameworkThreadAsync(() =>
             {
-                if (!IsCurrentStartup(operation))
+                if (!CanDispatchStartupAction(operation, checkOwnedHost: false, expectedHost: startupHost))
                     return false;
-                if (!CanDispatchStartupAction(operation, checkOwnedHost: false))
-                    return false;
-                return rotationService.Initialize(nativeHost: bossModReady.NativeHost);
+                return rotationService.Initialize(nativeHost: startupHost);
             }).ConfigureAwait(false);
             if (!IsCurrentStartup(operation))
                 return;
             if (!rotationReady)
             {
-                await GameHelpers.RunOnFrameworkThreadAsync(() => { if (IsCurrentStartup(operation)) StopWithCombatFailureMessage(rotationService.Failure); }).ConfigureAwait(false);
+                await StopStartupWithCombatFailureAsync(operation, rotationService.Failure, startupHost).ConfigureAwait(false);
                 return;
             }
 
@@ -423,11 +419,7 @@ public class MogtomeEngine
 
             if (!backendReady)
             {
-                await GameHelpers.RunOnFrameworkThreadAsync(() =>
-                {
-                    if (CanDispatchStartupAction(operation))
-                        StopWithCombatFailureMessage(dutyAutomationService.PreparationFailure);
-                }).ConfigureAwait(false);
+                await StopStartupWithCombatFailureAsync(operation, dutyAutomationService.PreparationFailure, startupHost).ConfigureAwait(false);
                 return;
             }
 
@@ -513,7 +505,7 @@ public class MogtomeEngine
         catch (Exception ex)
         {
             log.Error($"[MOGTOME][Engine] Initialization failed: {ex.Message}");
-            await GameHelpers.RunOnFrameworkThreadAsync(() => { if (IsCurrentStartup(operation)) StopWithCombatFailure(ex.Message); }).ConfigureAwait(false);
+            await StopStartupWithCombatFailureAsync(operation, ex.Message, startupHost).ConfigureAwait(false);
         }
     }
 
@@ -706,7 +698,8 @@ public class MogtomeEngine
         StartDutyBackendInsideDuty($"resuming territory {state.DutyStartTerritory}");
     }
 
-    private bool CanDispatchStartupAction(int operation, bool allowHostCleanup = false, bool checkOwnedHost = true)
+    private bool CanDispatchStartupAction(int operation, bool allowHostCleanup = false, bool checkOwnedHost = true,
+        string? expectedHost = null)
     {
         if (!IsCurrentStartup(operation)) return false;
         if (!rotationService.HasUsableAutomationHost(allowHostCleanup))
@@ -714,7 +707,8 @@ public class MogtomeEngine
             StopWithCombatFailureMessage(Ui.M("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency), providerLost: true);
             return false;
         }
-        if (checkOwnedHost && !rotationService.IsOwnedCombatHostCurrent)
+        if ((expectedHost is not null && rotationService.GetAutomationHost() != expectedHost)
+            || (checkOwnedHost && !rotationService.IsOwnedCombatHostCurrent))
         {
             StopWithCombatFailureMessage(Ui.M("Rotation_BossModSessionChanged"), providerLost: true);
             return false;
@@ -1755,7 +1749,13 @@ public class MogtomeEngine
         }
     }
 
-    private void StopWithCombatFailure(string reason) => StopWithCombatFailureMessage(reason);
+    private Task StopStartupWithCombatFailureAsync(int operation, UiText reason, string? expectedHost)
+        => GameHelpers.RunOnFrameworkThreadAsync(() =>
+        {
+            if (CanDispatchStartupAction(operation, allowHostCleanup: expectedHost is null,
+                    checkOwnedHost: expectedHost is not null, expectedHost: expectedHost))
+                StopWithCombatFailureMessage(reason);
+        });
 
     private void StopWithCombatFailureMessage(UiText reason, bool providerLost = false)
     {
