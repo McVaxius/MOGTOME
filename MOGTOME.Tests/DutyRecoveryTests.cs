@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using Dalamud.Game;
 using Dalamud.Game.Text.Evaluator;
 using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Party;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
@@ -1737,13 +1738,21 @@ public sealed class DutyRecoveryTests
         var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: "GodMod");
         using var run = new Run(native);
         run.Config.CombatProvider = CombatProvider.Rsr;
-        var passivePreset = BossModIPC.SelectPresetForJob((uint)NativeJob.WAR, passive: true);
-        native.Presets.AllPresets.RemoveAll(preset => preset.Name == passivePreset);
+        const string passivePreset = "passive - tank";
+        var classJob = WarriorClassJob();
+        Assert.True(classJob.IsValid);
+        Assert.Equal("WAR", classJob.Value.Abbreviation.ToString());
+        run.LocalPlayer = Fake<IPlayerCharacter>((method, _) => method.Name == "get_ClassJob"
+            ? classJob : Default(method.ReturnType));
+        Assert.Equal(1, native.Presets.AllPresets.RemoveAll(preset => preset.Name == passivePreset));
         Assert.True(run.BossMod.HasUsableAutomationHost());
         Assert.True(run.Rotation.Initialize());
 
-        Assert.False(run.BossMod.ApplyOwnedBossModPreset(passivePreset));
+        var lookups = new List<string>();
+        native.PresetRead = lookups.Add;
         Assert.False(run.Rotation.EnableRotation());
+        Assert.Equal("Rotation_PresetPreparationFailedCombatWasNotEnabled", run.Rotation.Failure.Key);
+        Assert.Equal(passivePreset, Assert.Single(lookups));
         Assert.Equal(0, run.RsrSettingsRequests);
         Assert.Equal("Original", Assert.Single(native.Active));
         Assert.Empty(native.Writes);
@@ -2887,6 +2896,7 @@ public sealed class DutyRecoveryTests
         internal NativeBossModProvider? ReplacementAutomationHost;
         internal uint Territory;
         internal int RsrSettingsRequests;
+        internal IPlayerCharacter? LocalPlayer;
         internal uint[] PartyTerritories = [];
         internal string? ThrowOnCommand;
         internal readonly List<string> RepairModes = [];
@@ -2911,7 +2921,8 @@ public sealed class DutyRecoveryTests
                 _ => Default(method.ReturnType),
             });
             var condition = Fake<ICondition>();
-            var objects = Fake<IObjectTable>();
+            var objects = Fake<IObjectTable>((method, _) => method.Name == "get_LocalPlayer"
+                ? LocalPlayer : Default(method.ReturnType));
             var player = Fake<IPlayerState>((method, _) => method.Name == "get_ContentId" ? CurrentContentId : Default(method.ReturnType));
             var framework = Fake<IFramework>((method, args) =>
             {
@@ -3313,6 +3324,7 @@ public sealed class DutyRecoveryTests
         internal bool ForceDisabled;
         internal bool RejectRuntimeWrite;
         internal bool RejectSelectorWrite;
+        internal Action<string>? PresetRead;
         private readonly bool claimingFollow;
         internal bool? LastFollowRequestedClaim;
         internal bool ThrowAfterSelectorWrite;
@@ -3815,6 +3827,7 @@ public sealed class DutyRecoveryTests
             if (channel == "BossMod.Presets.Get")
             {
                 var name = (string)values![0]!;
+                PresetRead?.Invoke(name);
                 var found = FindGodModSuitePreset(name) ?? Presets.AllPresets.FirstOrDefault(preset =>
                     string.Equals(preset.Name, name, StringComparison.CurrentCultureIgnoreCase));
                 return found is null ? null : RegularBeastmasterAvailable ? SerializePreset(found)
@@ -3887,6 +3900,28 @@ public sealed class DutyRecoveryTests
 
     private static void Set(object target, string name, object? value)
         => target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(target, value);
+    private static RowRef<ClassJob> WarriorClassJob()
+    {
+        const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+        const uint rowId = (uint)NativeJob.WAR;
+        // RowRef.IsValid and Value both read the sheet. Supply one row with its
+        // abbreviation string and a zero string offset at byte 4.
+        var raw = (RawExcelSheet)RuntimeHelpers.GetUninitializedObject(typeof(RawExcelSheet));
+        var page = (ExcelPage)Activator.CreateInstance(typeof(ExcelPage), flags, null,
+            [raw, new byte[] { (byte)'W', (byte)'A', (byte)'R', 0, 0, 0, 0, 0 }, (ushort)0], null)!;
+        var lookupType = typeof(RawExcelSheet).GetNestedType("RowOffsetLookup", BindingFlags.NonPublic)!;
+        var lookups = Array.CreateInstance(lookupType, 1);
+        lookups.SetValue(Activator.CreateInstance(lookupType, flags, null, [rowId, 0u, (ushort)0, (ushort)1], null), 0);
+        Set(raw, "_pages", new[] { page });
+        Set(raw, "_rowOffsetLookupTable", lookups);
+        Set(raw, "_rowIndexLookupArray", new[] { 0 });
+        Set(raw, "_rowIndexLookupArrayOffset", rowId);
+        var module = (ExcelModule)RuntimeHelpers.GetUninitializedObject(typeof(ExcelModule));
+        object row = new RowRef<ClassJob>(module, rowId);
+        Set(row, "_sheet", new ExcelSheet<ClassJob>(raw));
+        return (RowRef<ClassJob>)row;
+    }
+
     private static object TerritoryRow(uint id)
     {
         object row = default(RowRef<TerritoryType>);
