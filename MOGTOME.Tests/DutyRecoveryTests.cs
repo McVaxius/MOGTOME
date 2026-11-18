@@ -765,22 +765,30 @@ public sealed class DutyRecoveryTests
         Assert.False(run.Rotation.EnableRotationOncePerDuty("new native follow"));
     }
 
-    [Fact]
-    public void GmcDefersPlanSelectionUntilNativeCombatEntryWithoutChangingPullSafety()
+    [Theory]
+    [InlineData("BossModReborn", false)]
+    [InlineData("BossModReborn", true)]
+    [InlineData("GodMod", true)]
+    public void GmcDefersPlanSelectionUntilNativeCombatEntryWithoutChangingPullSafety(string host, bool beastmaster)
     {
-        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original");
-        using var run = new Run(native) { GmcLoaded = true, Territory = 1044 };
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: host,
+            claimingFollow: host == "GodMod");
+        if (beastmaster) native.EnableRegularBeastmaster();
+        using var run = new Run(native) { GmcLoaded = host == "BossModReborn", Territory = 1044 };
+        var job = native.Rotation.Player.Class;
         var module = new D142Nero();
-        var original = new NativePlan("Original job plan", NativeJob.WAR, typeof(D142Nero));
-        var bundled = new NativePlan("BMRV-D142Nero-Tank-WAR", NativeJob.WAR, typeof(D142Nero));
+        var original = new NativePlan("Original job plan", job, typeof(D142Nero));
+        var bundled = new NativePlan(beastmaster ? "BMRV-D142Nero-Melee-BST" : "BMRV-D142Nero-Tank-WAR", job, typeof(D142Nero));
         var list = new NativePlanList { SelectedIndex = 0, Plans = [original, bundled] };
-        native.Rotation.Database.Plans.Plans[typeof(D142Nero)] = new() { [NativeJob.WAR] = list };
+        native.Rotation.Database.Plans.Plans[typeof(D142Nero)] = new() { [job] = list };
         native.Rotation.Bossmods.LoadedModules = [module];
         native.Rotation.Player.InCombat = false;
+        Assert.True(run.BossMod.HasUsableAutomationHost());
         Assert.True(run.Rotation.Initialize());
         Assert.True(run.Rotation.EnableRotationOncePerDuty("before automated pull"));
         Assert.Equal(-1, list.SelectedIndex);
-        Assert.Equal(new[] { "FRENRIDER - TANK" }, native.Active);
+        var group = Assert.IsAssignableFrom<NativePreset>(native.Rotation.Preset);
+        Assert.Equal(beastmaster ? "FRENRIDER - MELEE" : "FRENRIDER - TANK", group.Name);
         // This is the native event's actual selected-plan predicate; no plan is
         // selected when it runs, so it cannot force-disable this no-countdown pull.
         Assert.False(list.SelectedIndex >= 0);
@@ -788,11 +796,15 @@ public sealed class DutyRecoveryTests
         native.Rotation.Bossmods.ActiveModule = module;
         run.Rotation.UpdateDutyRotationHealth(1044, true, false, false, "native combat event passed");
         Assert.Equal(1, list.SelectedIndex);
+        Assert.Same(group, native.Rotation.Preset);
         native.Rotation.Planner = new(module, bundled);
         run.Rotation.UpdateDutyRotationHealth(1044, true, false, false, "plan bound");
         Assert.Empty(native.Active);
+        Assert.False(native.ForceDisabled);
         Assert.True(run.Rotation.DisableRotationForDutyEnd("Stop"));
         Assert.Equal(0, list.SelectedIndex);
+        Assert.Same(original, list.Plans[list.SelectedIndex]);
+        Assert.Equal("Original", Assert.Single(native.Active));
         Assert.DoesNotContain(native.Writes, write => write.Contains("PlannedPullSafety", StringComparison.Ordinal));
     }
 
