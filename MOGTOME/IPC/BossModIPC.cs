@@ -49,6 +49,9 @@ public partial class BossModIPC : IDisposable
     private const string ActiveMeleePreset = "FRENRIDER - MELEE";
     private const string ActiveRangedPreset = "FRENRIDER - RANGED";
 
+    private static readonly string[] SuitePresetNames =
+        [ActiveTankPreset, ActiveMeleePreset, ActiveRangedPreset, PassiveTankPreset, PassiveMeleePreset, PassiveRangedPreset];
+
     private static readonly HashSet<uint> TankJobRows = [1, 3, 19, 21, 32, 37];
     private static readonly HashSet<uint> MeleeJobRows = [2, 4, 20, 22, 29, 30, 34, 39, 41, 43];
     private static readonly HashSet<uint> RangedJobRows = [5, 6, 7, 23, 24, 25, 26, 27, 28, 31, 33, 35, 36, 38, 40, 42];
@@ -111,13 +114,18 @@ public partial class BossModIPC : IDisposable
             var instance = LiveMember(hosts[0], "instance") ?? FindDalamudPluginInstance(host, out _);
             return instance is not null && LiveMember(instance, "_rotationDB") is not null
                 && LiveMember(instance, "_rotation") is not null
-                && ReadableBaseline("BMR", ReadBossModSettings("BMR", instance.GetType().Assembly));
+                && ReadableBaseline("BMR", ReadBossModSettings("BMR", instance.GetType().Assembly))
+                && (host != "GodMod" || HasGodModSuitePresets());
         }
         catch
         {
             return false;
         }
     }
+
+    private bool HasGodModSuitePresets()
+        => pluginInterface.GetIpcSubscriber<List<string>>("BossMod.Presets.ListAll").InvokeFunc() is { } names
+            && SuitePresetNames.All(name => names.Contains(name, StringComparer.Ordinal));
 
     internal string? NativeHost => ownedNativeHost ?? selectedNativeHost;
     internal bool SupportsBmrObstacleMaps => NativeHost == "BossModReborn";

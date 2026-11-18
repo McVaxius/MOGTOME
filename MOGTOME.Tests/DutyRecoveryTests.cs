@@ -1518,6 +1518,31 @@ public sealed class DutyRecoveryTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void GodModRequiresAllExactSuitePresetNamesBeforeStarting(bool oldBuild)
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: "GodMod");
+        using var run = new Run(native);
+        Assert.True(run.BossMod.HasUsableAutomationHost());
+        if (oldBuild)
+            native.Presets.AllPresets.RemoveAll(preset => preset.Name.StartsWith("FRENRIDER - ", StringComparison.Ordinal)
+                || preset.Name.StartsWith("passive - ", StringComparison.Ordinal));
+        else
+        {
+            native.Presets.AllPresets.RemoveAll(preset => preset.Name == "FRENRIDER - RANGED");
+            native.Presets.AllPresets.Add(new NativePreset("frenrider - ranged"));
+        }
+
+        Assert.False(run.BossMod.HasUsableAutomationHost());
+        run.Engine.Start();
+        Assert.False(run.Engine.IsRunning);
+        Assert.Equal("Plugin_RequiredXaPlugins", run.Engine.StopReason.Key);
+        Assert.Contains("GodMod with suite presets", Assert.IsType<string>(run.Engine.StopReason.Arguments[0]));
+        Assert.Empty(native.Writes);
+    }
+
+    [Theory]
     [InlineData("GodMod")]
     [InlineData("BossModReborn")]
     public void ActiveEngineStopsWhenItsProviderRouteDeparts(string host)
@@ -3464,6 +3489,7 @@ public sealed class DutyRecoveryTests
             if (InternalName == "GodMod" && channel is "BossMod.Presets.GetActiveList" or "BossMod.Presets.SetActiveList")
                 throw new InvalidOperationException("GodMod exposes a single active preset");
             if (UnavailableChannel == channel) throw new InvalidOperationException("native endpoint unavailable");
+            if (channel == "BossMod.Presets.ListAll") return Presets.AllPresets.Select(preset => preset.Name).ToList();
             if (channel == "BossMod.Presets.GetForceDisabled") return ForceDisabled;
             if (channel == "BossMod.Presets.GetActive") return Active.Count == 1 ? Active[0] : null;
             if (channel == "BossMod.Presets.GetActiveList") return Active.ToList();
