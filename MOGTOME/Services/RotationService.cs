@@ -55,7 +55,8 @@ public class RotationService : IDisposable
     internal void SetAdsDutyIpcService(AdsDutyIpcService service) => bossModIPC.SetAdsDutyIpcService(service);
     internal bool IsVbmActivationDeferred => preparedBossMod == CombatProvider.Vbm && bossModIPC.IsVbmInteractionPauseActive;
     internal bool IsCombatActivationDeferred => IsVbmActivationDeferred || bossModIPC.IsOwnedCombatReturnPlayerMissing;
-    internal bool UsesGmc => bossModIPC.IsGmcLoaded;
+    internal bool UsesNativeAutorotation => gmcSession;
+    internal bool HasUsableAutomationHost(bool allowHostCleanup = false) => bossModIPC.HasUsableAutomationHost(allowHostCleanup);
     internal bool SupportsBmrObstacleMaps => bossModIPC.SupportsBmrObstacleMaps;
 
     private string ReadCharacterIdentity()
@@ -73,7 +74,7 @@ public class RotationService : IDisposable
     {
         if (preparedConfig is null) return;
         if (!MatchesPreparedSession(configManager.GetActiveConfig()) || !bossModIPC.IsOwnedProviderCurrent
-            || gmcSession != bossModIPC.IsGmcLoaded)
+            || gmcSession && !bossModIPC.IsNativeAutorotationAvailable)
         {
             DisableRotationForDutyEnd("account, character, provider or profile departure");
             preparedConfig = null;
@@ -185,7 +186,10 @@ public class RotationService : IDisposable
         settingsPending = false;
 
         var config = configManager.GetActiveConfig();
-        gmcSession = bossModIPC.IsGmcLoaded;
+        var host = nativeHost ?? bossModIPC.GetAutomationHost();
+        gmcSession = host == "BossModReborn" && bossModIPC.IsGmcReady
+            || host == "GodMod" && config.CombatProvider is (CombatProvider.Bmr or CombatProvider.Vbm)
+                && !config.UseManualBossModPreset;
         var provider = gmcSession ? CombatProvider.Bmr : config.CombatProvider;
         if (provider != CombatProvider.Wrath)
         {
@@ -198,11 +202,6 @@ public class RotationService : IDisposable
             if (string.IsNullOrEmpty(configManager.CurrentAccountId) || string.IsNullOrEmpty(character)
                 || !bossModIPC.BeginOwnedBossModSettings(preparedBossMod.Value, configManager.CurrentAccountId, character, config))
                 return Fail(Ui.M("Rotation_BossModSettingsUnconfirmed"));
-            if (!bossModIPC.RefreshPackagedPresets())
-            {
-                DisableEnabledComponents();
-                return Fail(Ui.M("Rotation_BossModPackagedPresetInstallationFailedCheckThat"));
-            }
         }
 
         preparedConfig = config;
@@ -211,13 +210,13 @@ public class RotationService : IDisposable
         preparedCharacter = ReadCharacterIdentity();
 
         Failure = string.Empty;
-        log.Information($"[MOGTOME][Rotation] Initialized selected combat provider: {provider}; GMC={gmcSession}");
+        log.Information($"[MOGTOME][Rotation] Initialized selected combat provider: {provider}; NativeAutorotation={gmcSession}");
         return true;
     }
 
     internal void RestoreRsrHealingForStart()
     {
-        if (!UsesGmc) bossModIPC.RestoreRsrHealing();
+        if (!UsesNativeAutorotation) bossModIPC.RestoreRsrHealing();
     }
 
     public bool ForceRotation()
@@ -401,7 +400,7 @@ public class RotationService : IDisposable
         var sameIdentity = preparedConfig is null || preparedAccount == account && preparedCharacter == character;
         var restored = bossModIPC.BeginOwnedBossModCleanup(account, character,
             restoreAi && preparedConfig is not null && MatchesPreparedSession(configManager.GetActiveConfig())
-                && (!gmcSession || bossModIPC.IsGmcLoaded));
+                && (!gmcSession || bossModIPC.IsNativeAutorotationAvailable));
         settingsPending = false;
         appliedPresetSettings = null;
         if (!sameIdentity) enabledComponents.Clear();
@@ -466,8 +465,7 @@ public class RotationService : IDisposable
             return Fail(Ui.M("Rotation_BossModSessionChanged"));
         if (gmcSession)
         {
-            if (!bossModIPC.IsGmcLoaded || preparedBossMod != CombatProvider.Bmr
-                || bossModIPC.NativeHost is not ("BossModReborn" or "GodMod")
+            if (!bossModIPC.IsNativeAutorotationAvailable || preparedBossMod != CombatProvider.Bmr
                 || !bossModIPC.IsOwnedProviderCurrent
                 || !bossModIPC.BeginOwnedBossModSettings(CombatProvider.Bmr, configManager.CurrentAccountId, ReadCharacterIdentity(), config))
                 return Fail(Ui.M("Rotation_BossModSettingsUnconfirmed"));

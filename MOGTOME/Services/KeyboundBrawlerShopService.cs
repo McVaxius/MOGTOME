@@ -88,7 +88,7 @@ public sealed class KeyboundBrawlerShopService : IDisposable
         if (Settings.PurchaseReviewRequired || session?.Settings.PurchaseReviewRequired == true ||
             plugin.Configuration.Blunderville.PurchaseReviewRequired || plugin.Configuration.MoogleShop.PurchaseReviewRequired)
             return Reject("Shop_ReviewRequired");
-        var missingPlugins = GameHelpers.MissingXaDependencies();
+        var missingPlugins = GameHelpers.MissingAutomationDependencies(plugin.BossModIPC);
         if (missingPlugins.Length > 0) return Reject("Plugin_RequiredXaPlugins", missingPlugins);
         if (BusyClient() || DialogVisible() || ShopVisible() || BlundervilleGameAdapter.Visible("Talk") ||
             BlundervilleGameAdapter.Visible("SelectString") || BlundervilleGameAdapter.Visible("SelectIconString"))
@@ -144,6 +144,7 @@ public sealed class KeyboundBrawlerShopService : IDisposable
         updated = DateTime.UtcNow;
         try
         {
+            if (!plugin.BossModIPC.HasUsableAutomationHost()) { Fail("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency); return; }
             if (!Ready) return;
             if (BusyClient() || plugin.Engine.IsRunning || plugin.Engine.IsStartupPending ||
                 plugin.MoogleShop.IsRunning || plugin.Blunderville.IsRunning)
@@ -440,7 +441,7 @@ public sealed class KeyboundBrawlerShopService : IDisposable
         return succeeded;
     }
     private bool Reject(string key, params object?[] arguments) { Status = Ui.M(key, arguments); return false; }
-    private void Fail(string key) { CompletedNormally = false; Cleanup(); Status = Ui.M(key); Plugin.Log.Warning("[MOGTOME][KeyboundShop] stopped: {Reason}", Status.English); }
+    private void Fail(string key, params object?[] arguments) { CompletedNormally = false; Cleanup(); Status = Ui.M(key, arguments); Plugin.Log.Warning("[MOGTOME][KeyboundShop] stopped: {Reason}", Status.English); }
     private void Complete()
     {
         CompletedNormally = Cleanup() && !HoldAutomaticDialogs;

@@ -827,6 +827,7 @@ public sealed class KeyboundBrawlerShoppingTests
             Field(Plugin, "<Engine>k__BackingField", RuntimeHelpers.GetUninitializedObject(typeof(MogtomeEngine)));
             Field(Plugin, "<Blunderville>k__BackingField", RuntimeHelpers.GetUninitializedObject(typeof(BlundervilleService)));
             Field(Plugin, "<MoogleShop>k__BackingField", RuntimeHelpers.GetUninitializedObject(typeof(MoogleShopService)));
+            Field(Plugin, "<BossModIPC>k__BackingField", DutyRecoveryTests.CreateReadyAutomationHost());
             Field(Plugin, "<XaDatabase>k__BackingField", new XaDatabaseIPC(host));
             Field(Plugin, "<YesAlreadyIPC>k__BackingField", new YesAlreadyIPC(log));
             Field(Plugin, "<KeyboundBrawler>k__BackingField", Typer);

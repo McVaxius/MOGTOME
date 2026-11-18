@@ -31,6 +31,24 @@ public partial class BossModIPC
 
     internal bool IsGmcLoaded => IsPluginLoaded(GmcInternalName);
 
+    internal bool IsGmcReady
+    {
+        get
+        {
+            try
+            {
+                return IsGmcLoaded && pluginInterface.GetIpcSubscriber<bool>("BMRVariantLoader.Suite.IsReady.v1").InvokeFunc();
+            }
+            catch
+            {
+                return false;
+            }
+        }
+    }
+
+    internal bool IsNativeAutorotationAvailable => NativeHost == "GodMod"
+        || NativeHost == "BossModReborn" && IsGmcReady;
+
     private void ForgetGmcPlan()
     {
         gmcPlan = null;
@@ -47,7 +65,7 @@ public partial class BossModIPC
 
     internal bool BeginGmcAutorotation()
     {
-        if (!IsGmcLoaded || NativeHost is not ("BossModReborn" or "GodMod")
+        if (!IsNativeAutorotationAvailable
             || !TryReadOwnedBossModSettings(out var before) || before.AiEnabled is null
             || before.ForbidActions is null || before.ForbidMovement is null
             || !ownedSettings!.MatchesNativeAuthority(before)) return false;
@@ -84,7 +102,7 @@ public partial class BossModIPC
 
     internal bool UpdateGmcAutorotation()
     {
-        if (!IsGmcLoaded || NativeHost is not ("BossModReborn" or "GodMod")
+        if (!IsNativeAutorotationAvailable
             || ownedIdentity.Provider != "BMR" || !TryReadOwnedBossModSettings(out var before)
             || before.AiEnabled != (gmcOwnedBehavior is not null) || !HasOwnedGmcAi() || !ownedSettings!.MatchesNativeAuthority(before)
             || !MatchesGmcRuntime(before))
@@ -98,11 +116,6 @@ public partial class BossModIPC
             if (manager is null) return false;
             if (job is null || Convert.ToUInt32(job) == 0) return false;
             var row = Convert.ToUInt32(job);
-            if (!PrepareGodModCompanionHealers(row, CombatProvider.Bmr, manualPreset: false, warning =>
-                {
-                    log.Warning($"[MOGTOME][Rotation] {warning}");
-                    Plugin.ChatGui?.Print(warning);
-                })) return false;
             var preset = SelectPresetForJob(row, passive: false);
             object? module = null, list = null, plan = null;
             if (DutyState.IsMogtomeDutyTerritory(Plugin.ClientState.TerritoryType))

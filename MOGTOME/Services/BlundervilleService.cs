@@ -90,7 +90,7 @@ public sealed class BlundervilleService : IDisposable
         if (Volatile.Read(ref stopRequested) != 0) return Reject("BV_Stopped");
         if (!Ready || IsRunning || plugin.Engine.IsRunning || plugin.IsEngineStartQueued || plugin.MoogleShop?.IsRunning == true || plugin.IsMoogleShopActionQueued)
             return Reject("BV_Unavailable");
-        var missingPlugins = GameHelpers.MissingXaDependencies();
+        var missingPlugins = GameHelpers.MissingAutomationDependencies(plugin.BossModIPC);
         if (missingPlugins.Length > 0) return Reject("Plugin_RequiredXaPlugins", missingPlugins);
         var inArena = Plugin.ClientState.TerritoryType == BlundervilleGameAdapter.Arena;
         if ((inArena && requested != Stage.Farming) ||
@@ -180,6 +180,7 @@ public sealed class BlundervilleService : IDisposable
                 }
             }
             if (!IsRunning) return;
+            if (!plugin.BossModIPC.HasUsableAutomationHost()) { Fail("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency); return; }
             if (!Plugin.ClientState.IsLoggedIn || Plugin.PlayerState.ContentId != character || !ReferenceEquals(Settings, sessionSettings))
             { Fail("BV_SessionChanged"); return; }
             if (!Ready) return;
@@ -431,7 +432,7 @@ public sealed class BlundervilleService : IDisposable
         if (Settings.ShopWhenFinished && (uncertainPurchase || Settings.PurchaseReviewRequired)) Fail("BV_UncertainPurchase");
         else if (Settings.ShopWhenFinished)
         {
-            var missingPlugins = GameHelpers.MissingXaDependencies();
+            var missingPlugins = GameHelpers.MissingAutomationDependencies(plugin.BossModIPC);
             if (missingPlugins.Length > 0) Fail("Plugin_RequiredXaPlugins", missingPlugins);
             else SetStage(Stage.Shopping, "BV_Shopping");
         }

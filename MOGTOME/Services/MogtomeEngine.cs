@@ -311,6 +311,8 @@ public class MogtomeEngine
         }
 
         var missingPlugins = GameHelpers.MissingXaDependencies(requireDatabase: false);
+        if (missingPlugins.Length == 0 && !rotationService.HasUsableAutomationHost(allowHostCleanup: true))
+            missingPlugins = GameHelpers.AutomationDependency;
         if (missingPlugins.Length > 0)
         {
             RecordStopReason(Ui.M("Plugin_RequiredXaPlugins", missingPlugins));
@@ -357,8 +359,7 @@ public class MogtomeEngine
             if (!IsCurrentStartup(operation)) return;
 
             Status = Ui.M("Engine_PreparingBossModSupport");
-            var bossModReady = await conflictPluginService.EnsureBossModReadyAsync(() => IsCurrentStartup(operation),
-                config.CombatProvider, rotationService.UsesGmc).ConfigureAwait(false);
+            var bossModReady = await conflictPluginService.EnsureBossModReadyAsync(() => IsCurrentStartup(operation)).ConfigureAwait(false);
             if (!bossModReady.Ready)
             {
                 await GameHelpers.RunOnFrameworkThreadAsync(() => { if (IsCurrentStartup(operation)) StopWithCombatFailureMessage(bossModReady.Reason); }).ConfigureAwait(false);
@@ -371,6 +372,11 @@ public class MogtomeEngine
             {
                 if (!IsCurrentStartup(operation))
                     return false;
+                if (!rotationService.HasUsableAutomationHost())
+                {
+                    StopWithCombatFailureMessage(Ui.M("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency));
+                    return false;
+                }
                 return rotationService.Initialize(nativeHost: bossModReady.NativeHost);
             }).ConfigureAwait(false);
             if (!IsCurrentStartup(operation))
@@ -425,8 +431,13 @@ public class MogtomeEngine
             {
                 if (!IsCurrentStartup(operation))
                     return new StartupPreparationResult(EnteredRepairMode: false);
+                if (!rotationService.HasUsableAutomationHost())
+                {
+                    StopWithCombatFailureMessage(Ui.M("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency));
+                    return new StartupPreparationResult(EnteredRepairMode: false);
+                }
                 rotationService.RestoreRsrHealingForStart();
-                if (!rotationService.UsesGmc && rotationService.SupportsBmrObstacleMaps)
+                if (!rotationService.UsesNativeAutorotation && rotationService.SupportsBmrObstacleMaps)
                     commandManager.ProcessCommand(
                         config.ObstacleMapsOn
                             ? "/bmrai obstaclemaps on"
@@ -759,6 +770,11 @@ public class MogtomeEngine
     public void Update()
     {
         if (!IsRunning || CurrentState == EngineState.Stopping) return;
+        if (CurrentState != EngineState.Initializing && !rotationService.HasUsableAutomationHost())
+        {
+            StopWithReason(Ui.M("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency));
+            return;
+        }
 
         var inDuty = DutyStartupService.IsInDuty();
         var identity = DutyStartupService.ReadLiveDutyIdentity();

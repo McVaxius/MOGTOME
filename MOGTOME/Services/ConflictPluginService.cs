@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Dalamud.Game.Command;
 using Dalamud.Plugin.Services;
 using MOGTOME.IPC;
-using MOGTOME.Models;
 
 namespace MOGTOME.Services;
 
@@ -52,13 +51,15 @@ public sealed class ConflictPluginService
         return (status.IsInstalled, status.IsLoaded);
     }
 
-    public async Task<(bool Ready, string? NativeHost, UiText Reason)> EnsureBossModReadyAsync(Func<bool> isStarting,
-        CombatProvider preferred = CombatProvider.Bmr, bool gmc = false)
+    public async Task<(bool Ready, string? NativeHost, UiText Reason)> EnsureBossModReadyAsync(Func<bool> isStarting)
     {
         var hosts = new[] { "GodMod", "BossModReborn", "BossMod" }
             .Select(name => GetPluginStatus((internalName, _) => internalName == name))
             .Where(status => status.IsLoaded).ToArray();
-        var selected = BossModIPC.SelectNativeHost(hosts.Select(status => status.InternalName), preferred, gmc);
+        var selected = BossModIPC.SelectAutomationHost(hosts.Select(status => status.InternalName),
+            GetPluginStatus((name, _) => name == BossModIPC.GmcInternalName).IsLoaded);
+        if (selected is null)
+            return (false, null, Ui.M("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency));
         if (hosts.Length < 2)
             return (true, selected, string.Empty);
 

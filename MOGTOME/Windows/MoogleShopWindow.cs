@@ -72,7 +72,7 @@ public sealed class MoogleShopWindow : Window
         }
         plugin.Appearance.DrawShopStorageNotice();
         UiLayout.Wrapped(shop.Status.Render());
-        var missingPlugins = GameHelpers.MissingXaDependencies();
+        var missingPlugins = GameHelpers.MissingAutomationDependencies(plugin.BossModIPC);
         if (missingPlugins.Length > 0) UiLayout.Wrapped(Ui.T("Plugin_RequiredXaPlugins", missingPlugins));
         ImGui.BeginDisabled(!shop.Ready || shop.IsRunning || plugin.IsMoogleShopActionQueued || plugin.IsEngineStartQueued ||
             plugin.Engine?.IsRunning == true || plugin.Blunderville.IsRunning || plugin.IsBlundervilleActionQueued ||

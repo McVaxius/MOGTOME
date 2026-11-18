@@ -421,6 +421,11 @@ public sealed class Plugin : IDalamudPlugin
             IsKeyboundStartQueued = false;
             if (!ClientState.IsLoggedIn || account != ConfigManager.CurrentAccountId || character != PlayerState.ContentId ||
                 !ReferenceEquals(selected, Configuration.KeyboundBrawler)) return;
+            if (!BossModIPC.HasUsableAutomationHost())
+            {
+                KeyboundBrawler.StopWithReason("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency);
+                return;
+            }
             UpdateKeyboundBrawlerAdmission();
             if (!KeyboundBrawler.Start(selected)) return;
             TryEnableXaSlaveSkipCutscenes("Keybound Brawler");
@@ -496,6 +501,14 @@ public sealed class Plugin : IDalamudPlugin
             KeyboundBrawler.StopWithReason("BV_SessionChanged");
             if (IsKeyboundShoppingTrip) KeyboundShop.Stop();
             ReleaseKeyboundSession();
+        }
+        if (keyboundSessionSettings != null && !BossModIPC.HasUsableAutomationHost())
+        {
+            KeyboundLoop.Stop();
+            KeyboundBrawler.StopWithReason("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency);
+            if (IsKeyboundShoppingTrip) KeyboundShop.Stop();
+            ReleaseKeyboundSession();
+            return;
         }
         UpdateKeyboundBrawlerAdmission();
         uint? wallet = KeyboundBrawlerShop.TryWallet(out var currentWallet) ? currentWallet : null;
@@ -822,7 +835,7 @@ public sealed class Plugin : IDalamudPlugin
             return;
         }
 
-        if (!CheckXaDependenciesForStart(source, notifyChat)) return;
+        if (!CheckAutomationDependenciesForStart(source, notifyChat)) return;
 
         if (sharedConfigPathDetected && !sharedConfigWarningAcknowledged)
         {
@@ -1103,15 +1116,15 @@ public sealed class Plugin : IDalamudPlugin
             return;
         }
 
-        if (!CheckXaDependenciesForStart(source, notifyChat)) return;
+        if (!CheckAutomationDependenciesForStart(source, notifyChat)) return;
         TryEnableXaSlaveSkipCutscenes(source);
         Log.Information("[Plugin] Framework-thread startup begins for queued request from {Source}", source);
         Engine.Start();
     }
 
-    private bool CheckXaDependenciesForStart(string source, bool notifyChat)
+    private bool CheckAutomationDependenciesForStart(string source, bool notifyChat)
     {
-        var missingPlugins = GameHelpers.MissingXaDependencies(requireDatabase: false);
+        var missingPlugins = GameHelpers.MissingAutomationDependencies(BossModIPC, requireDatabase: false, allowHostCleanup: true);
         if (missingPlugins.Length == 0) return true;
         var reason = Ui.M("Plugin_RequiredXaPlugins", missingPlugins);
         Engine?.RecordStopReason(reason);

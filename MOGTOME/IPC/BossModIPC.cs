@@ -2,9 +2,7 @@ using System;
 using System.Collections;
 using System.Globalization;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using Dalamud.Plugin;
@@ -51,26 +49,9 @@ public partial class BossModIPC : IDisposable
     private const string ActiveMeleePreset = "FRENRIDER - MELEE";
     private const string ActiveRangedPreset = "FRENRIDER - RANGED";
 
-    private static readonly string[] PackagedPresetNames =
-    [
-        PassiveTankPreset,
-        PassiveMeleePreset,
-        PassiveRangedPreset,
-        ActiveTankPreset,
-        ActiveMeleePreset,
-        ActiveRangedPreset,
-    ];
-
     private static readonly HashSet<uint> TankJobRows = [1, 3, 19, 21, 32, 37];
     private static readonly HashSet<uint> MeleeJobRows = [2, 4, 20, 22, 29, 30, 34, 39, 41, 43];
     private static readonly HashSet<uint> RangedJobRows = [5, 6, 7, 23, 24, 25, 26, 27, 28, 31, 33, 35, 36, 38, 40, 42];
-
-    internal const string MissingGodModCompanionRotations = "Could not find God Mod Companion rotations";
-    private const string DhogModulePrefix = "BMRVariantModulePack.Autorotation.Dhog.Dhog";
-    private static readonly string[] DhogHealerJobs = ["WHM", "SCH", "AST", "SGE"];
-    private const string DhogBeastmasterModule = DhogModulePrefix + "BST";
-    private bool? packagedDhogHealers;
-    private bool warnedMissingDhogHealers;
 
     private readonly IDalamudPluginInterface pluginInterface;
     private readonly IPluginLog log;
@@ -108,13 +89,34 @@ public partial class BossModIPC : IDisposable
 
     internal static bool IsBossModHost(string? name) => name is "GodMod" or "BossModReborn" or "BossMod";
 
-    internal static string? SelectNativeHost(IEnumerable<string> available, CombatProvider preferred, bool gmc)
+    internal string? GetAutomationHost()
+        => SelectAutomationHost(pluginInterface.InstalledPlugins.Where(plugin => plugin.IsLoaded).Select(plugin => plugin.InternalName), IsGmcLoaded);
+
+    internal static string? SelectAutomationHost(IEnumerable<string> hosts, bool gmcLoaded)
     {
-        var names = available.Where(IsBossModHost).ToHashSet(StringComparer.Ordinal);
-        if (gmc && names.Contains("GodMod")) return "GodMod";
-        var requested = preferred == CombatProvider.Vbm && !gmc ? "BossMod" : "BossModReborn";
-        return names.Contains(requested) ? requested : names.Contains("GodMod") ? "GodMod"
-            : names.Contains("BossModReborn") ? "BossModReborn" : names.Contains("BossMod") ? "BossMod" : null;
+        if (hosts.Contains("GodMod")) return "GodMod";
+        return gmcLoaded && hosts.Contains("BossModReborn") ? "BossModReborn" : null;
+    }
+
+    internal bool HasUsableAutomationHost(bool allowHostCleanup = false)
+    {
+        try
+        {
+            var hosts = pluginInterface.InstalledPlugins.Where(plugin => plugin.IsLoaded && IsBossModHost(plugin.InternalName)).ToArray();
+            var host = SelectAutomationHost(hosts.Select(plugin => plugin.InternalName), IsGmcLoaded);
+            if (host is null) return false;
+            if (hosts.Length > 1) return allowHostCleanup;
+            if (host == "BossModReborn" && !IsGmcReady) return false;
+
+            var instance = LiveMember(hosts[0], "instance") ?? FindDalamudPluginInstance(host, out _);
+            return instance is not null && LiveMember(instance, "_rotationDB") is not null
+                && LiveMember(instance, "_rotation") is not null
+                && ReadableBaseline("BMR", ReadBossModSettings("BMR", instance.GetType().Assembly));
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     internal string? NativeHost => ownedNativeHost ?? selectedNativeHost;
@@ -162,214 +164,6 @@ public partial class BossModIPC : IDisposable
     private string RouteNativeCommand(string command)
         => command.StartsWith("/bmrai ", StringComparison.Ordinal) && NativeHost == "GodMod"
             ? "/gmai " + command[7..] : command;
-
-    internal static IReadOnlySet<string> ReadDhogHealerModules(Type? registry)
-    {
-        var names = new HashSet<string>(StringComparer.Ordinal);
-        try
-        {
-            const BindingFlags flags = BindingFlags.Static | BindingFlags.Public;
-            if (registry?.GetField("Modules", flags)?.GetValue(null) is not IDictionary modules
-                || registry.GetMethod("FindType", flags, [typeof(string)]) is not { } findType)
-                return names;
-            foreach (var job in DhogHealerJobs)
-            {
-                var name = DhogModulePrefix + job;
-                if (findType.Invoke(null, [name]) is Type type && type.FullName == name && modules.Contains(type))
-                    names.Add(name);
-            }
-        }
-        catch { names.Clear(); }
-        return names;
-    }
-
-    private bool HasDhogHealers()
-    {
-        if (!TryGetLiveBossMod("BMR", out _, out var assembly, out _)) return false;
-        var modules = ReadDhogHealerModules(assembly!.GetType("BossMod.Autorotation.RotationModuleRegistry"));
-        return DhogHealerJobs.All(job => modules.Contains(DhogModulePrefix + job));
-    }
-
-    private Type? RegisteredBeastmasterType(Assembly assembly)
-    {
-        var registry = assembly.GetType("BossMod.Autorotation.RotationModuleRegistry");
-        const BindingFlags flags = BindingFlags.Static | BindingFlags.Public;
-        return registry?.GetMethod("FindType", flags, [typeof(string)])?.Invoke(null, [DhogBeastmasterModule]) is Type type
-            && type.FullName == DhogBeastmasterModule
-            && (IsGmcLoaded || ReferenceEquals(type.Assembly, assembly))
-            && registry.GetField("Modules", flags)?.GetValue(null) is IDictionary modules && modules.Contains(type)
-            && LiveMember(modules[type], "Definition") is not null ? type : null;
-    }
-
-    private bool HasDhogBeastmaster()
-        => TryGetLiveBossMod("BMR", out _, out var assembly, out _) && RegisteredBeastmasterType(assembly!) is not null;
-
-    private static JsonSerializerOptions NativePresetSerializationOptions(Assembly assembly)
-        => assembly.GetType("BossMod.Serialization")?.GetMethod("BuildSerializationOptions", BindingFlags.Public | BindingFlags.Static,
-            Type.EmptyTypes)?.Invoke(null, null) as JsonSerializerOptions
-            ?? throw new InvalidOperationException("The native preset serializer is unavailable.");
-
-    private static void CopyBeastmasterTransientSettings(object? source, object target)
-    {
-        if (source is null) return;
-        var from = ((IEnumerable)LiveMember(source, "Modules")!).Cast<object>().SingleOrDefault(module =>
-            LiveMember(module, "Type") is Type type
-                && type.FullName is DhogBeastmasterModule or "BossMod.Autorotation.xan.BST");
-        var to = ((IEnumerable)LiveMember(target, "Modules")!).Cast<object>().Single(module =>
-            LiveMember(module, "Type") is Type type && type.FullName == DhogBeastmasterModule);
-        var destination = (IList)LiveMember(to, "TransientSettings")!;
-        destination.Clear();
-        if (from is null) return;
-        var fromConfigs = ((IEnumerable)LiveMember(LiveMember(from, "Definition"), "Configs")!).Cast<object>().ToArray();
-        var toConfigs = ((IEnumerable)LiveMember(LiveMember(to, "Definition"), "Configs")!).Cast<object>().ToArray();
-        foreach (var setting in (IEnumerable)LiveMember(from, "TransientSettings")!)
-        {
-            var track = Convert.ToInt32(LiveMember(setting, "Track"));
-            var name = LiveMember(fromConfigs[track], "InternalName");
-            var mapped = Array.FindIndex(toConfigs, config => Equals(LiveMember(config, "InternalName"), name));
-            if (mapped < 0) throw new InvalidOperationException("A transient Beastmaster strategy is unavailable in the new preset.");
-            // ModuleSetting is a value type: this updates the boxed copy, not
-            // the original source entry. Transients are never written to JSON.
-            setting.GetType().GetProperty("Track")!.SetValue(setting, mapped);
-            destination.Add(setting);
-        }
-    }
-
-    internal static bool MatchesDhogBeastmasterPreset(string expectedJson, string? actualJson,
-        Type? nativePresetType = null, JsonSerializerOptions? nativeOptions = null)
-    {
-        if (actualJson is null) return false;
-        using var expected = JsonDocument.Parse(expectedJson);
-        using var actual = JsonDocument.Parse(actualJson);
-        if (!actual.RootElement.TryGetProperty("Name", out var name)
-            || !JsonElement.DeepEquals(expected.RootElement.GetProperty("Name"), name)
-            || !actual.RootElement.TryGetProperty("Modules", out var modules)
-            || modules.TryGetProperty("BossMod.Autorotation.xan.BST", out _)
-            || !modules.TryGetProperty(DhogBeastmasterModule, out var settings)
-            || settings.ValueKind != JsonValueKind.Array) return false;
-        var intended = expected.RootElement.GetProperty("Modules").GetProperty(DhogBeastmasterModule);
-        if (intended.ValueKind != JsonValueKind.Array || intended.GetArrayLength() != settings.GetArrayLength()) return false;
-        if (nativePresetType is null) return JsonElement.DeepEquals(intended, settings);
-
-        // Let this host normalize enum spelling and omitted default fields, but
-        // never allow its parser to silently drop an ordered strategy entry.
-        if (nativeOptions is null) throw new InvalidOperationException("The native preset serializer is unavailable.");
-        var normalizedExpected = JsonSerializer.Serialize(
-            JsonSerializer.Deserialize(expectedJson, nativePresetType, nativeOptions), nativePresetType, nativeOptions);
-        var normalizedActual = JsonSerializer.Serialize(
-            JsonSerializer.Deserialize(actualJson, nativePresetType, nativeOptions), nativePresetType, nativeOptions);
-        using var expectedNative = JsonDocument.Parse(normalizedExpected);
-        using var actualNative = JsonDocument.Parse(normalizedActual);
-        return expectedNative.RootElement.GetProperty("Modules").TryGetProperty(DhogBeastmasterModule, out var expectedSettings)
-            && actualNative.RootElement.GetProperty("Modules").TryGetProperty(DhogBeastmasterModule, out var actualSettings)
-            && expectedSettings.GetArrayLength() == intended.GetArrayLength()
-            && actualSettings.GetArrayLength() == settings.GetArrayLength()
-            && JsonElement.DeepEquals(expectedSettings, actualSettings);
-    }
-
-    internal static string AdaptDhogHealerPreset(string json, bool available)
-    {
-        if (!available) return json;
-        var root = JsonNode.Parse(json)?.AsObject();
-        if (root?["Modules"] is not JsonObject modules
-            || !DhogHealerJobs.All(job => modules.ContainsKey("BossMod.Autorotation.xan." + job)))
-            return json;
-        foreach (var job in DhogHealerJobs)
-        {
-            modules.Remove("BossMod.Autorotation.xan." + job, out var settings);
-            modules[DhogModulePrefix + job] = settings;
-        }
-        modules.Remove("BossMod.Autorotation.xan.HealerAI");
-        return root.ToJsonString();
-    }
-
-    internal static string AdaptDhogBeastmasterPreset(string json, string? savedJson)
-    {
-        var root = JsonNode.Parse(json)!.AsObject();
-        var modules = root["Modules"]!.AsObject();
-        const string nativeModule = "BossMod.Autorotation.xan.BST";
-        if (modules.ContainsKey(nativeModule) && modules.ContainsKey(DhogBeastmasterModule))
-            throw new InvalidOperationException("The packaged preset contains competing Beastmaster rotations.");
-        if (!modules.Remove(nativeModule, out var defaults))
-            defaults = modules[DhogBeastmasterModule]?.DeepClone();
-        if (defaults is not JsonArray defaultSettings)
-            throw new InvalidOperationException("The packaged Beastmaster settings are unavailable.");
-
-        JsonArray? savedSettings = null;
-        if (savedJson is not null)
-        {
-            var saved = JsonNode.Parse(savedJson)!.AsObject();
-            if (!JsonNode.DeepEquals(root["Name"], saved["Name"]))
-                throw new InvalidOperationException("The saved Beastmaster preset has a different name.");
-            var savedModules = saved["Modules"]!.AsObject();
-            if (savedModules.ContainsKey(nativeModule) && savedModules.ContainsKey(DhogBeastmasterModule))
-                throw new InvalidOperationException("The saved preset contains competing Beastmaster rotations.");
-            var savedModule = savedModules.ContainsKey(DhogBeastmasterModule) ? DhogBeastmasterModule
-                : savedModules.ContainsKey(nativeModule) ? nativeModule : null;
-            if (savedModule is not null)
-                savedSettings = savedModules[savedModule] as JsonArray
-                    ?? throw new InvalidOperationException("The saved Beastmaster settings are unavailable.");
-        }
-
-        // Saved entries own their tracks, including modifier-only choices.
-        // Unmatched modifiers keep the native config default. Preserve every
-        // saved entry, including repeated tracks, in its original order.
-        var savedTracks = savedSettings?.Select(setting => setting!["Track"]!.GetValue<string>()).ToHashSet(StringComparer.Ordinal)
-            ?? new HashSet<string>(StringComparer.Ordinal);
-        var merged = new JsonArray();
-        foreach (var setting in defaultSettings)
-            if (!savedTracks.Contains(setting!["Track"]!.GetValue<string>()))
-                merged.Add(setting!.DeepClone());
-        if (savedSettings is not null)
-            foreach (var setting in savedSettings)
-                merged.Add(setting!.DeepClone());
-        modules[DhogBeastmasterModule] = merged;
-        return root.ToJsonString();
-    }
-
-    internal static bool MatchesDhogHealerPreset(string expectedJson, string? actualJson)
-    {
-        if (string.IsNullOrWhiteSpace(actualJson)) return false;
-        try
-        {
-            using var expected = JsonDocument.Parse(expectedJson);
-            using var actual = JsonDocument.Parse(actualJson);
-            if (!actual.RootElement.TryGetProperty("Name", out var name)
-                || !JsonElement.DeepEquals(expected.RootElement.GetProperty("Name"), name)
-                || !actual.RootElement.TryGetProperty("Modules", out var modules) || modules.ValueKind != JsonValueKind.Object)
-                return false;
-            var expectedModules = expected.RootElement.GetProperty("Modules");
-            return !modules.TryGetProperty("BossMod.Autorotation.xan.HealerAI", out _)
-                   && DhogHealerJobs.All(job => !modules.TryGetProperty("BossMod.Autorotation.xan." + job, out _)
-                       && modules.TryGetProperty(DhogModulePrefix + job, out var settings)
-                       && JsonElement.DeepEquals(expectedModules.GetProperty(DhogModulePrefix + job), settings));
-        }
-        catch (Exception ex) when (ex is JsonException or InvalidOperationException or KeyNotFoundException) { return false; }
-    }
-
-    internal bool PrepareGodModCompanionHealers(uint job, CombatProvider provider, bool manualPreset, Action<string> reportWarning)
-    {
-        if (provider != CombatProvider.Bmr || manualPreset || job is not (6 or 24 or 28 or 33 or 40)) return true;
-        var available = HasDhogHealers();
-        if (!available)
-        {
-            LastStatus = MissingGodModCompanionRotations;
-            if (!warnedMissingDhogHealers) reportWarning(LastStatus);
-            warnedMissingDhogHealers = true;
-            packagedDhogHealers = false;
-            return false;
-        }
-        if (packagedDhogHealers != true && !RefreshPackagedPresets()) return false;
-        var expected = ReadPackagedPresetJson("FRENRIDER - RANGED");
-        if (expected == null || !VerifyCreatedDhogPreset("FRENRIDER - RANGED", AdaptDhogHealerPreset(expected, true)))
-        {
-            if (!warnedMissingDhogHealers) reportWarning(LastStatus);
-            warnedMissingDhogHealers = true;
-            return false;
-        }
-        warnedMissingDhogHealers = false;
-        return true;
-    }
 
     public BossModPresetCatalog ReadPresetCatalog(CombatProvider provider)
         => ReadPresetCatalog(provider == CombatProvider.Vbm ? "VBM" : "BMR");
@@ -441,7 +235,7 @@ public partial class BossModIPC : IDisposable
                 || LiveMember(presets, "DefaultPresets") is not IEnumerable defaults
                 || LiveMember(presets, "UserPresets") is not IEnumerable users)
                 return BossModPresetCatalog.Unavailable(provider, "The running provider's complete preset database is unavailable.");
-            return ReadPresetCatalog(provider, visible, defaults, users);
+            return ReadPresetCatalog(provider, visible, defaults, users, exactGodModSuiteNames: IsPluginLoaded("GodMod"));
         }
         catch (Exception ex)
         {
@@ -450,7 +244,7 @@ public partial class BossModIPC : IDisposable
     }
 
     internal static BossModPresetCatalog ReadPresetCatalog(string provider, IEnumerable visible,
-        IEnumerable defaults, IEnumerable users)
+        IEnumerable defaults, IEnumerable users, bool exactGodModSuiteNames = false)
     {
         var displayed = new List<string>();
         var definitions = new List<string>();
@@ -472,10 +266,11 @@ public partial class BossModIPC : IDisposable
                 continue;
             displayed.Add(name);
         }
-        displayed.RemoveAll(name => !string.Equals(nativeNames.FirstOrDefault(candidate =>
+        displayed.RemoveAll(name => !(exactGodModSuiteNames && IsSuitePresetName(name))
+            && (!string.Equals(nativeNames.FirstOrDefault(candidate =>
                 string.Equals(candidate, name, StringComparison.CurrentCultureIgnoreCase)), name, StringComparison.Ordinal)
-            || provider == "BMR" && !string.Equals(nativeNames.FirstOrDefault(candidate =>
-                string.Equals(candidate.Trim(), name.Trim(), StringComparison.OrdinalIgnoreCase)), name, StringComparison.Ordinal));
+                || provider == "BMR" && !string.Equals(nativeNames.FirstOrDefault(candidate =>
+                    string.Equals(candidate.Trim(), name.Trim(), StringComparison.OrdinalIgnoreCase)), name, StringComparison.Ordinal)));
         return new BossModPresetCatalog(provider, true, displayed.Distinct(StringComparer.Ordinal).ToArray(),
             definitions, nativeNames, string.Empty);
     }
@@ -848,10 +643,20 @@ public partial class BossModIPC : IDisposable
         catch { return false; }
     }
 
+    private static bool IsSuitePresetName(string name)
+        => name.Equals(ActiveTankPreset, StringComparison.OrdinalIgnoreCase)
+            || name.Equals(ActiveMeleePreset, StringComparison.OrdinalIgnoreCase)
+            || name.Equals(ActiveRangedPreset, StringComparison.OrdinalIgnoreCase)
+            || name.Equals(PassiveTankPreset, StringComparison.OrdinalIgnoreCase)
+            || name.Equals(PassiveMeleePreset, StringComparison.OrdinalIgnoreCase)
+            || name.Equals(PassiveRangedPreset, StringComparison.OrdinalIgnoreCase);
+
     private bool IsExactAiSelector(string name, BossModPresetCatalog catalog)
         => !string.IsNullOrWhiteSpace(name) && catalog.Readable
-            && string.Equals(catalog.NativeNames.FirstOrDefault(candidate =>
-                string.Equals(candidate.Trim(), name.Trim(), StringComparison.OrdinalIgnoreCase)), name, StringComparison.Ordinal);
+            && (NativeHost == "GodMod" && IsSuitePresetName(name)
+                ? catalog.NativeNames.Contains(name, StringComparer.Ordinal)
+                : string.Equals(catalog.NativeNames.FirstOrDefault(candidate =>
+                    string.Equals(candidate.Trim(), name.Trim(), StringComparison.OrdinalIgnoreCase)), name, StringComparison.Ordinal));
 
     private bool IsRestorableAiSelector(string? name, BossModPresetCatalog catalog)
         => name is not null ? IsExactAiSelector(name, catalog)
@@ -1263,60 +1068,10 @@ public partial class BossModIPC : IDisposable
             log.Warning($"[MOGTOME] Owned BossMod settings cleanup was incomplete: {LastStatus}");
     }
 
-    internal bool RefreshPackagedPresets()
-    {
-        try
-        {
-            if (!TryReadOwnedBossModSettings(out var before) || before.Runtime is not { } previous
-                || previous.Names.Any(name => !IsExactRuntimePreset(name)))
-            {
-                LastStatus = "Packaged presets retained: the complete current selection has no verified restoration path.";
-                return false;
-            }
-            var ownership = ownedSettings!;
-            var runtimeWasOwned = ownership.CanChangeRuntime(before);
-            var installed = InstallPackagedPresets(forceRecreate: true) == PackagedPresetNames.Length;
-            if (!TryReadOwnedBossModSettings(out var after) || !ReferenceEquals(ownedSettings, ownership))
-                return false;
-            if (!BossModRuntimePresetState.Matches(previous, after.Runtime))
-            {
-                var expected = new BossModRuntimePresetState(previous.ForceDisabled,
-                    previous.Names.Where(name => !PackagedPresetNames.Contains(name, StringComparer.Ordinal)).ToArray());
-                if (!BossModRuntimePresetState.Matches(expected, after.Runtime))
-                {
-                    LastStatus = "Packaged preset refresh observed a different selection; that external selection was retained.";
-                    return false;
-                }
-                if (runtimeWasOwned) ownership.OwnRuntime(expected);
-                _ = WriteRuntimePreset(ownedIdentity.Provider, previous);
-                if (!TryReadOwnedBossModSettings(out var restored) || !ReferenceEquals(ownedSettings, ownership)
-                    || !BossModRuntimePresetState.Matches(previous, restored.Runtime))
-                {
-                    LastStatus = "Packaged presets were refreshed, but the previous complete selection could not be confirmed.";
-                    return false;
-                }
-                if (runtimeWasOwned) ownership.OwnRuntime(previous);
-            }
-            return installed;
-        }
-        catch (Exception ex)
-        {
-            log.Error($"[MOGTOME][BossMod] Packaged preset refresh failed: {ex.Message}");
-            return false;
-        }
-    }
-
     public bool PreparePresetForStart(CombatProvider provider, bool passive, bool useManualPreset, string manualPresetName)
     {
         try
         {
-            if (!passive && !PrepareGodModCompanionHealers(Plugin.ObjectTable.LocalPlayer?.ClassJob.RowId ?? 0,
-                    provider, useManualPreset, warning =>
-                    {
-                        log.Warning($"[MOGTOME][Rotation] {warning}");
-                        Plugin.ChatGui?.Print(warning);
-                    }))
-                return false;
             var manualPresetSelected = !passive && useManualPreset;
             if (manualPresetSelected && string.IsNullOrWhiteSpace(manualPresetName))
             {
@@ -1510,61 +1265,6 @@ public partial class BossModIPC : IDisposable
         return false;
     }
 
-    private int InstallPackagedPresets(bool forceRecreate)
-    {
-        var createdCount = 0;
-        var useDhogHealers = (IsGmcLoaded || ownedIdentity.Config is { CombatProvider: CombatProvider.Bmr, UseManualBossModPreset: false })
-                            && HasDhogHealers();
-
-        foreach (var presetName in PackagedPresetNames)
-        {
-            var json = ReadPackagedPresetJson(presetName);
-            if (json == null)
-                continue;
-            json = AdaptDhogHealerPreset(json, useDhogHealers);
-
-            if (TryCreatePreset(presetName, json, forceRecreate))
-            {
-                createdCount++;
-                continue;
-            }
-
-            log.Warning($"[MOGTOME][BossMod] Failed to install packaged preset '{presetName}' via BossMod-compatible IPC");
-        }
-
-        log.Information($"[MOGTOME][BossMod] Installed {createdCount}/{PackagedPresetNames.Length} packaged presets");
-        if (createdCount == PackagedPresetNames.Length) packagedDhogHealers = useDhogHealers;
-
-        return createdCount;
-    }
-
-    private string? ReadPackagedPresetJson(string presetName)
-    {
-        try
-        {
-            var assemblyDirectory = pluginInterface.AssemblyLocation.DirectoryName;
-            if (string.IsNullOrWhiteSpace(assemblyDirectory))
-            {
-                log.Warning($"[MOGTOME][BossMod] Could not resolve plugin directory for preset '{presetName}'");
-                return null;
-            }
-
-            var path = Path.Combine(assemblyDirectory, "data", "bm", $"{presetName}.json");
-            if (!File.Exists(path))
-            {
-                log.Warning($"[MOGTOME][BossMod] Packaged preset file missing: {path}");
-                return null;
-            }
-
-            return File.ReadAllText(path);
-        }
-        catch (Exception ex)
-        {
-            log.Warning($"[MOGTOME][BossMod] Failed to read packaged preset '{presetName}': {ex.Message}");
-            return null;
-        }
-    }
-
     private string SelectPresetForCurrentJob(bool passive)
     {
         try
@@ -1604,119 +1304,6 @@ public partial class BossModIPC : IDisposable
         if (RangedJobRows.Contains(rowId))
             return passive ? PassiveRangedPreset : ActiveRangedPreset;
         throw new InvalidOperationException($"Unsupported combat job {rowId}");
-    }
-
-    private bool VerifyCreatedDhogPreset(string name, string json)
-    {
-        using var expected = JsonDocument.Parse(json);
-        if (!expected.RootElement.TryGetProperty("Modules", out var modules)
-            || !DhogHealerJobs.Any(job => modules.TryGetProperty(DhogModulePrefix + job, out _)))
-            return true;
-        if (MatchesDhogHealerPreset(json, TryStringIpc("BossMod.Presets.Get", name))) return true;
-        LastStatus = MissingGodModCompanionRotations + ": the created preset did not retain the exact healer modules and settings.";
-        log.Warning($"[MOGTOME][Rotation] {LastStatus}");
-        return false;
-    }
-
-    private bool TryCreatePreset(string name, string json, bool forceRecreate)
-    {
-
-        var regularBeastmaster = name == ActiveMeleePreset && HasDhogBeastmaster();
-        object? futureBeastmaster = null;
-        JsonSerializerOptions? beastmasterOptions = null;
-        object? ReadSource()
-        {
-            if (!TryGetLiveBossMod("BMR", out var instance, out var assembly, out _)) return null;
-            var presets = ReadRotationDatabase("BMR", instance!, assembly!);
-            return ((IEnumerable)LiveMember(LiveMember(presets, "Presets"), "AllPresets")!).Cast<object>()
-                .SingleOrDefault(preset => Equals(LiveMember(preset, "Name"), name));
-        }
-        var transientSource = regularBeastmaster ? ReadSource() : null;
-        var existingPreset = regularBeastmaster
-            ? pluginInterface.GetIpcSubscriber<string, string>("BossMod.Presets.Get").InvokeFunc(name)
-            : forceRecreate ? TryStringIpc("BossMod.Presets.Get", name) : null;
-        if (regularBeastmaster)
-        {
-            json = AdaptDhogBeastmasterPreset(json, existingPreset);
-            if (!TryGetLiveBossMod("BMR", out _, out var assembly, out _)) return false;
-            var type = assembly!.GetType("BossMod.Autorotation.Preset")
-                ?? throw new InvalidOperationException("The native preset type is unavailable.");
-            var options = beastmasterOptions = NativePresetSerializationOptions(assembly);
-            futureBeastmaster = JsonSerializer.Deserialize(json, type, options)
-                ?? throw new InvalidOperationException("The native Beastmaster preset could not be read.");
-            CopyBeastmasterTransientSettings(transientSource, futureBeastmaster);
-            var roundtrip = JsonSerializer.Serialize(futureBeastmaster, type, options);
-            if (!MatchesDhogBeastmasterPreset(json, roundtrip, type, options))
-            {
-                LastStatus = "The native host did not retain the saved Beastmaster settings; the previous definition was preserved.";
-                return false;
-            }
-        }
-        bool VerifyBeastmaster()
-        {
-            if (!regularBeastmaster) return true;
-            CopyBeastmasterTransientSettings(futureBeastmaster, ReadSource()
-                ?? throw new InvalidOperationException("The created Beastmaster preset is unavailable."));
-            if (MatchesDhogBeastmasterPreset(json,
-                    pluginInterface.GetIpcSubscriber<string, string>("BossMod.Presets.Get").InvokeFunc(name),
-                    futureBeastmaster!.GetType(), beastmasterOptions)) return true;
-            LastStatus = "The created preset did not retain the saved Beastmaster settings.";
-            return false;
-        }
-
-        if (regularBeastmaster && (existingPreset != pluginInterface.GetIpcSubscriber<string, string>("BossMod.Presets.Get").InvokeFunc(name)
-                || !ReferenceEquals(transientSource, ReadSource())))
-        {
-            LastStatus = "The saved Beastmaster preset changed while it was being prepared; the new definition was preserved.";
-            return false;
-        }
-        if (forceRecreate)
-        {
-            if (existingPreset != null)
-            {
-
-                var deleteResult = TryBoolIpc("BossMod.Presets.Delete", name);
-                if (deleteResult.HasValue)
-                {
-                    if (deleteResult.Value)
-                        log.Information($"[MOGTOME][BossMod] Preset '{name}' deleted before recreate via BossMod-compatible IPC");
-                    else
-                        log.Warning($"[MOGTOME][BossMod] BossMod.Presets.Delete returned false for preset '{name}' before recreate");
-                }
-            }
-        }
-
-        var result = TryBoolIpc("BossMod.Presets.Create", json, true);
-        if (result.HasValue)
-        {
-            if (result.Value)
-            {
-                log.Information($"[MOGTOME][BossMod] Preset '{name}' created via BossMod-compatible IPC");
-
-
-                return VerifyBeastmaster();
-            }
-
-            log.Warning($"[MOGTOME][BossMod] BossMod.Presets.Create returned false for preset '{name}'");
-            return false;
-        }
-
-        var legacyResult = TryStringIpc("BossMod.Presets.Create", json);
-        if (legacyResult != null)
-        {
-            LogLegacyPresetResult("BossMod.Presets.Create", name, legacyResult);
-            return legacyResult.Length == 0 && VerifyBeastmaster();
-        }
-
-        if (NativeHost != "BossModReborn") return false;
-        legacyResult = TryStringIpc("BossModReborn.Presets.Create", json);
-        if (legacyResult != null)
-        {
-            LogLegacyPresetResult("BossModReborn.Presets.Create", name, legacyResult);
-            return legacyResult.Length == 0 && VerifyBeastmaster();
-        }
-
-        return false;
     }
 
     private bool SetActivePresetViaIpc(string presetName)
@@ -1918,20 +1505,6 @@ public partial class BossModIPC : IDisposable
         {
             var subscriber = pluginInterface.GetIpcSubscriber<TArg, bool>(channel);
             return subscriber.InvokeFunc(arg);
-        }
-        catch (Exception ex)
-        {
-            log.Debug($"[MOGTOME][BossMod] IPC {channel} not available: {ex.Message}");
-            return null;
-        }
-    }
-
-    private bool? TryBoolIpc<TArg1, TArg2>(string channel, TArg1 arg1, TArg2 arg2)
-    {
-        try
-        {
-            var subscriber = pluginInterface.GetIpcSubscriber<TArg1, TArg2, bool>(channel);
-            return subscriber.InvokeFunc(arg1, arg2);
         }
         catch (Exception ex)
         {

@@ -141,7 +141,7 @@ public sealed partial class MoogleShopService : IDisposable
         if (plugin.KeyboundShopOwnsAutomation) return Reject("BV_Unavailable");
         if (Volatile.Read(ref stopRequested) != 0 || !Ready || running || plugin.IsEngineStartQueued || plugin.Engine.IsRunning ||
             plugin.Blunderville.IsRunning || plugin.IsBlundervilleActionQueued) return Reject("BV_Unavailable");
-        var missingPlugins = GameHelpers.MissingXaDependencies();
+        var missingPlugins = GameHelpers.MissingAutomationDependencies(plugin.BossModIPC);
         if (missingPlugins.Length > 0) return Reject("Plugin_RequiredXaPlugins", missingPlugins);
         if (Settings.PurchaseReviewRequired || plugin.Configuration.Blunderville.PurchaseReviewRequired) return Reject("Shop_ReviewRequired");
         poeticsMode = Settings.BuyPoeticsGear;
@@ -226,6 +226,7 @@ public sealed partial class MoogleShopService : IDisposable
         RefreshTomestoneBalances();
         try
         {
+            if (!plugin.BossModIPC.HasUsableAutomationHost()) { Fail("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency); return; }
             if (!Plugin.ClientState.IsLoggedIn || Plugin.PlayerState.ContentId != character || !ReferenceEquals(Settings, sessionSettings) ||
                 Settings.BuyPoeticsGear != poeticsMode || poeticsMode &&
                 (Settings.DeliverPoeticsGear != poeticsDeliver || Settings.PoeticsEndingLocation != poeticsEnding))

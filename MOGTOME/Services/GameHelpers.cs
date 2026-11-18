@@ -15,6 +15,7 @@ using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using GameObject = FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject;
 using Lumina.Excel.Sheets;
+using MOGTOME.IPC;
 
 namespace MOGTOME.Services;
 
@@ -58,6 +59,14 @@ public static class GameHelpers
         var (database, slave) = LoadedXaDependencies();
         database |= !requireDatabase;
         return database ? slave ? string.Empty : "XA Slave" : slave ? "XA Database" : "XA Database, XA Slave";
+    }
+
+    internal const string AutomationDependency = "GodMod or God Mod Companion + BossModReborn";
+
+    internal static string MissingAutomationDependencies(BossModIPC bossMod, bool requireDatabase = true, bool allowHostCleanup = false)
+    {
+        var missing = MissingXaDependencies(requireDatabase);
+        return missing.Length > 0 || bossMod.HasUsableAutomationHost(allowHostCleanup) ? missing : AutomationDependency;
     }
 
     /// <summary>

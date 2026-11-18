@@ -343,11 +343,11 @@ public sealed class KeyboundBrawlerService : IDisposable
         if (IsRunning && ready && !busy && (!roundSeen || completedRound) && (runLimit > 0 && CompletedRuns >= runLimit ||
             walletTarget.HasValue && wallet.HasValue && wallet >= walletTarget)) Finish();
     }
-    internal void StopWithReason(string key)
+    internal void StopWithReason(string key, params object?[] arguments)
     {
         Plugin.Log?.Warning("[MOGTOME][KBB] Controller stopped; reason={Reason}; territory={Territory}; completedRuns={Runs}; awaitingEcho={Echo}; inputVisible={Visible}; focused={Focused}",
             key, territory, CompletedRuns, expectedText != null, snapshot.InputVisible, snapshot.InputFocused);
-        Stop(); Status = Ui.M(key);
+        Stop(); Status = Ui.M(key, arguments);
     }
     public void RequestStop() => Interlocked.Exchange(ref stopRequested, 1);
     public void Stop()

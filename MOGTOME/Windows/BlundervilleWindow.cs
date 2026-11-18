@@ -149,7 +149,7 @@ public sealed class BlundervilleWindow : Window, IDisposable
         UiLayout.Wrapped(service.Status.Render());
         var hasWallet = BlundervilleGameAdapter.TryWallet(out var wallet);
         UiLayout.Wrapped(Ui.T("BV_Progress", service.SessionCycles, hasWallet ? wallet.ToString(Ui.Culture) : "?"));
-        var missingPlugins = GameHelpers.MissingXaDependencies();
+        var missingPlugins = GameHelpers.MissingAutomationDependencies(plugin.BossModIPC);
         if (missingPlugins.Length > 0) UiLayout.Wrapped(Ui.T("Plugin_RequiredXaPlugins", missingPlugins));
         var unavailable = !service.Ready || service.IsRunning || plugin.IsBlundervilleActionQueued ||
             plugin.IsEngineStartQueued || plugin.Engine?.IsRunning == true || plugin.MoogleShop.IsRunning || plugin.IsMoogleShopActionQueued || missingPlugins.Length > 0;

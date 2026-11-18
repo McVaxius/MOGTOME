@@ -1,6 +1,6 @@
 # M.O.G.T.O.M.E.
 
-Automatic BMR healer presets use the Dhog healer rotations supplied by God Mod Companion. If those rotations cannot be found or the loaded preset drops their strategies, activation reports a warning. Saved manual presets and optional providers remain available.
+GodMod and God Mod Companion supply the combat presets and boss plans MOGTOME selects. The active provider also supplies the rotations used by the automatic healer presets.
 
 ---
 
@@ -64,7 +64,7 @@ copies remain owned regardless of snapshot age until the data is refreshed.
 - ✅ **Daily Reset Detection**: Auto-resets counters at 7 AM UTC (3 AM EST / 12 AM PST)
 - ✅ **Repair Management**: Self-repair with dark matter or NPC repair automation
 - ✅ **Food Management**: Auto-consume food when buff expires
-- ✅ **Combat Integration**: Select one of BMR, VBM, Rotation Solver Reborn, or Wrath Combo
+- ✅ **Combat integration**: Use GodMod or GMC with BossModReborn and select existing role presets, manual presets, or matching encounter plans.
 - ✅ **Filtered Statistics**: Unsynced testing runs stay out of stats unless you explicitly opt in
 - ✅ **Persistent Run Counters**: Duty counters and summary stats save against the active account after login and duty completion
 - ✅ **Stuck Detection**: Auto-recovery from stuck states
@@ -79,13 +79,13 @@ copies remain owned regardless of snapshot age until the data is refreshed.
 
 ### Required Plugins
 - **Selected duty backend** - **ADS is the primary backend**, or AutoDuty plus the selected Praetorium path as the alternative
-- **Selected combat provider** - BMR, VBM, Rotation Solver Reborn, or Wrath Combo
+- **GodMod or God Mod Companion (GMC)** - GodMod works on its own. GMC requires a supported and ready BossModReborn host. MOGTOME uses the available route for automated modes. Saved rotation choices remain available where supported.
 - **vnavmesh** - Navigation and pathfinding
 - **XA Slave** - Provides `/xa skipcutscenes on` startup control
 - **YesAlready** - Auto-confirm dialogs
 ### Optional Plugins
 
-- **God Mod Companion (GMC / BMRVariantLoader)** - Optional; Public and Private are supported with a compatible GodMod or BMR host. MogTome keeps the selected dungeon route backend and enables native combat AI only during fights. It uses a temporary copy of the current job-group preset with movement modules omitted, or an injected current-job boss plan after native binding; the full preset and plan are never combined. Missing plans, including Decumana, retain the group rotation. GMC owns plan installation. Saved combat-provider and manual-preset preferences remain unchanged; later observed native choices take precedence. Cleanup conditionally restores owned settings and the prior AI mode/follow target when that target still has the captured identity.
+Automatic native combat uses the current job's group preset or the matching boss plan after the host binds it. The selected duty backend continues to own routing. On stop, MOGTOME restores the settings it changed where it can still confirm ownership.
 
 The frozen BMR host can publish an already pending movement result after AI is switched off. This integration does not guarantee native controller quiescence or establish live healing/movement acceptance.
 - **ADS (AI Duty Solver)** - Optional in AutoDuty mode; enables `/mog inn` delegation
@@ -319,7 +319,7 @@ R: development bundle: `R:\XIVLauncher\devPlugins\MOGTOME-Blunderville\MOGTOME.d
 
 ### Starting the Bot
 
-BMR is the default combat provider. Existing provider selections migrate once; choices made afterward are retained. MOGTOME detects an available compatible GodMod, BMR or VBM host without rewriting that preference. Startup resolves conflicting native hosts and reloads the selected host to restore its shared IPC; the run and its cleanup remain tied to that exact instance. Choose another provider in Settings: the compatible native host handles attacks and movement for BMR/VBM selections; RSR handles attacks with the native host for avoidance; Wrath uses its current attack settings. BMR/VBM can use an existing named preset with **Use manual BossMod preset** enabled, or MOGTOME's packaged preset selected by job role when disabled. The per-account Setup Wizard reviews the selected backend, provider, dependencies and party setup before applying its draft.
+MOGTOME uses GodMod when available, or a supported BossModReborn host confirmed ready by GMC. Duty startup resolves native host conflicts and ties combat cleanup to the selected instance. In GodMod, **Use manual BossMod preset** selects an existing named preset. GodMod also supports the saved RSR and Wrath modes. On the GMC route, automatic combat selects the current job's role preset or encounter plan and retains saved combat-provider and manual-preset settings. The per-account Setup Wizard reviews the selected backend, provider, dependencies and party setup.
 
 Both traveling NPC repair modes offer Automatic, Ul'dah, Gridania, Limsa Lominsa, Ishgard, the Crystarium, Old Sharlayan and Tuliyollal. A no-inn trip stops after ADS confirms repair; repair-then-inn also waits for room entry. City-specific no-inn travel requires an ADS version advertising that exact repair mode. ADS validates native unlocks and selects an eligible starting-city fallback when the preferred route is unavailable.
 

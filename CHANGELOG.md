@@ -1,3 +1,8 @@
+Unreleased
+
+- Require GodMod or God Mod Companion with a ready BossModReborn host for automation.
+- Select combat presets and boss plans supplied by the active provider. GodMod supports automatic encounter plans and preserves exact manual suite preset names.
+
 2026-11-17 - 4.2.0.20 - Beastmaster combat startup
 
 - **Fixed Beastmaster combat startup** by using the standard duty startup flow. GMC or GodMod handles familiar setup.

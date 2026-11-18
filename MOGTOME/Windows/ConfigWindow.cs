@@ -37,8 +37,8 @@ public class ConfigWindow : Window, IDisposable
 
     // Dependency check cache
     private DateTime lastDepCheck = DateTime.MinValue;
-    private bool depRsr, depBmr, depVbm, depWrath, depVnav, depYesAlready, depTextAdv, depXaSlave, depXaDatabase, depAutoDuty, depAds, depLifestream;
-    private bool depCustomRes, depChillframes, depKrangler, depDps, depTtsl, depGmc, depGodMod;
+    private bool depRsr, depBmr, depWrath, depVnav, depYesAlready, depTextAdv, depXaSlave, depXaDatabase, depAutoDuty, depAds, depLifestream;
+    private bool depCustomRes, depChillframes, depKrangler, depDps, depTtsl, depGmc, depGodMod, depAutomationHost;
     private bool depTwistOfFayteInstalled, depTwistOfFayteEnabled;
     private bool allDepsGreen = false;
     private const int SetupWizardVersion = 1;
@@ -287,7 +287,6 @@ public class ConfigWindow : Window, IDisposable
             depRsr = false;
             depBmr = false;
             depGodMod = false;
-            depVbm = false;
             depWrath = false;
             depVnav = false;
             depYesAlready = false;
@@ -318,7 +317,6 @@ public class ConfigWindow : Window, IDisposable
                     case "RotationSolverReborn": depRsr = true; break;
                     case "BossModReborn": depBmr = true; break;
                     case "GodMod": depGodMod = true; break;
-                    case "BossMod": depVbm = true; break;
                     case "vnavmesh": depVnav = true; break;
                     case "YesAlready": depYesAlready = true; break;
                     case "TextAdvance": depTextAdv = true; break;
@@ -351,6 +349,8 @@ public class ConfigWindow : Window, IDisposable
                 if (p.InternalName.StartsWith("CustomResolution")) depCustomRes = true;
             }
 
+            depAutomationHost = plugin.BossModIPC.HasUsableAutomationHost(allowHostCleanup: true);
+            depGmc = depGmc && depBmr && !depGodMod;
             var pathOk = plugin.AutoDutyPathService.PathExists(plugin.Configuration.PraetoriumPathFileName);
             var useAdsExperimental = plugin.Configuration.UseAdsExperimental;
             var backendReady = useAdsExperimental
@@ -400,24 +400,12 @@ public class ConfigWindow : Window, IDisposable
         }
         ImGui.Separator();
 
-        switch (depGmc ? CombatProvider.Bmr : config.CombatProvider)
-        {
-            case CombatProvider.Rsr:
-                DrawDepLine(Ui.T("Config_RSRRotationSolverReborn"), depRsr, depRsr ? Ui.T("Config_Installed") : Ui.T("Config_NOTFOUND"), "RSR");
-                DrawDepLine(depGodMod ? "GodMod" : Ui.T("Config_BossModPassiveSupportBMROrVBM"), depBmr || depVbm || depGodMod,
-                    depGodMod ? Ui.T("Config_Installed") : depBmr ? Ui.T("Config_BMRLoaded") : depVbm ? Ui.T("Config_VBMLoaded") : Ui.T("Config_NOTFOUND"), depGodMod ? null : "BMR");
-                break;
-            case CombatProvider.Bmr:
-            case CombatProvider.Vbm:
-                var host = DependencyNativeHost(config);
-                DrawDepLine(host == "GodMod" ? "GodMod" : host == "BossMod" ? Ui.T("Config_BossModVBM") : Ui.T("Config_BossModRebornBMR"),
-                    host is not null, host is not null ? Ui.T("Config_Installed") : Ui.T("Config_NOTFOUND"),
-                    host == "GodMod" ? null : host == "BossMod" ? "VBM" : "BMR");
-                break;
-            case CombatProvider.Wrath:
-                DrawDepLine("Wrath Combo", depWrath, depWrath ? Ui.T("Config_Installed") : Ui.T("Config_NOTFOUND"), null);
-                break;
-        }
+        DrawDepLine(GameHelpers.AutomationDependency, depAutomationHost,
+            depAutomationHost ? Ui.T("Config_Ready") : Ui.T("Config_NOTFOUND"), null);
+        if (!depGmc && config.CombatProvider == CombatProvider.Rsr)
+            DrawDepLine(Ui.T("Config_RSRRotationSolverReborn"), depRsr, depRsr ? Ui.T("Config_Installed") : Ui.T("Config_NOTFOUND"), "RSR");
+        if (!depGmc && config.CombatProvider == CombatProvider.Wrath)
+            DrawDepLine("Wrath Combo", depWrath, depWrath ? Ui.T("Config_Installed") : Ui.T("Config_NOTFOUND"), null);
 
         DrawRemainingDependencies(config);
     }
@@ -485,10 +473,6 @@ public class ConfigWindow : Window, IDisposable
                 DrawManualPresetDropdown(config, startupPending);
                 if (string.IsNullOrWhiteSpace(config.ManualBossModPresetName))
                     UiLayout.Wrapped(Ui.T("Config_EnterAnExistingPresetNameBeforeStarting"));
-            }
-            else
-            {
-                UiLayout.Wrapped(Ui.T("Config_MOGTOMESelectsItsPackagedActivePresetBy"));
             }
             ImGui.EndDisabled();
         }
@@ -588,7 +572,6 @@ public class ConfigWindow : Window, IDisposable
         ImGui.Spacing();
         DrawSectionHeading("Config_OptionalPlugins");
 
-        DrawDepLineOptional("God Mod Companion (GMC)", depGmc, Ui.T("Config_OptionalNotRequiredByMOGTOME"));
         DrawDepLineOptional("Lifestream", depLifestream, Ui.T("Config_OptionalNotRequiredByMOGTOME"));
         DrawDepLineOptional("TextAdvance", depTextAdv, Ui.T("Config_OptionalNotRequiredByMOGTOME"));
         DrawDepLineOptional("Krangler", depKrangler, Ui.T("Config_RecommendedAppearanceNameplateRandomizer"));
@@ -852,7 +835,9 @@ public class ConfigWindow : Window, IDisposable
             backendReady,
             config.UseAdsExperimental ? Ui.T("Config_LoadADS") : Ui.T("Config_LoadAutoDutyAndInstallTheSelectedPraetorium"),
             config.UseAdsExperimental ? "ADS" : "AutoDuty");
-        DrawWizardRequirement(Ui.T("Config_SelectedCombatProvider"), IsCombatProviderReady(config), Ui.T("Config_LoadTheProviderSelectedInStepRSR"), null);
+        DrawWizardRequirement(GameHelpers.AutomationDependency, depAutomationHost, Ui.T("Config_NOTFOUND"), null);
+        if (!depGmc && config.CombatProvider is (CombatProvider.Rsr or CombatProvider.Wrath))
+            DrawWizardRequirement(Ui.T("Config_SelectedCombatProvider"), IsCombatProviderReady(config), Ui.T("Config_LoadTheProviderSelectedInStepRSR"), null);
         DrawWizardRequirement("vnavmesh", depVnav, Ui.T("Config_LoadVnavmesh"), "vnavmesh");
         DrawWizardRequirement("XA Slave", depXaSlave, Ui.T("Config_LoadXASlaveForXaSkipcutscenesOn"), "XASlave");
         if (!depXaDatabase) UiLayout.TextDisabled(Ui.T("Plugin_XaDatabaseFarmingWarning"));
@@ -884,18 +869,12 @@ public class ConfigWindow : Window, IDisposable
     }
 
     private bool IsCombatProviderReady(Configuration config)
-        => (depGmc ? CombatProvider.Bmr : config.CombatProvider) switch
+        => depAutomationHost && (depGmc || config.CombatProvider switch
         {
-            CombatProvider.Bmr or CombatProvider.Vbm => DependencyNativeHost(config) is not null
-                && (!depGmc || depBmr || depGodMod),
-            CombatProvider.Rsr => depRsr && DependencyNativeHost(config) is not null,
+            CombatProvider.Rsr => depRsr,
             CombatProvider.Wrath => depWrath,
-            _ => false,
-        };
-
-    private string? DependencyNativeHost(Configuration config)
-        => BossModIPC.SelectNativeHost(new[] { depGodMod ? "GodMod" : "", depBmr ? "BossModReborn" : "", depVbm ? "BossMod" : "" },
-            config.CombatProvider, depGmc);
+            _ => true,
+        });
 
     private static void DrawWizardRequirement(string name, bool ready, string missingDetail, string? repoKey)
     {
