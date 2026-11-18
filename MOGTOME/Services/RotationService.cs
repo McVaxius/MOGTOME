@@ -13,6 +13,7 @@ public class RotationService : IDisposable
     private readonly IPluginLog log;
     private readonly ConfigManager configManager;
     private readonly BossModIPC bossModIPC;
+    private readonly DutyState dutyState;
     private bool rotationEnableSentForDuty;
     private bool rotationDisableSentForDuty;
     private bool deathRearmPending;
@@ -39,11 +40,12 @@ public class RotationService : IDisposable
 
     public RotationService(
         IPluginLog log, ConfigManager configManager,
-        BossModIPC bossModIPC)
+        BossModIPC bossModIPC, DutyState dutyState)
     {
         this.log = log;
         this.configManager = configManager;
         this.bossModIPC = bossModIPC;
+        this.dutyState = dutyState;
         configManager.ConfigurationChanged += OnConfigurationChanged;
     }
 
@@ -68,14 +70,19 @@ public class RotationService : IDisposable
             ? character.ContentId.ToString(System.Globalization.CultureInfo.InvariantCulture) : string.Empty;
     }
 
-    private bool MatchesPreparedSession(Configuration config)
+    private bool MatchesPreparedSession(Configuration config, bool allowMissingCharacter = false)
         => ReferenceEquals(preparedConfig, config) && preparedProvider == config.CombatProvider
-            && preparedAccount == configManager.CurrentAccountId && preparedCharacter == ReadCharacterIdentity();
+            && preparedAccount == configManager.CurrentAccountId
+            && (preparedCharacter == ReadCharacterIdentity()
+                || allowMissingCharacter && Plugin.ClientState.IsLoggedIn && Plugin.PlayerState.ContentId == 0);
 
-    internal void ObserveSessionDeparture()
+    internal void ObserveSessionDeparture(bool dutyTransition = false)
     {
         if (preparedConfig is null) return;
-        var sessionMatches = MatchesPreparedSession(configManager.GetActiveConfig());
+        // The engine owns duty-exit cleanup. Native player and follow state can
+        // disappear before that cleanup runs, while the same provider remains loaded.
+        var combatTransition = gmcSession && dutyTransition && (rotationEnableSentForDuty || deathRearmPending);
+        var sessionMatches = MatchesPreparedSession(configManager.GetActiveConfig(), allowMissingCharacter: combatTransition);
         var providerDeparted = sessionMatches && (!bossModIPC.IsOwnedProviderCurrent
             || gmcSession && !bossModIPC.IsNativeAutorotationAvailable);
         if (!sessionMatches || providerDeparted)
@@ -87,10 +94,10 @@ public class RotationService : IDisposable
             sessionEnded = true;
             Fail(Ui.M("Rotation_BossModSessionChanged"));
         }
-        else if ((rotationEnableSentForDuty || deathRearmPending) && !rotationDisableSentForDuty)
+        else if (!combatTransition && (rotationEnableSentForDuty || deathRearmPending) && !rotationDisableSentForDuty)
         {
             bossModIPC.ObserveOwnedCombatState();
-            if (gmcSession && rotationEnableSentForDuty && !bossModIPC.UpdateGmcCombatState())
+            if (gmcSession && rotationEnableSentForDuty && !bossModIPC.UpdateGmcCombatState(!dutyState.IsPartyLeader))
             {
                 DisableRotationForDutyEnd("GMC combat ownership or native state changed");
                 Fail(Ui.M("Rotation_BossModSettingsUnconfirmed"));
@@ -345,12 +352,12 @@ public class RotationService : IDisposable
         rsrRecoveryCommandSuppressedUntilUtc = DateTime.UtcNow + RsrRecoveryCommandSuppression;
     }
 
-    public bool DisableRotationForDutyEnd(string reason, bool restoreAi = true)
+    public bool DisableRotationForDutyEnd(string reason, bool restoreAi = true, bool keepSelectedHost = false)
     {
         // Terminal even when cleanup fails. A later Stop may retry cleanup,
         // but pending activation can never reopen this duty.
         rotationDisableSentForDuty = true;
-        if (!DisableEnabledComponents(restoreAi))
+        if (!DisableEnabledComponents(restoreAi, keepSelectedHost))
             return Fail(Ui.M("Rotation_CouldNotDisableAllMogTomeCombatComponents", reason));
         log.Information($"[MOGTOME][Rotation] MogTome combat components are disabled ({reason})");
         return true;
@@ -400,7 +407,7 @@ public class RotationService : IDisposable
         rsrRecoveryCommandSuppressedUntilUtc = now + RsrRecoveryCommandSuppression;
     }
 
-    private bool DisableEnabledComponents(bool restoreAi = true)
+    private bool DisableEnabledComponents(bool restoreAi = true, bool keepSelectedHost = false)
     {
         var account = configManager.CurrentAccountId;
         var character = ReadCharacterIdentity();
@@ -439,7 +446,7 @@ public class RotationService : IDisposable
             }
         }
         var presetCleared = false;
-        try { presetCleared = bossModIPC.ClearActivePreset(releaseSession: enabledComponents.Count == 0); }
+        try { presetCleared = bossModIPC.ClearActivePreset(releaseSession: enabledComponents.Count == 0, keepSelectedHost: keepSelectedHost); }
         catch (Exception ex) { log.Warning($"[MOGTOME][Rotation] Could not clear preset: {ex.Message}"); }
         return enabledComponents.Count == 0 && presetCleared && restored;
     }
@@ -477,7 +484,7 @@ public class RotationService : IDisposable
                 || !bossModIPC.BeginOwnedBossModSettings(CombatProvider.Bmr, configManager.CurrentAccountId, ReadCharacterIdentity(), config))
                 return Fail(Ui.M("Rotation_BossModSettingsUnconfirmed"));
             var selected = CurrentPresetSettings(config);
-            if (!bossModIPC.BeginGmcAutorotation(GetGmcManualPreset(selected)))
+            if (!bossModIPC.BeginGmcAutorotation(GetGmcManualPreset(selected), !dutyState.IsPartyLeader))
                 return Fail(Ui.M("Rotation_BossModSettingsUnconfirmed"));
             appliedPresetSettings = selected;
             return true;

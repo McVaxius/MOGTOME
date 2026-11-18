@@ -3,6 +3,8 @@ Unreleased
 - Require GodMod or God Mod Companion with a ready BossModReborn host for automation.
 - Show the combat host requirement in the main window before starting when no host is ready.
 - Stop pending duty setup when the combat host becomes unavailable, and show the dependency or stop reason in DAD status.
+- Keep combat ready for the next duty when native follow clears during a duty transition.
+- Let followers attack eligible enemies once their party engages, while the duty backend still controls navigation before local combat.
 - Select combat presets and boss plans supplied by the active provider. GodMod supports automatic encounter plans. Each mode checks the preset it uses. Explicit BossModReborn and GodMod preset choices retain their exact names.
 - Keep the saved manual preset name when its definition is unavailable.
 - Use GMC's healer preset for automatic healing on BossModReborn, preserving saved presets.

@@ -295,7 +295,7 @@ public class MogtomeEngine
         bailoutExitPending = false;
         dutyTracker.CaptureCompletionRemainingTime();
         CleanupStep("completed-duty opener", () => firstRoomSkip.Cancel("duty completed"));
-        CleanupStep("completed-duty combat", () => rotationService.DisableRotationForDutyEnd($"duty completed territory {territoryId}"));
+        CleanupStep("completed-duty combat", () => rotationService.DisableRotationForDutyEnd($"duty completed territory {territoryId}", keepSelectedHost: true));
         dialogHandler.ResetReturnPromptWait();
         ResetLeaveTracking();
         PauseLeaderQueueBeforeExitIfRepairNeeded($"Duty completed in territory {territoryId}");
@@ -1134,7 +1134,7 @@ public class MogtomeEngine
         dialogHandler.ResetReturnPromptWait();
         CleanupStep("duty-exit combat", () =>
         {
-            if (rotationService.DisableRotationForDutyEnd("left duty")) return;
+            if (rotationService.DisableRotationForDutyEnd("left duty", keepSelectedHost: true)) return;
             var message = Ui.M("MogtomeEngine_CombatCleanupFailedAfterDutyExitContinuing");
             var reason = rotationService.Failure;
             log.Warning($"[MOGTOME][Engine] {message} {reason}");

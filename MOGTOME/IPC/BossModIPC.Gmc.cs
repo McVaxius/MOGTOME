@@ -64,7 +64,7 @@ public partial class BossModIPC
         gmcCleanupRotation = null;
     }
 
-    internal bool BeginGmcAutorotation(string? manualPreset = null)
+    internal bool BeginGmcAutorotation(string? manualPreset, bool assistEngagedParty)
     {
         if (!IsNativeAutorotationAvailable
             || !TryReadOwnedBossModSettings(out var before) || before.AiEnabled is null
@@ -113,8 +113,8 @@ public partial class BossModIPC
             if (!SetGmcAiPreset(null)) return false;
         }
         if (!HasOwnedGmcAi() || !ApplyOwnedAutomaticTargeting(command => SendCommand(command, "GMC automatic targeting"))
-            || !ApplyGmcFlag("ForbidActions", false) || !ApplyGmcFlag("ForbidMovement", false)) return false;
-        return UpdateGmcAutorotation(manualPreset) && UpdateGmcCombatState();
+            || !ApplyGmcFlag("ForbidActions", false)) return false;
+        return UpdateGmcAutorotation(manualPreset) && UpdateGmcCombatState(assistEngagedParty);
     }
 
     internal bool UpdateGmcAutorotation(string? manualPreset = null)
@@ -438,7 +438,7 @@ public partial class BossModIPC
         return true;
     }
 
-    internal bool UpdateGmcCombatState()
+    internal bool UpdateGmcCombatState(bool assistEngagedParty)
     {
         if (gmcAiManager is null || !HasOwnedGmcAi() || !TryReadOwnedBossModSettings(out var before)) return false;
         var player = LiveMember(gmcRotationManager, "Player");
@@ -446,8 +446,43 @@ public partial class BossModIPC
         if (LiveMember(player, "IsDead") is true) return true;
         if (!ownedSettings!.MatchesNativeAuthority(before) || !MatchesGmcRuntime(before)) return false;
         if (LiveMember(player, "InCombat") is not bool fighting) return false;
-        if (fighting == (gmcOwnedBehavior is not null)) return true;
-        return ChangeGmcAi(fighting, 0);
+
+        // Start targeting for a follower whose party has already pulled. Keep
+        // native movement suppressed until the local player joins combat.
+        var assisting = !fighting && assistEngagedParty && HasEngagedPriorityTarget();
+        if ((ownedSettings.OwnedForbidMovement is null || before.ForbidMovement != assisting)
+            && !ApplyGmcFlag("ForbidMovement", assisting)) return false;
+        var active = fighting || assisting;
+        return active == (gmcOwnedBehavior is not null) || ChangeGmcAi(active, 0);
+    }
+
+    private bool HasEngagedPriorityTarget()
+    {
+        var hints = LiveMember(gmcRotationManager, "Hints");
+        if (LiveMember(hints, "PotentialTargets") is not IList targets
+            || LiveMember(hints, "HighestPotentialTargetPriority") is not int highest || highest < 0)
+            return false;
+
+        // PriorityTargetsSpan is a ref struct. Read its exact ordered prefix
+        // through the fields it uses, then require a fight already in progress.
+        var enemyEngaged = false;
+        foreach (var target in targets)
+        {
+            if (!Equals(LiveMember(target, "Priority"), highest)) break;
+            if (LiveMember(LiveMember(target, "Actor"), "InCombat") is true)
+            {
+                enemyEngaged = true;
+                break;
+            }
+        }
+        if (!enemyEngaged) return false;
+
+        var party = LiveMember(LiveMember(gmcRotationManager, "WorldState"), "Party");
+        var member = party?.GetType().GetProperty("Item", [typeof(int)]);
+        for (var slot = 1; slot < 8; ++slot)
+            if (LiveMember(member?.GetValue(party, [slot]), "InCombat") is true)
+                return true;
+        return false;
     }
 
     private (object Selection, object Job, bool Plan)? ReadOwnedGmcSelection(bool requireBound, object? pendingJob = null)

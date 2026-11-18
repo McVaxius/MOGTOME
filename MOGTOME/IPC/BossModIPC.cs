@@ -1039,7 +1039,7 @@ public partial class BossModIPC : IDisposable
         return !cleanupFailed;
     }
 
-    internal bool EndOwnedBossModCleanup(bool turnEverythingOff, bool releaseSession = true)
+    internal bool EndOwnedBossModCleanup(bool turnEverythingOff, bool releaseSession = true, bool keepSelectedHost = false)
     {
         if (!cleanupStarted || ownedSettings is null)
             return !cleanupFailed;
@@ -1071,8 +1071,11 @@ public partial class BossModIPC : IDisposable
             ownedSettings = null;
             ownedProvider = null;
             ownedNativeHost = null;
-            selectedNativeHost = null;
-            selectedProvider = null;
+            if (!keepSelectedHost)
+            {
+                selectedNativeHost = null;
+                selectedProvider = null;
+            }
             ForgetGmcPlan();
         }
         cleanupStarted = false;
@@ -1120,9 +1123,9 @@ public partial class BossModIPC : IDisposable
         }
     }
 
-    public bool ClearActivePreset(bool releaseSession = true)
+    public bool ClearActivePreset(bool releaseSession = true, bool keepSelectedHost = false)
     {
-        var restored = EndOwnedBossModCleanup(turnEverythingOff: false, releaseSession);
+        var restored = EndOwnedBossModCleanup(turnEverythingOff: false, releaseSession, keepSelectedHost);
         if (!restored) log.Warning($"[MOGTOME][BossMod] Owned settings restoration was incomplete: {LastStatus}");
         return restored;
     }

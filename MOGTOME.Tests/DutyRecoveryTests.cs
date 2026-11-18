@@ -1958,6 +1958,88 @@ public sealed class DutyRecoveryTests
         Assert.Equal("Plugin_RequiredXaPlugins", run.Engine.StopReason?.Key);
     }
 
+    [Fact]
+    public void GmcDutyExitAllowsNativeFollowToClearBeforeNextDutyActivation()
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original");
+        using var run = new Run(native) { GmcLoaded = true, Territory = 1044 };
+        Assert.True(run.Rotation.Initialize());
+        Assert.True(run.Rotation.EnableRotationOncePerDuty("first duty"));
+        Assert.True(native.AiEnabled);
+
+        native.AiEnabled = false;
+        native.Rotation.Preset = null;
+        var player = native.Rotation.Player;
+        native.Rotation.Player = null!;
+        var writes = native.Writes.ToArray();
+        run.Rotation.ObserveSessionDeparture(dutyTransition: true);
+        run.CurrentContentId = 0;
+        run.Rotation.ObserveSessionDeparture(dutyTransition: true);
+        Assert.Equal(writes, native.Writes);
+
+        run.CurrentContentId = 1;
+        Assert.True(run.Rotation.DisableRotationForDutyEnd("left duty", keepSelectedHost: true));
+        native.Rotation.Player = player;
+        run.Rotation.ResetDutyRotationState("entered next duty");
+        Assert.True(run.Rotation.EnableRotationOncePerDuty("next duty"));
+        Assert.True(native.AiEnabled);
+        Assert.Equal("FRENRIDER - TANK", Assert.Single(native.Active));
+    }
+
+    [Theory]
+    [InlineData(31u, "FRENRIDER - RANGED")]
+    [InlineData(43u, "FRENRIDER - MELEE")]
+    public void GmcFollowerAssistsAnEngagedPartyBeforeJoiningCombat(uint jobRow, string groupName)
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original");
+        using var run = new Run(native) { GmcLoaded = true, Territory = 1044 };
+        var job = (NativeJob)jobRow;
+        var player = native.Rotation.Player;
+        player.Class = job;
+        player.InCombat = false;
+        var partyMember = native.Rotation.WorldState.Party[1]!;
+        partyMember.InCombat = false;
+        var encounter = new D142Nero();
+        var plan = new NativePlan($"BMRV-D142Nero-{job}", job, typeof(D142Nero));
+        var list = new NativePlanList { Plans = [plan], SelectedIndex = 0 };
+        native.Rotation.Bossmods.ActiveModule = encounter;
+        native.Rotation.Database.Plans.Plans[typeof(D142Nero)] = new() { [job] = list };
+
+        Assert.True(run.Rotation.Initialize());
+        Assert.True(run.Rotation.EnableRotationOncePerDuty("before party pull"));
+        Assert.False(native.AiEnabled);
+        Assert.Equal(-1, list.SelectedIndex);
+
+        var enemy = new NativeActor { InCombat = true };
+        native.Rotation.Hints.PotentialTargets.Add(new NativeEnemy(enemy, -3));
+        partyMember.InCombat = true;
+        run.Rotation.ObserveSessionDeparture();
+        Assert.False(native.AiEnabled);
+
+        native.Rotation.Hints.PotentialTargets.Insert(0, new NativeEnemy(enemy, 0));
+        run.State.IsPartyLeader = true;
+        run.Rotation.ObserveSessionDeparture();
+        Assert.False(native.AiEnabled);
+
+        run.State.IsPartyLeader = false;
+        run.Rotation.ObserveSessionDeparture();
+        Assert.True(native.AiEnabled);
+        Assert.True(native.ForbidMovement);
+        Assert.Equal(0, native.AiMasterSlot);
+        Assert.Equal(groupName, Assert.Single(native.Active));
+        Assert.Equal(-1, list.SelectedIndex);
+
+        player.InCombat = true;
+        native.Rotation.Planner = new(encounter, plan);
+        run.Rotation.UpdateDutyRotationHealth(1044, true, false, false, "local player joins combat");
+        Assert.True(native.AiEnabled);
+        Assert.False(native.ForbidMovement);
+        Assert.Equal(0, list.SelectedIndex);
+        Assert.Null(native.Rotation.Preset);
+        Assert.True(run.Rotation.DisableRotationForDutyEnd("Stop"));
+        Assert.Equal("Original", Assert.Single(native.Active));
+    }
+
     [Theory]
     [InlineData(false, null)]
     [InlineData(true, "Unloaded")]
@@ -3206,7 +3288,7 @@ public sealed class DutyRecoveryTests
             Automation = new DutyAutomationService(log, manager, autoDuty, null!, null!, command, History);
             Queue = new DutyQueueService(log, State, Automation, condition, manager);
             BossMod = new BossModIPC(pi, log, command);
-            Rotation = new RotationService(log, manager, BossMod);
+            Rotation = new RotationService(log, manager, BossMod, State);
             YesAlready = new YesAlreadyIPC(log);
             var dialog = new DialogHandlerService(log, YesAlready, command, Fake<IGameGui>(), manager);
             var tracker = new DutyTrackerService(log, Config, State, manager, History);
@@ -3416,7 +3498,7 @@ public sealed class DutyRecoveryTests
         public List<NativePreset> DefaultPresets { get; set; } = [];
         public List<NativePreset> UserPresets { get; set; } = [];
     }
-    private enum NativeJob : uint { WAR = 21, NIN = 30, GNB = 37, SGE = 40, BST = 43 }
+    private enum NativeJob : uint { WAR = 21, NIN = 30, MCH = 31, GNB = 37, SGE = 40, BST = 43 }
     private sealed record NativePlan(string Name, NativeJob Class, Type Encounter)
     {
         public List<object> Modules = [new object()];
@@ -3475,7 +3557,13 @@ public sealed class DutyRecoveryTests
                 native.Rotation.Preset = ownedPreset = preset;
         }
     }
-    private sealed class NativeHints { public bool ScriptedDeath; }
+    private sealed record NativeEnemy(NativeActor Actor, int Priority);
+    private sealed class NativeHints
+    {
+        public bool ScriptedDeath;
+        public int HighestPotentialTargetPriority { get; set; }
+        public List<NativeEnemy> PotentialTargets { get; } = [];
+    }
     private sealed class NativeBossmods { public object? ActiveModule; public List<object> LoadedModules = []; }
     private sealed record NativePlanner(object Module, NativePlan Plan);
     private sealed class NativeRotationManager(NativeRotationDatabase database, Action<NativePreset?> onPreset)

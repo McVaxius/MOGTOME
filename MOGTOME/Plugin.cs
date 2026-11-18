@@ -170,7 +170,7 @@ public sealed class Plugin : IDalamudPlugin
         BossModIPC = new BossModIPC(PluginInterface, Log, CommandManager);
         YesAlreadyIPC = new YesAlreadyIPC(Log, () => KeyboundShopOwnsAutomation);
         VNavIPC = new VNavIPC(Log, CommandManager);
-        RotationService = new RotationService(Log, ConfigManager, BossModIPC);
+        RotationService = new RotationService(Log, ConfigManager, BossModIPC, State);
         AutoDutyIPC = new AutoDutyIPC(Log, CommandManager, RunHistoryService);
         DadIpcService = new MogtomeDadIpcService(PluginInterface, this);
         XaDatabase = new XaDatabaseIPC(PluginInterface);
@@ -973,7 +973,11 @@ public sealed class Plugin : IDalamudPlugin
     private void OnFrameworkUpdate(IFramework fw)
     {
         UpdateKeyboundBrawler();
-        RotationService.ObserveSessionDeparture();
+        var dutyTransition = Engine?.CurrentState == EngineState.InDuty
+            && (Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas]
+                || Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas51]
+                || !DutyStartupService.IsInDuty());
+        RotationService.ObserveSessionDeparture(dutyTransition);
         if (ClientState.IsLoggedIn && Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.LoggingOut])
         {
             if (Blunderville.IsRunning) Blunderville.Stop();
