@@ -1360,6 +1360,27 @@ public sealed class DutyRecoveryTests
         Assert.False(run.Engine.IsRunning);
     }
 
+    [Fact]
+    public async Task QueuedStartupActionStopsWithoutDispatchWhenTheCombatHostDeparts()
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: "GodMod");
+        using var run = new Run(native);
+        Assert.True(run.Rotation.Initialize());
+        Set(run.Engine, "<CurrentState>k__BackingField", EngineState.Initializing);
+        var operation = (int)Get(run.Engine, "sessionId")!;
+        var dispatched = false;
+        var action = (Task)Invoke(run.Engine, "RunStartupActionAsync", operation, (Action)(() => dispatched = true))!;
+
+        native.Loaded = false;
+        run.Pump();
+        var invocation = await Assert.ThrowsAsync<TargetInvocationException>(() => action);
+        Assert.IsType<OperationCanceledException>(invocation.InnerException);
+        Assert.False(dispatched);
+        Assert.False(run.Engine.IsRunning);
+        Assert.Contains(MOGTOME.Localization.Ui.M("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency).English,
+            run.Engine.LastStopReason);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -1403,6 +1424,52 @@ public sealed class DutyRecoveryTests
 
         run.Pump();
         await pending;
+    }
+
+    [Fact]
+    public void DadStatusReportsTheDependencyAndPreservesTheInDutyStopReason()
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: "GodMod");
+        using var run = new Run(native);
+        var plugin = (Plugin)RuntimeHelpers.GetUninitializedObject(typeof(Plugin));
+        Set(plugin, "<Engine>k__BackingField", run.Engine);
+        Set(plugin, "<BossModIPC>k__BackingField", run.BossMod);
+        Set(plugin, "<State>k__BackingField", run.State);
+        var dad = (MogtomeDadIpcService)RuntimeHelpers.GetUninitializedObject(typeof(MogtomeDadIpcService));
+        Set(dad, "plugin", plugin);
+        Set(dad, "status", new MogtomeDadRunStatus());
+        Set(dad, "statusChangedProvider", Fake<ICallGateProvider<string, object>>());
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+
+        native.Loaded = false;
+        var blocked = JsonSerializer.Deserialize<MogtomeDadRunStatus>((string)Invoke(dad, "GetRunStatus")!, options)!;
+        Assert.False(blocked.Ready);
+        Assert.Contains(GameHelpers.AutomationDependency, blocked.Summary);
+
+        native.Loaded = true;
+        native.Ambiguous = true;
+        var cleanupAllowed = JsonSerializer.Deserialize<MogtomeDadRunStatus>((string)Invoke(dad, "GetRunStatus")!, options)!;
+        Assert.True(cleanupAllowed.Ready);
+
+        Set(dad, "status", new MogtomeDadRunStatus
+        {
+            DadRunId = "synthetic-duty",
+            DadOwned = true,
+            Ready = true,
+            AttemptLimit = 2,
+        });
+        run.Enter(30);
+        Invoke(run.Engine, "StartDutyBackendInsideDuty", "simulated DutyStarted before engine update");
+        Assert.False(run.Engine.IsRunning);
+        Assert.Equal("Plugin_RequiredXaPlugins", run.Engine.StopReason.Key);
+        dad.Update();
+
+        var terminal = JsonSerializer.Deserialize<MogtomeDadRunStatus>((string)Invoke(dad, "GetRunStatus")!, options)!;
+        Assert.True(terminal.IsTerminal);
+        Assert.False(terminal.Ready);
+        Assert.False(terminal.Success);
+        Assert.Equal(run.Engine.LastStopReason, terminal.FailureReason);
+        Assert.Equal(run.Engine.LastStopReason, terminal.Summary);
     }
 
     [Fact]

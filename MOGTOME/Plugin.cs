@@ -753,8 +753,16 @@ public sealed class Plugin : IDalamudPlugin
         }
     }
 
-    private static bool SendAdsEnterInnCommand(string source, bool notifyFailure)
+    private bool SendAdsEnterInnCommand(string source, bool notifyFailure)
     {
+        if (!BossModIPC.HasUsableAutomationHost())
+        {
+            var reason = Ui.M("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency);
+            Log.Warning("[MOGTOME][Inn] {Source} blocked: {Reason}", source, reason.English);
+            if (notifyFailure) ChatGui.Print(Ui.GameT("Chat_MOGTOME", reason));
+            return false;
+        }
+
         try
         {
             Log.Information($"[MOGTOME][Inn] {source} delegated to {AdsEnterInnCommand}");

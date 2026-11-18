@@ -34,7 +34,7 @@ public sealed class MogtomeDadIpcService : IDisposable
     public MogtomeDadIpcService(IDalamudPluginInterface pluginInterface, Plugin plugin)
     {
         this.plugin = plugin;
-        Register(pluginInterface.GetIpcProvider<bool>(IsReadyName), () => plugin.Engine != null && GameHelpers.MissingAutomationDependencies(plugin.BossModIPC, requireDatabase: false, allowHostCleanup: true).Length == 0);
+        Register(pluginInterface.GetIpcProvider<bool>(IsReadyName), IsReadyForStart);
         Register(pluginInterface.GetIpcProvider<string, string>(StartRunName), StartRun);
         Register(pluginInterface.GetIpcProvider<string>(GetRunStatusName), GetRunStatus);
         Register(pluginInterface.GetIpcProvider<string, string>(StopRunName), StopRun);
@@ -54,16 +54,19 @@ public sealed class MogtomeDadIpcService : IDisposable
 
         if (plugin.Engine == null)
         {
+            status.Ready = false;
             Fail("MOGTOME engine became unavailable.");
             return;
         }
 
-        status.Ready = true;
         status.IsRunning = plugin.Engine.IsRunning;
         status.EngineState = plugin.Engine.CurrentState.ToString();
         status.CompletedAttempts = Math.Max(0, plugin.State.DutyCounter - startingDutyCounter);
         status.UpdatedAtUtc = DateTime.UtcNow;
         status.Summary = plugin.Engine.StatusMessage;
+
+        if (!status.IsRunning)
+            status.Ready = ReadMissingDependencies(allowHostCleanup: false).Length == 0;
 
         if (status.CompletedAttempts >= status.AttemptLimit)
         {
@@ -76,7 +79,7 @@ public sealed class MogtomeDadIpcService : IDisposable
         else if (!plugin.Engine.IsRunning &&
                  plugin.Engine.CurrentState == Services.EngineState.Idle)
         {
-            Fail($"DAD-owned MOGTOME run stopped after {status.CompletedAttempts}/{status.AttemptLimit} attempt(s).");
+            Fail(plugin.Engine.LastStopReason);
             return;
         }
 
@@ -116,7 +119,7 @@ public sealed class MogtomeDadIpcService : IDisposable
             return Serialize(Reject("MOGTOME is finishing startup cleanup from the previous run."));
 
         var isLeader = string.Equals(request.Role, "QueueLeader", StringComparison.OrdinalIgnoreCase);
-        var missingPlugins = GameHelpers.MissingAutomationDependencies(plugin.BossModIPC, requireDatabase: false, allowHostCleanup: true);
+        var missingPlugins = ReadMissingDependencies(allowHostCleanup: true);
         if (missingPlugins.Length > 0)
             return Serialize(Reject(Localization.Ui.M("Plugin_RequiredXaPlugins", missingPlugins).English));
         plugin.Configuration.IsPartyLeader = isLeader;
@@ -173,13 +176,18 @@ public sealed class MogtomeDadIpcService : IDisposable
         if (engine == null && string.IsNullOrWhiteSpace(status.DadRunId))
             status = Reject("MOGTOME engine is not ready.");
         else if (engine != null && string.IsNullOrWhiteSpace(status.DadRunId))
+        {
+            var missingPlugins = ReadMissingDependencies(allowHostCleanup: true);
             status = new MogtomeDadRunStatus
             {
-                Ready = true,
+                Ready = missingPlugins.Length == 0,
                 EngineState = engine.CurrentState.ToString(),
                 IsRunning = engine.IsRunning,
-                Summary = engine.StatusMessage,
+                Summary = missingPlugins.Length == 0
+                    ? engine.StatusMessage
+                    : Localization.Ui.M("Plugin_RequiredXaPlugins", missingPlugins).English,
             };
+        }
         return Serialize(status);
     }
 
@@ -197,12 +205,17 @@ public sealed class MogtomeDadIpcService : IDisposable
     private MogtomeDadRunStatus Reject(string reason)
         => new()
         {
-            Ready = plugin.Engine != null && GameHelpers.MissingAutomationDependencies(plugin.BossModIPC, requireDatabase: false, allowHostCleanup: true).Length == 0,
+            Ready = IsReadyForStart(),
             Accepted = false,
             Summary = reason,
             FailureReason = reason,
             UpdatedAtUtc = DateTime.UtcNow,
         };
+
+    private bool IsReadyForStart() => plugin.Engine != null && ReadMissingDependencies(allowHostCleanup: true).Length == 0;
+
+    private string ReadMissingDependencies(bool allowHostCleanup)
+        => GameHelpers.MissingAutomationDependencies(plugin.BossModIPC, requireDatabase: false, allowHostCleanup: allowHostCleanup);
 
     private void PublishIfChanged(bool force = false)
     {

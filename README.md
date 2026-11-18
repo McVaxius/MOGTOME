@@ -357,7 +357,7 @@ This sequence is experimental and has not been live-duty validated by this imple
 - `/mog config` - Open configuration window
 - `/mog start` - Start the bot
 - `/mog stop` - Stop the bot
-- `/mog inn` - Delegate inn entry to ADS with `/ads enterinn`
+- `/mog inn` - Delegate inn entry to ADS with `/ads enterinn` when a supported combat host is ready.
 - `/mog status` - Print current status
 - `/keybound` or `/kbb` - Open Keybound Brawler and its shop preparation
 

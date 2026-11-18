@@ -429,13 +429,8 @@ public class MogtomeEngine
 
             var preparationResult = await GameHelpers.RunOnFrameworkThreadAsync(() =>
             {
-                if (!IsCurrentStartup(operation))
+                if (!CanDispatchStartupAction(operation))
                     return new StartupPreparationResult(EnteredRepairMode: false);
-                if (!rotationService.HasUsableAutomationHost())
-                {
-                    StopWithCombatFailureMessage(Ui.M("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency));
-                    return new StartupPreparationResult(EnteredRepairMode: false);
-                }
                 if (!rotationService.UsesNativeAutorotation && rotationService.SupportsBmrObstacleMaps)
                     commandManager.ProcessCommand(
                         config.ObstacleMapsOn
@@ -485,7 +480,7 @@ public class MogtomeEngine
                 log.Information("[MOGTOME][Engine] Start requested while already inside duty - skipping duty finder setup");
                 await GameHelpers.RunOnFrameworkThreadAsync(() =>
                 {
-                    if (!IsCurrentStartup(operation))
+                    if (!CanDispatchStartupAction(operation))
                         return;
                     Status = Ui.M("Engine_ResumingInsideDuty");
                     ResumeOrEnterCurrentDuty();
@@ -497,7 +492,7 @@ public class MogtomeEngine
 
             await GameHelpers.RunOnFrameworkThreadAsync(() =>
             {
-                if (!IsCurrentStartup(operation))
+                if (!CanDispatchStartupAction(operation))
                 {
                     log.Warning("[MOGTOME][Engine] Start aborted before entering waiting-outside-duty state");
                     return;
@@ -703,10 +698,18 @@ public class MogtomeEngine
         StartDutyBackendInsideDuty($"resuming territory {state.DutyStartTerritory}");
     }
 
+    private bool CanDispatchStartupAction(int operation)
+    {
+        if (!IsCurrentStartup(operation)) return false;
+        if (rotationService.HasUsableAutomationHost()) return true;
+        StopWithCombatFailureMessage(Ui.M("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency));
+        return false;
+    }
+
     private Task RunStartupActionAsync(int operation, Action action)
         => GameHelpers.RunOnFrameworkThreadAsync(() =>
         {
-            if (!IsCurrentStartup(operation)) throw new OperationCanceledException();
+            if (!CanDispatchStartupAction(operation)) throw new OperationCanceledException();
             action();
         });
 
@@ -760,25 +763,28 @@ public class MogtomeEngine
             if (!IsCurrentStartup(operation)) return;
             log.Information($"[MOGTOME][Engine] Duty finder setup complete: Unsync=ON, LevelSync={(enableLevelSync ? "ON" : "OFF")}");
         }
+        catch (OperationCanceledException) when (!IsCurrentStartup(operation)) { }
         catch (Exception ex)
         {
             log.Error($"[MOGTOME][Engine] Failed to set up duty finder: {ex.Message}");
         }
     }
 
+    private bool CheckRunningAutomationHost()
+    {
+        if (!rotationService.HasUsableAutomationHost())
+            StopWithReason(Ui.M("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency));
+        else if (rotationService.OwnedCombatProviderDeparted)
+            StopWithReason(Ui.M("Rotation_BossModSessionChanged"));
+        else
+            return true;
+        return false;
+    }
+
     public void Update()
     {
         if (!IsRunning || CurrentState == EngineState.Stopping) return;
-        if (CurrentState != EngineState.Initializing && !rotationService.HasUsableAutomationHost())
-        {
-            StopWithReason(Ui.M("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency));
-            return;
-        }
-        if (CurrentState != EngineState.Initializing && rotationService.OwnedCombatProviderDeparted)
-        {
-            StopWithReason(Ui.M("Rotation_BossModSessionChanged"));
-            return;
-        }
+        if (CurrentState != EngineState.Initializing && !CheckRunningAutomationHost()) return;
 
         var inDuty = DutyStartupService.IsInDuty();
         var identity = DutyStartupService.ReadLiveDutyIdentity();
@@ -1700,6 +1706,7 @@ public class MogtomeEngine
         if (!IsRunning || CurrentState != EngineState.InDuty || dutyCompleted ||
             state.BailoutRequested || autoDutyStartedInDuty)
             return;
+        if (!CheckRunningAutomationHost()) return;
 
         var operation = sessionId;
         try
