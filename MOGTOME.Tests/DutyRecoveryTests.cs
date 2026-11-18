@@ -1315,6 +1315,51 @@ public sealed class DutyRecoveryTests
         Assert.False(run.Engine.IsRunning);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DadStartDuringPendingStartupCleanupKeepsExistingOwnership(bool matchingRun)
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: "GodMod");
+        using var run = new Run(native);
+        run.Engine.Start();
+        var pending = (Task)Get(run.Engine, "startupTask")!;
+        run.Engine.Stop();
+        Assert.Equal(EngineState.Idle, run.Engine.CurrentState);
+        Assert.True(run.Engine.IsStartupPending);
+
+        var plugin = (Plugin)RuntimeHelpers.GetUninitializedObject(typeof(Plugin));
+        Set(plugin, "<Engine>k__BackingField", run.Engine);
+        Set(plugin, "<BossModIPC>k__BackingField", run.BossMod);
+        Set(plugin, "<ConfigManager>k__BackingField", run.Manager);
+        Set(plugin, "<State>k__BackingField", run.State);
+        var dad = (MogtomeDadIpcService)RuntimeHelpers.GetUninitializedObject(typeof(MogtomeDadIpcService));
+        Set(dad, "plugin", plugin);
+
+        const string runId = "synthetic-farming";
+        var previous = matchingRun
+            ? new MogtomeDadRunStatus { DadRunId = runId, Accepted = true, DadOwned = true, Ready = true }
+            : new MogtomeDadRunStatus();
+        Set(dad, "status", previous);
+        var saves = native.AccountSaveAttempts;
+        var request = JsonSerializer.Serialize(new MogtomeDadRunRequest { DadRunId = runId, Role = "QueueLeader" });
+        using var result = JsonDocument.Parse((string)Invoke(dad, "StartRun", request)!);
+        Assert.True(result.RootElement.GetProperty("ready").GetBoolean());
+        Assert.Equal(matchingRun, result.RootElement.GetProperty("accepted").GetBoolean());
+        Assert.Equal(matchingRun, result.RootElement.GetProperty("dadOwned").GetBoolean());
+        if (!matchingRun)
+            Assert.Contains("startup cleanup", result.RootElement.GetProperty("failureReason").GetString());
+
+        Assert.Same(previous, Get(dad, "status"));
+        Assert.Null(Get(dad, "lastPublishedSignature"));
+        Assert.False(run.Config.IsPartyLeader);
+        Assert.False(run.State.IsPartyLeader);
+        Assert.Equal(saves, native.AccountSaveAttempts);
+
+        run.Pump();
+        await pending;
+    }
+
     [Fact]
     public void StopClearsQueuedAndDeferredStartEvenBeforeEngineExists()
     {

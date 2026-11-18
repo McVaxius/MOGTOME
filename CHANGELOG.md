@@ -5,6 +5,7 @@ Unreleased
 - Use GMC's healer preset for automatic healing on BossModReborn, preserving saved presets.
 - Keep GodMod AI attached to MOGTOME's combat preset when combat starts or switches between a group preset and an encounter plan.
 - Apply RSR healing settings after combat preset preparation succeeds. Stop an active run if it loses its combat host, including when another usable host appears. An explicit restart can use the replacement once the old host finishes unloading.
+- Reject a new DAD start while MOGTOME finishes cleaning up the previous startup.
 
 2026-11-17 - 4.2.0.20 - Beastmaster combat startup
 

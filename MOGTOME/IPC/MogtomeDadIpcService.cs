@@ -112,6 +112,8 @@ public sealed class MogtomeDadIpcService : IDisposable
         if (plugin.Engine.IsRunning || plugin.Blunderville?.IsRunning == true || plugin.IsBlundervilleActionQueued ||
             plugin.MoogleShop?.IsRunning == true || plugin.IsMoogleShopActionQueued || plugin.KeyboundShopOwnsAutomation)
             return Serialize(Reject("MOGTOME is already running outside DAD ownership."));
+        if (plugin.Engine.IsStartupPending)
+            return Serialize(Reject("MOGTOME is finishing startup cleanup from the previous run."));
 
         var isLeader = string.Equals(request.Role, "QueueLeader", StringComparison.OrdinalIgnoreCase);
         var missingPlugins = GameHelpers.MissingAutomationDependencies(plugin.BossModIPC, requireDatabase: false, allowHostCleanup: true);
