@@ -1,4 +1,4 @@
-## Unreleased
+2026-11-18 - 4.2.0.23 - GodMod manual preset selection
 
 - **Fixed GodMod manual preset selection** so an exact saved preset chosen after MOGTOME starts applies at duty startup or during an active duty.
 
