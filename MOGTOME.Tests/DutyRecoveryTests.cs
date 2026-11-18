@@ -391,11 +391,19 @@ public sealed class DutyRecoveryTests
     }
 
     [Theory]
-    [InlineData(40u, "FRENRIDER - RANGED")]
+    [InlineData(6u, "FRENRIDER - RANGED (GMC)")]
+    [InlineData(24u, "FRENRIDER - RANGED (GMC)")]
+    [InlineData(28u, "FRENRIDER - RANGED (GMC)")]
+    [InlineData(33u, "FRENRIDER - RANGED (GMC)")]
+    [InlineData(40u, "FRENRIDER - RANGED (GMC)")]
+    [InlineData(31u, "FRENRIDER - RANGED")]
     [InlineData(37u, "FRENRIDER - TANK")]
-    public void GmcSelectsAutomaticSageOrTankGroupWithoutApplyingSavedManualOrProviderChoice(uint job, string expected)
+    public void GmcSelectsProviderHealerGroupAndLeavesTheLegacyRangedPresetUntouched(uint job, string expected)
     {
         var native = new NativeBossModProvider(CombatProvider.Bmr, "Original") { DhogHealersAvailable = true };
+        native.SavePreset("""{"Name":"FRENRIDER - RANGED","Modules":{"BossMod.Autorotation.xan.BRD":[]}}""");
+        var legacy = native.Presets.UserPresets.Single(preset => preset.Name == "FRENRIDER - RANGED");
+        var legacyBefore = native.SerializePreset(legacy);
         native.Rotation.Player.Class = (NativeJob)job;
         using var run = new Run(native) { GmcLoaded = true, Territory = 1044 };
         run.Config.CombatProvider = CombatProvider.Wrath;
@@ -408,17 +416,12 @@ public sealed class DutyRecoveryTests
         Assert.Equal(CombatProvider.Wrath, run.Config.CombatProvider);
         Assert.True(run.Config.UseManualBossModPreset);
         Assert.Equal("Other", run.Config.ManualBossModPresetName);
-        using var json = JsonDocument.Parse(native.Interface.GetIpcSubscriber<string, string>("BossMod.Presets.Get").InvokeFunc(expected));
-        var modules = json.RootElement.GetProperty("Modules");
-        if (job == 40)
-        {
-            Assert.True(modules.TryGetProperty("BMRVariantModulePack.Autorotation.Dhog.DhogSGE", out _));
-            Assert.False(modules.TryGetProperty("BossMod.Autorotation.xan.HealerAI", out _));
-        }
-        else
-            Assert.DoesNotContain(modules.GetProperty("BossMod.Autorotation.xan.TankAI").EnumerateArray(),
-                option => option.GetProperty("Track").GetString() == "Stance" && option.GetProperty("Option").GetString() == "Disabled");
-        // These assert selection/strategy preservation, not native healing or stance execution.
+        if (expected == "FRENRIDER - RANGED (GMC)")
+            Assert.Contains(native.Rotation.Preset!.Modules, module => module.ModuleName == "BMRVariantModulePack.Autorotation.Dhog.DhogSGE");
+        Assert.True(run.Rotation.DisableRotation());
+        Assert.Same(legacy, native.Presets.UserPresets.Single(preset => preset.Name == "FRENRIDER - RANGED"));
+        Assert.Equal(legacyBefore, native.SerializePreset(legacy));
+        Assert.DoesNotContain(native.Writes, write => write.Contains("Presets.Create") || write.Contains("Presets.Delete"));
     }
 
     [Theory]
@@ -443,6 +446,7 @@ public sealed class DutyRecoveryTests
         native.Rotation.Bossmods.ActiveModule = module;
         Assert.True(run.Rotation.Initialize());
         Assert.True(run.Rotation.EnableRotationOncePerDuty("Sage group"));
+        Assert.Equal(host == "BossModReborn" ? "FRENRIDER - RANGED (GMC)" : "FRENRIDER - RANGED", native.Rotation.Preset!.Name);
         native.Rotation.Planner = new(module, plan);
         run.Rotation.UpdateDutyRotationHealth(1044, true, false, false, "plan bound");
         Assert.Null(native.Rotation.Preset);
@@ -3318,6 +3322,16 @@ public sealed class DutyRecoveryTests
             Presets.DefaultPresets = Presets.AllPresets.ToList();
             presetDefinitions["FRENRIDER - TANK"] = """{"Name":"FRENRIDER - TANK","Modules":{"BossMod.Autorotation.xan.TankAI":[]}}""";
             presetDefinitions["FRENRIDER - RANGED"] = """{"Name":"FRENRIDER - RANGED","Modules":{"BMRVariantModulePack.Autorotation.Dhog.DhogSGE":[]}}""";
+            if (InternalName == "BossModReborn")
+            {
+                const string healerPreset = """
+                    {"Name":"FRENRIDER - RANGED (GMC)","Modules":{"BMRVariantModulePack.Autorotation.Dhog.DhogSGE":[]}}
+                    """;
+                var preset = DeserializePreset(healerPreset);
+                Presets.DefaultPresets.Add(preset);
+                Presets.AllPresets.Add(preset);
+                presetDefinitions[preset.Name] = healerPreset;
+            }
             database = new NativeRotationDatabase(Presets);
             Rotation = new((NativeRotationDatabase)database, preset =>
             {

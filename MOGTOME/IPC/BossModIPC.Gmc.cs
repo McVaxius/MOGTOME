@@ -116,7 +116,9 @@ public partial class BossModIPC
             if (manager is null) return false;
             if (job is null || Convert.ToUInt32(job) == 0) return false;
             var row = Convert.ToUInt32(job);
-            var preset = SelectPresetForJob(row, passive: false);
+            var preset = NativeHost == "BossModReborn" && row is (6 or 24 or 28 or 33 or 40)
+                ? "FRENRIDER - RANGED (GMC)"
+                : SelectPresetForJob(row, passive: false);
             object? module = null, list = null, plan = null;
             if (DutyState.IsMogtomeDutyTerritory(Plugin.ClientState.TerritoryType))
             {
