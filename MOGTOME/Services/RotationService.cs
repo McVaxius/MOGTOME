@@ -121,6 +121,9 @@ public class RotationService : IDisposable
     {
         if (config.CombatProvider is not (CombatProvider.Bmr or CombatProvider.Vbm) || !config.UseManualBossModPreset)
             return true;
+        if (bossModIPC.NativeHost == "GodMod")
+            return !string.IsNullOrWhiteSpace(config.ManualBossModPresetName)
+                && bossModIPC.IsExactRuntimePreset(config.ManualBossModPresetName);
         var catalog = bossModIPC.ReadPresetCatalog(config.CombatProvider);
         var replacement = BossModIPC.ResolvePresetSelection(config.ManualBossModPresetName, catalog);
         if (replacement != config.ManualBossModPresetName)

@@ -70,6 +70,15 @@ public partial class BossModIPC
             || before.ForbidActions is null || before.ForbidMovement is null
             || !ownedSettings!.MatchesNativeAuthority(before)) return false;
         if (manualPreset is not null && !IsExactRuntimePreset(manualPreset)) return false;
+        if (NativeHost == "GodMod" && manualPreset is null)
+        {
+            if (!TryGetLiveBossMod("BMR", out var native, out _, out _)
+                || LiveMember(native, "_rotation") is not { } manager) return false;
+            var player = LiveMember(manager, "Player");
+            if (LiveMember(player, "Class") is not { } job || Convert.ToUInt32(job) == 0) return false;
+            var preset = SelectPresetForJob(Convert.ToUInt32(job), passive: false);
+            if (!CanUseGodModAutorotation(manager, player!, job, preset)) return false;
+        }
         if (gmcAiManager is null)
         {
             if (!ownedSettings.CanChangeRuntime(before)
@@ -122,78 +131,11 @@ public partial class BossModIPC
             var usesGmcHealerPreset = automatic && isBmr && row is (6 or 24 or 28 or 33 or 40);
             var preset = manualPreset ?? (usesGmcHealerPreset ? "FRENRIDER - RANGED (GMC)" : SelectPresetForJob(row, passive: false));
             if (!automatic && !IsExactRuntimePreset(preset)) return false;
-            object? module = null, list = null, plan = null;
-            if (automatic && DutyState.IsMogtomeDutyTerritory(Plugin.ClientState.TerritoryType))
+            if (automatic && !isBmr && !CanUseGodModAutorotation(manager, player!, job, preset)) return false;
+            if (!TryResolveGmcPlan(manager, player!, job, automatic, applySelection: true, out var usePlan)) return false;
+            if (!usePlan && automatic && isBmr)
             {
-                var bosses = LiveMember(manager, "Bossmods");
-                module = LiveMember(bosses, "ActiveModule");
-                if (module is null && LiveMember(bosses, "LoadedModules") is IEnumerable loaded)
-                {
-                    var pending = loaded.Cast<object>().Take(2).ToArray();
-                    if (pending.Length == 1) module = pending[0];
-                }
-                var database = LiveMember(LiveMember(manager!, "Database")!, "Plans");
-                if (module is not null && LiveMember(database!, "Plans") is IDictionary encounters
-                    && encounters[module.GetType()] is IDictionary jobs)
-                    list = jobs[job];
-            }
-            if (gmcPlan is { } owned)
-            {
-                var currentPlans = LiveMember(owned.List, "Plans") as IList;
-                var currentIndex = LiveMember(owned.List, "SelectedIndex") as int?;
-                if (currentPlans is null || currentIndex is null) return false;
-                var currentPlan = currentIndex >= 0 && currentIndex < currentPlans.Count ? currentPlans[currentIndex.Value] : null;
-                if (currentIndex < -1 || currentIndex >= currentPlans.Count || !ReferenceEquals(currentPlan, owned.Selected))
-                {
-                    // A later native user choice wins for the remainder of this run.
-                    gmcPlanChoiceChanged = true;
-                    gmcPlan = null;
-                }
-                else if (!ReferenceEquals(owned.List, list) && !RestoreGmcPlan()) return false;
-            }
-            if (list is not null && LiveMember(list, "Plans") is IList plans
-                && LiveMember(list, "SelectedIndex") is int selected)
-            {
-                bool Matches(object? candidate) => candidate is not null
-                    && Equals(LiveMember(candidate, "Class"), job)
-                    && Equals(LiveMember(candidate, "Encounter"), module!.GetType())
-                    && LiveMember(candidate, "Modules") is IList { Count: > 0 };
-                var selectedPlan = selected >= 0 && selected < plans.Count && Matches(plans[selected]) ? plans[selected] : null;
-                plan = selectedPlan;
-                if (!gmcPlanChoiceChanged && LiveMember(player, "InCombat") is false)
-                {
-                    // BMR checks selected plans when the local player enters combat.
-                    // Hold the selection until that native event has passed, preserving
-                    // PlannedPullSafety without blocking an automated no-countdown pull.
-                    if (selected >= 0 && !SelectGmcPlan(list, plans, -1)) return false;
-                    plan = null;
-                }
-                else if (!gmcPlanChoiceChanged)
-                {
-                    var candidates = plans.Cast<object>().Where(candidate => Matches(candidate)
-                        && LiveMember(candidate, "Name") is string name
-                        && name.StartsWith($"BMRV-{GmcPlanBossName(module!.GetType())}-", StringComparison.Ordinal)
-                        && name.EndsWith($"-{job}", StringComparison.Ordinal)).ToArray();
-                    if (candidates.Length == 1)
-                    {
-                        plan = candidates[0];
-                        if (!ReferenceEquals(plan, selectedPlan))
-                        {
-                            if (!SelectGmcPlan(list, plans, plans.IndexOf(plan))) return false;
-                        }
-                    }
-                    else if (candidates.Length > 1 && !candidates.Contains(selectedPlan)) plan = null;
-                }
-            }
-            // Keep the group rotation until BMR has bound the exact job/encounter plan.
-            var planner = LiveMember(manager!, "Planner");
-            var usePlan = plan is not null && ReferenceEquals(LiveMember(planner!, "Plan"), plan)
-                && ReferenceEquals(LiveMember(planner!, "Module"), module);
-            if (usePlan && gmcPlan is null && !gmcPlanChoiceChanged)
-                gmcPlan = (list!, plan, plan);
-            if (!usePlan && automatic)
-            {
-                var comparison = isBmr && !usesGmcHealerPreset ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+                var comparison = !usesGmcHealerPreset ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
                 if (ReadRuntimePresetName(preset) is not { } nativeName || !preset.Equals(nativeName, comparison)) return false;
                 preset = nativeName;
             }
@@ -221,6 +163,95 @@ public partial class BossModIPC
             LastStatus = $"GMC autorotation could not be confirmed: {ex.GetBaseException().Message}";
             return false;
         }
+    }
+
+    private bool CanUseGodModAutorotation(object manager, object player, object job, string preset)
+    {
+        if (IsExactRuntimePreset(preset)
+            || TryResolveGmcPlan(manager, player, job, automatic: true, applySelection: false, out var usePlan) && usePlan)
+            return true;
+        LastStatus = $"GodMod preset '{preset}' is unavailable by its exact name.";
+        return false;
+    }
+
+    private bool TryResolveGmcPlan(object manager, object player, object job, bool automatic, bool applySelection, out bool usePlan)
+    {
+        usePlan = false;
+        var planChoiceChanged = gmcPlanChoiceChanged;
+        object? module = null, list = null, plan = null;
+        if (automatic && DutyState.IsMogtomeDutyTerritory(Plugin.ClientState.TerritoryType))
+        {
+            var bosses = LiveMember(manager, "Bossmods");
+            module = LiveMember(bosses, "ActiveModule");
+            if (module is null && LiveMember(bosses, "LoadedModules") is IEnumerable loaded)
+            {
+                var pending = loaded.Cast<object>().Take(2).ToArray();
+                if (pending.Length == 1) module = pending[0];
+            }
+            var database = LiveMember(LiveMember(manager!, "Database")!, "Plans");
+            if (module is not null && LiveMember(database!, "Plans") is IDictionary encounters
+                && encounters[module.GetType()] is IDictionary jobs)
+                list = jobs[job];
+        }
+        if (gmcPlan is { } owned)
+        {
+            var currentPlans = LiveMember(owned.List, "Plans") as IList;
+            var currentIndex = LiveMember(owned.List, "SelectedIndex") as int?;
+            if (currentPlans is null || currentIndex is null) return false;
+            var currentPlan = currentIndex >= 0 && currentIndex < currentPlans.Count ? currentPlans[currentIndex.Value] : null;
+            if (currentIndex < -1 || currentIndex >= currentPlans.Count || !ReferenceEquals(currentPlan, owned.Selected))
+            {
+                // A later native user choice wins for the remainder of this run.
+                planChoiceChanged = true;
+                if (applySelection)
+                {
+                    gmcPlanChoiceChanged = true;
+                    gmcPlan = null;
+                }
+            }
+            else if (applySelection && !ReferenceEquals(owned.List, list) && !RestoreGmcPlan()) return false;
+        }
+        if (list is not null && LiveMember(list, "Plans") is IList plans
+            && LiveMember(list, "SelectedIndex") is int selected)
+        {
+            bool Matches(object? candidate) => candidate is not null
+                && Equals(LiveMember(candidate, "Class"), job)
+                && Equals(LiveMember(candidate, "Encounter"), module!.GetType())
+                && LiveMember(candidate, "Modules") is IList { Count: > 0 };
+            var selectedPlan = selected >= 0 && selected < plans.Count && Matches(plans[selected]) ? plans[selected] : null;
+            plan = selectedPlan;
+            if (!planChoiceChanged && LiveMember(player, "InCombat") is false)
+            {
+                // BMR checks selected plans when the local player enters combat.
+                // Hold the selection until that native event has passed, preserving
+                // PlannedPullSafety without blocking an automated no-countdown pull.
+                if (applySelection && selected >= 0 && !SelectGmcPlan(list, plans, -1)) return false;
+                plan = null;
+            }
+            else if (!planChoiceChanged)
+            {
+                var candidates = plans.Cast<object>().Where(candidate => Matches(candidate)
+                    && LiveMember(candidate, "Name") is string name
+                    && name.StartsWith($"BMRV-{GmcPlanBossName(module!.GetType())}-", StringComparison.Ordinal)
+                    && name.EndsWith($"-{job}", StringComparison.Ordinal)).ToArray();
+                if (candidates.Length == 1)
+                {
+                    plan = candidates[0];
+                    if (applySelection && !ReferenceEquals(plan, selectedPlan))
+                    {
+                        if (!SelectGmcPlan(list, plans, plans.IndexOf(plan))) return false;
+                    }
+                }
+                else if (candidates.Length > 1 && !candidates.Contains(selectedPlan)) plan = null;
+            }
+        }
+        // Keep the group rotation until BMR has bound the exact job/encounter plan.
+        var planner = LiveMember(manager!, "Planner");
+        usePlan = plan is not null && ReferenceEquals(LiveMember(planner!, "Plan"), plan)
+            && ReferenceEquals(LiveMember(planner!, "Module"), module);
+        if (applySelection && usePlan && gmcPlan is null && !planChoiceChanged)
+            gmcPlan = (list!, plan, plan);
+        return true;
     }
 
     private static string GmcPlanBossName(Type encounter) => encounter.FullName switch

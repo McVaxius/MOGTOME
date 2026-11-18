@@ -1,7 +1,7 @@
 Unreleased
 
 - Require GodMod or God Mod Companion with a ready BossModReborn host for automation.
-- Select combat presets and boss plans supplied by the active provider. GodMod supports automatic encounter plans. Explicit BossModReborn and GodMod preset choices retain their exact names.
+- Select combat presets and boss plans supplied by the active provider. GodMod supports automatic encounter plans. Each mode checks the preset it uses. Explicit BossModReborn and GodMod preset choices retain their exact names.
 - Use GMC's healer preset for automatic healing on BossModReborn, preserving saved presets.
 
 2026-11-17 - 4.2.0.20 - Beastmaster combat startup

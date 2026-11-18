@@ -1591,28 +1591,58 @@ public sealed class DutyRecoveryTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void GodModRequiresAllExactSuitePresetNamesBeforeStarting(bool oldBuild)
+    [InlineData("automatic-missing")]
+    [InlineData("automatic-wrong-case")]
+    [InlineData("automatic-exact")]
+    [InlineData("bound-plan")]
+    [InlineData("unbound-plan")]
+    [InlineData("manual")]
+    [InlineData("manual-missing")]
+    [InlineData("wrath")]
+    public void GodModRequiresOnlyThePresetUsedByTheSelectedCombatMode(string mode)
     {
         var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: "GodMod");
         using var run = new Run(native);
-        Assert.True(run.BossMod.HasUsableAutomationHost());
-        if (oldBuild)
-            native.Presets.AllPresets.RemoveAll(preset => preset.Name.StartsWith("FRENRIDER - ", StringComparison.Ordinal)
-                || preset.Name.StartsWith("passive - ", StringComparison.Ordinal));
-        else
+        native.Presets.AllPresets.RemoveAll(preset => preset.Name.StartsWith("FRENRIDER - ", StringComparison.Ordinal)
+            || preset.Name.StartsWith("passive - ", StringComparison.Ordinal));
+        native.Presets.AllPresets.Add(new NativePreset("Saved manual"));
+        if (mode == "automatic-exact") native.Presets.AllPresets.Add(new NativePreset("FRENRIDER - TANK"));
+        if (mode == "automatic-wrong-case") native.Presets.AllPresets.Add(new NativePreset("FrenRider - Tank"));
+        if (mode.StartsWith("manual", StringComparison.Ordinal))
         {
-            native.Presets.AllPresets.RemoveAll(preset => preset.Name == "FRENRIDER - RANGED");
-            native.Presets.AllPresets.Add(new NativePreset("frenrider - ranged"));
+            run.Config.UseManualBossModPreset = true;
+            run.Config.ManualBossModPresetName = mode == "manual" ? "Saved manual" : "Missing manual";
+        }
+        if (mode == "wrath") run.Config.CombatProvider = CombatProvider.Wrath;
+
+        NativePlanList? plans = null;
+        if (mode is "bound-plan" or "unbound-plan")
+        {
+            run.Territory = 1044;
+            var module = new D142Nero();
+            var plan = new NativePlan("BMRV-D142Nero-Tank-WAR", NativeJob.WAR, typeof(D142Nero));
+            plans = new NativePlanList { Plans = [plan], SelectedIndex = mode == "bound-plan" ? 0 : -1 };
+            native.Rotation.Database.Plans.Plans[typeof(D142Nero)] = new() { [NativeJob.WAR] = plans };
+            native.Rotation.Bossmods.ActiveModule = module;
+            if (mode == "bound-plan") native.Rotation.Planner = new(module, plan);
         }
 
-        Assert.False(run.BossMod.HasUsableAutomationHost());
-        run.Engine.Start();
-        Assert.False(run.Engine.IsRunning);
-        Assert.Equal("Plugin_RequiredXaPlugins", run.Engine.StopReason.Key);
-        Assert.Contains("GodMod with suite presets", Assert.IsType<string>(run.Engine.StopReason.Arguments[0]));
-        Assert.Empty(native.Writes);
+        Assert.True(run.BossMod.HasUsableAutomationHost());
+        Assert.True(run.Rotation.Initialize());
+        var expected = mode is "manual" or "wrath" or "automatic-exact" or "bound-plan";
+        Assert.Equal(expected, run.Rotation.EnableRotation());
+        if (mode == "manual") Assert.Equal("Saved manual", Assert.Single(native.Active));
+        if (mode == "automatic-exact") Assert.Equal("FRENRIDER - TANK", Assert.Single(native.Active));
+        if (mode == "bound-plan") Assert.Null(native.Rotation.Preset);
+        if (mode == "unbound-plan") Assert.Equal(-1, plans!.SelectedIndex);
+        if (mode == "wrath") Assert.Contains("/wrath auto on", run.Commands);
+        if (!expected)
+        {
+            Assert.Equal("Original", Assert.Single(native.Active));
+            Assert.Empty(native.Writes);
+        }
+        if (mode == "manual-missing") Assert.Equal("Missing manual", run.Config.ManualBossModPresetName);
+        Assert.DoesNotContain(native.Writes, write => write.Contains("Presets.Create") || write.Contains("Presets.Delete"));
     }
 
     [Theory]

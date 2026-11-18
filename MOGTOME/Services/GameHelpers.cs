@@ -61,7 +61,7 @@ public static class GameHelpers
         return database ? slave ? string.Empty : "XA Slave" : slave ? "XA Database" : "XA Database, XA Slave";
     }
 
-    internal const string AutomationDependency = "GodMod with suite presets or God Mod Companion + BossModReborn";
+    internal const string AutomationDependency = "GodMod or God Mod Companion + BossModReborn";
 
     internal static string MissingAutomationDependencies(BossModIPC bossMod, bool requireDatabase = true, bool allowHostCleanup = false)
     {

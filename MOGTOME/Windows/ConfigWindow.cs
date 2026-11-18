@@ -483,7 +483,8 @@ public class ConfigWindow : Window, IDisposable
     {
         var catalog = plugin.BossModIPC.ReadPresetCatalog(config.CombatProvider);
         var replacement = BossModIPC.ResolvePresetSelection(config.ManualBossModPresetName, catalog);
-        if (!startupPending && replacement != config.ManualBossModPresetName)
+        if (!startupPending && !plugin.BossModIPC.IsPluginLoaded("GodMod")
+            && replacement != config.ManualBossModPresetName)
         {
             config.ManualBossModPresetName = replacement;
             plugin.ConfigManager.SaveCurrentAccount();
