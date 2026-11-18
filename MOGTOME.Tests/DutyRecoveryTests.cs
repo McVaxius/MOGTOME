@@ -123,9 +123,10 @@ public sealed class DutyRecoveryTests
     }
 
     [Theory]
-    [InlineData("BossModReborn")]
-    [InlineData("GodMod")]
-    public void BeastmasterUsesTheManualPresetWithoutGmc(string host)
+    [InlineData("BossModReborn", false)]
+    [InlineData("BossModReborn", true)]
+    [InlineData("GodMod", false)]
+    public void BeastmasterUsesTheExactManualPreset(string host, bool gmcLoaded)
     {
         var native = new NativeBossModProvider(CombatProvider.Bmr, "", internalName: host);
         native.EnableRegularBeastmaster();
@@ -136,7 +137,8 @@ public sealed class DutyRecoveryTests
             new JsonObject { ["Option"] = "Familiar06" }));
         native.CurrentModifiers = NativeModifier.Shift;
         var saved = native.SerializePreset(manual);
-        using var run = new Run(native);
+        using var run = new Run(native) { GmcLoaded = gmcLoaded };
+        Assert.Equal(host == "GodMod" || gmcLoaded, run.BossMod.HasUsableAutomationHost());
         run.Config.UseManualBossModPreset = true;
         run.Config.ManualBossModPresetName = "Other";
         Assert.True(run.Rotation.Initialize());
@@ -147,7 +149,7 @@ public sealed class DutyRecoveryTests
         var aiManager = Get(native, "aiManager")!;
         var behavior = Assert.IsType<NativeAiBehavior>(aiManager.GetType().GetField("Beh")!.GetValue(aiManager));
         Assert.Same(manual, behavior.AIPreset);
-        if (host == "BossModReborn")
+        if (host == "BossModReborn" && !gmcLoaded)
         {
             Assert.Empty(native.Active); // Existing /bmrai on clears targetless runtime.
             Assert.Null(native.Rotation.Preset);
@@ -163,6 +165,53 @@ public sealed class DutyRecoveryTests
         Assert.Same(manual, native.Presets.AllPresets.Single(preset => preset.Name == "Other"));
         Assert.Single(module.TransientSettings);
         Assert.Equal(saved, native.SerializePreset(manual));
+        Assert.DoesNotContain(native.Writes, write => write.Contains("Presets.Create") || write.Contains("Presets.Delete"));
+    }
+
+    [Fact]
+    public void GmcUsesLiveManualPresetChangesAndPreservesTheNativePlanSelection()
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original");
+        using var run = new Run(native) { GmcLoaded = true, Territory = 1044 };
+        var manual = new NativePreset("Exact saved choice");
+        native.Presets.AllPresets.Add(manual);
+        var boss = new D141Colossus();
+        var plan = new NativePlan("User plan", NativeJob.WAR, typeof(D141Colossus));
+        var automaticPlan = new NativePlan("BMRV-D141Colossus-Tank-WAR", NativeJob.WAR, typeof(D141Colossus));
+        var list = new NativePlanList { Plans = [plan, automaticPlan], SelectedIndex = 0 };
+        native.Rotation.Bossmods.ActiveModule = boss;
+        native.Rotation.Database.Plans.Plans[typeof(D141Colossus)] = new() { [NativeJob.WAR] = list };
+
+        Assert.True(run.Rotation.Initialize());
+        Assert.True(run.Rotation.EnableRotationOncePerDuty("automatic rotation"));
+        Assert.Equal(1, list.SelectedIndex);
+        run.Config.UseManualBossModPreset = true;
+        run.Config.ManualBossModPresetName = manual.Name;
+        run.Manager.NotifyConfigurationChanged();
+        Assert.True(run.Rotation.ApplyPendingCombatSettings());
+        Assert.Equal(0, list.SelectedIndex); // Restore MOGTOME's prior plan selection.
+        Assert.Same(manual, native.Rotation.Preset);
+        Assert.Same(manual, native.AiPreset);
+        Assert.Equal(manual.Name, native.Selector);
+
+        run.Config.ManualBossModPresetName = "exact saved choice";
+        run.Manager.NotifyConfigurationChanged();
+        Assert.False(run.Rotation.ApplyPendingCombatSettings());
+        run.Rotation.UpdateDutyRotationHealth(1044, true, false, false, "unresolved manual preset");
+        Assert.Same(manual, native.Rotation.Preset);
+        Assert.Same(manual, native.AiPreset);
+        Assert.Equal("exact saved choice", run.Config.ManualBossModPresetName);
+        Assert.Equal(0, list.SelectedIndex);
+
+        run.Config.UseManualBossModPreset = false;
+        run.Manager.NotifyConfigurationChanged();
+        Assert.True(run.Rotation.ApplyPendingCombatSettings());
+        Assert.Equal(1, list.SelectedIndex);
+        Assert.Equal(new[] { "FRENRIDER - TANK" }, native.Active);
+        Assert.True(run.Rotation.DisableRotationForDutyEnd("GMC cleanup"));
+        Assert.Equal(0, list.SelectedIndex);
+        Assert.Equal(new[] { "Original" }, native.Active);
+        Assert.DoesNotContain(native.Writes, write => write.Contains("Presets.Create") || write.Contains("Presets.Delete"));
     }
 
     [Theory]

@@ -63,12 +63,13 @@ public partial class BossModIPC
         gmcCleanupRotation = null;
     }
 
-    internal bool BeginGmcAutorotation()
+    internal bool BeginGmcAutorotation(string? manualPreset = null)
     {
         if (!IsNativeAutorotationAvailable
             || !TryReadOwnedBossModSettings(out var before) || before.AiEnabled is null
             || before.ForbidActions is null || before.ForbidMovement is null
             || !ownedSettings!.MatchesNativeAuthority(before)) return false;
+        if (manualPreset is not null && !IsExactRuntimePreset(manualPreset)) return false;
         if (gmcAiManager is null)
         {
             if (!ownedSettings.CanChangeRuntime(before)
@@ -97,10 +98,10 @@ public partial class BossModIPC
         }
         if (!HasOwnedGmcAi() || !ApplyOwnedAutomaticTargeting(command => SendCommand(command, "GMC automatic targeting"))
             || !ApplyGmcFlag("ForbidActions", false) || !ApplyGmcFlag("ForbidMovement", false)) return false;
-        return UpdateGmcAutorotation() && UpdateGmcCombatState();
+        return UpdateGmcAutorotation(manualPreset) && UpdateGmcCombatState();
     }
 
-    internal bool UpdateGmcAutorotation()
+    internal bool UpdateGmcAutorotation(string? manualPreset = null)
     {
         if (!IsNativeAutorotationAvailable
             || ownedIdentity.Provider != "BMR" || !TryReadOwnedBossModSettings(out var before)
@@ -117,10 +118,12 @@ public partial class BossModIPC
             if (job is null || Convert.ToUInt32(job) == 0) return false;
             var row = Convert.ToUInt32(job);
             var isBmr = NativeHost == "BossModReborn";
-            var usesGmcHealerPreset = isBmr && row is (6 or 24 or 28 or 33 or 40);
-            var preset = usesGmcHealerPreset ? "FRENRIDER - RANGED (GMC)" : SelectPresetForJob(row, passive: false);
+            var automatic = manualPreset is null;
+            var usesGmcHealerPreset = automatic && isBmr && row is (6 or 24 or 28 or 33 or 40);
+            var preset = manualPreset ?? (usesGmcHealerPreset ? "FRENRIDER - RANGED (GMC)" : SelectPresetForJob(row, passive: false));
+            if (!automatic && !IsExactRuntimePreset(preset)) return false;
             object? module = null, list = null, plan = null;
-            if (DutyState.IsMogtomeDutyTerritory(Plugin.ClientState.TerritoryType))
+            if (automatic && DutyState.IsMogtomeDutyTerritory(Plugin.ClientState.TerritoryType))
             {
                 var bosses = LiveMember(manager, "Bossmods");
                 module = LiveMember(bosses, "ActiveModule");
@@ -188,7 +191,7 @@ public partial class BossModIPC
                 && ReferenceEquals(LiveMember(planner!, "Module"), module);
             if (usePlan && gmcPlan is null && !gmcPlanChoiceChanged)
                 gmcPlan = (list!, plan, plan);
-            if (!usePlan)
+            if (!usePlan && automatic)
             {
                 var comparison = isBmr && !usesGmcHealerPreset ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
                 if (ReadRuntimePresetName(preset) is not { } nativeName || !preset.Equals(nativeName, comparison)) return false;
@@ -197,7 +200,7 @@ public partial class BossModIPC
             var requested = new BossModRuntimePresetState(false, usePlan ? Array.Empty<string>() : new[] { preset });
             var ownership = ownedSettings!;
             if (ownership.Original.Runtime is not { } original || original.Names.Any(name => !IsExactRuntimePreset(name))) return false;
-            var rotation = usePlan ? null : GmcGroupRotation(manager!, preset);
+            var rotation = usePlan ? null : GmcPresetRotation(manager!, preset, automatic);
             if (gmcRotationSelected && ReferenceEquals(gmcOwnedRotation, rotation) && ReferenceEquals(gmcAiPreset, rotation)
                 && MatchesGmcRuntime(before)) return true;
             if (!SetGmcAiPreset(rotation)) return false;
@@ -209,7 +212,8 @@ public partial class BossModIPC
             gmcOwnedRotation = rotation;
             gmcRotationSelected = true;
             ownership.OwnRuntime(requested);
-            LastStatus = usePlan ? $"GMC boss plan confirmed for {job}." : $"GMC group rotation '{preset}' confirmed.";
+            LastStatus = usePlan ? $"GMC boss plan confirmed for {job}."
+                : $"GMC {(automatic ? "group" : "manual")} rotation '{preset}' confirmed.";
             return true;
         }
         catch (Exception ex)
@@ -418,11 +422,12 @@ public partial class BossModIPC
     private static void SetGmcPlanIndex(object list, int index)
         => list.GetType().GetField("SelectedIndex", BindingFlags.Instance | BindingFlags.Public)!.SetValue(list, index);
 
-    private object GmcGroupRotation(object manager, string name)
+    private object GmcPresetRotation(object manager, string name, bool automatic)
     {
         var presets = LiveMember(LiveMember(manager, "Database"), "Presets");
         var source = ((IEnumerable)LiveMember(presets, "AllPresets")!).Cast<object>()
             .Single(preset => Equals(LiveMember(preset, "Name"), name));
+        if (!automatic) return source;
         if (!ReferenceEquals(source, gmcGroupSource))
         {
             var rotation = source.GetType().GetMethod("MakeClone", new[] { typeof(bool) })!.Invoke(source, new object[] { true })!;

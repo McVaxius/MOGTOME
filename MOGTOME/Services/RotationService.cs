@@ -113,6 +113,10 @@ public class RotationService : IDisposable
     private static (bool Manual, string Name) CurrentPresetSettings(Configuration config)
         => (config.UseManualBossModPreset, config.UseManualBossModPreset ? config.ManualBossModPresetName : string.Empty);
 
+    private string? GetGmcManualPreset((bool Manual, string Name)? settings)
+        => bossModIPC.NativeHost == "BossModReborn" && preparedProvider is (CombatProvider.Bmr or CombatProvider.Vbm)
+            && settings is { Manual: true } manual ? manual.Name : null;
+
     internal bool ValidateManualPresetSelection(Configuration config)
     {
         if (config.CombatProvider is not (CombatProvider.Bmr or CombatProvider.Vbm) || !config.UseManualBossModPreset)
@@ -141,6 +145,13 @@ public class RotationService : IDisposable
         if (gmcSession)
         {
             settingsPending = false;
+            var manual = GetGmcManualPreset(selected);
+            var previousManual = GetGmcManualPreset(appliedPresetSettings);
+            if (manual == previousManual) return true;
+            if (!bossModIPC.UpdateGmcAutorotation(manual))
+                return Fail(Ui.M("Rotation_BossModSettingsUnconfirmed"));
+            appliedPresetSettings = selected;
+            Failure = string.Empty;
             return true;
         }
         if (appliedPresetSettings == selected || config.CombatProvider is CombatProvider.Rsr or CombatProvider.Wrath)
@@ -276,8 +287,11 @@ public class RotationService : IDisposable
         deathRearmPending = false;
         try
         {
-            var deathRecovery = bossModIPC.RecoverOwnedCombatDeath(appliedPresetSettings is null
-                || appliedPresetSettings == CurrentPresetSettings(configManager.GetActiveConfig()));
+            var selected = CurrentPresetSettings(configManager.GetActiveConfig());
+            var settingsMatch = gmcSession
+                ? GetGmcManualPreset(appliedPresetSettings) == GetGmcManualPreset(selected)
+                : appliedPresetSettings is null || appliedPresetSettings == selected;
+            var deathRecovery = bossModIPC.RecoverOwnedCombatDeath(settingsMatch);
             if (deathRecovery is null)
             {
                 deathRearmPending = recoveringDeath;
@@ -359,7 +373,8 @@ public class RotationService : IDisposable
             && DutyState.IsMogtomeDutyTerritory(territoryId) && backendStarted && !dutyCompleted && !localPlayerDead)
         {
             ObserveSessionDeparture();
-            if (!rotationDisableSentForDuty && !bossModIPC.UpdateGmcAutorotation())
+            var manual = GetGmcManualPreset(appliedPresetSettings);
+            if (!rotationDisableSentForDuty && !bossModIPC.UpdateGmcAutorotation(manual))
             {
                 DisableRotationForDutyEnd("GMC combat ownership or native state changed");
                 Fail(Ui.M("Rotation_BossModSettingsUnconfirmed"));
@@ -469,7 +484,11 @@ public class RotationService : IDisposable
                 || !bossModIPC.IsOwnedProviderCurrent
                 || !bossModIPC.BeginOwnedBossModSettings(CombatProvider.Bmr, configManager.CurrentAccountId, ReadCharacterIdentity(), config))
                 return Fail(Ui.M("Rotation_BossModSettingsUnconfirmed"));
-            return bossModIPC.BeginGmcAutorotation();
+            var selected = CurrentPresetSettings(config);
+            if (!bossModIPC.BeginGmcAutorotation(GetGmcManualPreset(selected)))
+                return Fail(Ui.M("Rotation_BossModSettingsUnconfirmed"));
+            appliedPresetSettings = selected;
+            return true;
         }
         if (provider != CombatProvider.Wrath)
         {
