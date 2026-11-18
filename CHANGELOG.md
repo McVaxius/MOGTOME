@@ -1,6 +1,6 @@
-## Unreleased
+2026-11-18 - 4.2.0.22 - Combat provider checks during startup
 
-- Recheck the combat provider before dispatching startup actions and leave unowned duty backends alone if startup is cancelled.
+- **Fixed startup provider changes** so queued setup stops if the selected combat provider unloads or switches to another host. MOGTOME leaves the duty backend alone if the provider is lost during startup.
 
 2026-11-18 - 4.2.0.21 - Follower combat and duty transitions
 
