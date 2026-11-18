@@ -387,7 +387,7 @@ public class MogtomeEngine
 
             Status = Ui.M("Engine_CheckingConflictingPlugins");
             var conflictingPluginsReady = await conflictPluginService.EnsureTwistOfFayteDisabledAsync("MOGTOME start",
-                showPopup: true, () => IsCurrentStartup(operation), () => CanDispatchStartupAction(operation));
+                showPopup: true, () => IsCurrentStartup(operation), () => CanDispatchStartupAction(operation, expectedHost: startupHost));
             if (!IsCurrentStartup(operation))
             {
                 log.Warning("[MOGTOME][Engine] Start aborted while resolving conflicting plugins");
@@ -410,7 +410,7 @@ public class MogtomeEngine
             Status = dutyAutomationService.UseAdsExperimental
                 ? Ui.M("Engine_PreparingADS")
                 : Ui.M("Engine_PreparingAutoDuty");
-            var backendReady = await PrepareStartupBackendAsync(operation, startupSnapshot).ConfigureAwait(false);
+            var backendReady = await PrepareStartupBackendAsync(operation, startupSnapshot, startupHost).ConfigureAwait(false);
             if (!IsCurrentStartup(operation))
             {
                 log.Warning("[MOGTOME][Engine] Start aborted while preparing automation backend");
@@ -425,7 +425,7 @@ public class MogtomeEngine
 
             var preparationResult = await GameHelpers.RunOnFrameworkThreadAsync(() =>
             {
-                if (!CanDispatchStartupAction(operation))
+                if (!CanDispatchStartupAction(operation, expectedHost: startupHost))
                     return new StartupPreparationResult(EnteredRepairMode: false);
                 if (!rotationService.UsesNativeAutorotation && rotationService.SupportsBmrObstacleMaps)
                     commandManager.ProcessCommand(
@@ -476,7 +476,7 @@ public class MogtomeEngine
                 log.Information("[MOGTOME][Engine] Start requested while already inside duty - skipping duty finder setup");
                 await GameHelpers.RunOnFrameworkThreadAsync(() =>
                 {
-                    if (!CanDispatchStartupAction(operation))
+                    if (!CanDispatchStartupAction(operation, expectedHost: startupHost))
                         return;
                     Status = Ui.M("Engine_ResumingInsideDuty");
                     ResumeOrEnterCurrentDuty();
@@ -484,11 +484,11 @@ public class MogtomeEngine
                 return;
             }
 
-            await ConfigureDutyFinderSettingsAsync(operation, enableLevelSync: !testingModeUnsynced).ConfigureAwait(false);
+            await ConfigureDutyFinderSettingsAsync(operation, startupHost, enableLevelSync: !testingModeUnsynced).ConfigureAwait(false);
 
             await GameHelpers.RunOnFrameworkThreadAsync(() =>
             {
-                if (!CanDispatchStartupAction(operation))
+                if (!CanDispatchStartupAction(operation, expectedHost: startupHost))
                 {
                     log.Warning("[MOGTOME][Engine] Start aborted before entering waiting-outside-duty state");
                     return;
@@ -716,14 +716,14 @@ public class MogtomeEngine
         return true;
     }
 
-    private Task<bool> PrepareStartupBackendAsync(int operation, StartupSnapshot snapshot)
+    private Task<bool> PrepareStartupBackendAsync(int operation, StartupSnapshot snapshot, string? expectedHost)
         => dutyAutomationService.PrepareForStartAsync(snapshot.IsPartyLeader, snapshot.StartingInsideDuty,
-            () => IsCurrentStartup(operation), () => CanDispatchStartupAction(operation));
+            () => IsCurrentStartup(operation), () => CanDispatchStartupAction(operation, expectedHost: expectedHost));
 
-    private Task RunStartupActionAsync(int operation, Action action)
+    private Task RunStartupActionAsync(int operation, string? expectedHost, Action action)
         => GameHelpers.RunOnFrameworkThreadAsync(() =>
         {
-            if (!CanDispatchStartupAction(operation)) throw new OperationCanceledException();
+            if (!CanDispatchStartupAction(operation, expectedHost: expectedHost)) throw new OperationCanceledException();
             action();
         });
 
@@ -741,14 +741,14 @@ public class MogtomeEngine
         return await GameHelpers.RunOnFrameworkThreadAsync(() => IsCurrentStartup(operation) && GameHelpers.IsAddonVisible(addonName)).ConfigureAwait(false);
     }
 
-    private async Task ConfigureDutyFinderSettingsAsync(int operation, bool enableLevelSync)
+    private async Task ConfigureDutyFinderSettingsAsync(int operation, string? expectedHost, bool enableLevelSync)
     {
         log.Information($"[MOGTOME][Engine] Setting up duty finder for Unsync=ON, LevelSync={(enableLevelSync ? "ON" : "OFF")}");
 
         try
         {
             log.Debug("[MOGTOME][Engine] Step 1: Opening duty finder");
-            await RunStartupActionAsync(operation, () => GameHelpers.OpenDutyFinder()).ConfigureAwait(false);
+            await RunStartupActionAsync(operation, expectedHost, () => GameHelpers.OpenDutyFinder()).ConfigureAwait(false);
 
             if (!await WaitForAddonVisibleAsync(operation, "ContentsFinder", TimeSpan.FromSeconds(5), TimeSpan.FromMilliseconds(200)).ConfigureAwait(false))
             {
@@ -759,19 +759,19 @@ public class MogtomeEngine
             log.Debug("[MOGTOME][Engine] ContentsFinder addon is visible");
 
             log.Debug("[MOGTOME][Engine] Step 2: Opening duty finder options");
-            await RunStartupActionAsync(operation, () => GameHelpers.FireAddonCallback("ContentsFinder", true, 15)).ConfigureAwait(false);
+            await RunStartupActionAsync(operation, expectedHost, () => GameHelpers.FireAddonCallback("ContentsFinder", true, 15)).ConfigureAwait(false);
             await Task.Delay(2000).ConfigureAwait(false);
 
             log.Debug("[MOGTOME][Engine] Step 3: Setting Unrestricted Party (Unsync)");
-            await RunStartupActionAsync(operation, () => GameHelpers.FireAddonCallback("ContentsFinderSetting", true, 1, 1, 1)).ConfigureAwait(false);
+            await RunStartupActionAsync(operation, expectedHost, () => GameHelpers.FireAddonCallback("ContentsFinderSetting", true, 1, 1, 1)).ConfigureAwait(false);
             await Task.Delay(2000).ConfigureAwait(false);
 
             log.Debug("[MOGTOME][Engine] Step 4: Setting Level Sync");
-            await RunStartupActionAsync(operation, () => GameHelpers.FireAddonCallback("ContentsFinderSetting", true, 1, 2, enableLevelSync ? 1 : 0)).ConfigureAwait(false);
+            await RunStartupActionAsync(operation, expectedHost, () => GameHelpers.FireAddonCallback("ContentsFinderSetting", true, 1, 2, enableLevelSync ? 1 : 0)).ConfigureAwait(false);
             await Task.Delay(2000).ConfigureAwait(false);
 
             log.Debug("[MOGTOME][Engine] Step 5: Confirming duty finder settings");
-            await RunStartupActionAsync(operation, () => GameHelpers.FireAddonCallback("ContentsFinderSetting", true, 0)).ConfigureAwait(false);
+            await RunStartupActionAsync(operation, expectedHost, () => GameHelpers.FireAddonCallback("ContentsFinderSetting", true, 0)).ConfigureAwait(false);
             await Task.Delay(2000).ConfigureAwait(false);
 
             if (!IsCurrentStartup(operation)) return;

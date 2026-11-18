@@ -1360,22 +1360,38 @@ public sealed class DutyRecoveryTests
         Assert.False(run.Engine.IsRunning);
     }
 
-    [Fact]
-    public async Task QueuedStartupActionStopsWithoutDispatchWhenTheCombatHostDeparts()
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task QueuedStartupActionsStopWithoutDispatchWhenTheCombatHostDeparts(bool replaceHost, bool queueDutyFinderFirst)
     {
         var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: "GodMod");
         using var run = new Run(native);
-        Assert.True(run.Rotation.Initialize());
+        if (replaceHost) run.Config.CombatProvider = CombatProvider.Wrath;
+        Assert.True(run.Rotation.Initialize(nativeHost: native.InternalName));
         Set(run.Engine, "<CurrentState>k__BackingField", EngineState.Initializing);
         var operation = (int)Get(run.Engine, "sessionId")!;
         var snapshotType = typeof(MogtomeEngine).GetNestedType("StartupSnapshot", BindingFlags.NonPublic)!;
         var snapshot = Activator.CreateInstance(snapshotType, false, true);
-        var backend = (Task<bool>)Invoke(run.Engine, "PrepareStartupBackendAsync", operation, snapshot)!;
-        Assert.False(backend.IsCompleted);
         var dispatched = false;
-        var action = (Task)Invoke(run.Engine, "RunStartupActionAsync", operation, (Action)(() => dispatched = true))!;
+        Task QueueDutyFinderAction() => (Task)Invoke(run.Engine, "RunStartupActionAsync", operation,
+            native.InternalName, (Action)(() => dispatched = true))!;
+
+        var action = queueDutyFinderFirst ? QueueDutyFinderAction() : null;
+        var backend = (Task<bool>)Invoke(run.Engine, "PrepareStartupBackendAsync", operation, snapshot, native.InternalName)!;
+        action ??= QueueDutyFinderAction();
+        Assert.False(backend.IsCompleted);
+        Assert.False(action.IsCompleted);
 
         native.Loaded = false;
+        if (replaceHost)
+        {
+            run.ReplacementAutomationHost = new NativeBossModProvider(CombatProvider.Bmr, "Other");
+            run.GmcLoaded = true;
+            Assert.True(run.BossMod.HasUsableAutomationHost());
+            Assert.Null(Get(run.BossMod, "ownedSettings"));
+        }
         run.Pump();
         Assert.False(await backend);
         var invocation = await Assert.ThrowsAsync<TargetInvocationException>(() => action);
@@ -1384,8 +1400,10 @@ public sealed class DutyRecoveryTests
         Assert.False(run.Engine.IsRunning);
         Assert.DoesNotContain("/ads stop", run.Commands);
         Assert.DoesNotContain("/ad stop", run.Commands);
-        Assert.Contains(MOGTOME.Localization.Ui.M("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency).English,
-            run.Engine.LastStopReason);
+        var expectedReason = replaceHost
+            ? MOGTOME.Localization.Ui.M("Rotation_BossModSessionChanged")
+            : MOGTOME.Localization.Ui.M("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency);
+        Assert.Contains(expectedReason.English, run.Engine.LastStopReason);
     }
 
     [Theory]
