@@ -126,6 +126,34 @@ public sealed class KeyboundBrawlerShoppingTests
     }
 
     [Fact]
+    public void QueuedKeyboundStartRechecksProviderBeforeCutsceneSettingsOrRegistration()
+    {
+        System.Action? dispatch = null;
+        using var f = new ShopFixture(action => dispatch = action);
+        f.Settings.RunLimitEnabled = true;
+        f.Settings.RunLimit = 2;
+        f.Settings.WalletTargetEnabled = false;
+        f.Settings.ShopWhenFinished = false;
+        f.Game.Frame = f.Game.Frame with { Entry = true };
+        Assert.True(f.Plugin.BossModIPC.HasUsableAutomationHost());
+
+        f.Plugin.StartKeyboundBrawler();
+        Assert.True(f.Plugin.IsKeyboundStartQueued);
+
+        f.UnloadAutomationHost();
+        Assert.False(f.Plugin.BossModIPC.HasUsableAutomationHost());
+        Assert.IsType<System.Action>(dispatch).Invoke();
+        f.Loop.Update(Environment.TickCount64);
+
+        Assert.False(f.Plugin.IsKeyboundStartQueued);
+        Assert.False(f.Typer.IsRunning);
+        Assert.False(f.Loop.IsActive);
+        Assert.Equal("Plugin_RequiredXaPlugins", f.Typer.Status.Key);
+        Assert.Empty(f.Commands);
+        Assert.Equal(0, f.Game.Registrations);
+    }
+
+    [Fact]
     public void ShoppingSnapshotsTargetsAndEndingAtAdmissionEvenWhenTheEditorChanges()
     {
         var settings = new KeyboundBrawlerSettings
@@ -774,7 +802,7 @@ public sealed class KeyboundBrawlerShoppingTests
         internal string? VisibleAddon;
         internal static uint Wallet { set => nativeWallet = value; }
 
-        internal ShopFixture()
+        internal ShopFixture(System.Action<System.Action>? queueFrameworkAction = null)
         {
             var log = Fake<IPluginLog>();
             Service("Log", log);
@@ -790,8 +818,19 @@ public sealed class KeyboundBrawlerShoppingTests
             Service("ObjectTable", Fake<IObjectTable>((method, _) => method.Name == "get_LocalPlayer"
                 ? Fake<IPlayerCharacter>() : Default(method.ReturnType)));
             Service("Condition", Fake<ICondition>());
-            Service("Framework", Fake<IFramework>((method, _) => method.Name == "get_IsInFrameworkUpdateThread"
-                ? true : Default(method.ReturnType)));
+            Service("Framework", Fake<IFramework>((method, args) =>
+            {
+                if (method.Name == "get_IsInFrameworkUpdateThread") return queueFrameworkAction is null;
+                if (method.Name != nameof(IFramework.RunOnTick) || args?[0] is not System.Action action || queueFrameworkAction is null)
+                    return Default(method.ReturnType);
+                var completion = new TaskCompletionSource();
+                queueFrameworkAction(() =>
+                {
+                    action();
+                    completion.SetResult();
+                });
+                return completion.Task;
+            }));
             Service("CommandManager", Fake<ICommandManager>((method, args) =>
             {
                 if (method.Name != "ProcessCommand") return Default(method.ReturnType);
@@ -846,6 +885,13 @@ public sealed class KeyboundBrawlerShoppingTests
             CurrencyManager.Addresses.GetItemCount.Value = (nint)(delegate* unmanaged<CurrencyManager*, uint, uint>)&ReadWallet;
             nativeWallet = 9500;
         }
+        internal void UnloadAutomationHost()
+        {
+            var host = (IDalamudPluginInterface)typeof(BossModIPC).GetField("pluginInterface", Fields)!.GetValue(Plugin.BossModIPC)!;
+            var plugin = Assert.Single(host.InstalledPlugins);
+            plugin.GetType().GetField("Loaded")!.SetValue(plugin, false);
+        }
+
         internal void ArmFarming()
         {
             Field(Plugin, "keyboundSessionSettings", Settings);
