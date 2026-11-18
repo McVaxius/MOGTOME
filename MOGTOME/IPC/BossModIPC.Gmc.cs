@@ -116,9 +116,9 @@ public partial class BossModIPC
             if (manager is null) return false;
             if (job is null || Convert.ToUInt32(job) == 0) return false;
             var row = Convert.ToUInt32(job);
-            var preset = NativeHost == "BossModReborn" && row is (6 or 24 or 28 or 33 or 40)
-                ? "FRENRIDER - RANGED (GMC)"
-                : SelectPresetForJob(row, passive: false);
+            var isBmr = NativeHost == "BossModReborn";
+            var usesGmcHealerPreset = isBmr && row is (6 or 24 or 28 or 33 or 40);
+            var preset = usesGmcHealerPreset ? "FRENRIDER - RANGED (GMC)" : SelectPresetForJob(row, passive: false);
             object? module = null, list = null, plan = null;
             if (DutyState.IsMogtomeDutyTerritory(Plugin.ClientState.TerritoryType))
             {
@@ -188,10 +188,15 @@ public partial class BossModIPC
                 && ReferenceEquals(LiveMember(planner!, "Module"), module);
             if (usePlan && gmcPlan is null && !gmcPlanChoiceChanged)
                 gmcPlan = (list!, plan, plan);
+            if (!usePlan)
+            {
+                var comparison = isBmr && !usesGmcHealerPreset ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+                if (ReadRuntimePresetName(preset) is not { } nativeName || !preset.Equals(nativeName, comparison)) return false;
+                preset = nativeName;
+            }
             var requested = new BossModRuntimePresetState(false, usePlan ? Array.Empty<string>() : new[] { preset });
             var ownership = ownedSettings!;
-            if (ownership.Original.Runtime is not { } original || original.Names.Any(name => !IsExactRuntimePreset(name))
-                || requested.Names.Any(name => !IsExactRuntimePreset(name))) return false;
+            if (ownership.Original.Runtime is not { } original || original.Names.Any(name => !IsExactRuntimePreset(name))) return false;
             var rotation = usePlan ? null : GmcGroupRotation(manager!, preset);
             if (gmcRotationSelected && ReferenceEquals(gmcOwnedRotation, rotation) && ReferenceEquals(gmcAiPreset, rotation)
                 && MatchesGmcRuntime(before)) return true;

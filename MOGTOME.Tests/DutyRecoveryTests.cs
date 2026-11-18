@@ -297,6 +297,30 @@ public sealed class DutyRecoveryTests
     }
 
     [Fact]
+    public void GmcAutomaticBmrGroupUsesTheSpellingReturnedByNativeLookup()
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original");
+        const string savedName = "frenrider - tank";
+        var savedPreset = new NativePreset(savedName);
+        native.Presets.AllPresets.Insert(0, savedPreset);
+        native.Presets.UserPresets.Add(savedPreset);
+        using var run = new Run(native) { GmcLoaded = true, Territory = 1048 };
+
+        Assert.True(run.Rotation.Initialize());
+        Assert.True(run.Rotation.EnableRotationOncePerDuty("automatic BMR preset with saved spelling"));
+        Assert.Equal(new[] { savedName }, native.Active);
+        Assert.Equal(savedName, native.Selector);
+        Assert.Equal(savedName, native.Rotation.Preset!.Name);
+        Assert.Same(native.Rotation.Preset, native.AiPreset);
+        Assert.NotSame(savedPreset, native.Rotation.Preset);
+        Assert.True(run.Rotation.DisableRotationForDutyEnd("BMR cleanup"));
+        Assert.Equal(new[] { "Original" }, native.Active);
+        Assert.Equal("Original", native.Selector);
+        Assert.Same(savedPreset, native.Presets.UserPresets.Single());
+        Assert.DoesNotContain(native.Writes, write => write.Contains("Presets.Create") || write.Contains("Presets.Delete"));
+    }
+
+    [Fact]
     public void GmcReturnsToGroupRotationBetweenBossesAndRetainsLaterNativeChoices()
     {
         var native = new NativeBossModProvider(CombatProvider.Bmr, "Original");

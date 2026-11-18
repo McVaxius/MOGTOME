@@ -638,17 +638,20 @@ public partial class BossModIPC : IDisposable
     }
 
     private bool IsExactRuntimePreset(string name)
+        => string.Equals(ReadRuntimePresetName(name), name, StringComparison.Ordinal);
+
+    private string? ReadRuntimePresetName(string name)
     {
         try
         {
             var json = pluginInterface.GetIpcSubscriber<string, string>("BossMod.Presets.Get").InvokeFunc(name);
             if (json is null)
-                return false;
+                return null;
             using var document = JsonDocument.Parse(json);
-            return document.RootElement.TryGetProperty("Name", out var value)
-                && value.ValueKind == JsonValueKind.String && string.Equals(value.GetString(), name, StringComparison.Ordinal);
+            return document.RootElement.TryGetProperty("Name", out var value) && value.ValueKind == JsonValueKind.String
+                ? value.GetString() : null;
         }
-        catch { return false; }
+        catch { return null; }
     }
 
     private static bool IsSuitePresetName(string name)
