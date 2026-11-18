@@ -11,6 +11,7 @@ using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Party;
 using Dalamud.Plugin;
+using Dalamud.Plugin.Ipc;
 using Dalamud.Plugin.Services;
 using Lumina.Excel;
 using Lumina.Excel.Sheets;
@@ -1796,7 +1797,7 @@ public sealed class DutyRecoveryTests
         using var run = new Run(native);
         run.Config.CombatProvider = CombatProvider.Rsr;
         const string passivePreset = "passive - tank";
-        var classJob = WarriorClassJob();
+        var classJob = ClassJobRow(NativeJob.WAR);
         Assert.True(classJob.IsValid);
         Assert.Equal("WAR", classJob.Value.Abbreviation.ToString());
         run.LocalPlayer = Fake<IPlayerCharacter>((method, _) => method.Name == "get_ClassJob"
@@ -1813,6 +1814,40 @@ public sealed class DutyRecoveryTests
         Assert.Equal(0, run.RsrSettingsRequests);
         Assert.Equal("Original", Assert.Single(native.Active));
         Assert.Empty(native.Writes);
+    }
+
+    [Fact]
+    public void SageRsrDispatchesHealingSettingsAfterActivatingPassivePresetAndBeforeAuto()
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: "GodMod");
+        native.Rotation.Player.Class = NativeJob.SGE;
+        using var run = new Run(native);
+        run.Config.CombatProvider = CombatProvider.Rsr;
+        var classJob = ClassJobRow(NativeJob.SGE);
+        Assert.True(classJob.IsValid);
+        Assert.Equal("SGE", classJob.Value.Abbreviation.ToString());
+        run.LocalPlayer = Fake<IPlayerCharacter>((method, _) => method.Name == "get_ClassJob"
+            ? classJob : Default(method.ReturnType));
+
+        const string passive = "passive - ranged";
+        const string settings = "RotationSolverReborn.OtherCommand";
+        const string operatingMode = "RotationSolverReborn.ChangeOperatingMode";
+        var dispatches = new List<(string Endpoint, string? Command, string? Setting, string? Preset)>();
+        run.RsrIpcAction = (endpoint, args) => dispatches.Add(
+            (endpoint, args[0]?.ToString(), args.ElementAtOrDefault(1) as string, native.Rotation.Preset?.Name));
+
+        Assert.True(run.Rotation.Initialize());
+        Assert.True(run.Rotation.EnableRotation(), run.Rotation.LastFailureReason);
+        Assert.Equal(passive, Assert.Single(native.Active));
+        Assert.Equal(
+            new (string, string?, string?, string?)[]
+            {
+                (settings, "Settings", "AutoHeal true", passive),
+                (settings, "Settings", "HealWhenNothingTodo true", passive),
+                (operatingMode, "Auto", null, passive),
+            },
+            dispatches.Where(call => call.Endpoint == operatingMode
+                || call.Setting is "AutoHeal true" or "HealWhenNothingTodo true"));
     }
 
     [Theory]
@@ -2953,6 +2988,7 @@ public sealed class DutyRecoveryTests
         internal NativeBossModProvider? ReplacementAutomationHost;
         internal uint Territory;
         internal int RsrSettingsRequests;
+        internal Action<string, object?[]>? RsrIpcAction;
         internal IPlayerCharacter? LocalPlayer;
         internal uint[] PartyTerritories = [];
         internal string? ThrowOnCommand;
@@ -3008,8 +3044,17 @@ public sealed class DutyRecoveryTests
             var pi = Fake<IDalamudPluginInterface>((method, args) =>
             {
                 if (method.Name == "GetOrCreateData") return requests;
-                if (method.Name == "GetIpcSubscriber" && Equals(args![0], "RotationSolverReborn.OtherCommand"))
-                    RsrSettingsRequests++;
+                if (method.Name == "GetIpcSubscriber" && args![0] is string rsrEndpoint
+                    && rsrEndpoint is "RotationSolverReborn.OtherCommand" or "RotationSolverReborn.ChangeOperatingMode")
+                {
+                    if (rsrEndpoint == "RotationSolverReborn.OtherCommand") RsrSettingsRequests++;
+                    if (RsrIpcAction is { } action)
+                    {
+                        // DispatchProxy cannot emit a subscriber that uses the private RSR command enum.
+                        var subscriberType = typeof(RsrActionSubscriber<>).MakeGenericType(method.GetGenericArguments()[0]);
+                        return Activator.CreateInstance(subscriberType, rsrEndpoint, action);
+                    }
+                }
                 var currentHost = ReplacementAutomationHost ?? automationHost;
                 if (method.Name == "get_InstalledPlugins")
                 {
@@ -3957,15 +4002,31 @@ public sealed class DutyRecoveryTests
 
     private static void Set(object target, string name, object? value)
         => target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(target, value);
-    private static RowRef<ClassJob> WarriorClassJob()
+
+    private sealed class RsrActionSubscriber<TCommand>(string endpoint, Action<string, object?[]> receive)
+        : ICallGateSubscriber<TCommand, object>, ICallGateSubscriber<TCommand, string, object>
+    {
+        public bool HasAction => true;
+        public bool HasFunction => false;
+        public void InvokeAction(TCommand command) => receive(endpoint, [command]);
+        public void InvokeAction(TCommand command, string setting) => receive(endpoint, [command, setting]);
+        public object InvokeFunc(TCommand command) => throw new NotSupportedException();
+        public object InvokeFunc(TCommand command, string setting) => throw new NotSupportedException();
+        public void Subscribe(Action<TCommand> action) => throw new NotSupportedException();
+        public void Subscribe(Action<TCommand, string> action) => throw new NotSupportedException();
+        public void Unsubscribe(Action<TCommand> action) => throw new NotSupportedException();
+        public void Unsubscribe(Action<TCommand, string> action) => throw new NotSupportedException();
+    }
+
+    private static RowRef<ClassJob> ClassJobRow(NativeJob job)
     {
         const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-        const uint rowId = (uint)NativeJob.WAR;
+        var rowId = (uint)job;
         // RowRef.IsValid and Value both read the sheet. Supply one row with its
         // abbreviation string and a zero string offset at byte 4.
         var raw = (RawExcelSheet)RuntimeHelpers.GetUninitializedObject(typeof(RawExcelSheet));
         var page = (ExcelPage)Activator.CreateInstance(typeof(ExcelPage), flags, null,
-            [raw, new byte[] { (byte)'W', (byte)'A', (byte)'R', 0, 0, 0, 0, 0 }, (ushort)0], null)!;
+            [raw, System.Text.Encoding.ASCII.GetBytes(job.ToString().PadRight(8, '\0')), (ushort)0], null)!;
         var lookupType = typeof(RawExcelSheet).GetNestedType("RowOffsetLookup", BindingFlags.NonPublic)!;
         var lookups = Array.CreateInstance(lookupType, 1);
         lookups.SetValue(Activator.CreateInstance(lookupType, flags, null, [rowId, 0u, (ushort)0, (ushort)1], null), 0);
