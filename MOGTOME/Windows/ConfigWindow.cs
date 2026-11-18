@@ -175,14 +175,6 @@ public class ConfigWindow : Window, IDisposable
         var config = plugin.Configuration;
         var changed = false;
 
-        // Check dependencies periodically
-        var now = DateTime.UtcNow;
-        if ((now - lastDepCheck).TotalSeconds > 5)
-        {
-            CheckDependencies();
-            lastDepCheck = now;
-        }
-
         DrawCombatRotationSelector("ConfigHeader");
         ImGui.Separator();
         bool BeginTab(string key, ImGuiTabItemFlags flags = ImGuiTabItemFlags.None)
@@ -410,13 +402,22 @@ public class ConfigWindow : Window, IDisposable
         DrawRemainingDependencies(config);
     }
 
+    internal bool IsAutomationHostReadyForDisplay()
+    {
+        RefreshDependencies();
+        return depAutomationHost;
+    }
+
+    private void RefreshDependencies()
+    {
+        if ((DateTime.UtcNow - lastDepCheck).TotalSeconds <= 5) return;
+        CheckDependencies();
+        lastDepCheck = DateTime.UtcNow;
+    }
+
     public void DrawCombatRotationSelector(string id)
     {
-        if ((DateTime.UtcNow - lastDepCheck).TotalSeconds > 5)
-        {
-            CheckDependencies();
-            lastDepCheck = DateTime.UtcNow;
-        }
+        RefreshDependencies();
         var config = plugin.Configuration;
         ImGui.PushID(id);
         if (depGmc)

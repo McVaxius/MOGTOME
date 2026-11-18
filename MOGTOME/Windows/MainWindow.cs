@@ -57,7 +57,8 @@ public class MainWindow : Window, IDisposable
             ShowTooltip = () => UiLayout.SetTooltip(Ui.T("Main_Start") + (plugin.Engine == null
                 ? "\n" + Ui.T("Main_StatusWaitingForAccountAndEngineInitialization")
                 : plugin.IsEngineStartQueued ? "\n" + Ui.T("Chat_MOGTOMEStartAlreadyQueued")
-                : plugin.Engine.IsRunning ? "\n" + Ui.T("Main_Running") + "\n" + plugin.Engine.Status.Render() : string.Empty)),
+                : plugin.Engine.IsRunning ? "\n" + Ui.T("Main_Running") + "\n" + plugin.Engine.Status.Render()
+                : AutomationHostStartBlocker is { } blocker ? "\n" + blocker : string.Empty)),
         });
         TitleBarButtons.Add(new()
         {
@@ -127,6 +128,11 @@ public class MainWindow : Window, IDisposable
         materialBackdropStylePushed = false;
     }
 
+    private string? AutomationHostStartBlocker
+        => plugin.Engine is { IsRunning: false } && !plugin.ConfigWindow.IsAutomationHostReadyForDisplay()
+            ? Ui.T("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency)
+            : null;
+
     private void StartFromMain()
     {
         if (plugin.Engine is { IsRunning: false } && !plugin.IsEngineStartQueued)
@@ -148,6 +154,7 @@ public class MainWindow : Window, IDisposable
         if (AethertekUI.MaterialTheme.Current.IsLcars) AethertekUI.MaterialLcars.Header(string.Empty);
         var config = plugin.Configuration;
         var engine = plugin.Engine;
+        var startBlocker = AutomationHostStartBlocker;
         var scale = ImGuiHelpers.GlobalScale;
         plugin.ConsumableInventoryService.Refresh();
         DrawHeader();
@@ -196,6 +203,8 @@ public class MainWindow : Window, IDisposable
             var status = engine == null ? Ui.T("Main_StatusWaitingForAccountAndEngineInitialization") : engine.Status.Render();
             if (MogtomePresentation.Compact) UiLayout.SameLineIfFits(AethertekUI.MaterialText.Measure(status).X);
             UiLayout.Wrapped(status);
+            if (startBlocker is not null && !status.Contains(startBlocker, StringComparison.Ordinal))
+                UiLayout.Wrapped(startBlocker);
             ImGui.EndGroup();
             ImGui.EndGroup();
             if (width >= 480 * scale)
