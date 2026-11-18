@@ -1,16 +1,10 @@
-Unreleased
+2026-11-18 - 4.2.0.21 - Follower combat and duty transitions
 
-- Require GodMod or God Mod Companion with a ready BossModReborn host for automation.
-- Show the combat host requirement in the main window before starting when no host is ready.
-- Stop pending duty setup when the combat host becomes unavailable, and show the dependency or stop reason in DAD status.
-- Keep combat ready for the next duty when native follow clears during a duty transition.
-- Let followers attack eligible enemies once their party engages, while the duty backend still controls navigation before local combat.
-- Select combat presets and boss plans supplied by the active provider. GodMod supports automatic encounter plans. Each mode checks the preset it uses. Explicit BossModReborn and GodMod preset choices retain their exact names.
-- Keep the saved manual preset name when its definition is unavailable.
-- Use GMC's healer preset for automatic healing on BossModReborn, preserving saved presets.
-- Keep GodMod AI attached to MOGTOME's combat preset when combat starts or switches between a group preset and an encounter plan.
-- Apply RSR healing settings after combat preset preparation succeeds. Stop an active run if it loses its combat host, including when another usable host appears. An explicit restart can use the replacement once the old host finishes unloading.
-- Reject a new DAD start while MOGTOME finishes cleaning up the previous startup.
+- **Fixed follower combat:** Start attacking eligible enemies when the party engages. The duty backend keeps control of movement until the follower enters combat.
+- **Fixed duty transitions:** Preserve the selected combat provider through normal duty cleanup so combat can start in the next duty.
+- **Updated combat provider support:** Use either GodMod alone or God Mod Companion with a ready BossModReborn. MOGTOME selects existing presets and plans supplied by the provider. On GodMod 7.5.8.4, use an existing exact manual preset or a matching bound plan until the suite defaults are available.
+- **Fixed startup and status:** Show the provider requirement before starting. If the provider becomes unavailable, cancel queued startup actions and report the actual stop reason to DAD.
+- **Fixed rotation settings:** Keep saved manual preset names when their definitions are unavailable and apply external RSR healing settings after combat preset preparation succeeds.
 
 2026-11-17 - 4.2.0.20 - Beastmaster combat startup
 
