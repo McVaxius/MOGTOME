@@ -471,27 +471,16 @@ public class ConfigWindow : Window, IDisposable
             if (manualPreset)
             {
                 UiLayout.Wrapped(Ui.T("Config_PresetName"));
-                DrawManualPresetDropdown(config, startupPending);
-                if (string.IsNullOrWhiteSpace(config.ManualBossModPresetName))
-                    UiLayout.Wrapped(Ui.T("Config_EnterAnExistingPresetNameBeforeStarting"));
+                DrawManualPresetDropdown(config);
             }
             ImGui.EndDisabled();
         }
         ImGui.PopID();
     }
 
-    private void DrawManualPresetDropdown(Configuration config, bool startupPending)
+    private void DrawManualPresetDropdown(Configuration config)
     {
         var catalog = plugin.BossModIPC.ReadPresetCatalog(config.CombatProvider);
-        var replacement = BossModIPC.ResolvePresetSelection(config.ManualBossModPresetName, catalog);
-        if (!startupPending && !plugin.BossModIPC.IsPluginLoaded("GodMod")
-            && replacement != config.ManualBossModPresetName)
-        {
-            config.ManualBossModPresetName = replacement;
-            plugin.ConfigManager.SaveCurrentAccount();
-            plugin.ConfigManager.NotifyConfigurationChanged();
-        }
-
         ImGui.BeginDisabled(!catalog.Readable || catalog.DisplayedNames.Count == 0);
         var name = config.ManualBossModPresetName;
         using var lineHeight = AethertekUI.MaterialText.PushLineHeight(name);
@@ -546,6 +535,11 @@ public class ConfigWindow : Window, IDisposable
             UiLayout.Wrapped(Ui.T("Config_BossModCatalogUnavailable"));
         else if (catalog.DisplayedNames.Count == 0)
             UiLayout.Wrapped(Ui.T("Config_BossModCatalogEmpty"));
+        var savedName = config.ManualBossModPresetName;
+        if (string.IsNullOrWhiteSpace(savedName)
+            || catalog.Readable && catalog.DisplayedNames.Count > 0
+                && !catalog.DefinitionNames.Contains(savedName, StringComparer.Ordinal))
+            UiLayout.Wrapped(Ui.T("Config_EnterAnExistingPresetNameBeforeStarting"));
     }
 
     private void DrawRemainingDependencies(Configuration config)

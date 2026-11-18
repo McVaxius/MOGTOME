@@ -303,14 +303,6 @@ public partial class BossModIPC : IDisposable
             definitions, nativeNames, string.Empty);
     }
 
-    internal static string ResolvePresetSelection(string saved, BossModPresetCatalog catalog)
-    {
-        if (string.IsNullOrWhiteSpace(saved) || !catalog.Readable || catalog.DisplayedNames.Count == 0
-            || catalog.DefinitionNames.Any(name => string.Equals(name, saved, StringComparison.CurrentCultureIgnoreCase)))
-            return saved;
-        return catalog.DisplayedNames[0];
-    }
-
     internal static string GetBossModProvider(string rotationProvider)
         => string.Equals(rotationProvider, "VBM", StringComparison.OrdinalIgnoreCase) ? "VBM" : "BMR";
 

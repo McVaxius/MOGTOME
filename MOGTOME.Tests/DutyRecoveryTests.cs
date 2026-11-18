@@ -171,6 +171,38 @@ public sealed class DutyRecoveryTests
     }
 
     [Fact]
+    public void GmcMissingManualPresetKeepsTheSavedNameUntilItReturns()
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original");
+        using var run = new Run(native) { GmcLoaded = true, Territory = 1044 };
+        const string savedName = "Preset from another host##literal";
+        run.Config.UseManualBossModPreset = true;
+        run.Config.ManualBossModPresetName = savedName;
+        var notifications = 0;
+        run.Manager.ConfigurationChanged += _ => notifications++;
+
+        Assert.True(run.Rotation.Initialize());
+        Assert.True(run.Rotation.UsesNativeAutorotation);
+        Assert.False(run.Rotation.ValidateManualPresetSelection(run.Config));
+        Assert.False(run.Rotation.EnableRotation());
+        Assert.Equal(savedName, run.Config.ManualBossModPresetName);
+        Assert.Equal("Original", Assert.Single(native.Active));
+        Assert.Empty(native.Writes);
+
+        var restored = new NativePreset(savedName);
+        native.Presets.AllPresets.Add(restored);
+        native.Presets.UserPresets.Add(restored);
+        Assert.True(run.Rotation.Initialize());
+        Assert.True(run.Rotation.ValidateManualPresetSelection(run.Config));
+        Assert.True(run.Rotation.EnableRotation());
+        Assert.Same(restored, native.Rotation.Preset);
+        Assert.Same(restored, native.AiPreset);
+        Assert.Equal(savedName, run.Config.ManualBossModPresetName);
+        Assert.Equal(0, native.AccountSaveAttempts);
+        Assert.Equal(0, notifications);
+    }
+
+    [Fact]
     public void GmcUsesLiveManualPresetChangesAndPreservesTheNativePlanSelection()
     {
         var native = new NativeBossModProvider(CombatProvider.Bmr, "Original");
@@ -1558,38 +1590,31 @@ public sealed class DutyRecoveryTests
         var expected = new[] { "null", "Literal##name###suffix", "none", "Next" };
         Assert.Equal(provider == CombatProvider.Vbm ? expected : expected.Append("VBM Multibox"), catalog.DisplayedNames);
         Assert.Contains("Hidden original", catalog.DefinitionNames);
-        Assert.Equal("Hidden original", BossModIPC.ResolvePresetSelection("Hidden original", catalog));
-        Assert.Equal("null", BossModIPC.ResolvePresetSelection("Deleted", catalog));
-        Assert.Equal("", BossModIPC.ResolvePresetSelection("", catalog));
-        Assert.Equal("none", BossModIPC.ResolvePresetSelection("none", catalog));
         Assert.Empty(native.Writes);
     }
 
     [Fact]
-    public void BossModCatalogRetainsUnavailableEmptyHiddenAndDuplicateSelections()
+    public void BossModCatalogPreservesDefinitionsAndFiltersAmbiguousDisplayedNames()
     {
-        var unavailable = BossModPresetCatalog.Unavailable("BMR", "unavailable");
         var empty = BossModIPC.ReadPresetCatalog("VBM", Array.Empty<NativePreset>(), Array.Empty<NativePreset>(), Array.Empty<NativePreset>());
-        Assert.Equal("Saved", BossModIPC.ResolvePresetSelection("Saved", unavailable));
-        Assert.Equal("Saved", BossModIPC.ResolvePresetSelection("Saved", empty));
+        Assert.True(empty.Readable);
+        Assert.Empty(empty.DisplayedNames);
         var definitions = new[] { new NativePreset("First"), new NativePreset("first"), new NativePreset(" First "), new NativePreset("Hidden", true) };
         var catalog = BossModIPC.ReadPresetCatalog("BMR", definitions.Take(3), definitions, Array.Empty<NativePreset>());
         Assert.Equal(new[] { "First" }, catalog.DisplayedNames);
-        Assert.Equal("Hidden", BossModIPC.ResolvePresetSelection("Hidden", catalog));
-        Assert.Equal("first", BossModIPC.ResolvePresetSelection("first", catalog));
-        Assert.Equal("First", BossModIPC.ResolvePresetSelection("Deleted", catalog));
+        Assert.Equal(definitions.Select(preset => preset.Name), catalog.DefinitionNames);
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void BossModUnavailableOrAmbiguousProviderNeverSuppliesAReplacement(bool ambiguous)
+    public void BossModUnavailableOrAmbiguousProviderCannotStartOwnedSettings(bool ambiguous)
     {
         var native = new NativeBossModProvider(CombatProvider.Bmr, "Original") { Ambiguous = ambiguous, Loaded = ambiguous };
         using var service = native.CreateService();
         var catalog = service.ReadPresetCatalog(CombatProvider.Bmr);
         Assert.False(catalog.Readable);
-        Assert.Equal("Deleted", BossModIPC.ResolvePresetSelection("Deleted", catalog));
+        Assert.Empty(catalog.DisplayedNames);
         Assert.False(service.BeginOwnedBossModSettings(CombatProvider.Bmr, "account", "character", new Configuration()));
         Assert.Empty(native.Writes);
     }
@@ -2144,7 +2169,6 @@ public sealed class DutyRecoveryTests
     {
         var native = new NativeBossModProvider(provider, "Original");
         using var service = native.CreateService();
-        Assert.Equal("next", BossModIPC.ResolvePresetSelection("next", service.ReadPresetCatalog(provider)));
         Assert.True(service.BeginOwnedBossModSettings(provider, "account", "character", new Configuration()));
         Assert.False(service.ApplyOwnedBossModPreset("next"));
         Assert.Equal(new[] { "Original" }, native.Active);
@@ -2850,7 +2874,7 @@ public sealed class DutyRecoveryTests
     }
 
     [Fact]
-    public void BossModManualDeletionSavesAndNotifiesOnlyTheConsumedSetting()
+    public void BossModMissingManualPresetIsRejectedWithoutSavingAndIgnoredByExternalModes()
     {
         var native = new NativeBossModProvider(CombatProvider.Vbm, "Original");
         using var run = new Run(native);
@@ -2858,18 +2882,15 @@ public sealed class DutyRecoveryTests
         run.Manager.ConfigurationChanged += _ => notifications++;
         run.Config.UseManualBossModPreset = true;
         run.Config.ManualBossModPresetName = "Deleted";
-        Assert.True(run.Rotation.ValidateManualPresetSelection(run.Config));
-        Assert.Equal("Original", run.Config.ManualBossModPresetName);
-        Assert.Equal(1, notifications);
-        Assert.Equal(1, native.AccountSaveAttempts);
-        run.Config.ManualBossModPresetName = "Deleted";
+        Assert.False(run.Rotation.ValidateManualPresetSelection(run.Config));
         run.Config.CombatProvider = CombatProvider.Wrath;
         Assert.True(run.Rotation.ValidateManualPresetSelection(run.Config));
         run.Config.CombatProvider = CombatProvider.Rsr;
         Assert.True(run.Rotation.ValidateManualPresetSelection(run.Config));
         Assert.Equal("Deleted", run.Config.ManualBossModPresetName);
-        Assert.Equal(1, notifications);
-        Assert.Equal(1, native.AccountSaveAttempts);
+        Assert.Equal(0, notifications);
+        Assert.Equal(0, native.AccountSaveAttempts);
+        Assert.Empty(native.Writes);
     }
 
     [Fact]

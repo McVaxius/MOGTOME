@@ -124,23 +124,9 @@ public class RotationService : IDisposable
             && settings is { Manual: true } manual ? manual.Name : null;
 
     internal bool ValidateManualPresetSelection(Configuration config)
-    {
-        if (config.CombatProvider is not (CombatProvider.Bmr or CombatProvider.Vbm) || !config.UseManualBossModPreset)
-            return true;
-        if (bossModIPC.NativeHost == "GodMod")
-            return !string.IsNullOrWhiteSpace(config.ManualBossModPresetName)
-                && bossModIPC.IsExactRuntimePreset(config.ManualBossModPresetName);
-        var catalog = bossModIPC.ReadPresetCatalog(config.CombatProvider);
-        var replacement = BossModIPC.ResolvePresetSelection(config.ManualBossModPresetName, catalog);
-        if (replacement != config.ManualBossModPresetName)
-        {
-            config.ManualBossModPresetName = replacement;
-            configManager.SaveCurrentAccount();
-            configManager.NotifyConfigurationChanged();
-        }
-        return catalog.Readable && !string.IsNullOrWhiteSpace(config.ManualBossModPresetName)
-            && catalog.DefinitionNames.Any(name => string.Equals(name, config.ManualBossModPresetName, StringComparison.CurrentCultureIgnoreCase));
-    }
+        => config.CombatProvider is not (CombatProvider.Bmr or CombatProvider.Vbm) || !config.UseManualBossModPreset
+            || (!string.IsNullOrWhiteSpace(config.ManualBossModPresetName)
+                && bossModIPC.IsExactRuntimePreset(config.ManualBossModPresetName));
 
     internal bool ApplyPendingCombatSettings()
     {
