@@ -171,12 +171,23 @@ public partial class BossModIPC : IDisposable
     internal bool BeginOwnedBossModSettings(CombatProvider provider, string account, string character, Configuration config)
         => PrepareOwnedBossModSettings(provider == CombatProvider.Vbm ? "VBM" : "BMR", account, character, config);
 
-    internal bool RetireDepartedOwnedBossModSettings()
+    internal bool RetireDepartedOwnedBossModSettings(string? replacementHost, out bool previousHostUnloaded)
     {
-        if (ownedSettings is null || !TryGetLiveBossMod(ownedIdentity.Provider, out var live, out _, out _)
-            || ownedProvider!.TryGetTarget(out var captured) && ReferenceEquals(captured, live))
-            return false;
-        LastStatus = "BossMod provider reloaded; the departed session cannot be restored into its replacement.";
+        previousHostUnloaded = false;
+        if (ownedSettings is null) return false;
+        if (TryGetLiveBossMod(ownedIdentity.Provider, out var live, out _, out _))
+        {
+            if (ownedProvider!.TryGetTarget(out var captured) && ReferenceEquals(captured, live)) return false;
+        }
+        else
+        {
+            if (!HasConfirmedBossModReplacement(replacementHost)) return false;
+            previousHostUnloaded = true;
+        }
+
+        LastStatus = previousHostUnloaded
+            ? "The previous BossMod provider unloaded; the departed session cannot be restored into its replacement."
+            : "BossMod provider reloaded; the departed session cannot be restored into its replacement.";
         log.Warning($"[MOGTOME] Owned BossMod settings cleanup was incomplete: {LastStatus}");
         ownedSettings = null;
         ownedProvider = null;
@@ -192,6 +203,23 @@ public partial class BossModIPC : IDisposable
         cleanupStarted = cleanupFailed = false;
         cleanupRuntimeExpected = cleanupRuntimeTarget = null;
         return true;
+    }
+
+    private bool HasConfirmedBossModReplacement(string? replacementHost)
+    {
+        if (ownedNativeHost is not { } oldHost || replacementHost is null || replacementHost == oldHost) return false;
+        try
+        {
+            var hosts = pluginInterface.InstalledPlugins.Where(plugin => IsBossModHost(plugin.InternalName)).ToArray();
+            var previous = hosts.Where(plugin => plugin.InternalName == oldHost).ToArray();
+            var loaded = hosts.Where(plugin => plugin.IsLoaded).ToArray();
+            if (previous.Length != 1 || loaded.Length != 1 || loaded[0].InternalName != replacementHost) return false;
+            // IsLoaded is false during disposal as well. Only the terminal state
+            // proves the old provider can no longer finish its own cleanup.
+            var state = LiveMember(previous[0], "State") ?? LiveMember(FindDalamudPlugin(oldHost, out _), "State");
+            return state?.ToString() == "Unloaded" && HasUsableAutomationHost();
+        }
+        catch { return false; }
     }
 
     internal bool IsOwnedProviderCurrent => ownedSettings is null || TryReadOwnedBossModSettings(out _, allowCleanup: true);

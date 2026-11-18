@@ -436,7 +436,6 @@ public class MogtomeEngine
                     StopWithCombatFailureMessage(Ui.M("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency));
                     return new StartupPreparationResult(EnteredRepairMode: false);
                 }
-                rotationService.RestoreRsrHealingForStart();
                 if (!rotationService.UsesNativeAutorotation && rotationService.SupportsBmrObstacleMaps)
                     commandManager.ProcessCommand(
                         config.ObstacleMapsOn
@@ -773,6 +772,11 @@ public class MogtomeEngine
         if (CurrentState != EngineState.Initializing && !rotationService.HasUsableAutomationHost())
         {
             StopWithReason(Ui.M("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency));
+            return;
+        }
+        if (CurrentState != EngineState.Initializing && rotationService.OwnedCombatProviderDeparted)
+        {
+            StopWithReason(Ui.M("Rotation_BossModSessionChanged"));
             return;
         }
 

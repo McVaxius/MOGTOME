@@ -16,6 +16,7 @@ public class RotationService : IDisposable
     private bool rotationEnableSentForDuty;
     private bool rotationDisableSentForDuty;
     private bool deathRearmPending;
+    private bool rsrHealingRestored;
     private readonly HashSet<CombatProvider> enabledComponents = [];
     private CombatProvider? preparedBossMod;
     private Configuration? preparedConfig;
@@ -56,6 +57,7 @@ public class RotationService : IDisposable
     internal bool IsVbmActivationDeferred => preparedBossMod == CombatProvider.Vbm && bossModIPC.IsVbmInteractionPauseActive;
     internal bool IsCombatActivationDeferred => IsVbmActivationDeferred || bossModIPC.IsOwnedCombatReturnPlayerMissing;
     internal bool UsesNativeAutorotation => gmcSession;
+    internal bool OwnedCombatProviderDeparted { get; private set; }
     internal bool HasUsableAutomationHost(bool allowHostCleanup = false) => bossModIPC.HasUsableAutomationHost(allowHostCleanup);
     internal bool SupportsBmrObstacleMaps => bossModIPC.SupportsBmrObstacleMaps;
 
@@ -73,9 +75,13 @@ public class RotationService : IDisposable
     internal void ObserveSessionDeparture()
     {
         if (preparedConfig is null) return;
-        if (!MatchesPreparedSession(configManager.GetActiveConfig()) || !bossModIPC.IsOwnedProviderCurrent
-            || gmcSession && !bossModIPC.IsNativeAutorotationAvailable)
+        var sessionMatches = MatchesPreparedSession(configManager.GetActiveConfig());
+        var providerDeparted = sessionMatches && (!bossModIPC.IsOwnedProviderCurrent
+            || gmcSession && !bossModIPC.IsNativeAutorotationAvailable);
+        if (!sessionMatches || providerDeparted)
         {
+            OwnedCombatProviderDeparted = providerDeparted && preparedBossMod is not null
+                && (rotationEnableSentForDuty || deathRearmPending) && !rotationDisableSentForDuty;
             DisableRotationForDutyEnd("account, character, provider or profile departure");
             preparedConfig = null;
             sessionEnded = true;
@@ -184,18 +190,20 @@ public class RotationService : IDisposable
     {
         if (!DisableEnabledComponents())
         {
-            if (bossModIPC.RetireDepartedOwnedBossModSettings())
-            {
-                preparedConfig = null;
-                sessionEnded = true;
-                rotationDisableSentForDuty = true;
-            }
-            return Fail(Ui.M("Rotation_CouldNotDisableCombatComponentsFromThe"));
+            if (!bossModIPC.RetireDepartedOwnedBossModSettings(nativeHost, out var previousHostUnloaded))
+                return Fail(Ui.M("Rotation_CouldNotDisableCombatComponentsFromThe"));
+            preparedConfig = null;
+            sessionEnded = true;
+            rotationDisableSentForDuty = true;
+            if (!previousHostUnloaded || enabledComponents.Count != 0)
+                return Fail(Ui.M("Rotation_CouldNotDisableCombatComponentsFromThe"));
         }
         ResetDutyRotationState("engine start");
         preparedBossMod = null;
         preparedConfig = null;
         sessionEnded = false;
+        OwnedCombatProviderDeparted = false;
+        rsrHealingRestored = false;
         appliedPresetSettings = null;
         settingsPending = false;
 
@@ -226,11 +234,6 @@ public class RotationService : IDisposable
         Failure = string.Empty;
         log.Information($"[MOGTOME][Rotation] Initialized selected combat provider: {provider}; NativeAutorotation={gmcSession}");
         return true;
-    }
-
-    internal void RestoreRsrHealingForStart()
-    {
-        if (!UsesNativeAutorotation) bossModIPC.RestoreRsrHealing();
     }
 
     public bool ForceRotation()
@@ -513,6 +516,11 @@ public class RotationService : IDisposable
         }
 
         if (rotationDisableSentForDuty) return false;
+        if (!rsrHealingRestored)
+        {
+            rsrHealingRestored = true;
+            bossModIPC.RestoreRsrHealing();
+        }
 
         if (provider == CombatProvider.Rsr && !EnableRsr())
             return Fail(Ui.M("Rotation_RSRAutoIPCAndRotationAutoBoth"));
