@@ -1,4 +1,4 @@
-## Unreleased
+2026-11-18 - 4.2.0.24 - Queued ADS repair
 
 - **Fixed queued ADS repair** so MOGTOME checks the combat provider and duty state just before dispatch and clears requests it cannot start.
 
