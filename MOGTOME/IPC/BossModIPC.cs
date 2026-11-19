@@ -223,6 +223,9 @@ public partial class BossModIPC : IDisposable
     }
 
     internal bool IsOwnedProviderCurrent => ownedSettings is null || TryReadOwnedBossModSettings(out _, allowCleanup: true);
+
+    internal bool RetainedProviderDeparted
+        => ownedSettings is null && selectedProvider is not null && !TryGetLiveBossMod("BMR", out _, out _, out _);
     internal bool BeginOwnedBossModCleanup() => BeginOwnedBossModCleanup(ownedIdentity.Account, ownedIdentity.Character);
     internal void SetAdsDutyIpcService(AdsDutyIpcService service) => adsDutyIpcService = service;
     internal bool IsVbmInteractionPauseActive => adsDutyIpcService?.RefreshInteractionVbmPause() == true;

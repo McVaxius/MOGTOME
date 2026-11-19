@@ -2112,6 +2112,7 @@ public sealed class DutyRecoveryTests
     [InlineData("GodMod", false)]
     [InlineData("BossModReborn", false)]
     [InlineData("GodMod", true)]
+    [InlineData("BossModReborn", true)]
     public void FollowerStartupRetriesMissingNativePlayerOnlyOnTheSelectedInstance(string host, bool replaceBeforeRetry)
     {
         var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: host);
@@ -2144,24 +2145,29 @@ public sealed class DutyRecoveryTests
             native.Reload();
         native.Writes.Clear();
 
+        // Run the engine's provider guard while duty startup is still in backoff.
+        run.Enter(30);
+        Set(run.Engine, "lastTick", DateTime.UtcNow);
+        Assert.True(run.BossMod.HasUsableAutomationHost());
+        run.Engine.Update();
+        Assert.Equal(!replaceBeforeRetry, run.Engine.IsRunning);
+        if (replaceBeforeRetry)
+        {
+            Assert.Equal("/ads stop", Assert.Single(native.Writes));
+            Assert.Contains(MOGTOME.Localization.Ui.M("Rotation_BossModSessionChanged").English, run.Engine.LastStopReason);
+            Assert.Equal("Original", Assert.Single(native.Active));
+            Assert.False(native.AiEnabled);
+            return;
+        }
+
+        Assert.Empty(native.Writes);
         var retryAt = firstAttempt + AdsIntegrationPolicy.HandoffConfirmationTimeout;
         Assert.Equal(DutyStartupResult.Pending, startup.Update(true, (1044, 16), Ready, retryAt.AddSeconds(-3)));
         Assert.Empty(native.Writes);
-
-        Assert.Equal(replaceBeforeRetry ? DutyStartupResult.Pending : DutyStartupResult.Confirmed,
-            startup.Update(true, (1044, 16), Ready, retryAt));
-        if (replaceBeforeRetry)
-        {
-            Assert.Empty(native.Writes);
-            Assert.Equal("Original", Assert.Single(native.Active));
-            Assert.False(native.AiEnabled);
-        }
-        else
-        {
-            Assert.True(native.AiEnabled);
-            Assert.True(native.ForbidMovement);
-            Assert.Equal("FRENRIDER - RANGED", Assert.Single(native.Active));
-        }
+        Assert.Equal(DutyStartupResult.Confirmed, startup.Update(true, (1044, 16), Ready, retryAt));
+        Assert.True(native.AiEnabled);
+        Assert.True(native.ForbidMovement);
+        Assert.Equal("FRENRIDER - RANGED", Assert.Single(native.Active));
     }
 
     [Fact]

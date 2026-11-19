@@ -1,3 +1,7 @@
+Unreleased
+
+- **Fixed combat provider replacement** so MOGTOME stops if its selected provider changes during startup retry or between duties.
+
 2026-11-19 - 4.2.0.27 - Combat startup retry
 
 - **Fixed combat startup retry** so rotation can start once the selected provider sees the player after loading.

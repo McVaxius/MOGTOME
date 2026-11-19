@@ -788,7 +788,7 @@ public class MogtomeEngine
     {
         if (!rotationService.HasUsableAutomationHost())
             StopWithReason(Ui.M("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency));
-        else if (rotationService.OwnedCombatProviderDeparted)
+        else if (rotationService.OwnedCombatProviderDeparted || rotationService.RetainedCombatProviderDeparted)
             StopWithReason(Ui.M("Rotation_BossModSessionChanged"));
         else
             return true;
