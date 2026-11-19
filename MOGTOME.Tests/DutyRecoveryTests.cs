@@ -2108,6 +2108,62 @@ public sealed class DutyRecoveryTests
         Assert.Equal("Plugin_RequiredXaPlugins", run.Engine.StopReason?.Key);
     }
 
+    [Theory]
+    [InlineData("GodMod", false)]
+    [InlineData("BossModReborn", false)]
+    [InlineData("GodMod", true)]
+    public void FollowerStartupRetriesMissingNativePlayerOnlyOnTheSelectedInstance(string host, bool replaceBeforeRetry)
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: host);
+        using var run = new Run(native) { GmcLoaded = host == "BossModReborn", Territory = 1044 };
+        run.State.IsPartyLeader = false;
+        var player = native.Rotation.Player;
+        player.Class = NativeJob.MCH;
+        player.InCombat = false;
+        var teammate = native.World.Party[1]!;
+        native.World.Party.Members = [player, teammate];
+        native.Rotation.WorldState = native.World;
+        teammate.InCombat = true;
+        native.Rotation.Hints.PotentialTargets.Add(new NativeEnemy(new NativeActor { InCombat = true }, 0));
+
+        Assert.True(run.Rotation.Initialize());
+        var (startup, _) = run.BindAdsStartup(() => false);
+        var now = new DateTime(2026, 11, 19, 12, 0, 0, DateTimeKind.Utc);
+        Assert.Equal(DutyStartupResult.Pending, startup.Update(true, (1044, 16), Ready, now));
+        native.Rotation.Player = null!;
+        var firstAttempt = now.AddSeconds(2);
+        Assert.Equal(DutyStartupResult.Pending, startup.Update(true, (1044, 16), Ready, firstAttempt));
+        Assert.False(startup.CombatActivated);
+        Assert.True(startup.BackendConfirmed);
+        Assert.Equal(host, run.BossMod.NativeHost);
+        Assert.Equal("Original", Assert.Single(native.Active));
+        Assert.False(native.AiEnabled);
+
+        native.Rotation.Player = player;
+        if (replaceBeforeRetry)
+            native.Reload();
+        native.Writes.Clear();
+
+        var retryAt = firstAttempt + AdsIntegrationPolicy.HandoffConfirmationTimeout;
+        Assert.Equal(DutyStartupResult.Pending, startup.Update(true, (1044, 16), Ready, retryAt.AddSeconds(-3)));
+        Assert.Empty(native.Writes);
+
+        Assert.Equal(replaceBeforeRetry ? DutyStartupResult.Pending : DutyStartupResult.Confirmed,
+            startup.Update(true, (1044, 16), Ready, retryAt));
+        if (replaceBeforeRetry)
+        {
+            Assert.Empty(native.Writes);
+            Assert.Equal("Original", Assert.Single(native.Active));
+            Assert.False(native.AiEnabled);
+        }
+        else
+        {
+            Assert.True(native.AiEnabled);
+            Assert.True(native.ForbidMovement);
+            Assert.Equal("FRENRIDER - RANGED", Assert.Single(native.Active));
+        }
+    }
+
     [Fact]
     public void GmcDutyExitAllowsNativeFollowToClearBeforeNextDutyActivation()
     {

@@ -323,14 +323,14 @@ public class RotationService : IDisposable
                     return false;
                 }
                 if (recoveringDeath) DisableRotationForDutyEnd("death recovery ownership or native state changed");
-                else DisableEnabledComponents();
+                else CleanupFailedInitialCombatActivation();
                 return false;
             }
         }
         catch (Exception ex)
         {
             if (recoveringDeath) DisableRotationForDutyEnd("death recovery activation failed");
-            else DisableEnabledComponents();
+            else CleanupFailedInitialCombatActivation();
             return Fail(Ui.M("Rotation_CombatActivationFailed", ex.Message));
         }
         rotationEnableSentForDuty = true;
@@ -424,6 +424,14 @@ public class RotationService : IDisposable
 
         ReassertRsrCombat("periodic duty recovery");
         rsrRecoveryCommandSuppressedUntilUtc = now + RsrRecoveryCommandSuppression;
+    }
+
+    private void CleanupFailedInitialCombatActivation()
+    {
+        // The existing duty startup retry may reacquire settings only from the same native instance.
+        var keepSelectedHost = gmcSession && bossModIPC.IsOwnedProviderCurrent
+            && !rotationDisableSentForDuty && !sessionEnded && MatchesPreparedSession(configManager.GetActiveConfig());
+        DisableEnabledComponents(keepSelectedHost: keepSelectedHost);
     }
 
     private bool DisableEnabledComponents(bool restoreAi = true, bool keepSelectedHost = false)

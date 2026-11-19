@@ -1,3 +1,7 @@
+2026-11-19 - 4.2.0.27 - Combat startup retry
+
+- **Fixed combat startup retry** so rotation can start once the selected provider sees the player after loading.
+
 2026-11-19 - 4.2.0.26 - GodMod manual presets in duty
 
 - **Fixed GodMod follower movement:** Keep manual movement presets idle during duty travel and activate the exact saved preset when the party engages or the player enters combat.
