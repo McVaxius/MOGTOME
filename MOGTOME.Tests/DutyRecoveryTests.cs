@@ -1942,6 +1942,66 @@ public sealed class DutyRecoveryTests
         => Assert.Equal(expected, BossModIPC.SelectAutomationHost(available.Split(','), gmc));
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task StartupRestoresSelectedHostAfterAcceptedDisable(bool stopDuringUnload)
+    {
+        var selected = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: "GodMod") { LoadState = "Loaded" };
+        var competing = new NativeBossModProvider(CombatProvider.Bmr, "Other") { LoadState = "Loaded" };
+        using var run = new Run(selected) { ReplacementAutomationHost = competing, GmcLoaded = true };
+        var starting = true;
+        var commands = Fake<ICommandManager>((method, args) =>
+        {
+            if (method.Name != "ProcessCommand") return Default(method.ReturnType);
+            var command = (string)args![0]!;
+            run.Commands.Add(command);
+            switch (command)
+            {
+                case "/xldisableplugintemp BossModReborn":
+                    competing.Loaded = false;
+                    competing.LoadState = "Unloaded";
+                    break;
+                case "/xldisableplugintemp GodMod":
+                    selected.Loaded = false;
+                    selected.LoadState = "Unloading";
+                    starting = !stopDuringUnload;
+                    break;
+                case "/xlenableplugintemp GodMod":
+                    Assert.Equal("Unloaded", selected.LoadState);
+                    selected.Loaded = true;
+                    selected.LoadState = "Loaded";
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unexpected command: {command}");
+            }
+            return true;
+        });
+        var conflicts = new ConflictPluginService(selected.Log, commands, name =>
+        {
+            if (name != "GodMod") return competing.LoadState;
+            var observed = selected.LoadState;
+            if (observed == "Unloading") selected.LoadState = "Unloaded";
+            return observed;
+        });
+
+        var cleanup = conflicts.EnsureBossModReadyAsync(() => starting);
+        var deadline = DateTime.UtcNow.AddSeconds(5);
+        while (!cleanup.IsCompleted && DateTime.UtcNow < deadline)
+        {
+            run.Pump();
+            await Task.Delay(10);
+        }
+        Assert.True(cleanup.IsCompleted);
+        var result = await cleanup;
+
+        Assert.Equal(!stopDuringUnload, result.Ready);
+        Assert.Equal("GodMod", result.NativeHost);
+        Assert.Equal(new[] { "/xldisableplugintemp BossModReborn", "/xldisableplugintemp GodMod", "/xlenableplugintemp GodMod" }, run.Commands);
+        Assert.True(selected.Loaded);
+        Assert.False(competing.Loaded);
+    }
+
+    [Theory]
     [InlineData("GodMod", false, false, true, true)]
     [InlineData("GodMod", true, false, true, true)]
     [InlineData("GodMod", false, false, false, false)]

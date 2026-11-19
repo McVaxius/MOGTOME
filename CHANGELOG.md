@@ -1,3 +1,7 @@
+Unreleased - Combat host cleanup
+
+- **Fixed combat host cleanup.** Stopping startup still restores the selected host if MOGTOME temporarily disabled it.
+
 2026-11-19 - 4.2.0.29 - Poetics shopping
 
 - **Fixed Poetics delivery** so AutoRetainer starts only when this shopping run verified a purchase. The Inn or Stay choice still applies.

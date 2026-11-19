@@ -26,17 +26,24 @@ public sealed class ConflictPluginService
 
     private readonly IPluginLog log;
     private readonly ICommandManager commandManager;
+    private readonly Func<string, string?> readNativeLoadState;
     private readonly object stateLock = new();
     private readonly record struct PluginStatus(bool IsInstalled, bool IsLoaded, string InternalName, string DisplayName, string? LoadState = null);
-    private readonly record struct PluginDisableResult(PluginStatus InitialStatus, PluginStatus FinalStatus, bool DisableAttempted);
+    private readonly record struct PluginDisableResult(PluginStatus InitialStatus, PluginStatus FinalStatus, bool DisableAttempted, bool DisableAccepted = false);
 
     private readonly Dictionary<string, DateTime> lastDisableAttemptUtc = new(StringComparer.Ordinal);
     private UiText? pendingWarningMessage;
 
     public ConflictPluginService(IPluginLog log, ICommandManager commandManager)
+        : this(log, commandManager, ReadNativeLoadState)
+    {
+    }
+
+    internal ConflictPluginService(IPluginLog log, ICommandManager commandManager, Func<string, string?> readNativeLoadState)
     {
         this.log = log;
         this.commandManager = commandManager;
+        this.readNativeLoadState = readNativeLoadState;
     }
 
     public (bool IsInstalled, bool IsLoaded) GetTwistOfFayteStatus()
@@ -76,15 +83,21 @@ public sealed class ConflictPluginService
 
         // Any native host's disposal unregisters the shared BossMod IPC gates.
         // Restore the selected host's gates, retaining the saved combat preference.
-        var disabledSelected = await EnsurePluginDisabledAsync("BossMod IPC recovery", selected!, $"/xldisableplugintemp {selected}",
-            (internalName, _) => internalName == selected, isStarting).ConfigureAwait(false);
-        if (!isStarting() || disabledSelected.FinalStatus.LoadState != "Unloaded")
+        bool MatchesSelected(string? internalName, string? _) => internalName == selected;
+        var disabledSelected = await EnsurePluginDisabledAsync("BossMod IPC recovery", selected, $"/xldisableplugintemp {selected}",
+            MatchesSelected, isStarting, finishAcceptedDisable: true).ConfigureAwait(false);
+        if (!disabledSelected.DisableAccepted || disabledSelected.FinalStatus.LoadState != "Unloaded")
             return (false, selected, Ui.M("Rotation_BossModSettingsUnconfirmed"));
-        if (!await GameHelpers.RunOnFrameworkThreadAsync(() => isStarting()
-            && commandManager.ProcessCommand($"/xlenableplugintemp {selected}")).ConfigureAwait(false))
+
+        // Once our disable was accepted, Stop can cancel startup but still owes this host its reload.
+        if (!await GameHelpers.RunOnFrameworkThreadAsync(() => GetPluginStatus(MatchesSelected).LoadState switch
+            {
+                "Loaded" => true,
+                "Unloaded" => commandManager.ProcessCommand($"/xlenableplugintemp {selected}"),
+                _ => false,
+            }).ConfigureAwait(false))
             return (false, selected, Ui.M("Rotation_BossModSettingsUnconfirmed"));
-        var ready = await WaitForPluginStateAsync((internalName, _) => internalName == selected,
-            loaded: true, isStarting).ConfigureAwait(false);
+        var ready = await WaitForPluginStateAsync(MatchesSelected, loaded: true, isStarting).ConfigureAwait(false);
         if (!isStarting() || ready.LoadState != "Loaded" || hosts.Where(status => status.InternalName != selected)
             .Any(status => GetPluginStatus((internalName, _) => internalName == status.InternalName).IsLoaded))
             return (false, selected, Ui.M("Rotation_BossModSettingsUnconfirmed"));
@@ -245,7 +258,8 @@ public sealed class ConflictPluginService
         string triggerSource,
         string displayName,
         string disableCommand,
-        Func<string?, string?, bool> matcher, Func<bool>? isCurrent = null, Func<bool>? canDispatch = null)
+        Func<string?, string?, bool> matcher, Func<bool>? isCurrent = null, Func<bool>? canDispatch = null,
+        bool finishAcceptedDisable = false)
     {
         var initialStatus = GetPluginStatus(matcher);
         if (!initialStatus.IsLoaded)
@@ -277,8 +291,9 @@ public sealed class ConflictPluginService
             log.Warning($"[MOGTOME][Conflict] {displayName} is still enabled during {triggerSource}; matched {DescribePluginStatus(initialStatus)}; waiting for recent disable attempt");
         }
 
-        var finalStatus = await WaitForPluginStateAsync(matcher, loaded: false, isCurrent).ConfigureAwait(false);
-        return new PluginDisableResult(initialStatus, finalStatus, shouldSendDisable);
+        var finalStatus = await WaitForPluginStateAsync(matcher, loaded: false,
+            finishAcceptedDisable && shouldSendDisable ? null : isCurrent).ConfigureAwait(false);
+        return new PluginDisableResult(initialStatus, finalStatus, shouldSendDisable, DisableAccepted: shouldSendDisable);
     }
 
     private async Task<PluginStatus> WaitForPluginStateAsync(Func<string?, string?, bool> matcher, bool loaded, Func<bool>? isCurrent = null)
@@ -308,15 +323,13 @@ public sealed class ConflictPluginService
                 if (!matcher(plugin.InternalName, plugin.Name))
                     continue;
 
-                var bossModPlugin = BossModIPC.IsBossModHost(plugin.InternalName)
-                    ? BossModIPC.FindDalamudPlugin(plugin.InternalName, out _)
-                    : null;
+                var internalName = plugin.InternalName ?? string.Empty;
                 return new PluginStatus(
                     true,
                     plugin.IsLoaded,
-                    plugin.InternalName ?? string.Empty,
+                    internalName,
                     plugin.Name ?? string.Empty,
-                    bossModPlugin?.GetType().GetProperty("State")?.GetValue(bossModPlugin)?.ToString());
+                    BossModIPC.IsBossModHost(internalName) ? readNativeLoadState(internalName) : null);
             }
         }
         catch (Exception ex)
@@ -325,6 +338,12 @@ public sealed class ConflictPluginService
         }
 
         return new PluginStatus(false, false, string.Empty, string.Empty);
+    }
+
+    private static string? ReadNativeLoadState(string internalName)
+    {
+        var plugin = BossModIPC.FindDalamudPlugin(internalName, out _);
+        return plugin?.GetType().GetProperty("State")?.GetValue(plugin)?.ToString();
     }
 
     private static bool MatchesTwistOfFayte(string? internalName, string? displayName)
