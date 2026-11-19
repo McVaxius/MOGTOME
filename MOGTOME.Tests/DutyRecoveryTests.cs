@@ -360,18 +360,21 @@ public sealed class DutyRecoveryTests
     }
 
     [Theory]
-    [InlineData(typeof(D141Colossus), 1044u)]
-    [InlineData(typeof(D142Nero), 1044u)]
-    [InlineData(typeof(D143Gaius), 1044u)]
-    [InlineData(typeof(T04PortaDecumana1), 1048u)]
-    [InlineData(typeof(T04PortaDecumana2), 1048u)]
-    public void GmcUsesInjectedBossPlanOnlyAfterNativeBindingAndRestoresSelections(Type boss, uint territory)
+    [InlineData(typeof(D141Colossus), 1044u, false, false)]
+    [InlineData(typeof(D142Nero), 1044u, false, false)]
+    [InlineData(typeof(D143Gaius), 1044u, false, false)]
+    [InlineData(typeof(T04PortaDecumana1), 1048u, false, false)]
+    [InlineData(typeof(T04PortaDecumana2), 1048u, false, false)]
+    [InlineData(typeof(D141Colossus), 1044u, true, false)]
+    [InlineData(typeof(D141Colossus), 1044u, false, true)]
+    public void GmcUsesInjectedBossPlanOnlyAfterNativeBindingAndRestoresSelections(Type boss, uint territory,
+        bool editOriginal, bool selectDifferent)
     {
         var native = new NativeBossModProvider(CombatProvider.Bmr, "Original");
         using var run = new Run(native) { GmcLoaded = true, Territory = territory };
         var module = Activator.CreateInstance(boss, nonPublic: true)!;
         native.Rotation.Bossmods.ActiveModule = module;
-        var original = new NativePlan("Existing job plan", NativeJob.WAR, boss);
+        var original = new NativePlan("Existing job plan", NativeJob.WAR, boss) { Guid = "original-plan" };
         var bundled = new NativePlan($"BMRV-{boss.Name}-Tank-WAR", NativeJob.WAR, boss);
         var list = new NativePlanList { SelectedIndex = 0, Plans = [original, bundled] };
         native.Rotation.Database.Plans.Plans[boss] = new() { [NativeJob.WAR] = list };
@@ -386,8 +389,23 @@ public sealed class DutyRecoveryTests
         Assert.False(native.ForceDisabled);
         Assert.True(native.AiEnabled);
         Assert.Null(native.Selector); // A bound plan owns an explicit null selector.
+
+        var expected = original;
+        if (editOriginal)
+        {
+            expected = original with { Modules = [new object()] };
+            list.Plans[0] = expected;
+        }
+        else if (selectDifferent)
+        {
+            expected = new NativePlan("Later native choice", NativeJob.WAR, boss) { Guid = "later-plan" };
+            list.Plans.Add(expected);
+            list.SelectedIndex = 2;
+        }
+
         Assert.True(run.Rotation.DisableRotationForDutyEnd("GMC Stop"));
-        Assert.Equal(0, list.SelectedIndex);
+        Assert.Equal(selectDifferent ? 2 : 0, list.SelectedIndex);
+        Assert.Same(expected, list.Plans[list.SelectedIndex]);
         Assert.Equal(new[] { "Original" }, native.Active);
         native.Rotation.Planner = null;
         run.Rotation.UpdateDutyRotationHealth(territory, true, false, false, "after Stop");
@@ -3635,6 +3653,7 @@ public sealed class DutyRecoveryTests
     private enum NativeJob : uint { WAR = 21, NIN = 30, MCH = 31, GNB = 37, SGE = 40, BST = 43 }
     private sealed record NativePlan(string Name, NativeJob Class, Type Encounter)
     {
+        public string Guid = "";
         public List<object> Modules = [new object()];
     }
     private sealed class NativePlanList

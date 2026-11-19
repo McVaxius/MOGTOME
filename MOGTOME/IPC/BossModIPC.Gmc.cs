@@ -613,6 +613,24 @@ public partial class BossModIPC
         return Equals(LiveMember(list, "SelectedIndex"), index);
     }
 
+    private static int FindOriginalGmcPlanIndex(IList plans, object? original)
+    {
+        if (original is null) return -1;
+        for (var i = 0; i < plans.Count; ++i)
+            if (ReferenceEquals(plans[i], original)) return i;
+
+        // Native plan edits can replace the object while preserving its GUID.
+        if (LiveMember(original, "Guid") is not string { Length: > 0 } guid) return -1;
+        var originalIndex = -1;
+        for (var i = 0; i < plans.Count; ++i)
+        {
+            if (!string.Equals(LiveMember(plans[i], "Guid") as string, guid, StringComparison.Ordinal)) continue;
+            if (originalIndex >= 0) return -1;
+            originalIndex = i;
+        }
+        return originalIndex;
+    }
+
     private bool RestoreGmcPlan()
     {
         if (gmcPlan is not { } owned) return true;
@@ -621,7 +639,7 @@ public partial class BossModIPC
         var currentPlan = index >= 0 && index < plans.Count ? plans[index] : null;
         if (index >= -1 && index < plans.Count && ReferenceEquals(currentPlan, owned.Selected))
         {
-            var originalIndex = owned.Original is null ? -1 : plans.IndexOf(owned.Original);
+            var originalIndex = FindOriginalGmcPlanIndex(plans, owned.Original);
             SetGmcPlanIndex(owned.List, originalIndex);
             if (!Equals(LiveMember(owned.List, "SelectedIndex"), originalIndex)) return false;
         }
