@@ -1304,8 +1304,10 @@ public sealed class DutyRecoveryTests
         Assert.False(run.Rotation.EnableRotation());
     }
 
-    [Fact]
-    public async Task QueuedAdsRepairRejectsProviderLossDuringCapabilitiesRead()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task QueuedAdsRepairRejectsAdmissionChangesDuringCapabilitiesRead(bool loseProvider)
     {
         var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: "GodMod");
         using var run = new Run(native);
@@ -1314,7 +1316,10 @@ public sealed class DutyRecoveryTests
         run.OnRepairCapabilitiesRead = () =>
         {
             capabilitiesRead = true;
-            native.Loaded = false;
+            if (loseProvider)
+                native.Loaded = false;
+            else
+                run.BoundByDuty56 = true;
         };
         run.Config.AdsRepairMode = AdsRepairMode.NpcNoInnGridania;
         run.Automation.RequestNpcRepair();
@@ -1327,10 +1332,15 @@ public sealed class DutyRecoveryTests
         }
 
         Assert.True(capabilitiesRead);
+        run.BoundByDuty56 = false;
         Assert.Empty(run.RepairModes);
         Assert.False(run.Automation.IsAdsRepairWaitingForCompletion);
         Assert.False(run.Automation.IsAdsInnRepairPending(out var failure));
-        Assert.Contains(GameHelpers.AutomationDependency, failure);
+        Assert.Contains(loseProvider ? GameHelpers.AutomationDependency : "not ready to start the ADS repair trip", failure);
+
+        Set(run.Engine, "outsideDutyTicks", 5);
+        Invoke(run.Engine, "UpdateRepairing");
+        Assert.False(run.Automation.IsAdsRepairHandoffActive);
     }
 
     [Fact]
@@ -3269,6 +3279,7 @@ public sealed class DutyRecoveryTests
         internal readonly BossModIPC BossMod;
         internal ulong CurrentContentId;
         internal bool XaDatabaseLoaded = true;
+        internal bool BoundByDuty56;
         internal bool GmcLoaded;
         internal bool GmcSuiteReady = true;
         internal NativeBossModProvider? ReplacementAutomationHost;
@@ -3300,7 +3311,9 @@ public sealed class DutyRecoveryTests
                 "get_TerritoryType" => Territory,
                 _ => Default(method.ReturnType),
             });
-            var condition = Fake<ICondition>();
+            var condition = Fake<ICondition>((method, args) => method.Name == "get_Item"
+                ? BoundByDuty56 && Equals(args?[0], ConditionFlag.BoundByDuty56)
+                : Default(method.ReturnType));
             var objects = Fake<IObjectTable>((method, _) => method.Name == "get_LocalPlayer"
                 ? LocalPlayer : Default(method.ReturnType));
             var player = Fake<IPlayerState>((method, _) => method.Name == "get_ContentId" ? CurrentContentId : Default(method.ReturnType));

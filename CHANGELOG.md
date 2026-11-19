@@ -1,6 +1,6 @@
 ## Unreleased
 
-- **Fixed queued ADS repair** so MOGTOME rechecks combat provider readiness just before requesting a new repair.
+- **Fixed queued ADS repair** so MOGTOME checks the combat provider and duty state just before dispatch and clears requests it cannot start.
 
 2026-11-18 - 4.2.0.23 - GodMod manual preset selection
 

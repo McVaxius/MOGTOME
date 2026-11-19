@@ -114,6 +114,7 @@ public sealed class DutyAutomationService
     private const float AdsFollowerOutsideArmVisibleSeconds = 1.0f;
     private const int AdsStartupStopSettleDelayMs = 1000;
     private const int AdsRepairStopSettleDelayMs = 1000;
+    private const string AdsRepairCharacterNotReady = "The character was not ready to start the ADS repair trip.";
     private static readonly PraetoriumUnlockDefinition[] PraetoriumOptionalUnlocks =
     [
         new("Sunken Temple of Qarn", 1267, [764]),
@@ -405,7 +406,7 @@ public sealed class DutyAutomationService
 
         if (requestedUtc == DateTime.MinValue)
         {
-            failure = "The character was not ready to start the ADS repair trip.";
+            failure = AdsRepairCharacterNotReady;
             return false;
         }
 
@@ -1290,15 +1291,18 @@ public sealed class DutyAutomationService
     private bool CanRequestAdsRepair(int operationId)
     {
         var providerReady = bossModIPC.HasUsableAutomationHost();
-        if (!IsCurrentAdsRepairOperation(operationId) || !Plugin.ClientState.IsLoggedIn || DutyStartupService.IsInDuty())
+        if (!IsCurrentAdsRepairOperation(operationId))
             return false;
-        if (providerReady)
+        var characterReady = Plugin.ClientState.IsLoggedIn && !DutyStartupService.IsInDuty();
+        if (providerReady && characterReady)
             return true;
 
         lock (adsRepairStateLock)
         {
             if (IsCurrentAdsRepairOperation(operationId))
-                adsInnRepairFailure = Ui.M("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency).English;
+                adsInnRepairFailure = characterReady
+                    ? Ui.M("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency).English
+                    : AdsRepairCharacterNotReady;
         }
         return false;
     }
