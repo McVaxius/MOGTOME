@@ -439,7 +439,8 @@ public sealed partial class MoogleShopService
             travel = travelSubmitted = false;
             poeticsShopClosed = true;
         }
-        if (poeticsDeliver && !travelSubmitted)
+        var deliverPurchasedGear = poeticsDeliver && targets.Count > 0;
+        if (deliverPurchasedGear && !travelSubmitted)
         {
             if (!deliveryAdmitted)
             {
@@ -480,7 +481,7 @@ public sealed partial class MoogleShopService
         if (travelSubmitted) return;
         if (travelBusy) { Fail("BV_TravelUnavailable"); return; }
         if (!ContinuePoetics()) return;
-        if (poeticsDeliver && (!TryDeliveryBusy(out var finalBusy) || finalBusy || !PurchasedPoeticsGearGone()))
+        if (deliverPurchasedGear && (!TryDeliveryBusy(out var finalBusy) || finalBusy || !PurchasedPoeticsGearGone()))
         { deliveryIdleSince = null; return; }
         travelSubmitted = true;
         travel = Plugin.CommandManager.ProcessCommand("/li inn " + commands[selected]);
