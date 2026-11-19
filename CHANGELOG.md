@@ -1,4 +1,4 @@
-## Unreleased
+2026-11-18 - 4.2.0.25 - Cooldown plan restoration
 
 - **Fixed cooldown plan restoration** so MOGTOME restores an edited original plan after releasing its temporary selection.
 
