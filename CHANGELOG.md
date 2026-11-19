@@ -1,4 +1,4 @@
-Unreleased
+2026-11-19 - 4.2.0.28 - Combat provider replacement
 
 - **Fixed combat provider replacement** so MOGTOME stops if its selected provider changes during startup retry or between duties.
 
