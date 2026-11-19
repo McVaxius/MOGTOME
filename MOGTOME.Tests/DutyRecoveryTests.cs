@@ -2008,9 +2008,15 @@ public sealed class DutyRecoveryTests
         {
             Assert.Equal("Saved manual", Assert.Single(native.Active));
             Assert.Equal(1, run.RsrSettingsRequests);
-            Assert.True(run.Rotation.DisableRotationForDutyEnd("first duty ended"));
+            native.Rotation.Player.InCombat = false;
+            native.PublishAiPreset(false);
+            Assert.True(run.Rotation.DisableRotationForDutyEnd("first duty ended", keepSelectedHost: true));
+            Assert.Equal("GodMod", run.BossMod.NativeHost);
             run.Rotation.ResetDutyRotationState("next duty");
             Assert.True(run.Rotation.EnableRotation());
+            Assert.Equal("Saved manual", native.AiPreset?.Name);
+            Assert.Null(native.Rotation.Preset);
+            Assert.False(native.AiEnabled);
             Assert.Equal(1, run.RsrSettingsRequests);
         }
         if (mode == "automatic-exact") Assert.Equal("FRENRIDER - TANK", Assert.Single(native.Active));
@@ -2182,6 +2188,99 @@ public sealed class DutyRecoveryTests
         Assert.Null(native.Rotation.Preset);
         Assert.True(run.Rotation.DisableRotationForDutyEnd("Stop"));
         Assert.Equal("Original", Assert.Single(native.Active));
+    }
+
+    [Theory]
+    [InlineData("stop")]
+    [InlineData("replace while idle")]
+    [InlineData("replace during idle transition")]
+    [InlineData("choose after initialize")]
+    public void GodModManualMovementPresetIsHeldDuringFollowerTravel(string ending)
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: "GodMod");
+        using var run = new Run(native) { Territory = 1044 };
+        var original = native.Rotation.Preset;
+        var originalSelector = native.Selector;
+        var manual = new NativePreset("Exact saved movement choice");
+        native.Presets.UserPresets.Add(manual);
+        native.Presets.AllPresets.Add(manual);
+        var saved = native.SerializePreset(manual);
+        run.Config.UseManualBossModPreset = true;
+        run.Config.ManualBossModPresetName = ending == "choose after initialize" ? "null" : manual.Name;
+        run.State.IsPartyLeader = false;
+        var player = native.Rotation.Player;
+        var partyMember = native.World.Party[1]!;
+        native.World.Party.Members = [player, partyMember];
+        native.Rotation.WorldState = native.World;
+        player.InCombat = partyMember.InCombat = false;
+
+        Assert.True(run.Rotation.Initialize());
+        run.Config.ManualBossModPresetName = manual.Name;
+        Assert.True(run.Rotation.EnableRotationOncePerDuty("before party pull"));
+        Assert.False(native.AiEnabled);
+        Assert.Null(native.Rotation.Preset);
+        Assert.Same(manual, native.AiPreset);
+        Assert.Equal(1, run.RsrSettingsRequests);
+
+        var enemy = new NativeActor { InCombat = true };
+        native.Rotation.Hints.PotentialTargets.Add(new NativeEnemy(enemy, 0));
+        partyMember.InCombat = true;
+        run.Rotation.ObserveSessionDeparture();
+        Assert.True(native.AiEnabled);
+        Assert.True(native.ForbidMovement);
+        Assert.Same(manual, native.Rotation.Preset);
+
+        player.InCombat = true;
+        run.Rotation.ObserveSessionDeparture();
+        Assert.True(native.AiEnabled);
+        Assert.False(native.ForbidMovement);
+        Assert.Same(manual, native.Rotation.Preset);
+
+        player.InCombat = false;
+        run.Rotation.ObserveSessionDeparture();
+        Assert.True(native.AiEnabled);
+        Assert.True(native.ForbidMovement);
+        Assert.Same(manual, native.Rotation.Preset);
+
+        var replacement = ending.StartsWith("replace", StringComparison.Ordinal) ? new NativePreset(manual.Name) : null;
+        if (ending == "replace during idle transition")
+        {
+            var aiManager = Get(native, "aiManager")!;
+            var callback = aiManager.GetType().GetField("SwitchToIdleCallback")!;
+            var originalIdle = (Action)callback.GetValue(aiManager)!;
+            callback.SetValue(aiManager, (Action)(() =>
+            {
+                originalIdle();
+                native.Rotation.Preset = replacement;
+            }));
+        }
+
+        partyMember.InCombat = enemy.InCombat = false;
+        native.PublishAiPreset(false);
+        run.Rotation.ObserveSessionDeparture();
+        Assert.False(native.AiEnabled);
+        if (ending == "replace during idle transition")
+        {
+            Assert.Same(replacement, native.Rotation.Preset);
+        }
+        else if (ending == "replace while idle")
+        {
+            Assert.Null(native.Rotation.Preset);
+            native.Rotation.Preset = replacement;
+            run.Rotation.ObserveSessionDeparture();
+            Assert.Same(replacement, native.Rotation.Preset);
+        }
+        else
+        {
+            Assert.Null(native.Rotation.Preset);
+            Assert.True(run.Rotation.DisableRotationForDutyEnd("Stop"));
+            Assert.Same(original, native.Rotation.Preset);
+        }
+
+        Assert.Equal(originalSelector, native.Selector);
+        Assert.Equal(manual.Name, run.Config.ManualBossModPresetName);
+        Assert.Equal(saved, native.SerializePreset(manual));
+        Assert.DoesNotContain(native.Writes, write => write.Contains("Presets.Create") || write.Contains("Presets.Delete"));
     }
 
     [Theory]

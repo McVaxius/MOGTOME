@@ -27,6 +27,7 @@ public class RotationService : IDisposable
     private bool settingsPending;
     private bool sessionEnded;
     private bool gmcSession;
+    private bool godModManualAtStartup;
     private (bool Manual, string Name)? appliedPresetSettings;
     public string LastFailureReason => Failure.English;
     public UiText Failure { get; private set; } = string.Empty;
@@ -166,7 +167,16 @@ public class RotationService : IDisposable
         }
         if (IsVbmActivationDeferred)
             return false;
-        if (!ValidateManualPresetSelection(config) || preparedBossMod is null
+        var validManualPreset = ValidateManualPresetSelection(config);
+        if (validManualPreset && bossModIPC.NativeHost == "GodMod"
+            && GetGmcManualPreset(selected) is { } legacyManual && legacyManual != "null"
+            && !bossModIPC.CanPublishGodModPresetWhileIdle(legacyManual))
+        {
+            settingsPending = false;
+            log.Warning("[MOGTOME][Rotation] Stop and restart MOGTOME to use a GodMod manual movement preset in this session.");
+            return Fail(Ui.M("Rotation_BossModSettingsUnconfirmed"));
+        }
+        if (!validManualPreset || preparedBossMod is null
             || !bossModIPC.PreparePresetForStart(preparedBossMod.Value, passive: false, config.UseManualBossModPreset, config.ManualBossModPresetName))
         {
             if (IsVbmActivationDeferred)
@@ -204,9 +214,11 @@ public class RotationService : IDisposable
 
         var config = configManager.GetActiveConfig();
         var host = nativeHost ?? bossModIPC.GetAutomationHost();
+        var godModNativeRotation = host == "GodMod" && config.CombatProvider is (CombatProvider.Bmr or CombatProvider.Vbm);
+        godModManualAtStartup = godModNativeRotation && config.UseManualBossModPreset
+            && config.ManualBossModPresetName != "null";
         gmcSession = host == "BossModReborn" && bossModIPC.IsGmcReady
-            || host == "GodMod" && config.CombatProvider is (CombatProvider.Bmr or CombatProvider.Vbm)
-                && !config.UseManualBossModPreset;
+            || godModNativeRotation && (!config.UseManualBossModPreset || godModManualAtStartup);
         var provider = gmcSession ? CombatProvider.Bmr : config.CombatProvider;
         if (provider != CombatProvider.Wrath)
         {
@@ -283,7 +295,12 @@ public class RotationService : IDisposable
             return Fail(Ui.M("Rotation_BossModSessionChanged"));
         }
 
-        var provider = gmcSession ? CombatProvider.Bmr : configManager.GetActiveConfig().CombatProvider;
+        var config = configManager.GetActiveConfig();
+        if (!gmcSession && !deathRearmPending && bossModIPC.NativeHost == "GodMod"
+            && GetGmcManualPreset(CurrentPresetSettings(config)) is { } manual && manual != "null")
+            gmcSession = godModManualAtStartup = true;
+
+        var provider = gmcSession ? CombatProvider.Bmr : config.CombatProvider;
         var recoveringDeath = deathRearmPending;
         deathRearmPending = false;
         try
@@ -488,6 +505,13 @@ public class RotationService : IDisposable
             var selected = CurrentPresetSettings(config);
             if (!bossModIPC.BeginGmcAutorotation(GetGmcManualPreset(selected), !dutyState.IsPartyLeader))
                 return Fail(Ui.M("Rotation_BossModSettingsUnconfirmed"));
+            if (godModManualAtStartup)
+            {
+                RestoreRsrHealingOnce();
+                if (rotationDisableSentForDuty || !MatchesPreparedSession(configManager.GetActiveConfig())
+                    || !bossModIPC.HasOwnedGmcCombatState())
+                    return Fail(Ui.M("Rotation_BossModSettingsUnconfirmed"));
+            }
             appliedPresetSettings = selected;
             return true;
         }
@@ -511,11 +535,7 @@ public class RotationService : IDisposable
         }
 
         if (rotationDisableSentForDuty) return false;
-        if (!rsrHealingRestored)
-        {
-            rsrHealingRestored = true;
-            bossModIPC.RestoreRsrHealing();
-        }
+        RestoreRsrHealingOnce();
 
         if (provider == CombatProvider.Rsr && !EnableRsr())
             return Fail(Ui.M("Rotation_RSRAutoIPCAndRotationAutoBoth"));
@@ -550,6 +570,13 @@ public class RotationService : IDisposable
         appliedPresetSettings = CurrentPresetSettings(config);
         settingsPending = false;
         return !rotationDisableSentForDuty;
+    }
+
+    private void RestoreRsrHealingOnce()
+    {
+        if (rsrHealingRestored) return;
+        rsrHealingRestored = true;
+        bossModIPC.RestoreRsrHealing();
     }
 
     private void ReassertRsrCombat(string reason)

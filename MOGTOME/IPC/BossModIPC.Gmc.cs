@@ -19,7 +19,7 @@ public partial class BossModIPC
     private ulong gmcOriginalLeader, gmcOwnedLeader;
     private object? gmcOwnedRotation, gmcRotationManager;
     private object? gmcOriginalGodModClaim, gmcOriginalGodModAiCache;
-    private bool gmcRotationSelected;
+    private bool gmcRotationSelected, gmcHoldMovementPresetWhileIdle;
     private bool gmcRestoreActiveAi, gmcKeepCleanupRotation;
     private object? gmcCleanupRotation;
     internal bool IsOwnedCombatReturnPlayerMissing
@@ -57,7 +57,7 @@ public partial class BossModIPC
         gmcGroupSource = gmcGroupRotation = gmcOwnedRotation = null;
         gmcAiManager = gmcOriginalPreset = gmcOwnedBehavior = gmcAiPreset = gmcBehaviorPreset = null;
         gmcRotationManager = gmcOriginalGodModClaim = gmcOriginalGodModAiCache = null;
-        gmcOriginalAiActive = gmcRotationSelected = false;
+        gmcOriginalAiActive = gmcRotationSelected = gmcHoldMovementPresetWhileIdle = false;
         gmcOriginalSlot = gmcOwnedSlot = 0;
         gmcOriginalLeader = gmcOwnedLeader = 0;
         gmcRestoreActiveAi = gmcKeepCleanupRotation = false;
@@ -126,6 +126,8 @@ public partial class BossModIPC
             return false;
         try
         {
+            var ownership = ownedSettings!;
+            var previousRotation = LiveMember(gmcRotationManager, "Preset");
             if (!TryGetLiveBossMod("BMR", out var instance, out _, out _)) return false;
             var manager = LiveMember(instance!, "_rotation");
             var player = LiveMember(manager!, "Player");
@@ -146,16 +148,20 @@ public partial class BossModIPC
                 if (ReadRuntimePresetName(preset) is not { } nativeName || !preset.Equals(nativeName, comparison)) return false;
                 preset = nativeName;
             }
-            var ownership = ownedSettings!;
             if (ownership.Original.Runtime is not { } original || original.Names.Any(name => !IsExactRuntimePreset(name))) return false;
-            var previousRotation = LiveMember(manager, "Preset");
             var rotation = usePlan ? null : GmcPresetRotation(manager!, preset, automatic);
-            if (gmcRotationSelected && ReferenceEquals(gmcOwnedRotation, rotation) && ReferenceEquals(gmcAiPreset, rotation)
+            var holdMovementPreset = !automatic && !isBmr && preset != "null"
+                && LiveMember(rotation, "Modules") is IList modules && modules.Cast<object>().Any(IsMovementModule);
+            if (gmcRotationSelected && gmcHoldMovementPresetWhileIdle == holdMovementPreset
+                && ReferenceEquals(gmcOwnedRotation, rotation) && ReferenceEquals(gmcAiPreset, rotation)
                 && MatchesGmcRuntime(before)) return true;
-            if (!ReferenceEquals(LiveMember(manager, "Preset"), previousRotation) || !SetGmcAiPreset(rotation)
-                || !WriteGmcRotation(rotation, previousRotation, clearThroughIpc: usePlan)) return false;
+
+            var runtime = holdMovementPreset && gmcOwnedBehavior is null ? null : rotation;
+            if (!ReferenceEquals(ownedSettings, ownership) || !ReferenceEquals(LiveMember(manager, "Preset"), previousRotation)
+                || !SetGmcAiPreset(rotation) || !WriteGmcRotation(runtime, previousRotation, clearThroughIpc: usePlan)) return false;
             gmcOwnedRotation = rotation;
             gmcRotationSelected = true;
+            gmcHoldMovementPresetWhileIdle = holdMovementPreset;
             LastStatus = usePlan ? $"GMC boss plan confirmed for {job}."
                 : LiveMember(manager, "Preset") is null
                     ? $"GMC rotation policy '{preset}' confirmed. Native AI has not published the preset."
@@ -295,15 +301,17 @@ public partial class BossModIPC
         var active = LiveMember(gmcRotationManager, "Preset");
         if (!gmcRotationSelected)
             return ownedSettings!.CanChangeRuntime(current) && ReferenceEquals(active, gmcOwnedRotation);
-        if (current.Runtime is not { ForceDisabled: false } runtime) return false;
+        if (current.Runtime is not { ForceDisabled: false } runtime || !ReferenceEquals(gmcAiPreset, gmcOwnedRotation))
+            return false;
+        if (gmcHoldMovementPresetWhileIdle && gmcOwnedBehavior is null)
+            return active is null && runtime.Names.Count == 0;
         // A native no-target clear also yields its claim. A manual clear leaves
         // GodMod's prior claim behind and must stay outside this session.
-        return ReferenceEquals(gmcAiPreset, gmcOwnedRotation)
-            && (active is null && runtime.Names.Count == 0 && (gmcOwnedRotation is null
+        return active is null && runtime.Names.Count == 0 && (gmcOwnedRotation is null
                 || gmcOwnedBehavior is not null && (NativeHost != "GodMod"
                     || LiveMember(gmcOwnedBehavior, "CanManageAutorotation") is not false))
-                || gmcOwnedRotation is not null && ReferenceEquals(active, gmcOwnedRotation)
-                    && runtime.Names.Count == 1 && Equals(LiveMember(active, "Name"), runtime.Names[0]));
+            || gmcOwnedRotation is not null && ReferenceEquals(active, gmcOwnedRotation)
+                && runtime.Names.Count == 1 && Equals(LiveMember(active, "Name"), runtime.Names[0]);
     }
 
     private bool SetGmcAiPreset(object? preset)
@@ -363,11 +371,11 @@ public partial class BossModIPC
         var expected = GmcRuntimeSelection(rotation);
         var appliedRotation = rotation;
         var presetProperty = gmcRotationManager!.GetType().GetProperty("Preset")!;
+        if (!ReferenceEquals(presetProperty.GetValue(gmcRotationManager), previousRotation)) return false;
         if (GetGodModPresetOperations(gmcOwnedBehavior) is { } operations)
         {
             // Give the exact temporary policy to native AI. A direct write alone
             // would leave its ownership attached to the previous preset object.
-            if (!ReferenceEquals(presetProperty.GetValue(gmcRotationManager), previousRotation)) return false;
             operations.Release.Invoke(gmcOwnedBehavior, null);
             var remaining = presetProperty.GetValue(gmcRotationManager);
             if (!HasOwnedGmcAi() || remaining is not null && !ReferenceEquals(remaining, previousRotation)) return false;
@@ -391,7 +399,8 @@ public partial class BossModIPC
 
     private bool ChangeGmcAi(bool active, int slot)
     {
-        if (!HasOwnedGmcAi() || !TryReadOwnedBossModSettings(out var before, allowCleanup: cleanupStarted)) return false;
+        if (!HasOwnedGmcAi() || !TryReadOwnedBossModSettings(out var before, allowCleanup: cleanupStarted)
+            || !cleanupStarted && !MatchesGmcRuntime(before)) return false;
         if (active && ReadGmcLeader(slot) == 0) return false;
         var rotationBefore = LiveMember(gmcRotationManager, "Preset");
         var previousBehavior = gmcOwnedBehavior;
@@ -433,10 +442,18 @@ public partial class BossModIPC
         if (!SetGmcAiPreset(policy)) return false;
         if (!gmcRotationSelected)
             gmcOwnedRotation = LiveMember(gmcRotationManager, "Preset");
-        else if (!cleanupStarted && !WriteGmcRotation(gmcOwnedRotation, rotationAfter, clearThroughIpc: false))
-            return false;
+        else if (!cleanupStarted)
+        {
+            // An idle Follow cannot suppress movement modules in the saved preset.
+            var runtime = !active && gmcHoldMovementPresetWhileIdle ? null : gmcOwnedRotation;
+            if (!WriteGmcRotation(runtime, rotationAfter, clearThroughIpc: false)) return false;
+        }
         return true;
     }
+
+    internal bool HasOwnedGmcCombatState()
+        => TryReadOwnedBossModSettings(out var current) && ownedSettings!.MatchesNativeAuthority(current)
+            && MatchesGmcRuntime(current);
 
     internal bool UpdateGmcCombatState(bool assistEngagedParty)
     {
@@ -595,13 +612,28 @@ public partial class BossModIPC
             var rotation = source.GetType().GetMethod("MakeClone", new[] { typeof(bool) })!.Invoke(source, new object[] { true })!;
             var modules = (IList)LiveMember(rotation, "Modules")!;
             for (var index = modules.Count - 1; index >= 0; --index)
-                if (LiveMember(LiveMember(modules[index], "Definition"), "Order")?.ToString() == "Movement")
+                if (IsMovementModule(modules[index]))
                     modules.RemoveAt(index);
             gmcGroupRotation = rotation;
             gmcGroupSource = source;
         }
         return gmcGroupRotation!;
     }
+
+    internal bool CanPublishGodModPresetWhileIdle(string name)
+    {
+        try
+        {
+            return TryGetLiveBossMod("BMR", out var instance, out _, out _)
+                && LiveMember(instance, "_rotation") is { } manager
+                && LiveMember(GmcPresetRotation(manager, name, automatic: false), "Modules") is IList modules
+                && !modules.Cast<object>().Any(IsMovementModule);
+        }
+        catch { return false; }
+    }
+
+    private static bool IsMovementModule(object? module)
+        => LiveMember(LiveMember(module, "Definition"), "Order")?.ToString() == "Movement";
 
     private bool SelectGmcPlan(object list, IList plans, int index)
     {

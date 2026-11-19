@@ -1,3 +1,7 @@
+2026-11-19 - 4.2.0.26 - GodMod manual presets in duty
+
+- **Fixed GodMod follower movement:** Keep manual movement presets idle during duty travel and activate the exact saved preset when the party engages or the player enters combat.
+
 2026-11-18 - 4.2.0.25 - Cooldown plan restoration
 
 - **Fixed cooldown plan restoration** so MOGTOME restores an edited original plan after releasing its temporary selection.
