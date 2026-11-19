@@ -1305,6 +1305,35 @@ public sealed class DutyRecoveryTests
     }
 
     [Fact]
+    public async Task QueuedAdsRepairRejectsProviderLossDuringCapabilitiesRead()
+    {
+        var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: "GodMod");
+        using var run = new Run(native);
+        Assert.True(run.BossMod.HasUsableAutomationHost());
+        var capabilitiesRead = false;
+        run.OnRepairCapabilitiesRead = () =>
+        {
+            capabilitiesRead = true;
+            native.Loaded = false;
+        };
+        run.Config.AdsRepairMode = AdsRepairMode.NpcNoInnGridania;
+        run.Automation.RequestNpcRepair();
+
+        var deadline = DateTime.UtcNow.AddSeconds(10);
+        while (!capabilitiesRead && DateTime.UtcNow < deadline)
+        {
+            run.Pump();
+            await Task.Delay(10);
+        }
+
+        Assert.True(capabilitiesRead);
+        Assert.Empty(run.RepairModes);
+        Assert.False(run.Automation.IsAdsRepairWaitingForCompletion);
+        Assert.False(run.Automation.IsAdsInnRepairPending(out var failure));
+        Assert.Contains(GameHelpers.AutomationDependency, failure);
+    }
+
+    [Fact]
     public async Task StoppedRepairHandoffCannotSendScheduledStopOrRepairCommands()
     {
         using var run = new Run();
@@ -3251,6 +3280,7 @@ public sealed class DutyRecoveryTests
         internal string? ThrowOnCommand;
         internal readonly List<string> RepairModes = [];
         internal string RepairStatus = "{}";
+        internal Action? OnRepairCapabilitiesRead;
         internal string RepairCapabilities = """{"schemaVersion":1,"repairModes":["npc-no-inn","npc-no-inn-uldah","npc-no-inn-gridania","npc-no-inn-limsa","npc-no-inn-ishgard","npc-no-inn-crystarium","npc-no-inn-sharlayan","npc-no-inn-tuliyollal"]}""";
         internal bool AcceptRepair = true;
         private readonly System.Collections.Concurrent.ConcurrentQueue<Action> scheduled = new();
@@ -3329,7 +3359,11 @@ public sealed class DutyRecoveryTests
                     {
                         if (member.Name != "InvokeFunc") return Default(member.ReturnType);
                         if (name == "ADS.GetStatusJson") return RepairStatus;
-                        if (name == "ADS.GetCapabilitiesJson") return RepairCapabilities;
+                        if (name == "ADS.GetCapabilitiesJson")
+                        {
+                            OnRepairCapabilitiesRead?.Invoke();
+                            return RepairCapabilities;
+                        }
                         if (name == "ADS.StartRepair") { RepairModes.Add((string)values![0]!); return AcceptRepair; }
                         return Default(member.ReturnType);
                     }
@@ -3372,9 +3406,9 @@ public sealed class DutyRecoveryTests
             var deaths = new DeathTrackingService(log, framework, objects, party, player, condition, client);
             History = new RunHistoryService(log, Config, State, player, manager, null!, deaths);
             var autoDuty = new AutoDutyIPC(log, command, History);
-            Automation = new DutyAutomationService(log, manager, autoDuty, null!, new ConflictPluginService(log, command), command, History);
-            Queue = new DutyQueueService(log, State, Automation, condition, manager);
             BossMod = new BossModIPC(pi, log, command);
+            Automation = new DutyAutomationService(log, manager, autoDuty, null!, new ConflictPluginService(log, command), command, History, BossMod);
+            Queue = new DutyQueueService(log, State, Automation, condition, manager);
             Rotation = new RotationService(log, manager, BossMod, State);
             YesAlready = new YesAlreadyIPC(log);
             var dialog = new DialogHandlerService(log, YesAlready, command, Fake<IGameGui>(), manager);

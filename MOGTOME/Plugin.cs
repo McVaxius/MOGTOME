@@ -186,7 +186,8 @@ public sealed class Plugin : IDalamudPlugin
             AutoDutyPathService,
             ConflictPluginService,
             CommandManager,
-            RunHistoryService);
+            RunHistoryService,
+            BossModIPC);
         DutyQueueService = new DutyQueueService(Log, State, DutyAutomationService, Condition, ConfigManager);
         RepairService = new RepairService(Log, Configuration, State, DutyAutomationService, Condition);
         ConsumableInventoryService = new ConsumableInventoryService(Log, Configuration, State);

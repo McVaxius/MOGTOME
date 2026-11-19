@@ -230,7 +230,7 @@ public sealed class LocalizationTests : IDisposable
         SetService("ClientState", Fake<IClientState>((method, _) =>
             method.Name == "get_ClientLanguage" ? client : Default(method.ReturnType)));
         SetService("SeStringEvaluator", evaluator);
-        var service = new DutyAutomationService(Fake<IPluginLog>(), null!, null!, null!, null!, null!, null!);
+        var service = new DutyAutomationService(Fake<IPluginLog>(), null!, null!, null!, null!, null!, null!, null!);
         service.HandleAdsQueueChatMessage(evaluator.Text(877));
         Assert.Equal(0, evaluator.Evaluations);
         Assert.False(service.TryGetAdsQueueFailure(out _, out _));

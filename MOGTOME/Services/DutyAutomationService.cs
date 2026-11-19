@@ -81,6 +81,7 @@ public sealed class DutyAutomationService
     private readonly ConflictPluginService conflictPluginService;
     private readonly ICommandManager commandManager;
     private readonly RunHistoryService runHistoryService;
+    private readonly BossModIPC bossModIPC;
     private readonly object adsQueueStateLock = new();
     private readonly object adsRepairStateLock = new();
     private int adsQueueOperationId = 0;
@@ -131,7 +132,8 @@ public sealed class DutyAutomationService
         AutoDutyPathService autoDutyPathService,
         ConflictPluginService conflictPluginService,
         ICommandManager commandManager,
-        RunHistoryService runHistoryService)
+        RunHistoryService runHistoryService,
+        BossModIPC bossModIPC)
     {
         this.log = log;
         this.configManager = configManager;
@@ -140,6 +142,7 @@ public sealed class DutyAutomationService
         this.conflictPluginService = conflictPluginService;
         this.commandManager = commandManager;
         this.runHistoryService = runHistoryService;
+        this.bossModIPC = bossModIPC;
     }
 
     public bool UseAdsExperimental
@@ -389,10 +392,10 @@ public sealed class DutyAutomationService
         string? requestedMode;
         lock (adsRepairStateLock)
         {
-            if (!adsRepairHandoffActive || !adsRepairWaitsForUtility)
+            if (!adsRepairHandoffActive)
                 return false;
             failure = adsInnRepairFailure;
-            if (failure.Length != 0)
+            if (failure.Length != 0 || !adsRepairWaitsForUtility)
                 return false;
             if (!adsRepairWaitingForCompletion)
                 return true;
@@ -1221,7 +1224,7 @@ public sealed class DutyAutomationService
             if (!IsCurrentAdsRepairOperation(operationId))
                 return;
 
-            await GameHelpers.RunOnFrameworkThreadAsync(() =>
+            var continueHandoff = await GameHelpers.RunOnFrameworkThreadAsync(() =>
             {
                 if (IsCurrentAdsRepairOperation(operationId) && Plugin.ClientState.IsLoggedIn && !DutyStartupService.IsInDuty())
                 {
@@ -1238,20 +1241,29 @@ public sealed class DutyAutomationService
                                     !modes.EnumerateArray().Any(value => value.ValueKind == JsonValueKind.String && value.GetString() == mode))
                                 {
                                     adsInnRepairFailure = $"The loaded ADS does not support repair mode {mode}. Update ADS before selecting this trip.";
-                                    return;
+                                    return true;
                                 }
                             }
+                            var startRepair = Plugin.PluginInterface.GetIpcSubscriber<string, bool>("ADS.StartRepair");
+                            if (!CanRequestAdsRepair(operationId))
+                                return false;
                             adsInnRepairRequestedUtc = DateTime.UtcNow;
-                            if (!Plugin.PluginInterface.GetIpcSubscriber<string, bool>("ADS.StartRepair").InvokeFunc(mode))
+                            if (!startRepair.InvokeFunc(mode))
                                 adsInnRepairFailure = $"ADS did not accept repair mode {mode}.";
                         }
                     }
                     else
+                    {
+                        if (!CanRequestAdsRepair(operationId))
+                            return false;
                         commandManager.ProcessCommand(repairCommand);
+                    }
                 }
+
+                return true;
             }).ConfigureAwait(false);
 
-            if (!IsCurrentAdsRepairOperation(operationId))
+            if (!continueHandoff || !IsCurrentAdsRepairOperation(operationId))
                 return;
 
             lock (adsRepairStateLock)
@@ -1273,6 +1285,22 @@ public sealed class DutyAutomationService
                     adsInnRepairFailure = ex.Message;
             }
         }
+    }
+
+    private bool CanRequestAdsRepair(int operationId)
+    {
+        var providerReady = bossModIPC.HasUsableAutomationHost();
+        if (!IsCurrentAdsRepairOperation(operationId) || !Plugin.ClientState.IsLoggedIn || DutyStartupService.IsInDuty())
+            return false;
+        if (providerReady)
+            return true;
+
+        lock (adsRepairStateLock)
+        {
+            if (IsCurrentAdsRepairOperation(operationId))
+                adsInnRepairFailure = Ui.M("Plugin_RequiredXaPlugins", GameHelpers.AutomationDependency).English;
+        }
+        return false;
     }
 
     private bool IsCurrentAdsRepairOperation(int operationId)
