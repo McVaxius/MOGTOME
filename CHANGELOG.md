@@ -1,6 +1,7 @@
-## Unreleased - Poetics shopping
+2026-11-19 - 4.2.0.29 - Poetics shopping
 
-- Skip AutoRetainer delivery when Poetics shopping verifies no purchases. The selected inn setting still applies.
+- **Fixed Poetics delivery** so AutoRetainer starts only when this shopping run verified a purchase. The Inn or Stay choice still applies.
+- **Fixed Poetics vendor recovery** so shopping can continue after a vendor fails when Lifestream is absent and no travel was submitted.
 
 2026-11-19 - 4.2.0.28 - Combat provider replacement
 

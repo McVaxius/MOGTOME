@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading;
 using Dalamud.Game.ClientState.Objects.Enums;
+using Dalamud.Plugin.Ipc.Exceptions;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -115,7 +116,15 @@ public sealed partial class MoogleShopService
             movement = false;
         }
         // Observe travel idle without issuing Lifestream's global Abort.
-        if (Plugin.PluginInterface.GetIpcSubscriber<bool>("Lifestream.IsBusy").InvokeFunc()) return false;
+        try
+        {
+            if (Plugin.PluginInterface.GetIpcSubscriber<bool>("Lifestream.IsBusy").InvokeFunc()) return false;
+        }
+        catch (IpcNotReadyError) when (!travelSubmitted && !Plugin.PluginInterface.InstalledPlugins.Any(installed =>
+            string.Equals(installed.InternalName, "Lifestream", StringComparison.Ordinal)))
+        {
+            // A vendor visited without Lifestream travel can recover when Lifestream is absent.
+        }
         var currencyShop = BlundervilleGameAdapter.Visible("ShopExchangeCurrency");
         var itemShop = BlundervilleGameAdapter.Visible("ShopExchangeItem");
         var menu = BlundervilleGameAdapter.Visible("SelectString") || BlundervilleGameAdapter.Visible("SelectIconString");
