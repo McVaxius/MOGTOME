@@ -325,7 +325,8 @@ internal sealed class MogtomeAppearance : IDisposable
             fonts?.Dispose();
             required = Ui.RequiredText;
             appliedLanguage = Ui.Code;
-            fonts = new(Plugin.PluginInterface.UiBuilder.FontAtlas, required, appliedLanguage) { ShapedText = shapedText.Renderer };
+            fonts = new(Plugin.PluginInterface.UiBuilder.FontAtlas, required, appliedLanguage,
+                Plugin.PluginInterface.AssemblyLocation.DirectoryName!) { ShapedText = shapedText.Renderer };
             checkedGeneration = -1; fontIssueLogged = false;
             checkedHindiGeneration = -1;
         }

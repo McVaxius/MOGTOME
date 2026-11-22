@@ -1,6 +1,10 @@
-Unreleased - Combat host cleanup
+2026-11-22 - 4.2.0.31 - Combat host recovery
 
-- **Fixed combat host cleanup.** Stopping startup still restores the selected host if MOGTOME temporarily disabled it.
+- **Fixed combat host recovery.** Stopping startup restores the selected combat host if MOGTOME temporarily disabled it.
+
+2026-11-22 - 4.2.0.30 - Linux and Wine fonts
+
+- **Fixed Linux and Wine font loading.** The plugin now uses bundled fonts for its interface.
 
 2026-11-19 - 4.2.0.29 - Poetics shopping
 
