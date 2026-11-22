@@ -1,6 +1,6 @@
-Unreleased - Linux and Wine
+2026-11-22 - 4.2.0.30 - Linux and Wine fonts
 
-- **Fixed UI font loading on Linux and Wine** by loading bundled Selawik fonts from the MOGTOME install directory.
+- **Fixed Linux and Wine font loading.** The plugin now uses bundled fonts for its interface.
 
 2026-11-19 - 4.2.0.29 - Poetics shopping
 
