@@ -1,3 +1,7 @@
+Unreleased - Linux and Wine
+
+- **Fixed UI font loading on Linux and Wine** by loading bundled Selawik fonts from the MOGTOME install directory.
+
 2026-11-19 - 4.2.0.29 - Poetics shopping
 
 - **Fixed Poetics delivery** so AutoRetainer starts only when this shopping run verified a purchase. The Inn or Stay choice still applies.

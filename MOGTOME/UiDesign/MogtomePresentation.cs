@@ -1,6 +1,7 @@
 using System;
 using System.Numerics;
 using AethertekUI;
+using AethertekUI.Dalamud;
 using Dalamud.Bindings.ImGui;
 
 namespace MOGTOME.UiDesign;
@@ -23,12 +24,11 @@ internal static class MogtomePresentation
     internal const uint ReferenceAccent = 0xFBCE5F;
     internal static readonly float[] FontSizes = [16, 16, 34, 22, 28, 20, 34, 36];
     internal static float AtlasHeight(MogtomeFontRole role) => FontSizes[(int)role] * 4 / 3;
-    internal static string FontFile(MogtomeFontRole role) => role switch
+    internal static MaterialFontWeight FontWeight(MogtomeFontRole role) => role switch
     {
-        MogtomeFontRole.Body => "segoeui.ttf",
-        MogtomeFontRole.Brand => "georgiab.ttf",
-        MogtomeFontRole.CompactBrand => "segoeuib.ttf",
-        _ => "seguisb.ttf",
+        MogtomeFontRole.Body => MaterialFontWeight.Regular,
+        MogtomeFontRole.Brand or MogtomeFontRole.CompactBrand => MaterialFontWeight.Bold,
+        _ => MaterialFontWeight.Semibold,
     };
     internal static bool Compact => MaterialTheme.Current.Density == MaterialDensity.Compact;
     internal static Vector4 Rgb(uint rgb) => new(((rgb >> 16) & 255) / 255f, ((rgb >> 8) & 255) / 255f, (rgb & 255) / 255f, 1);

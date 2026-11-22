@@ -62,6 +62,7 @@
       <PluginFiles Include="images\icon.png" />
       <PluginDataFiles Include="data\autoduty-paths\**" />
       <PluginBossModDataFiles Include="data\bm\**" />
+      <PluginFontFiles Include="$(TargetDir)Fonts\Selawik\*.ttf;$(TargetDir)Fonts\Selawik\LICENSE.txt" />
       <PluginSatelliteFiles Include="$(TargetDir)fr\$(AssemblyName).resources.dll"><Culture>fr</Culture></PluginSatelliteFiles>
       <PluginSatelliteFiles Include="$(TargetDir)de\$(AssemblyName).resources.dll"><Culture>de</Culture></PluginSatelliteFiles>
       <PluginSatelliteFiles Include="$(TargetDir)ja\$(AssemblyName).resources.dll"><Culture>ja</Culture></PluginSatelliteFiles>
@@ -89,6 +90,10 @@
 
     <Copy SourceFiles="@(PluginBossModDataFiles)"
           DestinationFiles="@(PluginBossModDataFiles->'$(PluginOutput)\data\bm\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
+
+    <Copy SourceFiles="@(PluginFontFiles)"
+          DestinationFolder="$(PluginOutput)\Fonts\Selawik"
           SkipUnchangedFiles="true" />
 
     <Copy SourceFiles="@(PluginSatelliteFiles)"
