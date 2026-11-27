@@ -1,3 +1,7 @@
+2026-11-27 - 4.2.0.32 - BossModReborn healer startup
+
+- **Fixed BossModReborn healer startup.** Automatic combat uses `FRENRIDER - RANGED` and adds the equipped healer's rotation to the active copy when it is missing from the saved preset.
+
 2026-11-22 - 4.2.0.31 - Combat host recovery
 
 - **Fixed combat host recovery.** Stopping startup restores the selected combat host if MOGTOME temporarily disabled it.

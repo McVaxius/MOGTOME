@@ -1,7 +1,10 @@
 using System;
 using System.Collections;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using MOGTOME.Models;
 
 namespace MOGTOME.IPC;
@@ -13,6 +16,7 @@ public partial class BossModIPC
     private (object List, object? Original, object? Selected)? gmcPlan;
     private bool gmcPlanChoiceChanged;
     private object? gmcGroupSource, gmcGroupRotation;
+    private string? gmcGroupHealerModule;
     private object? gmcAiManager, gmcOriginalPreset, gmcOwnedBehavior, gmcAiPreset, gmcBehaviorPreset;
     private bool gmcOriginalAiActive;
     private int gmcOriginalSlot, gmcOwnedSlot;
@@ -137,19 +141,25 @@ public partial class BossModIPC
             var row = Convert.ToUInt32(job);
             var isBmr = NativeHost == "BossModReborn";
             var automatic = manualPreset is null;
-            var usesGmcHealerPreset = automatic && isBmr && row is (6 or 24 or 28 or 33 or 40);
-            var preset = manualPreset ?? (usesGmcHealerPreset ? "FRENRIDER - RANGED (GMC)" : SelectPresetForJob(row, passive: false));
+            var preset = manualPreset ?? SelectPresetForJob(row, passive: false);
             if (!automatic && !IsExactRuntimePreset(preset)) return false;
             if (automatic && !isBmr && !CanUseGodModAutorotation(manager, player!, job, preset)) return false;
             if (!TryResolveGmcPlan(manager, player!, job, automatic, applySelection: true, out var usePlan)) return false;
             if (!usePlan && automatic && isBmr)
             {
-                var comparison = !usesGmcHealerPreset ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-                if (ReadRuntimePresetName(preset) is not { } nativeName || !preset.Equals(nativeName, comparison)) return false;
+                if (ReadRuntimePresetName(preset) is not { } nativeName || !preset.Equals(nativeName, StringComparison.OrdinalIgnoreCase)) return false;
                 preset = nativeName;
             }
             if (ownership.Original.Runtime is not { } original || original.Names.Any(name => !IsExactRuntimePreset(name))) return false;
-            var rotation = usePlan ? null : GmcPresetRotation(manager!, preset, automatic);
+            var healerModule = automatic && isBmr ? row switch
+            {
+                6 or 24 => "BMRVariantModulePack.Autorotation.Dhog.DhogWHM",
+                28 => "BMRVariantModulePack.Autorotation.Dhog.DhogSCH",
+                33 => "BMRVariantModulePack.Autorotation.Dhog.DhogAST",
+                40 => "BMRVariantModulePack.Autorotation.Dhog.DhogSGE",
+                _ => null,
+            } : null;
+            var rotation = usePlan ? null : GmcPresetRotation(manager!, preset, automatic, healerModule);
             var holdMovementPreset = !automatic && !isBmr && preset != "null"
                 && LiveMember(rotation, "Modules") is IList modules && modules.Cast<object>().Any(IsMovementModule);
             if (gmcRotationSelected && gmcHoldMovementPresetWhileIdle == holdMovementPreset
@@ -601,21 +611,39 @@ public partial class BossModIPC
     private static void SetGmcPlanIndex(object list, int index)
         => list.GetType().GetField("SelectedIndex", BindingFlags.Instance | BindingFlags.Public)!.SetValue(list, index);
 
-    private object GmcPresetRotation(object manager, string name, bool automatic)
+    private object GmcPresetRotation(object manager, string name, bool automatic, string? healerModule = null)
     {
         var presets = LiveMember(LiveMember(manager, "Database"), "Presets");
         var source = ((IEnumerable)LiveMember(presets, "AllPresets")!).Cast<object>()
             .Single(preset => Equals(LiveMember(preset, "Name"), name));
         if (!automatic) return source;
-        if (!ReferenceEquals(source, gmcGroupSource))
+        if (!ReferenceEquals(source, gmcGroupSource) || healerModule != gmcGroupHealerModule)
         {
             var rotation = source.GetType().GetMethod("MakeClone", new[] { typeof(bool) })!.Invoke(source, new object[] { true })!;
             var modules = (IList)LiveMember(rotation, "Modules")!;
+            if (healerModule != null && !modules.Cast<object>().Any(module => IsRotationModule(module, healerModule)))
+            {
+                var path = Path.Combine(Path.GetDirectoryName(typeof(BossModIPC).Assembly.Location)!, "data", "bm", ActiveRangedPreset + ".json");
+                using var bundled = JsonDocument.Parse(File.ReadAllText(path));
+                var healerPreset = new JsonObject
+                {
+                    ["Name"] = name,
+                    ["Modules"] = new JsonObject { [healerModule] = JsonNode.Parse(bundled.RootElement.GetProperty("Modules").GetProperty(healerModule).GetRawText()) },
+                };
+                var presetType = source.GetType();
+                var options = (JsonSerializerOptions)presetType.Assembly.GetType("BossMod.Serialization")!
+                    .GetMethod("BuildSerializationOptions")!.Invoke(null, null)!;
+                var healer = healerPreset.Deserialize(presetType, options);
+                if (LiveMember(healer, "Modules") is not IList { Count: 1 } parsed || !IsRotationModule(parsed[0], healerModule))
+                    throw new InvalidOperationException($"BossMod did not load the equipped healer rotation for '{name}'.");
+                modules.Add(parsed[0]);
+            }
             for (var index = modules.Count - 1; index >= 0; --index)
                 if (IsMovementModule(modules[index]))
                     modules.RemoveAt(index);
             gmcGroupRotation = rotation;
             gmcGroupSource = source;
+            gmcGroupHealerModule = healerModule;
         }
         return gmcGroupRotation!;
     }
@@ -631,6 +659,9 @@ public partial class BossModIPC
         }
         catch { return false; }
     }
+
+    private static bool IsRotationModule(object? module, string typeName)
+        => (LiveMember(module, "Type") as Type)?.FullName == typeName;
 
     private static bool IsMovementModule(object? module)
         => LiveMember(LiveMember(module, "Definition"), "Order")?.ToString() == "Movement";

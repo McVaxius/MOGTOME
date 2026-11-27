@@ -624,19 +624,19 @@ public sealed class DutyRecoveryTests
     }
 
     [Theory]
-    [InlineData(6u, "FRENRIDER - RANGED (GMC)")]
-    [InlineData(24u, "FRENRIDER - RANGED (GMC)")]
-    [InlineData(28u, "FRENRIDER - RANGED (GMC)")]
-    [InlineData(33u, "FRENRIDER - RANGED (GMC)")]
-    [InlineData(40u, "FRENRIDER - RANGED (GMC)")]
+    [InlineData(6u, "FRENRIDER - RANGED")]
+    [InlineData(24u, "FRENRIDER - RANGED")]
+    [InlineData(28u, "FRENRIDER - RANGED")]
+    [InlineData(33u, "FRENRIDER - RANGED")]
+    [InlineData(40u, "FRENRIDER - RANGED")]
     [InlineData(31u, "FRENRIDER - RANGED")]
     [InlineData(37u, "FRENRIDER - TANK")]
-    public void GmcSelectsProviderHealerGroupAndLeavesTheLegacyRangedPresetUntouched(uint job, string expected)
+    public void GmcUsesTheExistingRolePresetAndPreservesSavedRangedSettings(uint job, string expected)
     {
         var native = new NativeBossModProvider(CombatProvider.Bmr, "Original") { DhogHealersAvailable = true };
         native.SavePreset("""{"Name":"FRENRIDER - RANGED","Modules":{"BossMod.Autorotation.xan.BRD":[]}}""");
-        var legacy = native.Presets.UserPresets.Single(preset => preset.Name == "FRENRIDER - RANGED");
-        var legacyBefore = native.SerializePreset(legacy);
+        var savedRanged = native.Presets.UserPresets.Single(preset => preset.Name == "FRENRIDER - RANGED");
+        var savedBefore = native.SerializePreset(savedRanged);
         native.Rotation.Player.Class = (NativeJob)job;
         using var run = new Run(native) { GmcLoaded = true, Territory = 1044 };
         run.Config.CombatProvider = CombatProvider.Wrath;
@@ -649,11 +649,15 @@ public sealed class DutyRecoveryTests
         Assert.Equal(CombatProvider.Wrath, run.Config.CombatProvider);
         Assert.True(run.Config.UseManualBossModPreset);
         Assert.Equal("Other", run.Config.ManualBossModPresetName);
-        if (expected == "FRENRIDER - RANGED (GMC)")
-            Assert.Contains(native.Rotation.Preset!.Modules, module => module.ModuleName == "BMRVariantModulePack.Autorotation.Dhog.DhogSGE");
+        if (expected == "FRENRIDER - RANGED")
+        {
+            Assert.Contains(native.Rotation.Preset!.Modules, module => module.ModuleName == "BossMod.Autorotation.xan.BRD");
+            if (job != 31)
+                Assert.Contains(native.Rotation.Preset.Modules, module => module.ModuleName.StartsWith("BMRVariantModulePack.Autorotation.Dhog.Dhog", StringComparison.Ordinal));
+        }
         Assert.True(run.Rotation.DisableRotation());
-        Assert.Same(legacy, native.Presets.UserPresets.Single(preset => preset.Name == "FRENRIDER - RANGED"));
-        Assert.Equal(legacyBefore, native.SerializePreset(legacy));
+        Assert.Same(savedRanged, native.Presets.UserPresets.Single(preset => preset.Name == "FRENRIDER - RANGED"));
+        Assert.Equal(savedBefore, native.SerializePreset(savedRanged));
         Assert.DoesNotContain(native.Writes, write => write.Contains("Presets.Create") || write.Contains("Presets.Delete"));
     }
 
@@ -667,6 +671,7 @@ public sealed class DutyRecoveryTests
     {
         var native = new NativeBossModProvider(CombatProvider.Bmr, "Original", internalName: host)
             { DhogHealersAvailable = true, ClearPresetOnDeath = clear };
+        native.SavePreset("""{"Name":"FRENRIDER - RANGED","Modules":{"BMRVariantModulePack.Autorotation.Dhog.DhogSGE":[]}}""");
         native.Rotation.Player.Class = NativeJob.SGE;
         native.Rotation.Hints.ScriptedDeath = scripted;
         using var run = new Run(native) { GmcLoaded = host == "BossModReborn", Territory = 1044 };
@@ -679,7 +684,8 @@ public sealed class DutyRecoveryTests
         native.Rotation.Bossmods.ActiveModule = module;
         Assert.True(run.Rotation.Initialize());
         Assert.True(run.Rotation.EnableRotationOncePerDuty("Sage group"));
-        Assert.Equal(host == "BossModReborn" ? "FRENRIDER - RANGED (GMC)" : "FRENRIDER - RANGED", native.Rotation.Preset!.Name);
+        Assert.Equal("FRENRIDER - RANGED", native.Rotation.Preset!.Name);
+        Assert.Contains(native.Rotation.Preset.Modules, module => module.ModuleName == "BMRVariantModulePack.Autorotation.Dhog.DhogSGE");
         native.Rotation.Planner = new(module, plan);
         run.Rotation.UpdateDutyRotationHealth(1044, true, false, false, "plan bound");
         Assert.Null(native.Rotation.Preset);
@@ -3820,7 +3826,7 @@ public sealed class DutyRecoveryTests
                 {
                     ModuleName = item.Name,
                     Type = regular ? provider.BeastmasterType : item.Name == "BossMod.Autorotation.xan.BST"
-                        ? provider.NativeBeastmasterType : typeof(object)
+                        ? provider.NativeBeastmasterType : provider.FindDhogType(item.Name) ?? typeof(object)
                 };
                 foreach (var entry in item.Value.EnumerateArray())
                 {
@@ -4109,6 +4115,8 @@ public sealed class DutyRecoveryTests
             get => (bool)node.GetType().GetField("ForbidMovement")!.GetValue(node)!;
             set => node.GetType().GetField("ForbidMovement")!.SetValue(node, value);
         }
+        internal Type? FindDhogType(string name) => dhogModules.Keys.Cast<Type>().SingleOrDefault(type => type.FullName == name);
+
         internal bool DhogHealersAvailable
         {
             get => dhogModules.Count == dhogTypes.Length;
@@ -4329,16 +4337,6 @@ public sealed class DutyRecoveryTests
             Presets.DefaultPresets = Presets.AllPresets.ToList();
             presetDefinitions["FRENRIDER - TANK"] = """{"Name":"FRENRIDER - TANK","Modules":{"BossMod.Autorotation.xan.TankAI":[]}}""";
             presetDefinitions["FRENRIDER - RANGED"] = """{"Name":"FRENRIDER - RANGED","Modules":{"BMRVariantModulePack.Autorotation.Dhog.DhogSGE":[]}}""";
-            if (InternalName == "BossModReborn")
-            {
-                const string healerPreset = """
-                    {"Name":"FRENRIDER - RANGED (GMC)","Modules":{"BMRVariantModulePack.Autorotation.Dhog.DhogSGE":[]}}
-                    """;
-                var preset = DeserializePreset(healerPreset);
-                Presets.DefaultPresets.Add(preset);
-                Presets.AllPresets.Add(preset);
-                presetDefinitions[preset.Name] = healerPreset;
-            }
             database = new NativeRotationDatabase(Presets);
             Rotation = new((NativeRotationDatabase)database, preset =>
             {
