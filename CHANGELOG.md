@@ -1,3 +1,7 @@
+2026-11-28 - 4.2.0.34 - Backdrop resource cleanup
+
+- Release background blur and image resources while window fonts load or if glyph validation fails. The configured backdrop returns once fonts are ready.
+
 2026-11-28 - 4.2.0.33 - On-demand interface resources
 
 - Load window fonts and text shaping when the interface opens, then release them when it closes.

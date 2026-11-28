@@ -402,6 +402,7 @@ internal sealed class MogtomeAppearance : IDisposable
         }
         if (!fonts.Ready || checkedGeneration != fonts.Generation)
         {
+            DisposeBackgroundGlass();
             if (!fontIssueLogged && fonts.LoadException is { } error) { Plugin.Log.Error(error, "[MOGTOME] Required UI fonts failed to load."); fontIssueLogged = true; }
             using var statusPalette = MaterialTheme.Push(theme, ImGuiHelpers.GlobalScale,
                 config.UiStylingEnabled ? MaterialStyleMode.ColorsOnly : MaterialStyleMode.Native);
