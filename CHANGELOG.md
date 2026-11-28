@@ -1,3 +1,8 @@
+2026-11-28 - 4.2.0.33 - On-demand interface resources
+
+- Load window fonts and text shaping when the interface opens, then release them when it closes.
+- Allocate background rendering and audio resources only while their appearance features are in use.
+
 2026-11-27 - 4.2.0.32 - BossModReborn healer startup
 
 - **Fixed BossModReborn healer startup.** Automatic combat uses `FRENRIDER - RANGED` and adds the equipped healer's rotation to the active copy when it is missing from the saved preset.

@@ -1,3 +1,4 @@
+using Dalamud.Interface.ManagedFontAtlas;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,9 +24,11 @@ internal sealed class MogtomeAppearance : IDisposable
     private readonly AethertekUI.MaterialWindowOpacity fontStatusOpacity = new();
     private readonly System.Collections.Generic.Dictionary<Window, MaterialAppearanceTitleBar> titleBars = new();
     private readonly Plugin plugin;
-    private readonly AethertekUI.Dalamud.MaterialTextHost shapedText;
+    private MaterialTextHost shapedText = null!;
     private readonly FileDialogManager imagePicker = new();
+    private bool backgroundImagePickerOpen;
     private MaterialGlassRenderer? backgroundGlass;
+    private bool backgroundWasBlurred;
     internal bool BackgroundRequested { get; private set; }
     private static readonly string[] NativeLanguages = ["English", "Français", "Deutsch", "日本語", "Español", "Italiano", "Русский", "한국어", "简体中文", "Tiếng Việt", "Português (Brasil)", "Bahasa Indonesia", "Polski", "Türkçe", "हिन्दी"];
     private MogtomeFonts? fonts;
@@ -33,6 +36,7 @@ internal sealed class MogtomeAppearance : IDisposable
     private readonly MaterialWindowFold fontStatusFold = new();
     private readonly MaterialWindowDecorations fontStatusDecorations = new();
     private string appliedLanguage = "";
+    private (bool Main, bool Compact, bool Blunderville, bool Shop) loadedFontViews;
     private uint appliedAccent;
     private Vector3 accentDraft;
     private MaterialColorSettings colorDraft = new();
@@ -45,12 +49,10 @@ internal sealed class MogtomeAppearance : IDisposable
     private bool hindiAvailable;
     private bool fontIssueLogged;
     private MaterialUiSoundPlayer? uiSoundPlayer;
-    private bool appliedSoundsMuted = true;
     private readonly Dictionary<Window, TitleBarButton> soundTitleButtons = new();
     internal MogtomeAppearance(Plugin plugin)
     {
         this.plugin = plugin;
-        shapedText = new(Plugin.TextureProvider);
         Plugin.PluginInterface.UiBuilder.ResizeBuffers += ReleaseResources;
     }
     internal const string OriginalIconResource = "MOGTOME.images.icon.png";
@@ -309,7 +311,18 @@ internal sealed class MogtomeAppearance : IDisposable
     {
         var completed = false;
         var requested = false;
-        try { prepare(); imagePicker.Draw(); completed = DrawOwner(windows, out requested); }
+        try
+        {
+            prepare();
+            if (plugin.CanSelectUiLanguage && plugin.Configuration.UiLanguage is { } saved) Ui.SetLanguage(saved);
+            if (backgroundImagePickerOpen) imagePicker.Draw();
+            if (!windows.Windows.Any(window => window.IsOpen))
+            {
+                if (fonts is not null) ReleaseWindowResources();
+                return;
+            }
+            completed = DrawOwner(windows, out requested);
+        }
         finally { backgroundGlass?.EndFrame(requested && completed); BackgroundRequested = false; }
     }
 
@@ -317,19 +330,42 @@ internal sealed class MogtomeAppearance : IDisposable
     {
         requested = false;
         BackgroundRequested = false;
-        using var shaping = shapedText.Push();
         var config = plugin.Configuration;
-        if (plugin.CanSelectUiLanguage && config.UiLanguage is { } saved) Ui.SetLanguage(saved);
-        if (appliedLanguage != Ui.Code)
+        var views = (Main: plugin.MainWindow.IsOpen, Compact: config.UiCompact,
+            Blunderville: plugin.BlundervilleWindow.IsOpen,
+            Shop: plugin.MoogleShopWindow.IsOpen || plugin.KeyboundBrawlerWindow.IsOpen);
+        if (fonts is null || appliedLanguage != Ui.Code || loadedFontViews != views)
         {
             fonts?.Dispose();
+            fonts = null;
+            if (appliedLanguage != Ui.Code)
+            {
+                shapedText?.Dispose();
+                shapedText = null!;
+            }
+            shapedText ??= new(Plugin.TextureProvider);
             required = Ui.RequiredText;
+            var roles = new HashSet<MogtomeFontRole> { MogtomeFontRole.Body };
+            if (views.Main)
+            {
+                roles.Add(MogtomeFontRole.Strong);
+                roles.Add(views.Compact ? MogtomeFontRole.CompactTitle : MogtomeFontRole.Title);
+                roles.Add(views.Compact ? MogtomeFontRole.CompactBrand : MogtomeFontRole.Brand);
+                roles.Add(MogtomeFontRole.CompactHeading);
+            }
+            if (views.Blunderville) roles.Add(config.UiCompact ? MogtomeFontRole.CompactHeading : MogtomeFontRole.Heading);
+            if (views.Shop || views.Blunderville) roles.Add(MogtomeFontRole.CompactHeading);
+            var atlas = Plugin.PluginInterface.UiBuilder.CreateFontAtlas(FontAtlasAutoRebuildMode.OnNewFrame, true, "MOGTOME UI");
+            fonts = new(atlas, required, Ui.Code, Plugin.PluginInterface.AssemblyLocation.DirectoryName!, roles)
+                { ShapedText = shapedText.Renderer };
             appliedLanguage = Ui.Code;
-            fonts = new(Plugin.PluginInterface.UiBuilder.FontAtlas, required, appliedLanguage,
-                Plugin.PluginInterface.AssemblyLocation.DirectoryName!) { ShapedText = shapedText.Renderer };
-            checkedGeneration = -1; fontIssueLogged = false;
+            loadedFontViews = views;
+            checkedGeneration = -1;
             checkedHindiGeneration = -1;
+            fontIssueLogged = false;
         }
+
+        using var shaping = shapedText.Push();
         var savedColors = plugin.Configuration.UiColors ?? new MaterialColorSettings();
         var ownerChanged = !ReferenceEquals(draftOwner, config);
         if (ownerChanged || savedColors != appliedSavedColors)
@@ -344,18 +380,12 @@ internal sealed class MogtomeAppearance : IDisposable
             appliedColors = colorDraft;
             theme = MogtomePresentation.Theme(appliedAccent, colorDraft);
             theme.Feedback = PlayLcarsSound;
-            if (!theme.IsLcars) uiSoundPlayer?.Stop();
             var rgb = MogtomePresentation.Rgb(appliedAccent);
             accentDraft = new(rgb.X, rgb.Y, rgb.Z);
         }
         theme.HighlightContrastPercent = config.UiHighlightContrastPercent;
         theme.Density = config.UiCompact ? MaterialDensity.Compact : MaterialDensity.Standard;
-        if (appliedSoundsMuted != config.UiLcarsSoundsMuted)
-        {
-            appliedSoundsMuted = config.UiLcarsSoundsMuted;
-            if (appliedSoundsMuted) uiSoundPlayer?.Stop();
-        }
-        if (!windows.Windows.Any(window => window.IsOpen)) return false;
+        if (!LcarsActive || plugin.Configuration.UiLcarsSoundsMuted) ReleaseUiSounds();
         if (fonts!.Ready && checkedHindiGeneration != fonts.Generation)
         {
             var generation = fonts.Generation;
@@ -418,9 +448,18 @@ internal sealed class MogtomeAppearance : IDisposable
             colorDraft.GlassBackground == MaterialGlassBackground.Image;
         requested = blurEnabled || imageEnabled;
         BackgroundRequested = requested;
-        if (blurEnabled || imageEnabled) backgroundGlass ??= new(Plugin.PluginInterface, Plugin.Log);
-        backgroundGlass?.ConfigureImage(Plugin.TextureProvider, imageEnabled, colorDraft.GlassImagePath);
-        backgroundGlass?.BeginFrame();
+        if (blurEnabled || imageEnabled)
+        {
+            backgroundGlass ??= new(Plugin.PluginInterface, Plugin.Log);
+            if (backgroundWasBlurred && !blurEnabled) backgroundGlass.ReleaseResources();
+            backgroundGlass.BeginFrame(blurEnabled, imageEnabled);
+            backgroundGlass.ConfigureImage(Plugin.TextureProvider, imageEnabled, colorDraft.GlassImagePath);
+            backgroundWasBlurred = blurEnabled;
+        }
+        else
+        {
+            DisposeBackgroundGlass();
+        }
         using var rendererScope = MaterialSkin.PushBackgroundRenderer(blurEnabled || imageEnabled ? backgroundGlass : null,
             blurEnabled, colorDraft.BackgroundBlurPercent / 100f);
         using var palette = MaterialTheme.Push(theme, ImGuiHelpers.GlobalScale,
@@ -712,11 +751,37 @@ internal sealed class MogtomeAppearance : IDisposable
         imagePicker.OpenFileDialog(Ui.T("Choose background image") + "###MogtomeBackgroundImagePicker",
             Ui.T("Images") + "{.png,.jpg,.jpeg,.bmp,.gif,.webp,.tif,.tiff,.dds,.tga},.*", (accepted, path) =>
             {
+                backgroundImagePickerOpen = false;
                 if (!accepted || !plugin.CanSelectUiLanguage || !ReferenceEquals(owner, plugin.Configuration)) return;
                 owner.UiColors = (owner.UiColors ?? new MaterialColorSettings()) with { GlassImagePath = path };
                 colorDraft = owner.UiColors;
                 plugin.ConfigManager.SaveCurrentAccount();
             });
+        backgroundImagePickerOpen = true;
+    }
+
+    private void DisposeBackgroundGlass()
+    {
+        backgroundGlass?.Dispose();
+        backgroundGlass = null;
+        backgroundWasBlurred = false;
+    }
+
+    private void ReleaseUiSounds()
+    {
+        uiSoundPlayer?.Dispose();
+        uiSoundPlayer = null;
+    }
+
+    private void ReleaseWindowResources()
+    {
+        DisposeBackgroundGlass();
+        ReleaseUiSounds();
+        fonts?.Dispose();
+        fonts = null!;
+        shapedText?.Dispose();
+        shapedText = null!;
+        theme = null!;
     }
 
     private void ReleaseResources() => backgroundGlass?.ReleaseResources();
@@ -724,8 +789,7 @@ internal sealed class MogtomeAppearance : IDisposable
     {
         Plugin.PluginInterface.UiBuilder.ResizeBuffers -= ReleaseResources;
         imagePicker.Reset();
-        backgroundGlass?.Dispose();
-        uiSoundPlayer?.Dispose(); fonts?.Dispose(); shapedText.Dispose();
+        ReleaseWindowResources();
     }
 
     private void DrawScreenshotPause(string id)
@@ -844,7 +908,7 @@ internal sealed class MogtomeAppearance : IDisposable
     {
         if (!plugin.CanSelectUiLanguage) return;
         plugin.Configuration.UiLcarsSoundsMuted = !enabled;
-        if (!enabled) uiSoundPlayer?.Stop();
+        if (!enabled) ReleaseUiSounds();
         plugin.ConfigManager.SaveCurrentAccount();
     }
 
